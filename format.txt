@@ -1,0 +1,74 @@
+MAGIC 4
+VERSION I32
+
+MOVIE_NAME S
+
+COMPOSITION_COUNT Z
+{
+    NAME S
+    WIDTH F
+    HEIGHT F
+    
+    FRAME_DURATION F
+    DURATION F
+    
+    [FLAG]
+    {
+        1 LOOP_SEGMENT F2
+        2 ANCHOR_POINT F3
+        3 OFFSET_POINT F3
+        4 BOUNDS F4        
+    }
+
+    LAYER_COUNT Z    
+    {
+        NAME S
+        INDEX I16
+        TYPE_ID I8
+        
+        FRAME_COUNT I32
+        
+        [FLAG]
+        {
+            1 TIME_REMAPING 
+            {
+                TIME F N
+            }
+            2 IMAGE_SHAPE 
+            {            
+                SUBSTRACT I8
+                BASE_WIDTH F
+                BASE_HEIGHT F
+                TRIM_WIDTH F
+                TRIM_HEIGHT F
+                OFFSET_WIDTH F
+                OFFSET_HEIGHT F
+                
+                POLYGON FN2 N
+            }
+            3 SOLID_SPRITE
+            {
+                SUBSTRACT I8
+                
+                WIDTH F
+                HEIGHT F
+                
+                POLYGON FN2 N
+            }
+            4
+            {
+                POLYGON FN2 N
+            }
+        }
+        
+        
+        
+        PARENT I32
+        START_TIMING F
+        IN_TIME F
+        OUT_TIME F
+        
+        BLEND_MODE I8
+        OUT_TIME F
+    }
+}
