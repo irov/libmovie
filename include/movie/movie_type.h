@@ -9,6 +9,15 @@ extern "C" {
 
 	typedef int8_t result_t;
 	typedef char * ae_string_t;
+	
+	typedef struct aeMoviePolygon
+	{
+		uint16_t vertex_count;
+		uint16_t indices_count;
+		float * vertices;
+		uint16_t * indices;
+
+	} aeMoviePolygon;
 
 	typedef enum
 	{

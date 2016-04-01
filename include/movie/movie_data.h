@@ -3,21 +3,20 @@
 
 #	include <movie/movie_type.h>
 #	include <movie/movie_instance.h>
+#	include <movie/movie_resource.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-	static const uint32_t ae_movie_data_version = 1;
-
-	typedef struct aeMovieCompositionLayerData
+	
+	typedef struct aeMovieLayerData
 	{
 		ae_string_t name;
 
+		uint32_t frame_count;
 
-	} aeMovieCompositionLayerData;
-
-
+	} aeMovieLayerData;
+	
 	typedef enum
 	{
 		AE_MOVIE_COMPOSITION_LOOP_SEGMENT = 0x00000001,
@@ -44,7 +43,7 @@ extern "C" {
 		float offsetPoint[3];
 		float bounds[4];
 
-		aeMovieCompositionLayerData * layers;
+		aeMovieLayerData * layers;
 	} aeMovieCompositionData;
 
 	typedef struct aeMovieData
@@ -53,6 +52,7 @@ extern "C" {
 
 		float duration;
 
+		aeMovieResource ** resources;
 		aeMovieCompositionData * compositions;
 	} aeMovieData;
 
