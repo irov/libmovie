@@ -9,6 +9,7 @@
 #	define READ(stream, value) ((*stream->read)(stream->data, &value, sizeof(value)))
 #	define READN(stream, ptr, n) ((*stream->read)(stream->data, ptr, sizeof(*ptr) * n))
 #	define READZ(stream) ae_magic_read_size(stream)
+
 #	define READSTR(instance, stream, ptr) (ae_magic_read_string(instance, stream, &ptr))
 
 static uint32_t ae_magic_read_size( const aeMovieStream * _stream )
@@ -19,6 +20,14 @@ static uint32_t ae_magic_read_size( const aeMovieStream * _stream )
 	if( size255 != 255 )
 	{
 		return (uint32_t)size255;
+	}
+
+	uint16_t size65535;
+	READ( _stream, size65535 );
+
+	if( size65535 != 65535 )
+	{
+		return (uint32_t)size65535;
 	}
 
 	uint32_t size;

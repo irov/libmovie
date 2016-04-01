@@ -37,14 +37,66 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, aeMovieData * 
 
 	READSTR( _instance, _stream, _movie->name );
 
+	uint32_t resource_count = READZ( _stream );
+
+	_movie->resources = NEWN( _instance, aeMovieResource *, resource_count );
+
+	for( aeMovieResource
+		**resource = _movie->resources,
+		**resource_end = _movie->resources + resource_count;
+	resource != resource_end;
+	++resource )
+	{
+		uint8_t type;
+		READ( _stream, type );
+
+		switch( type )
+		{
+		case 1:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceInternal );
+			}break;
+		case 2:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSocketShape );
+			}break;
+		case 3:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSocketImage );
+			}break;
+		case 4:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSolid );
+			}break;
+		case 5:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceVideo );
+			}break;
+		case 6:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSound );
+			}break;
+		case 7:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceImage );
+			}break;
+		case 8:
+			{
+				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceImageSequence );
+			}break;
+		}
+	}
+
 	uint32_t composition_count = READZ( _stream );
 
 	_movie->compositions = NEWN( _instance, aeMovieCompositionData, composition_count );
 
-	for( uint32_t composition_index = 0; composition_index != composition_count; ++composition_index )
+	for( aeMovieCompositionData
+		*compositionData = _movie->compositions,
+		*compositionData_end = _movie->compositions + composition_count;
+	compositionData != compositionData_end;
+	++compositionData )
 	{
-		aeMovieCompositionData * compositionData = _movie->compositions + composition_index;
-
 		READSTR( _instance, _stream, compositionData->name );
 
 		READ( _stream, compositionData->width );
@@ -103,13 +155,13 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, aeMovieData * 
 
 		uint32_t layer_count = READZ( _stream );
 
-		compositionData->layers = NEWN( _instance, aeMovieCompositionLayerData, layer_count );
+		compositionData->layers = NEWN( _instance, aeMovieLayerData, layer_count );
 
 		for( uint32_t layer_index = 0; layer_index != layer_count; ++layer_index )
 		{
-			aeMovieCompositionLayerData * layer = compositionData->layers + layer_index;
+			aeMovieLayerData * layer = compositionData->layers + layer_index;
 
-			frame_count
+			//frame_count
 		}
 	}
 
