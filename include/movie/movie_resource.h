@@ -7,13 +7,13 @@
 extern "C" {
 #endif
 
-	typedef struct aeMovieResource
+	typedef struct
 	{
 		uint8_t type;
 
 	} aeMovieResource;
 
-	typedef struct aeMovieResourceInternal
+	typedef struct
 	{
 		aeMovieResource base;
 
@@ -21,7 +21,7 @@ extern "C" {
 
 	} aeMovieResourceInternal;
 
-	typedef struct aeMovieResourceSocketShape
+	typedef struct
 	{
 		aeMovieResource base;
 
@@ -29,7 +29,7 @@ extern "C" {
 
 	} aeMovieResourceSocketShape;
 
-	typedef struct aeMovieResourceSocketImage
+	typedef struct
 	{
 		aeMovieResource base;
 
@@ -37,7 +37,7 @@ extern "C" {
 
 	} aeMovieResourceSocketImage;
 	
-	typedef struct aeMovieResourceSolid
+	typedef struct
 	{
 		aeMovieResource base;
 
@@ -49,7 +49,7 @@ extern "C" {
 
 	} aeMovieResourceSolid;
 
-	typedef struct aeMovieResourceVideo
+	typedef struct
 	{
 		aeMovieResource base;
 
@@ -61,7 +61,7 @@ extern "C" {
 
 	} aeMovieResourceVideo;
 
-	typedef struct aeMovieResourceSound
+	typedef struct
 	{
 		aeMovieResource base;
 
@@ -71,7 +71,7 @@ extern "C" {
 
 	} aeMovieResourceSound;
 
-	typedef struct aeMovieResourceImage
+	typedef struct
 	{
 		aeMovieResource base;
 
@@ -86,14 +86,14 @@ extern "C" {
 
 	} aeMovieResourceImage;
 
-	typedef struct aeMovieResourceImageSequence
+	typedef struct
 	{
 		aeMovieResource base;
 
 		float frameDuration;
 
 		uint32_t count;
-		aeMovieResourceImage * images;
+		aeMovieResourceImage ** images;
 
 	} aeMovieResourceImageSequence;
 

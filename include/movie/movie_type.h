@@ -10,14 +10,21 @@ extern "C" {
 	typedef int8_t result_t;
 	typedef char * ae_string_t;
 	
-	typedef struct aeMoviePolygon
+	typedef struct
+	{
+		uint16_t point_count;
+		float * points;
+
+	} aeMoviePolygon;
+
+	typedef struct
 	{
 		uint16_t vertex_count;
 		uint16_t indices_count;
 		float * vertices;
 		uint16_t * indices;
 
-	} aeMoviePolygon;
+	} aeMovieMesh;
 
 	typedef enum
 	{
