@@ -5,18 +5,19 @@
 
 #	include <memory.h>
 
+//////////////////////////////////////////////////////////////////////////
 aeMovieData * create_movie_data( const aeMovieInstance * _instance )
 {
 	aeMovieData * m = NEW( _instance, aeMovieData );
 
 	return m;
 }
-
+//////////////////////////////////////////////////////////////////////////
 void delete_movie_data( const aeMovieInstance * _instance, aeMovieData * _movieData )
 {
 	DELETE( _instance, _movieData );
 }
-
+//////////////////////////////////////////////////////////////////////////
 aeMovieResult load_movie_data( const aeMovieInstance * _instance, aeMovieData * _movie, const aeMovieStream * _stream )
 {
 	char magic[4];
@@ -42,10 +43,10 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, aeMovieData * 
 	_movie->resources = NEWN( _instance, aeMovieResource *, resource_count );
 
 	for( aeMovieResource
-		**resource = _movie->resources,
-		**resource_end = _movie->resources + resource_count;
-	resource != resource_end;
-	++resource )
+		**it_resource = _movie->resources,
+		**it_resource_end = _movie->resources + resource_count;
+	it_resource != it_resource_end;
+	++it_resource )
 	{
 		uint8_t type;
 		READ( _stream, type );
@@ -54,37 +55,114 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, aeMovieData * 
 		{
 		case 1:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceInternal );
+				aeMovieResourceInternal * resource = NEW( _instance, aeMovieResourceInternal );
+
+				READSTR( _instance, _stream, resource->name );
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case 2:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSocketShape );
+				aeMovieResourceSocketShape * resource = NEW( _instance, aeMovieResourceSocketShape );
+
+				uint32_t polygon_count = READZ( _stream );
+
+				resource->polygons = NEWN( _instance, aeMoviePolygon, polygon_count );
+
+				for( aeMoviePolygon
+					*it_polygon = resource->polygons,
+					*it_polygon_end = resource->polygons + polygon_count;
+				it_polygon != it_polygon_end;
+				++it_polygon )
+				{
+					READPOLYGON( _instance, _stream, it_polygon );
+				}
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case 3:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSocketImage );
+				aeMovieResourceSocketImage * resource = NEW( _instance, aeMovieResourceSocketImage );
+
+				READSTR( _instance, _stream, resource->path );
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case 4:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSolid );
+				aeMovieResourceSolid * resource = NEW( _instance, aeMovieResourceSolid );
+
+				READ( _stream, resource->width );
+				READ( _stream, resource->height );
+				READ( _stream, resource->r );
+				READ( _stream, resource->g );
+				READ( _stream, resource->b );
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case 5:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceVideo );
+				aeMovieResourceVideo * resource = NEW( _instance, aeMovieResourceVideo );
+
+				READSTR( _instance, _stream, resource->path );
+
+				READ( _stream, resource->alpha );
+				READ( _stream, resource->frameRate );
+				READ( _stream, resource->duration );
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case 6:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceSound );
+				aeMovieResourceSound * resource = NEW( _instance, aeMovieResourceSound );
+
+				READSTR( _instance, _stream, resource->path );
+
+				READ( _stream, resource->duration );
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case 7:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceImage );
+				aeMovieResourceImage * resource = NEW( _instance, aeMovieResourceImage );
+
+				READSTR( _instance, _stream, resource->path );
+
+				READ( _stream, resource->base_width );
+				READ( _stream, resource->base_height );
+				READ( _stream, resource->trim_width);
+				READ( _stream, resource->trim_height );
+				READ( _stream, resource->trim_offset_x );
+				READ( _stream, resource->trim_offset_y );
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case 8:
 			{
-				*resource = (aeMovieResource *)NEW( _instance, aeMovieResourceImageSequence );
+				aeMovieResourceImageSequence * resource = NEW( _instance, aeMovieResourceImageSequence );
+
+				READ( _stream, resource->frameDuration );
+
+				uint32_t sequence_count = READZ( _stream );
+
+				resource->images = NEWN( _instance, aeMovieResourceImage *, sequence_count );
+
+				for( aeMovieResourceImage
+					**it_image = resource->images,
+					**it_image_end = resource->images + sequence_count;
+				it_image != it_image_end;
+				++it_image )
+				{
+					uint32_t resource_id = READZ( _stream );
+
+					*it_image = (aeMovieResourceImage *)_movie->resources[resource_id];
+				}
+
+				*it_resource = (aeMovieResource *)resource;
 			}break;
 		}
+
+		(*it_resource)->type = type;
 	}
 
 	uint32_t composition_count = READZ( _stream );
@@ -167,3 +245,4 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, aeMovieData * 
 
 	return AE_MOVIE_SUCCESSFUL;
 }
+//////////////////////////////////////////////////////////////////////////
