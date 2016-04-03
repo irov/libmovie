@@ -124,8 +124,7 @@ static void ae_magic_read_zp( const aeMovieStream * _stream, float * _values )
 		uint8_t block_type;
 		READ( _stream, block_type );
 
-		uint8_t block_count;
-		READ( _stream, block_count );
+		uint8_t block_count = READZ( _stream );
 
 		switch( block_type )
 		{
