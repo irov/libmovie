@@ -24,12 +24,12 @@ void make_movie_instance( aeMovieInstance * _instance, movie_alloc_t _alloc, mov
 	_instance->memory_free = _free;
 	_instance->memory_data = _data;
 
-	if( _instance->memory_alloc == NULL )
+	if( _instance->memory_alloc == AE_NULL )
 	{
 		_instance->memory_alloc = &stdlib_movie_alloc;
 	}
 
-	if( _instance->memory_free == NULL )
+	if( _instance->memory_free == AE_NULL )
 	{
 		_instance->memory_free = &stdlib_movie_free;
 	}

@@ -9,11 +9,73 @@
 extern "C" {
 #endif
 	
+	typedef struct
+	{
+		ae_bool_t immutable;
+		float immutable_time;
+
+		float * times;
+
+	} aeMovieLayerTimeremap;
+
+	typedef struct
+	{
+		ae_bool_t immutable;
+		aeMovieMesh immutable_mesh;
+
+		aeMovieMesh * meshes;
+		
+	} aeMovieLayerMesh;
+
+	typedef struct
+	{
+		ae_bool_t immutable;
+		aeMoviePolygon immutable_polygon;
+
+		aeMoviePolygon * polygons;
+
+	} aeMovieLayerPolygon;
+
+	typedef struct
+	{
+		ae_bool_t immutable;
+		aeMovieViewport immutable_viewport;
+
+		aeMovieViewport * viewports;
+
+	} aeMovieLayerViewportMatte;
+
 	typedef struct aeMovieLayerData
 	{
 		ae_string_t name;
 
-		uint32_t frame_count;
+		uint32_t index;
+		uint32_t type;
+
+		ae_bool_t immutable;
+		uint32_t frame_count;		
+
+		aeMovieLayerTimeremap * timeremap;
+		aeMovieLayerMesh * mesh;
+		aeMovieLayerPolygon * polygon;
+		aeMovieLayerViewportMatte * viewport_matte;
+
+		aeMovieResource * resource;
+
+		struct aeMovieLayerData * parent;
+
+		float start_time;
+		float in_time;
+		float out_time;
+
+		uint32_t blend_mode;		
+		uint32_t flags;
+
+		uint32_t play_count;
+
+		float stretch;
+				
+		aeMovieLayerProperty properties;
 
 	} aeMovieLayerData;
 	
@@ -59,7 +121,7 @@ extern "C" {
 	aeMovieData * create_movie_data( const aeMovieInstance * _instance );
 	void delete_movie_data( const aeMovieInstance * _instance, aeMovieData * _movie );
 
-	aeMovieResult load_movie_data( const aeMovieInstance * _instance, aeMovieData * _movie, const aeMovieStream * _stream );
+	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie );
 
 #ifdef __cplusplus
 }

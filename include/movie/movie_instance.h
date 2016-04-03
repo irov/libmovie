@@ -21,7 +21,6 @@ extern "C" {
 
 	void make_movie_instance( aeMovieInstance * _instance, movie_alloc_t _alloc, movie_free_t _free, void * _data );
 
-
 #ifdef __cplusplus
 }
 #endif
