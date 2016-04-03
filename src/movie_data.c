@@ -20,7 +20,7 @@ void delete_movie_data( const aeMovieInstance * _instance, aeMovieData * _movieD
 //////////////////////////////////////////////////////////////////////////
 static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance, const aeMovieStream * _stream, const aeMovieData * _movie, const aeMovieCompositionData * _composition, aeMovieLayerData * _layer )
 {
-	READSTR( _instance, _stream, _layer->name );
+	READ_STRING( _instance, _stream, _layer->name );
 
 	_layer->index = READZ( _stream );
 	_layer->type = READZ( _stream );
@@ -65,7 +65,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 				if( _layer->mesh->immutable == AE_TRUE )
 				{
-					READMESH( _instance, _stream, &_layer->mesh->immutable_mesh );
+					READ_MESH( _instance, _stream, &_layer->mesh->immutable_mesh );
 
 					_layer->mesh->meshes = AE_NULL;
 				}
@@ -79,7 +79,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 					it_mesh != it_mesh_end;
 					++it_mesh )
 					{
-						READMESH( _instance, _stream, it_mesh );
+						READ_MESH( _instance, _stream, it_mesh );
 					}
 				}
 			}
@@ -91,7 +91,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 				if( _layer->polygon->immutable == AE_TRUE )
 				{
-					READPOLYGON( _instance, _stream, &_layer->polygon->immutable_polygon );
+					READ_POLYGON( _instance, _stream, &_layer->polygon->immutable_polygon );
 
 					_layer->polygon->polygons = AE_NULL;
 				}
@@ -105,7 +105,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 					it_polygon != it_polygon_end;
 					++it_polygon )
 					{
-						READPOLYGON( _instance, _stream, it_polygon );
+						READ_POLYGON( _instance, _stream, it_polygon );
 					}
 				}
 			}
@@ -117,7 +117,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 				if( _layer->viewport_matte->immutable == AE_TRUE )
 				{
-					READVIEWPORT( _stream, &_layer->viewport_matte->immutable_viewport );
+					READ_VIEWPORT( _stream, &_layer->viewport_matte->immutable_viewport );
 
 					_layer->viewport_matte->viewports = AE_NULL;
 				}
@@ -131,7 +131,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 					it_viewport != it_viewport_end;
 					++it_viewport )
 					{
-						READVIEWPORT( _stream, it_viewport );
+						READ_VIEWPORT( _stream, it_viewport );
 					}
 				}
 			}
@@ -148,7 +148,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 	uint8_t three_d = READB( _stream );
 
-	READPROPERTY( _instance, _stream, &_layer->properties, _layer->frame_count );
+	READ_PROPERTY( _instance, _stream, &_layer->properties, _layer->frame_count );
 
 	return AE_MOVIE_SUCCESSFUL;
 }
@@ -171,7 +171,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 		return AE_MOVIE_FAILED;
 	}
 
-	READSTR( _instance, _stream, _movie->name );
+	READ_STRING( _instance, _stream, _movie->name );
 
 	uint32_t resource_count = READZ( _stream );
 
@@ -192,7 +192,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			{
 				aeMovieResourceInternal * resource = NEW( _instance, aeMovieResourceInternal );
 
-				READSTR( _instance, _stream, resource->name );
+				READ_STRING( _instance, _stream, resource->name );
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
@@ -210,7 +210,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				it_polygon != it_polygon_end;
 				++it_polygon )
 				{
-					READPOLYGON( _instance, _stream, it_polygon );
+					READ_POLYGON( _instance, _stream, it_polygon );
 				}
 
 				*it_resource = (aeMovieResource *)resource;
@@ -219,7 +219,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			{
 				aeMovieResourceSocketImage * resource = NEW( _instance, aeMovieResourceSocketImage );
 
-				READSTR( _instance, _stream, resource->path );
+				READ_STRING( _instance, _stream, resource->path );
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
@@ -239,7 +239,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			{
 				aeMovieResourceVideo * resource = NEW( _instance, aeMovieResourceVideo );
 
-				READSTR( _instance, _stream, resource->path );
+				READ_STRING( _instance, _stream, resource->path );
 
 				READ( _stream, resource->alpha );
 				READ( _stream, resource->frameRate );
@@ -251,7 +251,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			{
 				aeMovieResourceSound * resource = NEW( _instance, aeMovieResourceSound );
 
-				READSTR( _instance, _stream, resource->path );
+				READ_STRING( _instance, _stream, resource->path );
 
 				READ( _stream, resource->duration );
 
@@ -261,7 +261,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			{
 				aeMovieResourceImage * resource = NEW( _instance, aeMovieResourceImage );
 
-				READSTR( _instance, _stream, resource->path );
+				READ_STRING( _instance, _stream, resource->path );
 
 				READ( _stream, resource->base_width );
 				READ( _stream, resource->base_height );
@@ -310,7 +310,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 	it_composition != it_composition_end;
 	++it_composition )
 	{
-		READSTR( _instance, _stream, it_composition->name );
+		READ_STRING( _instance, _stream, it_composition->name );
 
 		READ( _stream, it_composition->width );
 		READ( _stream, it_composition->height );

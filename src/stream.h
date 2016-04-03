@@ -13,11 +13,11 @@
 #	define READB(stream) ae_magic_read_bool(stream)
 #	define READZ(stream) ae_magic_read_size(stream)
 
-#	define READSTR(instance, stream, ptr) (ae_magic_read_string(instance, stream, &ptr))
-#	define READPOLYGON(instance, stream, ptr) (ae_magic_read_polygon(instance, stream, ptr))
-#	define READVIEWPORT(stream, ptr) (ae_magic_read_viewport(stream, ptr))
-#	define READMESH(instance, stream, ptr) (ae_magic_read_mesh(instance, stream, ptr))
-#	define READPROPERTY(instance, stream, ptr, count) (ae_magic_read_property(instance, stream, ptr, count))
+#	define READ_STRING(instance, stream, ptr) (ae_magic_read_string(instance, stream, &ptr))
+#	define READ_POLYGON(instance, stream, ptr) (ae_magic_read_polygon(instance, stream, ptr))
+#	define READ_VIEWPORT(stream, ptr) (ae_magic_read_viewport(stream, ptr))
+#	define READ_MESH(instance, stream, ptr) (ae_magic_read_mesh(instance, stream, ptr))
+#	define READ_PROPERTY(instance, stream, ptr, count) (ae_magic_read_property(instance, stream, ptr, count))
 
 
 static ae_bool_t ae_magic_read_bool( const aeMovieStream * _stream )
