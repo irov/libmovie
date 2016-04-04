@@ -130,9 +130,8 @@ COMPOSITION_COUNT Z
             1 ANCHOR_POINT F3
             2 POSITION F3
             3 SCALE F3
-            4 QUATERNION F4
+            4 ROTATION F3
             5 OPACITY F
-            6 VOLUME F
         }        
     }
 }

@@ -14,59 +14,6 @@ extern "C" {
 	static const uint8_t AE_FALSE = 0;
 	static void * AE_NULL = 0;
 
-	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X = 0x0001;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y = 0x0002;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z = 0x0004;
-	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_X = 0x0008;
-	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_Y = 0x0010;
-	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_Z = 0x0020;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_X = 0x0040;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_Y = 0x0080;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_Z = 0x0100;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_W = 0x0200;
-	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_X = 0x0400;
-	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_Y = 0x0800;
-	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_Z = 0x1000;
-	static const uint16_t AE_MOVIE_IMMUTABLE_OPACITY = 0x2000;
-	static const uint16_t AE_MOVIE_IMMUTABLE_VOLUME = 0x4000;
-
-	typedef struct
-	{
-		uint16_t immutable_mask;
-		
-		float immuttable_anchor_point_x;
-		float immuttable_anchor_point_y;
-		float immuttable_anchor_point_z;
-		float immuttable_position_x;
-		float immuttable_position_y;
-		float immuttable_position_z;
-		float immuttable_rotation_x;
-		float immuttable_rotation_y;
-		float immuttable_rotation_z;
-		float immuttable_rotation_w;
-		float immuttable_scale_x;
-		float immuttable_scale_y;
-		float immuttable_scale_z;
-		float immuttable_opacity;
-		float immuttable_volume;
-
-		float * anchor_point_x;
-		float * anchor_point_y;
-		float * anchor_point_z;
-		float * position_x;
-		float * position_y;
-		float * position_z;
-		float * rotation_x;
-		float * rotation_y;
-		float * rotation_z;
-		float * rotation_w;
-		float * scale_x;
-		float * scale_y;
-		float * scale_z;
-		float * opacity;
-		float * volume;
-	} aeMovieLayerProperty;
-		
 	typedef struct
 	{
 		uint32_t point_count;

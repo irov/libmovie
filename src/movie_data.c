@@ -18,6 +18,99 @@ void delete_movie_data( const aeMovieInstance * _instance, aeMovieData * _movieD
 	DELETE( _instance, _movieData );
 }
 //////////////////////////////////////////////////////////////////////////
+static void __load_movie_data_layer_property_zp( const aeMovieStream * _stream, float * _values )
+{
+	uint32_t count = READZ( _stream );
+
+	float * stream_values = _values;
+
+	for( uint32_t i = 0; i != count; ++i )
+	{
+		uint8_t block_type;
+		READ( _stream, block_type );
+
+		uint8_t block_count = READZ( _stream );
+
+		switch( block_type )
+		{
+		case 0:
+			{
+				float block_value;
+				READ( _stream, block_value );
+
+				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
+				{
+					*stream_values++ = block_value;
+				}
+			}break;
+		case 1:
+			{
+				float block_base;
+				READ( _stream, block_base );
+
+				float block_add;
+				READ( _stream, block_add );
+
+				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
+				{
+					*stream_values++ = block_base + block_add * block_index;
+				}
+			}break;
+		case 3:
+			{
+				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
+				{
+					float block_value;
+					READ( _stream, block_value );
+
+					*stream_values++ = block_value;
+				}
+			}
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+static void __load_movie_data_layer_property( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieLayerData * _layer, uint32_t _count )
+{
+	uint16_t immutable_property_mask;
+	READ( _stream, immutable_property_mask );
+
+	_layer->immutable_property_mask = immutable_property_mask;
+
+#	define AE_MOVIE_STREAM_PROPERTY(Mask, ImmutableName, Name)\
+	if( immutable_property_mask & Mask )\
+			{\
+		READ( _stream, _layer->ImmutableName );\
+		_layer->Name = AE_NULL;\
+			}\
+				else\
+			{\
+		_layer->ImmutableName = 0.f;\
+		_layer->Name = NEWN( _instance, float, _count );\
+		__load_movie_data_layer_property_zp( _stream, _layer->Name );\
+			}
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, immuttable_anchor_point_x, property_anchor_point_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, immuttable_anchor_point_y, property_anchor_point_y );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, immuttable_anchor_point_z, property_anchor_point_z );
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, immuttable_position_x, property_position_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, immuttable_position_x, property_position_y );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, immuttable_position_x, property_position_z );
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z );
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, immuttable_scale_x, property_scale_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, immuttable_scale_y, property_scale_y );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, immuttable_scale_z, property_scale_z );
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_OPACITY, immuttable_opacity, property_opacity );
+
+#	undef AE_MOVIE_STREAM_PROPERTY
+}
+//////////////////////////////////////////////////////////////////////////
 static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance, const aeMovieStream * _stream, const aeMovieData * _movie, const aeMovieCompositionData * _composition, aeMovieLayerData * _layer )
 {
 	READ_STRING( _instance, _stream, _layer->name );
@@ -25,7 +118,6 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 	_layer->index = READZ( _stream );
 	_layer->type = READZ( _stream );
 
-	_layer->immutable = READB( _stream );
 	_layer->frame_count = READZ( _stream );
 
 	for( ;; )
@@ -44,7 +136,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 				_layer->timeremap->immutable = READB( _stream );
 
-				if( _layer->immutable == AE_TRUE )
+				if( _layer->timeremap->immutable == AE_TRUE )
 				{
 					READ( _stream, _layer->timeremap->immutable_time );
 
@@ -148,7 +240,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 	uint8_t three_d = READB( _stream );
 
-	READ_PROPERTY( _instance, _stream, &_layer->properties, _layer->frame_count );
+	__load_movie_data_layer_property( _instance, _stream, _layer, _layer->frame_count );
 
 	return AE_MOVIE_SUCCESSFUL;
 }
@@ -294,6 +386,10 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				}
 
 				*it_resource = (aeMovieResource *)resource;
+			}break;
+		default:
+			{
+				return AE_MOVIE_FAILED;
 			}break;
 		}
 

@@ -45,6 +45,20 @@ extern "C" {
 
 	} aeMovieLayerViewportMatte;
 
+	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X = 0x0001;
+	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y = 0x0002;
+	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z = 0x0004;
+	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_X = 0x0008;
+	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_Y = 0x0010;
+	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_Z = 0x0020;
+	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_X = 0x0040;
+	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_Y = 0x0080;
+	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_Z = 0x0100;
+	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_X = 0x0400;
+	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_Y = 0x0800;
+	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_Z = 0x1000;
+	static const uint16_t AE_MOVIE_IMMUTABLE_OPACITY = 0x2000;
+
 	typedef struct aeMovieLayerData
 	{
 		ae_string_t name;
@@ -52,8 +66,7 @@ extern "C" {
 		uint32_t index;
 		uint32_t type;
 
-		ae_bool_t immutable;
-		uint32_t frame_count;		
+		uint32_t frame_count;
 
 		aeMovieLayerTimeremap * timeremap;
 		aeMovieLayerMesh * mesh;
@@ -75,8 +88,38 @@ extern "C" {
 
 		float stretch;
 				
-		aeMovieLayerProperty properties;
+		uint16_t immutable_property_mask;
 
+		float immuttable_anchor_point_x;
+		float immuttable_anchor_point_y;
+		float immuttable_anchor_point_z;
+		float immuttable_position_x;
+		float immuttable_position_y;
+		float immuttable_position_z;
+		float immuttable_rotation_x;
+		float immuttable_rotation_y;
+		float immuttable_rotation_z;
+		float immuttable_rotation_w;
+		float immuttable_scale_x;
+		float immuttable_scale_y;
+		float immuttable_scale_z;
+		float immuttable_opacity;
+		float immuttable_volume;
+
+		float * property_anchor_point_x;
+		float * property_anchor_point_y;
+		float * property_anchor_point_z;
+		float * property_position_x;
+		float * property_position_y;
+		float * property_position_z;
+		float * property_rotation_x;
+		float * property_rotation_y;
+		float * property_rotation_z;
+		float * property_scale_x;
+		float * property_scale_y;
+		float * property_scale_z;
+		float * property_opacity;
+		float * property_volume;
 	} aeMovieLayerData;
 	
 	typedef enum
