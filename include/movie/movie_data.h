@@ -66,6 +66,8 @@ extern "C" {
 		uint32_t index;
 		uint8_t type;
 
+		struct aeMovieCompositionData * composition;
+
 		uint32_t frame_count;
 
 		aeMovieLayerTimeremap * timeremap;
@@ -74,9 +76,9 @@ extern "C" {
 		aeMovieLayerViewportMatte * viewport_matte;
 
 		struct aeMovieResource * resource;
-		struct aeMovieCompositionData * composition;
+		struct aeMovieCompositionData * sub_composition;
 
-		struct aeMovieLayerData * parent;
+		struct aeMovieLayerData * relation;
 
 		float start_time;
 		float in_time;
