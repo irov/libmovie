@@ -82,11 +82,13 @@
     <ClInclude Include="..\include\movie\movie_node.h" />
     <ClInclude Include="..\include\movie\movie_resource.h" />
     <ClInclude Include="..\include\movie\movie_type.h" />
+    <ClInclude Include="..\src\matrix.h" />
     <ClInclude Include="..\src\memory.h" />
     <ClInclude Include="..\src\stream.h" />
     <ClInclude Include="..\src\utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\matrix.c" />
     <ClCompile Include="..\src\movie.c" />
     <ClCompile Include="..\src\movie_data.c" />
     <ClCompile Include="..\src\movie_instance.c" />
