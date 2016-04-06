@@ -448,12 +448,12 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 		uint32_t resource_index = READZ( _stream );
 		_layer->resource = _movie->resources[resource_index];
 
-		_layer->composition = AE_NULL;
+		_layer->sub_composition = AE_NULL;
 	}
 	else
 	{
 		uint32_t composition_index = READZ( _stream );
-		_layer->composition = _movie->compositions + composition_index;
+		_layer->sub_composition = _movie->compositions + composition_index;
 
 		_layer->resource = AE_NULL;
 	}
@@ -462,11 +462,11 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 	if( parent_index == 0 )
 	{
-		_layer->parent = AE_NULL;
+		_layer->relation = AE_NULL;
 	}
 	else
 	{
-		_layer->parent = _composition->layers + parent_index - 1;
+		_layer->relation = _composition->layers + parent_index - 1;
 	}
 
 	READ( _stream, _layer->start_time );
@@ -557,7 +557,11 @@ static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _ins
 	it_layer != it_layer_end;
 	++it_layer )
 	{
-		if( __load_movie_data_layer( _instance, _stream, _movie, _composition, it_layer ) == AE_MOVIE_FAILED )
+		aeMovieLayerData * layer = it_layer;
+
+		layer->composition = _composition;
+
+		if( __load_movie_data_layer( _instance, _stream, _movie, _composition, layer ) == AE_MOVIE_FAILED )
 		{
 			return AE_MOVIE_FAILED;
 		}
