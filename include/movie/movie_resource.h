@@ -7,7 +7,21 @@
 extern "C" {
 #endif
 
-	typedef struct
+	enum
+	{
+		AE_MOVIE_RESOURCE_INTERNAL = 1,
+		AE_MOVIE_RESOURCE_SOCKET_SHAPE = 2,
+		AE_MOVIE_RESOURCE_SOCKET_IMAGE = 3,
+		AE_MOVIE_RESOURCE_SOLID = 4,
+		AE_MOVIE_RESOURCE_VIDEO = 5,
+		AE_MOVIE_RESOURCE_SOUND = 6,
+		AE_MOVIE_RESOURCE_IMAGE = 7,
+		AE_MOVIE_RESOURCE_IMAGE_SEQUENCE = 8,
+		AE_MOVIE_RESOURCE_ASTRALAX = 9,
+		__AE_MOVIE_RESOURCE_END__
+	};
+
+	typedef struct aeMovieResource
 	{
 		uint8_t type;
 
@@ -92,10 +106,21 @@ extern "C" {
 
 		float frameDuration;
 
-		uint32_t count;
+		uint32_t image_count;
 		aeMovieResourceImage ** images;
 
 	} aeMovieResourceImageSequence;
+
+	typedef struct
+	{
+		aeMovieResource base;
+
+		ae_string_t path;
+
+		uint32_t atlas_count;
+		aeMovieResourceImage ** atlases;
+
+	} aeMovieResourceAstralax;
 
 #ifdef __cplusplus
 }

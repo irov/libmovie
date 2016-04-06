@@ -64,7 +64,7 @@ extern "C" {
 		ae_string_t name;
 
 		uint32_t index;
-		uint32_t type;
+		uint8_t type;
 
 		uint32_t frame_count;
 
@@ -73,7 +73,8 @@ extern "C" {
 		aeMovieLayerPolygon * polygon;
 		aeMovieLayerViewportMatte * viewport_matte;
 
-		aeMovieResource * resource;
+		struct aeMovieResource * resource;
+		struct aeMovieCompositionData * composition;
 
 		struct aeMovieLayerData * parent;
 
@@ -81,14 +82,14 @@ extern "C" {
 		float in_time;
 		float out_time;
 
-		uint32_t blend_mode;		
-		uint32_t flags;
+		uint8_t blend_mode;		
+		uint32_t params;
 
 		uint32_t play_count;
 
 		float stretch;
 				
-		uint16_t immutable_property_mask;
+		uint32_t immutable_property_mask;
 
 		float immuttable_anchor_point_x;
 		float immuttable_anchor_point_y;
@@ -99,12 +100,10 @@ extern "C" {
 		float immuttable_rotation_x;
 		float immuttable_rotation_y;
 		float immuttable_rotation_z;
-		float immuttable_rotation_w;
 		float immuttable_scale_x;
 		float immuttable_scale_y;
 		float immuttable_scale_z;
 		float immuttable_opacity;
-		float immuttable_volume;
 
 		float * property_anchor_point_x;
 		float * property_anchor_point_y;
@@ -119,8 +118,16 @@ extern "C" {
 		float * property_scale_y;
 		float * property_scale_z;
 		float * property_opacity;
-		float * property_volume;
 	} aeMovieLayerData;
+
+	typedef struct 
+	{
+		float camera_position[3];
+		float camera_fov;
+		float camera_aspect;
+		float camera_width;
+		float camera_height;
+	} aeMovieCameraData;
 	
 	typedef enum
 	{
@@ -148,6 +155,9 @@ extern "C" {
 		float offsetPoint[3];
 		float bounds[4];
 
+		aeMovieCameraData * camera;
+
+		uint32_t layer_count;
 		aeMovieLayerData * layers;
 	} aeMovieCompositionData;
 
@@ -157,12 +167,17 @@ extern "C" {
 
 		float duration;
 
+		uint32_t resource_count;
+		uint32_t composition_count;
+
 		aeMovieResource ** resources;
 		aeMovieCompositionData * compositions;
 	} aeMovieData;
 
 	aeMovieData * create_movie_data( const aeMovieInstance * _instance );
-	void delete_movie_data( const aeMovieInstance * _instance, aeMovieData * _movie );
+	void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _movie );
+
+	const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name );
 
 	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie );
 
