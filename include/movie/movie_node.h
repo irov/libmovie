@@ -12,7 +12,7 @@ extern "C" {
 
 	typedef struct aeMovieNode
 	{
-
+		const aeMovieLayerData * layer;
 	} aeMovieNode;
 
 	typedef struct aeMovieComposition
@@ -45,7 +45,7 @@ extern "C" {
 		float g;
 		float b;
 		float a;
-	};
+	} aeMovieRender;
 
 	void compute_movie_vertices( const aeMovieInstance * _instance, const aeMovieNode * _node, const aeMovieLayerData * _layer, aeMovieRender * _render );
 	
