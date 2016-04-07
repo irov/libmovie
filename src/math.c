@@ -1,9 +1,12 @@
-#	include "matrix.h"
+#	include "math.h"
 
 #	include <math.h>
 
 //////////////////////////////////////////////////////////////////////////
 static const float f_eps = 0.00001f;
+static const float pi = 3.14159265358979323846f;
+static const float two_pi = 2.f * 3.14159265358979323846f;
+static const float inv_two_pi = 1.f / (2.f * 3.14159265358979323846f);
 //////////////////////////////////////////////////////////////////////////
 #	define EQUAL_F_Z( f ) ((f >= f_eps) && (f <= f_eps))
 //////////////////////////////////////////////////////////////////////////
@@ -123,7 +126,7 @@ void make_rotate_m4_euler( ae_matrix4_t _out, float _x, float _y, float _z )
 	_out[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
-void make_transformation_m4( ae_matrix4_t _lm, const ae_vector4_t _position, const ae_vector4_t _origin, const ae_vector4_t _scale, const ae_vector4_t _orientation )
+void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale, const ae_vector3_t _orientation )
 {
 	ae_matrix4_t mat_scale;
 	ident_m4( mat_scale );
@@ -162,4 +165,53 @@ void make_transformation_m4( ae_matrix4_t _lm, const ae_vector4_t _position, con
 	_lm[3 * 4 + 0] += _position[0];
 	_lm[3 * 4 + 1] += _position[1];
 	_lm[3 * 4 + 2] += _position[2];
+}
+//////////////////////////////////////////////////////////////////////////
+float angle_norm( float _angle )
+{
+	if( _angle < 0.f )
+	{
+		float pi_count = floorf( _angle * inv_two_pi );
+		float pi_abs = pi_count * two_pi;
+
+		_angle -= pi_abs;
+	}
+
+	if( _angle > two_pi )
+	{
+		float pi_count = floorf( _angle * inv_two_pi );
+		float pi_abs = pi_count * two_pi;
+
+		_angle -= pi_abs;
+	}
+
+	return _angle;
+}
+//////////////////////////////////////////////////////////////////////////
+float angle_correct_interpolate_from_to( float _from, float _to )
+{	
+	float norm_angle_to = angle_norm( _to );
+
+	float correct_angle = norm_angle_to;
+
+	if( norm_angle_to > _from )
+	{
+		float dist = norm_angle_to - _from;
+
+		if( (_from + two_pi) - norm_angle_to < dist )
+		{
+			correct_angle = norm_angle_to - two_pi;
+		}
+	}
+	else
+	{
+		float dist = _from - norm_angle_to;
+
+		if( (norm_angle_to + two_pi) - _from < dist )
+		{
+			correct_angle = norm_angle_to + two_pi;
+		}
+	}
+
+	return correct_angle;
 }
