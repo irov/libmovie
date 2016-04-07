@@ -798,3 +798,35 @@ const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+uint32_t get_movie_composition_data_layer_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData )
+{
+	uint32_t count = _compositionData->layer_count;
+
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		switch( layer->type )
+		{			
+		case AE_MOVIE_LAYER_TYPE_MOVIE:
+			{
+				uint32_t movie_layer_count = get_movie_composition_data_layer_count( _movie, layer->composition );
+
+				count += movie_layer_count;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+			{
+				uint32_t movie_layer_count = get_movie_composition_data_layer_count( _movie, layer->composition );
+
+				count += movie_layer_count;
+			}break;
+		}
+	}
+
+	return count;
+}
+//////////////////////////////////////////////////////////////////////////

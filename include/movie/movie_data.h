@@ -45,19 +45,48 @@ extern "C" {
 
 	} aeMovieLayerViewportMatte;
 
-	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X = 0x0001;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y = 0x0002;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z = 0x0004;
-	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_X = 0x0008;
-	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_Y = 0x0010;
-	static const uint16_t AE_MOVIE_IMMUTABLE_POSITION_Z = 0x0020;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_X = 0x0040;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_Y = 0x0080;
-	static const uint16_t AE_MOVIE_IMMUTABLE_ROTATION_Z = 0x0100;
-	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_X = 0x0400;
-	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_Y = 0x0800;
-	static const uint16_t AE_MOVIE_IMMUTABLE_SCALE_Z = 0x1000;
-	static const uint16_t AE_MOVIE_IMMUTABLE_OPACITY = 0x2000;
+	typedef enum aeMoviePropertyImmutableEnum
+	{
+		AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X = 0x0001,
+		AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y = 0x0002,
+		AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z = 0x0004,
+		AE_MOVIE_IMMUTABLE_POSITION_X = 0x0008,
+		AE_MOVIE_IMMUTABLE_POSITION_Y = 0x0010,
+		AE_MOVIE_IMMUTABLE_POSITION_Z = 0x0020,
+		AE_MOVIE_IMMUTABLE_ROTATION_X = 0x0040,
+		AE_MOVIE_IMMUTABLE_ROTATION_Y = 0x0080,
+		AE_MOVIE_IMMUTABLE_ROTATION_Z = 0x0100,
+		AE_MOVIE_IMMUTABLE_SCALE_X = 0x0400,
+		AE_MOVIE_IMMUTABLE_SCALE_Y = 0x0800,
+		AE_MOVIE_IMMUTABLE_SCALE_Z = 0x1000,
+		AE_MOVIE_IMMUTABLE_OPACITY = 0x2000,
+		__AE_MOVIE_IMMUTABLE_END__
+	} aeMoviePropertyImmutableEnum;
+
+	typedef enum aeMovieLayerTypeEnum
+	{
+		AE_MOVIE_LAYER_TYPE_MOVIE = 1,
+		AE_MOVIE_LAYER_TYPE_SCENE_EFFECT = 2,
+		AE_MOVIE_LAYER_TYPE_TEXT = 3,
+		AE_MOVIE_LAYER_TYPE_TEXT_CENTER = 4,
+		AE_MOVIE_LAYER_TYPE_SPRITE = 5,
+		AE_MOVIE_LAYER_TYPE_SOUND_ID = 6,
+		AE_MOVIE_LAYER_TYPE_EVENT = 7,
+		AE_MOVIE_LAYER_TYPE_SOCKET_SHAPE = 8,
+		AE_MOVIE_LAYER_TYPE_SOCKET_IMAGE = 9,
+		AE_MOVIE_LAYER_TYPE_GENERATOR_PARTICLE = 10,
+		AE_MOVIE_LAYER_TYPE_SLOT = 11,
+		AE_MOVIE_LAYER_TYPE_INTERNAL_OBJECT = 12,
+		AE_MOVIE_LAYER_TYPE_NULL_OBJECT = 13,
+		AE_MOVIE_LAYER_TYPE_SPRITE_SOLID = 14,
+		AE_MOVIE_LAYER_TYPE_SPRITE_SEQUENCE = 15,
+		AE_MOVIE_LAYER_TYPE_VIDEO = 16,
+		AE_MOVIE_LAYER_TYPE_SOUND = 17,
+		AE_MOVIE_LAYER_TYPE_PARTICLE = 18,
+		AE_MOVIE_LAYER_TYPE_MESH = 19,
+		AE_MOVIE_LAYER_TYPE_IMAGE = 20,
+		AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
+	} aeMovieLayerTypeEnum;
 
 	typedef struct aeMovieLayerData
 	{
@@ -180,6 +209,7 @@ extern "C" {
 	void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _movie );
 
 	const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name );
+	uint32_t get_movie_composition_data_layer_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData );
 
 	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie );
 

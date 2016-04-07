@@ -113,16 +113,16 @@ static float __make_movie_layer_properties_interpolate( ae_matrix4_t _out, const
 	return opacity;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieNode * create_movie_node( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _composition )
+aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _composition )
 {
-	aeMovieNode * node = NEW( _instance, aeMovieNode );
+	aeMovieComposition * composition = NEW( _instance, aeMovieComposition );
 
 	//node->data = _data;
 	//node->composition = _composition;
 
 	//node->timing = 0.f;
 
-	return node;
+	return composition;
 }
 //////////////////////////////////////////////////////////////////////////
 void delete_movie_node( const aeMovieInstance * _instance, const aeMovieNode * _node )
