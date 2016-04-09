@@ -1,9 +1,7 @@
 #	ifndef MOVIE_MATRIX_H_
 #	define MOVIE_MATRIX_H_
 
-typedef float ae_vector3_t[3];
-typedef float ae_vector4_t[4];
-typedef float ae_matrix4_t[16];
+#	include <movie/movie_type.h>
 
 void mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b );
 void mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b );

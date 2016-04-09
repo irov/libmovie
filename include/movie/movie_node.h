@@ -15,6 +15,14 @@ extern "C" {
 		const aeMovieLayerData * layer;
 
 		struct aeMovieNode * relative;
+
+		float in_time;
+		float out_time;
+
+		uint32_t matrix_revision;
+
+		ae_matrix4_t matrix;
+		float opacity;
 	} aeMovieNode;
 
 	typedef struct aeMovieComposition
@@ -22,6 +30,7 @@ extern "C" {
 		const aeMovieData * data;
 		const aeMovieCompositionData * composition_data;
 
+		uint32_t update_revision;
 		float timing;
 
 		uint32_t node_count;
@@ -31,7 +40,7 @@ extern "C" {
 	aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _composition );
 	void delete_movie_composition( const aeMovieInstance * _instance, const aeMovieNode * _node );
 
-	void update_movie_composition( const aeMovieInstance * _instance, const aeMovieNode * _node, float _timing );
+	void update_movie_composition( aeMovieComposition * _composition, float _timing );
 	
 	typedef struct aeMovieRender
 	{

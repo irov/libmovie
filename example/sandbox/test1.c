@@ -75,6 +75,8 @@ int main()
 	
 
 	aeMovieComposition * composition = create_movie_composition( &instance, movieData, compositionData );
+
+	update_movie_composition( composition, 150.f );
 		
 	printf( "SUCCESSFUL!!\n" );
 

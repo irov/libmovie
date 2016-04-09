@@ -188,13 +188,11 @@ extern "C" {
 	typedef struct aeMovieData
 	{
 		ae_string_t name;
-
-		float duration;
-
+		
 		uint32_t resource_count;
-		uint32_t composition_count;
-
 		aeMovieResource ** resources;
+
+		uint32_t composition_count;
 		aeMovieCompositionData * compositions;
 	} aeMovieData;
 

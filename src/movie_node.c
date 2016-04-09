@@ -170,6 +170,7 @@ static void __setup_movie_node( aeMovieNode * _nodes, uint32_t * _iterator, cons
 		aeMovieNode * node = _nodes + ((*_iterator)++);
 
 		node->layer = layer;
+		node->matrix_revision = 0;
 
 		if( layer->parent_index == 0 )
 		{
@@ -219,6 +220,35 @@ static void __setup_movie_node( aeMovieNode * _nodes, uint32_t * _iterator, cons
 	}
 }
 //////////////////////////////////////////////////////////////////////////
+static const aeMovieNode * __get_parent_node_composition( const aeMovieNode * _node )
+{
+	if( _node->relative == AE_NULL )
+	{
+		return AE_NULL;
+	}
+
+	if( _node->relative->layer->sub_composition != AE_NULL )
+	{
+		return _node->relative;
+	}
+
+	return __get_parent_node_composition( _node->relative );
+}
+//////////////////////////////////////////////////////////////////////////
+static float __get_node_offset_time( const aeMovieNode * _node )
+{
+	const aeMovieNode * node_composition = __get_parent_node_composition( _node );
+
+	if( node_composition == AE_NULL )
+	{
+		return 0.f;
+	}
+
+	float composition_time = __get_node_offset_time( node_composition );
+
+	return composition_time;
+}
+//////////////////////////////////////////////////////////////////////////
 aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _compositionData )
 {
 	aeMovieComposition * composition = NEW( _instance, aeMovieComposition );
@@ -226,6 +256,7 @@ aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance
 	composition->data = _data;
 	composition->composition_data = _compositionData;
 
+	composition->update_revision = 0;
 	composition->timing = 0.f;
 
 	uint32_t node_count = get_movie_composition_data_node_count( _data, _compositionData );
@@ -237,6 +268,20 @@ aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance
 
 	__setup_movie_node( composition->nodes, &node_iterator, _compositionData, AE_NULL );
 
+	for( aeMovieNode
+		*it_node = composition->nodes,
+		*it_node_end = composition->nodes + node_count;
+	it_node != it_node_end;
+	++it_node )
+	{
+		aeMovieNode * node = it_node;
+
+		float offset_time = __get_node_offset_time( node );
+
+		node->in_time = offset_time + node->layer->in_time;
+		node->out_time = offset_time + node->layer->out_time;
+	}
+
 	return composition;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -245,9 +290,67 @@ void delete_movie_node( const aeMovieInstance * _instance, const aeMovieNode * _
 	DELETE( _instance, _node );
 }
 //////////////////////////////////////////////////////////////////////////
-void update_movie_node( const aeMovieInstance * _instance, const aeMovieNode * _node )
+static void __update_node_matrix( aeMovieNode * _node, uint32_t _revision, uint32_t _frame, float _t )
 {
+	if( _node->matrix_revision != _revision )
+	{
+		_node->matrix_revision = _revision;
 
+		if( _node->relative != AE_NULL )
+		{
+			aeMovieNode * node_relative = _node->relative;
+
+			if( node_relative->matrix_revision != _revision )
+			{
+				node_relative->matrix_revision = _revision;
+
+				__update_node_matrix( node_relative, _revision, _frame, _t );
+			}
+
+			ae_matrix4_t local_matrix;
+			float local_opacity = __make_movie_layer_properties_interpolate( local_matrix, _node->layer, _frame, _t );
+
+			mul_m4_m4( _node->matrix, node_relative->matrix, local_matrix );
+
+			_node->opacity = node_relative->opacity * local_opacity;
+		}
+		else
+		{
+			_node->opacity = __make_movie_layer_properties_interpolate( _node->matrix, _node->layer, _frame, _t );
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+void update_movie_composition( aeMovieComposition * _composition, float _timing )
+{
+	_composition->update_revision++;
+	uint32_t update_revision = _composition->update_revision;
+
+	float begin_timing = _composition->timing;
+
+	_composition->timing += _timing;
+
+	float end_timing = _composition->timing;
+
+	float frameDuration = _composition->composition_data->frameDuration;
+
+	uint32_t begin_frame = (uint32_t)(begin_timing / _composition->composition_data->frameDuration);
+	uint32_t end_frame = (uint32_t)(end_timing / _composition->composition_data->frameDuration);
+
+	float delta_timing = end_timing - (float)(end_frame * frameDuration);
+	
+	float t = delta_timing / frameDuration;
+
+	for( aeMovieNode
+		*it_node = _composition->nodes,
+		*it_node_end = _composition->nodes + _composition->node_count;
+	it_node != it_node_end;
+	++it_node )
+	{
+		aeMovieNode * node = it_node;
+
+		__update_node_matrix( node, update_revision, end_frame, t );
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 void compute_movie_vertices( const aeMovieInstance * _instance, const aeMovieNode * _node, const aeMovieLayerData * _layer, aeMovieRender * _render )
