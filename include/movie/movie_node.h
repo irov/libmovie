@@ -13,12 +13,14 @@ extern "C" {
 	typedef struct aeMovieNode
 	{
 		const aeMovieLayerData * layer;
+
+		struct aeMovieNode * relative;
 	} aeMovieNode;
 
 	typedef struct aeMovieComposition
 	{
 		const aeMovieData * data;
-		const aeMovieCompositionData * composition;
+		const aeMovieCompositionData * composition_data;
 
 		float timing;
 

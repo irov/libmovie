@@ -113,14 +113,129 @@ static float __make_movie_layer_properties_interpolate( ae_matrix4_t _out, const
 	return opacity;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _composition )
+static aeMovieNode * __find_node_by_layer( aeMovieNode * _nodes, uint32_t _begin, uint32_t _end, const aeMovieLayerData * _layer )
+{
+	for( aeMovieNode
+		*it_node = _nodes + _begin,
+		*it_node_end = _nodes + _end;
+	it_node != it_node_end;
+	++it_node )
+	{
+		aeMovieNode * node = it_node;
+
+		const aeMovieLayerData * node_layer = node->layer;
+
+		if( node_layer == _layer )
+		{
+			return node;
+		}
+	}
+
+	return AE_NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+static const aeMovieLayerData * __find_layer_by_index( const aeMovieCompositionData * _compositionData, uint32_t _index )
+{
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		uint32_t layer_index = layer->index;
+
+		if( layer_index == _index )
+		{
+			return layer;
+		}
+	}
+
+	return AE_NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __setup_movie_node( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent )
+{
+	uint32_t begin_index = *_iterator;
+
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		aeMovieNode * node = _nodes + ((*_iterator)++);
+
+		node->layer = layer;
+
+		if( layer->parent_index == 0 )
+		{
+			node->relative = _parent;
+		}
+
+		switch( layer->type )
+		{
+		case AE_MOVIE_LAYER_TYPE_MOVIE:
+			{
+				__setup_movie_node( _nodes, _iterator, layer->sub_composition, node );
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+			{
+				__setup_movie_node( _nodes, _iterator, layer->sub_composition, node );
+			}break;
+		default:
+			{
+			}break;
+		}
+	}
+
+	uint32_t end_index = *_iterator;
+	
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		uint32_t parent_index = layer->parent_index;
+
+		if( parent_index == 0 )
+		{
+			continue;
+		}
+
+		aeMovieNode * node = __find_node_by_layer( _nodes, begin_index, end_index, layer );
+
+		const aeMovieLayerData * parent_layer = __find_layer_by_index( _compositionData, parent_index );
+
+		aeMovieNode * parent_node = __find_node_by_layer( _nodes, begin_index, end_index, parent_layer );
+
+		node->relative = parent_node;
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _compositionData )
 {
 	aeMovieComposition * composition = NEW( _instance, aeMovieComposition );
 
-	//node->data = _data;
-	//node->composition = _composition;
+	composition->data = _data;
+	composition->composition_data = _compositionData;
 
-	//node->timing = 0.f;
+	composition->timing = 0.f;
+
+	uint32_t node_count = get_movie_composition_data_node_count( _data, _compositionData );
+		
+	composition->node_count = node_count;
+	composition->nodes = NEWN( _instance, aeMovieNode, node_count );
+
+	uint32_t node_iterator = 0;
+
+	__setup_movie_node( composition->nodes, &node_iterator, _compositionData, AE_NULL );
 
 	return composition;
 }

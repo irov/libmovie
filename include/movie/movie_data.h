@@ -66,24 +66,17 @@ extern "C" {
 	typedef enum aeMovieLayerTypeEnum
 	{
 		AE_MOVIE_LAYER_TYPE_MOVIE = 1,
-		AE_MOVIE_LAYER_TYPE_SCENE_EFFECT = 2,
-		AE_MOVIE_LAYER_TYPE_TEXT = 3,
-		AE_MOVIE_LAYER_TYPE_TEXT_CENTER = 4,
 		AE_MOVIE_LAYER_TYPE_SPRITE = 5,
-		AE_MOVIE_LAYER_TYPE_SOUND_ID = 6,
 		AE_MOVIE_LAYER_TYPE_EVENT = 7,
 		AE_MOVIE_LAYER_TYPE_SOCKET_SHAPE = 8,
 		AE_MOVIE_LAYER_TYPE_SOCKET_IMAGE = 9,
-		AE_MOVIE_LAYER_TYPE_GENERATOR_PARTICLE = 10,
 		AE_MOVIE_LAYER_TYPE_SLOT = 11,
-		AE_MOVIE_LAYER_TYPE_INTERNAL_OBJECT = 12,
-		AE_MOVIE_LAYER_TYPE_NULL_OBJECT = 13,
+		AE_MOVIE_LAYER_TYPE_NULL = 12,
 		AE_MOVIE_LAYER_TYPE_SPRITE_SOLID = 14,
 		AE_MOVIE_LAYER_TYPE_SPRITE_SEQUENCE = 15,
 		AE_MOVIE_LAYER_TYPE_VIDEO = 16,
 		AE_MOVIE_LAYER_TYPE_SOUND = 17,
-		AE_MOVIE_LAYER_TYPE_PARTICLE = 18,
-		AE_MOVIE_LAYER_TYPE_MESH = 19,
+		AE_MOVIE_LAYER_TYPE_ASTRALAX = 18,
 		AE_MOVIE_LAYER_TYPE_IMAGE = 20,
 		AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 	} aeMovieLayerTypeEnum;
@@ -107,7 +100,7 @@ extern "C" {
 		struct aeMovieResource * resource;
 		struct aeMovieCompositionData * sub_composition;
 
-		struct aeMovieLayerData * relation;
+		uint32_t parent_index;
 
 		float start_time;
 		float in_time;
@@ -208,10 +201,12 @@ extern "C" {
 	aeMovieData * create_movie_data( const aeMovieInstance * _instance );
 	void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _movie );
 
-	const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name );
-	uint32_t get_movie_composition_data_layer_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData );
+	typedef void * (*movie_data_resource_provider_t)(aeMovieResource * _resource, void * _data);
 
-	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie );
+	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie, movie_data_resource_provider_t _provider, void * _data );
+	
+	const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name );
+	uint32_t get_movie_composition_data_node_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData );
 
 #ifdef __cplusplus
 }

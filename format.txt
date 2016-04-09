@@ -84,7 +84,7 @@ COMPOSITION_COUNT Z
         INDEX Z
         TYPE_ID I8
         
-        $N FRAME_COUNT I32        
+        $N FRAME_COUNT I32
         
         [EXTENSION]
         {

@@ -9,7 +9,6 @@ extern "C" {
 
 	enum
 	{
-		AE_MOVIE_RESOURCE_INTERNAL = 1,
 		AE_MOVIE_RESOURCE_SOCKET_SHAPE = 2,
 		AE_MOVIE_RESOURCE_SOCKET_IMAGE = 3,
 		AE_MOVIE_RESOURCE_SOLID = 4,
@@ -24,6 +23,8 @@ extern "C" {
 	typedef struct aeMovieResource
 	{
 		uint8_t type;
+
+		void * data;
 
 	} aeMovieResource;
 

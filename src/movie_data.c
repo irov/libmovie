@@ -29,12 +29,6 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 
 		switch( type )
 		{
-		case AE_MOVIE_RESOURCE_INTERNAL:
-			{
-				const aeMovieResourceInternal * resource = (const aeMovieResourceInternal *)base_resource;
-
-				(void)resource;
-			}break;
 		case AE_MOVIE_RESOURCE_SOCKET_SHAPE:
 			{
 				const aeMovieResourceSocketShape * resource = (const aeMovieResourceSocketShape *)base_resource;
@@ -460,14 +454,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 	uint32_t parent_index = READZ( _stream );
 
-	if( parent_index == 0 )
-	{
-		_layer->relation = AE_NULL;
-	}
-	else
-	{
-		_layer->relation = _composition->layers + parent_index - 1;
-	}
+	_layer->parent_index = parent_index;
 
 	READ( _stream, _layer->start_time );
 	READ( _stream, _layer->in_time );
@@ -575,7 +562,7 @@ static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _ins
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie )
+aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie, movie_data_resource_provider_t _provider, void * _data )
 {
 	char magic[4];
 	READN( _stream, magic, 4 );
@@ -616,14 +603,6 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 		switch( type )
 		{
-		case AE_MOVIE_RESOURCE_INTERNAL:
-			{
-				aeMovieResourceInternal * resource = NEW( _instance, aeMovieResourceInternal );
-
-				READ_STRING( _instance, _stream, resource->name );
-
-				*it_resource = (aeMovieResource *)resource;
-			}break;
 		case AE_MOVIE_RESOURCE_SOCKET_SHAPE:
 			{
 				aeMovieResourceSocketShape * resource = NEW( _instance, aeMovieResourceSocketShape );
@@ -754,7 +733,12 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			}break;
 		}
 
-		(*it_resource)->type = type;
+		aeMovieResource * new_resource = (*it_resource);
+
+		new_resource->type = type;
+		new_resource->data = AE_NULL;
+
+		(*_provider)(new_resource, _data);
 	}
 
 	uint32_t composition_count = READZ( _stream );
@@ -798,7 +782,7 @@ const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-uint32_t get_movie_composition_data_layer_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData )
+uint32_t get_movie_composition_data_node_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData )
 {
 	uint32_t count = _compositionData->layer_count;
 
@@ -814,13 +798,13 @@ uint32_t get_movie_composition_data_layer_count( const aeMovieData * _movie, con
 		{			
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 			{
-				uint32_t movie_layer_count = get_movie_composition_data_layer_count( _movie, layer->composition );
+				uint32_t movie_layer_count = get_movie_composition_data_node_count( _movie, layer->sub_composition );
 
 				count += movie_layer_count;
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				uint32_t movie_layer_count = get_movie_composition_data_layer_count( _movie, layer->composition );
+				uint32_t movie_layer_count = get_movie_composition_data_node_count( _movie, layer->sub_composition );
 
 				count += movie_layer_count;
 			}break;

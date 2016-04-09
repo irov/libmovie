@@ -41,9 +41,21 @@ static void read_file( void * _data, void * _buff, uint32_t _size )
 	fread( _buff, _size, 1, f );
 }
 
+static void * resource_provider( aeMovieResource * _resource, void * _data )
+{
+	_resource->data = AE_NULL;
+
+	return AE_NULL;
+}
+
 int main()
 {
-	FILE * f = fopen( "../example/sandbox/Movie_02_Sad.aem", "rb" );
+	FILE * f = fopen( "02_Sad.aem", "rb" );
+
+	if( f == NULL )
+	{
+		return 0;
+	}
 
 	aeMovieInstance instance;
 	make_movie_instance( &instance, &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL );
@@ -54,11 +66,16 @@ int main()
 	stream.read = &read_file;
 	stream.data = f;
 
-	if( load_movie_data( &instance, &stream, movieData ) == AE_MOVIE_FAILED )
+	if( load_movie_data( &instance, &stream, movieData, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
 	{
 		return 0;
 	}
 
+	const aeMovieCompositionData * compositionData = get_movie_composition_data( movieData, "Tuman" );
+	
+
+	aeMovieComposition * composition = create_movie_composition( &instance, movieData, compositionData );
+		
 	printf( "SUCCESSFUL!!\n" );
 
 	delete_movie_data( &instance, movieData );
