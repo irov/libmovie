@@ -38,15 +38,6 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 				(void)resource;
 
 			}break;
-		case AE_MOVIE_RESOURCE_SOCKET_IMAGE:
-			{
-				const aeMovieResourceSocketImage * resource = (const aeMovieResourceSocketImage *)base_resource;
-
-				DELETEN( _instance, resource->path );
-
-				(void)resource;
-
-			}break;
 		case AE_MOVIE_RESOURCE_SOLID:
 			{
 				const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
@@ -81,9 +72,9 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 				(void)resource;
 
 			}break;
-		case AE_MOVIE_RESOURCE_IMAGE_SEQUENCE:
+		case AE_MOVIE_RESOURCE_SEQUENCE:
 			{
-				const aeMovieResourceImageSequence * resource = (const aeMovieResourceImageSequence *)base_resource;
+				const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)base_resource;
 
 				DELETEN( _instance, resource->images );
 
@@ -472,6 +463,60 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 		return AE_MOVIE_FAILED;
 	}
 
+	uint8_t layer_type = _layer->type;
+	
+	switch( layer_type )
+	{
+	case AE_MOVIE_LAYER_TYPE_MOVIE:
+		{
+			_layer->renderable = AE_FALSE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_EVENT:
+		{
+			_layer->renderable = AE_FALSE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SOCKET_SHAPE:
+		{
+			_layer->renderable = AE_FALSE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SLOT:
+		{
+			_layer->renderable = AE_TRUE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_NULL:
+		{
+			_layer->renderable = AE_FALSE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SOLID:
+		{
+			_layer->renderable = AE_TRUE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+		{
+			_layer->renderable = AE_TRUE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_VIDEO:
+		{
+			_layer->renderable = AE_TRUE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SOUND:
+		{
+			_layer->renderable = AE_FALSE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_ASTRALAX:
+		{
+			_layer->renderable = AE_TRUE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_IMAGE:
+		{
+			_layer->renderable = AE_TRUE;
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+		{
+			_layer->renderable = AE_FALSE;
+		}break;
+	}
+
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -620,13 +665,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 					READ_POLYGON( _instance, _stream, it_polygon );
 				}
 
-				*it_resource = (aeMovieResource *)resource;
-			}break;
-		case AE_MOVIE_RESOURCE_SOCKET_IMAGE:
-			{
-				aeMovieResourceSocketImage * resource = NEW( _instance, aeMovieResourceSocketImage );
-
-				READ_STRING( _instance, _stream, resource->path );
+				resource->base.data = AE_NULL;
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
@@ -640,6 +679,8 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				READ( _stream, resource->g );
 				READ( _stream, resource->b );
 
+				resource->base.data = AE_NULL;
+
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case AE_MOVIE_RESOURCE_VIDEO:
@@ -652,6 +693,8 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				READ( _stream, resource->frameRate );
 				READ( _stream, resource->duration );
 
+				resource->base.data = (*_provider)(type, resource->path, _data);
+
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case AE_MOVIE_RESOURCE_SOUND:
@@ -662,6 +705,8 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 				READ( _stream, resource->duration );
 
+				resource->base.data = (*_provider)(type, resource->path, _data);
+
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case AE_MOVIE_RESOURCE_IMAGE:
@@ -670,18 +715,18 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 				READ_STRING( _instance, _stream, resource->path );
 
-				READ( _stream, resource->base_width );
-				READ( _stream, resource->base_height );
-				READ( _stream, resource->trim_width);
-				READ( _stream, resource->trim_height );
-				READ( _stream, resource->trim_offset_x );
-				READ( _stream, resource->trim_offset_y );
+				READ( _stream, resource->width);
+				READ( _stream, resource->height );
+				READ( _stream, resource->offset_x );
+				READ( _stream, resource->offset_y );
+
+				resource->base.data = (*_provider)(type, resource->path, _data);
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
-		case AE_MOVIE_RESOURCE_IMAGE_SEQUENCE:
+		case AE_MOVIE_RESOURCE_SEQUENCE:
 			{
-				aeMovieResourceImageSequence * resource = NEW( _instance, aeMovieResourceImageSequence );
+				aeMovieResourceSequence * resource = NEW( _instance, aeMovieResourceSequence );
 
 				READ( _stream, resource->frameDuration );
 
@@ -699,6 +744,8 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 					*it_image = (aeMovieResourceImage *)_movie->resources[resource_id];
 				}
+
+				resource->base.data = AE_NULL;
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
@@ -725,6 +772,8 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 					*it_image = (aeMovieResourceImage *)_movie->resources[resource_id];
 				}
 
+				resource->base.data = (*_provider)(type, resource->path, _data);
+
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		default:
@@ -736,9 +785,6 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 		aeMovieResource * new_resource = (*it_resource);
 
 		new_resource->type = type;
-		new_resource->data = AE_NULL;
-
-		(*_provider)(new_resource, _data);
 	}
 
 	uint32_t composition_count = READZ( _stream );
@@ -794,7 +840,9 @@ uint32_t get_movie_composition_data_node_count( const aeMovieData * _movie, cons
 	{
 		const aeMovieLayerData * layer = it_layer;
 
-		switch( layer->type )
+		uint8_t layer_type = layer->type;
+
+		switch( layer_type )
 		{			
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 			{

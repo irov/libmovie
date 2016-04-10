@@ -285,9 +285,11 @@ aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance
 	return composition;
 }
 //////////////////////////////////////////////////////////////////////////
-void delete_movie_node( const aeMovieInstance * _instance, const aeMovieNode * _node )
+void delete_movie_composition( const aeMovieInstance * _instance, const aeMovieComposition * _composition )
 {
-	DELETE( _instance, _node );
+	DELETE( _instance, _composition->nodes );
+
+	DELETE( _instance, _composition );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __update_node_matrix( aeMovieNode * _node, uint32_t _revision, uint32_t _frame, float _t )
@@ -353,22 +355,119 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void compute_movie_vertices( const aeMovieInstance * _instance, const aeMovieNode * _node, const aeMovieLayerData * _layer, aeMovieRender * _render )
+void begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
 {
-	//for( const aeMovieCompositionData
-	//	*it_composition = _movie->compositions,
-	//	*it_composition_end = _movie->compositions + _movie->composition_count;
-	//it_composition != it_composition_end;
-	//++it_composition )
-	//{
-	//	const aeMovieCompositionData * composition = it_composition;
+	_context->composition = _composition;
+	_context->render_node_iterator = 0;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t next_movie_redner_context( aeMovieRenderContext * _context, aeMovieRenderNode * _renderNode )
+{
+	const aeMovieComposition * composition = _context->composition;
+	
+	for( uint32_t iterator = _context->render_node_iterator; iterator != composition->node_count; ++iterator )
+	{
+		const aeMovieNode * node = composition->nodes + iterator;
 
-	//	if( ae_strcmp( composition->name, _name ) != 0 )
-	//	{
-	//		continue;
-	//	}
+		if( node->layer->renderable == AE_FALSE )
+		{
+			continue;
+		}
 
-	//	return composition;
-	//}
+		_renderNode->layer_type = node->layer->type;
+		_renderNode->resource_type = node->layer->resource->type;
+		_renderNode->resource_data = node->layer->resource->data;
+
+		_context->render_node_iterator = iterator + 1;
+
+		return AE_TRUE;
+	}	
+
+	return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+void compute_movie_vertices( const aeMovieRenderContext * _context, aeMovieRenderVertices * _vertices )
+{
+	const aeMovieComposition * composition = _context->composition;
+
+	const aeMovieNode * node = composition->nodes + _context->render_node_iterator;
+
+	uint8_t layer_type = node->layer->type;
+
+	switch( layer_type )
+	{
+	case AE_MOVIE_LAYER_TYPE_SLOT:
+		{
+			
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SOLID:
+		{
+			
+		}break;
+	case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+		{
+			
+		}break;
+	case AE_MOVIE_LAYER_TYPE_VIDEO:
+		{
+			
+		}break;
+	case AE_MOVIE_LAYER_TYPE_ASTRALAX:
+		{
+			
+		}break;
+	case AE_MOVIE_LAYER_TYPE_IMAGE:
+		{
+			aeMovieResourceImage * resource_image = (aeMovieResourceImage *)node->layer->resource;
+
+			ae_vector2_t sprite[4];
+
+			float offset_x = resource_image->offset_x;
+			float offset_y = resource_image->offset_y;
+
+			float width = resource_image->width;
+			float height = resource_image->height;
+
+			sprite[0][0] = offset_x + width * 0.f;
+			sprite[0][1] = offset_y + height * 0.f;
+			sprite[1][0] = offset_x + width * 1.f;
+			sprite[1][1] = offset_y + height * 0.f;
+			sprite[2][0] = offset_x + width * 1.f;
+			sprite[2][1] = offset_y + height * 1.f;
+			sprite[3][0] = offset_x + width * 0.f;
+			sprite[3][1] = offset_y + height * 1.f;
+
+			_vertices->vertexCount = 4;
+			
+			mul_v3_v2_m4( _vertices->position + 0, sprite[0], node->matrix );
+			mul_v3_v2_m4( _vertices->position + 3, sprite[1], node->matrix );
+			mul_v3_v2_m4( _vertices->position + 6, sprite[2], node->matrix );
+			mul_v3_v2_m4( _vertices->position + 9, sprite[3], node->matrix );
+
+			_vertices->uv[0 * 2 + 0] = 0.f;
+			_vertices->uv[0 * 2 + 1] = 0.f;
+			_vertices->uv[1 * 2 + 0] = 1.f;
+			_vertices->uv[1 * 2 + 1] = 0.f;
+			_vertices->uv[2 * 2 + 0] = 1.f;
+			_vertices->uv[2 * 2 + 1] = 1.f;
+			_vertices->uv[3 * 2 + 0] = 0.f;
+			_vertices->uv[3 * 2 + 1] = 1.f;
+
+			_vertices->indexCount = 6;
+
+			_vertices->indices[0] = 0;
+			_vertices->indices[1] = 3;
+			_vertices->indices[2] = 1;
+			_vertices->indices[3] = 1;
+			_vertices->indices[4] = 3;
+			_vertices->indices[5] = 2;
+
+			_vertices->r = 1.f;
+			_vertices->g = 1.f;
+			_vertices->b = 1.f;
+			_vertices->a = node->opacity;
+			
+		}break;
+	}
 }
 //////////////////////////////////////////////////////////////////////////
