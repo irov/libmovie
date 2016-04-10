@@ -41,10 +41,8 @@ static void read_file( void * _data, void * _buff, uint32_t _size )
 	fread( _buff, _size, 1, f );
 }
 
-static void * resource_provider( aeMovieResource * _resource, void * _data )
+static void * resource_provider( aeMovieResourceTypeEnum _type, const ae_string_t _path, void * _data )
 {
-	_resource->data = AE_NULL;
-
 	return AE_NULL;
 }
 
@@ -73,11 +71,20 @@ int main()
 
 	const aeMovieCompositionData * compositionData = get_movie_composition_data( movieData, "Tuman" );
 	
-
 	aeMovieComposition * composition = create_movie_composition( &instance, movieData, compositionData );
 
 	update_movie_composition( composition, 150.f );
+
+	aeMovieRenderContext context;
+	begin_movie_render_context( composition, &context );
 		
+	aeMovieRenderNode render_node;
+	while( next_movie_redner_context( &context, &render_node ) == AE_TRUE )
+	{
+		aeMovieRenderVertices vertices;
+		compute_movie_vertices( &context, &vertices );
+	}
+
 	printf( "SUCCESSFUL!!\n" );
 
 	delete_movie_data( &instance, movieData );
