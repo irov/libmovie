@@ -10,6 +10,7 @@ extern "C" {
 	typedef uint8_t ae_bool_t;
 	typedef char * ae_string_t;
 
+	typedef float ae_vector2_t[2];
 	typedef float ae_vector3_t[3];
 	typedef float ae_vector4_t[4];
 	typedef float ae_matrix4_t[16];

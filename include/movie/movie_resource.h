@@ -7,25 +7,23 @@
 extern "C" {
 #endif
 
-	enum
+	typedef enum aeMovieResourceTypeEnum
 	{
 		AE_MOVIE_RESOURCE_SOCKET_SHAPE = 2,
-		AE_MOVIE_RESOURCE_SOCKET_IMAGE = 3,
 		AE_MOVIE_RESOURCE_SOLID = 4,
 		AE_MOVIE_RESOURCE_VIDEO = 5,
 		AE_MOVIE_RESOURCE_SOUND = 6,
 		AE_MOVIE_RESOURCE_IMAGE = 7,
-		AE_MOVIE_RESOURCE_IMAGE_SEQUENCE = 8,
+		AE_MOVIE_RESOURCE_SEQUENCE = 8,
 		AE_MOVIE_RESOURCE_ASTRALAX = 9,
 		__AE_MOVIE_RESOURCE_END__
-	};
+	} aeMovieResourceTypeEnum;
 
 	typedef struct aeMovieResource
 	{
 		uint8_t type;
-
 		void * data;
-
+		
 	} aeMovieResource;
 
 	typedef struct
@@ -44,14 +42,6 @@ extern "C" {
 
 	} aeMovieResourceSocketShape;
 
-	typedef struct
-	{
-		aeMovieResource base;
-
-		ae_string_t path;
-
-	} aeMovieResourceSocketImage;
-	
 	typedef struct
 	{
 		aeMovieResource base;
@@ -92,12 +82,10 @@ extern "C" {
 
 		ae_string_t path;
 
-		float base_width;
-		float base_height;
-		float trim_width;
-		float trim_height;
-		float trim_offset_x;
-		float trim_offset_y;
+		float width;
+		float height;
+		float offset_x;
+		float offset_y;
 
 	} aeMovieResourceImage;
 
@@ -110,7 +98,7 @@ extern "C" {
 		uint32_t image_count;
 		aeMovieResourceImage ** images;
 
-	} aeMovieResourceImageSequence;
+	} aeMovieResourceSequence;
 
 	typedef struct
 	{

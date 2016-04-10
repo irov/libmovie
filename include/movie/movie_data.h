@@ -66,14 +66,12 @@ extern "C" {
 	typedef enum aeMovieLayerTypeEnum
 	{
 		AE_MOVIE_LAYER_TYPE_MOVIE = 1,
-		AE_MOVIE_LAYER_TYPE_SPRITE = 5,
 		AE_MOVIE_LAYER_TYPE_EVENT = 7,
 		AE_MOVIE_LAYER_TYPE_SOCKET_SHAPE = 8,
-		AE_MOVIE_LAYER_TYPE_SOCKET_IMAGE = 9,
 		AE_MOVIE_LAYER_TYPE_SLOT = 11,
 		AE_MOVIE_LAYER_TYPE_NULL = 12,
-		AE_MOVIE_LAYER_TYPE_SPRITE_SOLID = 14,
-		AE_MOVIE_LAYER_TYPE_SPRITE_SEQUENCE = 15,
+		AE_MOVIE_LAYER_TYPE_SOLID = 14,
+		AE_MOVIE_LAYER_TYPE_SEQUENCE = 15,
 		AE_MOVIE_LAYER_TYPE_VIDEO = 16,
 		AE_MOVIE_LAYER_TYPE_SOUND = 17,
 		AE_MOVIE_LAYER_TYPE_ASTRALAX = 18,
@@ -87,6 +85,8 @@ extern "C" {
 
 		uint32_t index;
 		uint8_t type;
+		
+		ae_bool_t renderable;
 
 		struct aeMovieCompositionData * composition;
 
@@ -199,7 +199,7 @@ extern "C" {
 	aeMovieData * create_movie_data( const aeMovieInstance * _instance );
 	void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _movie );
 
-	typedef void * (*movie_data_resource_provider_t)(aeMovieResource * _resource, void * _data);
+	typedef void * (*movie_data_resource_provider_t)(aeMovieResourceTypeEnum _type, const ae_string_t _path, void * _data);
 
 	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie, movie_data_resource_provider_t _provider, void * _data );
 	
