@@ -5,6 +5,10 @@
 
 #	include "utils.h"
 
+#	ifndef AE_MOVIE_MAX_COMPOSITION_NAME
+#	define AE_MOVIE_MAX_COMPOSITION_NAME 128
+#	endif
+
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * create_movie_data( const aeMovieInstance * _instance )
 {
@@ -817,7 +821,7 @@ const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _
 	{
 		const aeMovieCompositionData * composition = it_composition;
 
-		if( ae_strcmp( composition->name, _name ) != 0 )
+		if( ae_strncmp( composition->name, _name, AE_MOVIE_MAX_COMPOSITION_NAME ) != 0 )
 		{
 			continue;
 		}

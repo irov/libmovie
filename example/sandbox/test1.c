@@ -48,17 +48,17 @@ static void * resource_provider( aeMovieResourceTypeEnum _type, const ae_string_
 
 int main()
 {
+	aeMovieInstance instance;
+	make_movie_instance( &instance, &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL );
+
+	aeMovieData * movieData = create_movie_data( &instance );
+
 	FILE * f = fopen( "02_Sad.aem", "rb" );
 
 	if( f == NULL )
 	{
 		return 0;
 	}
-
-	aeMovieInstance instance;
-	make_movie_instance( &instance, &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL );
-
-	aeMovieData * movieData = create_movie_data( &instance );
 
 	aeMovieStream stream;
 	stream.read = &read_file;
@@ -68,6 +68,8 @@ int main()
 	{
 		return 0;
 	}
+
+	fclose( f );
 
 	const aeMovieCompositionData * compositionData = get_movie_composition_data( movieData, "Tuman" );
 	
