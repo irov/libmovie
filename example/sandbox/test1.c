@@ -73,19 +73,25 @@ int main()
 	
 	aeMovieComposition * composition = create_movie_composition( &instance, movieData, compositionData );
 
-	update_movie_composition( composition, 150.f );
 
-	aeMovieRenderContext context;
-	begin_movie_render_context( composition, &context );
-		
-	aeMovieRenderNode render_node;
-	while( next_movie_redner_context( &context, &render_node ) == AE_TRUE )
+	while( 1 )
 	{
-		aeMovieRenderVertices vertices;
-		compute_movie_vertices( &context, &vertices );
-	}
+		update_movie_composition( composition, 150.f );
 
-	printf( "SUCCESSFUL!!\n" );
+		aeMovieRenderContext context;
+		begin_movie_render_context( composition, &context );
+
+		aeMovieRenderNode render_node;
+		while( next_movie_redner_context( &context, &render_node ) == AE_TRUE )
+		{
+			aeMovieRenderVertices vertices;
+			compute_movie_vertices( &context, &vertices );
+
+			printf( "a" );
+		}
+
+		printf( "SUCCESSFUL!!\n" );
+	}
 
 	delete_movie_data( &instance, movieData );
 	
