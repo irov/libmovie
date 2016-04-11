@@ -55,13 +55,6 @@ extern "C" {
 
 	typedef enum
 	{
-		AE_MOVIE_PARAM_LOOP = 0x00000008,
-		AE_MOVIE_PARAM_SWITCH = 0x00000010,
-		__AE_MOVIE_PARAM_END__
-	} aeMovieFlags;
-
-	typedef enum
-	{
 		AE_MOVIE_SUCCESSFUL = 0,
 		AE_MOVIE_FAILED = -1
 	} aeMovieResult;

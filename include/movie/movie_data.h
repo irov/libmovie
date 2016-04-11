@@ -79,6 +79,13 @@ extern "C" {
 		AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 	} aeMovieLayerTypeEnum;
 
+	typedef enum aeMovieLayerParamEnum
+	{
+		AE_MOVIE_LAYER_PARAM_LOOP = 0x00000008,
+		AE_MOVIE_LAYER_PARAM_SWITCH = 0x00000010,
+		__AE_MOVIE_LAYER_PARAM_END__
+	} aeMovieLayerParamEnum;
+
 	typedef struct aeMovieLayerData
 	{
 		ae_string_t name;
