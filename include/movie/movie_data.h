@@ -74,7 +74,7 @@ extern "C" {
 		AE_MOVIE_LAYER_TYPE_SEQUENCE = 15,
 		AE_MOVIE_LAYER_TYPE_VIDEO = 16,
 		AE_MOVIE_LAYER_TYPE_SOUND = 17,
-		AE_MOVIE_LAYER_TYPE_ASTRALAX = 18,
+		AE_MOVIE_LAYER_TYPE_PARTICLE = 18,
 		AE_MOVIE_LAYER_TYPE_IMAGE = 20,
 		AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 	} aeMovieLayerTypeEnum;
@@ -206,7 +206,7 @@ extern "C" {
 	aeMovieData * create_movie_data( const aeMovieInstance * _instance );
 	void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _movie );
 
-	typedef void * (*movie_data_resource_provider_t)(aeMovieResourceTypeEnum _type, const ae_string_t _path, void * _data);
+	typedef void * (*movie_data_resource_provider_t)(const aeMovieResource * _resource, void * _data);
 
 	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie, movie_data_resource_provider_t _provider, void * _data );
 	

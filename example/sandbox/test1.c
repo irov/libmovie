@@ -41,7 +41,7 @@ static void read_file( void * _data, void * _buff, uint32_t _size )
 	fread( _buff, _size, 1, f );
 }
 
-static void * resource_provider( aeMovieResourceTypeEnum _type, const ae_string_t _path, void * _data )
+static void * resource_provider( const aeMovieResource * _resource, void * _data )
 {
 	return AE_NULL;
 }
@@ -83,17 +83,19 @@ int main()
 		aeMovieRenderContext context;
 		begin_movie_render_context( composition, &context );
 
-		aeMovieRenderNode render_node;
-		while( next_movie_redner_context( &context, &render_node ) == AE_TRUE )
-		{
-			aeMovieRenderVertices vertices;
-			compute_movie_vertices( &context, &vertices );
+		
+		for( uint32_t i = 0; i != context.mesh_count; ++i )
+		{			
+			aeMovieRenderMesh mesh;
+			compute_movie_mesh( &context, i, &mesh );
 
 			printf( "a" );
 		}
 
 		printf( "SUCCESSFUL!!\n" );
 	}
+
+	destroy_movie_composition( &instance, composition );
 
 	delete_movie_data( &instance, movieData );
 	

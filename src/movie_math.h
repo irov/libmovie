@@ -14,4 +14,6 @@ void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, con
 float angle_norm( float _angle );
 float angle_correct_interpolate_from_to( float _from, float _to );
 
+float linerp_f1( float _in1, float _in2, float _scale );
+
 #	endif

@@ -1,4 +1,4 @@
-#	include "math.h"
+#	include "movie_math.h"
 
 #	include <math.h>
 
@@ -221,4 +221,9 @@ float angle_correct_interpolate_from_to( float _from, float _to )
 	}
 
 	return correct_angle;
+}
+//////////////////////////////////////////////////////////////////////////
+float linerp_f1( float _in1, float _in2, float _scale )
+{
+	return _in1 + (_in2 - _in1) * _scale;
 }

@@ -7,6 +7,7 @@
 #	include <movie/movie_data.h>
 
 #	define AE_MOVIE_MAX_VERTICES 64
+#	define AE_MOVIE_MAX_RENDER_NODE 256
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,7 @@ extern "C" {
 
 		float in_time;
 		float out_time;
+		float stretch;
 		float current_time;
 		
 		ae_bool_t active;
@@ -54,7 +56,7 @@ extern "C" {
 	} aeMovieComposition;
 
 	aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _composition );
-	void delete_movie_composition( const aeMovieInstance * _instance, const aeMovieComposition * _composition );
+	void destroy_movie_composition( const aeMovieInstance * _instance, const aeMovieComposition * _composition );
 
 	void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
 
@@ -63,26 +65,25 @@ extern "C" {
 	typedef struct aeMovieRenderContext
 	{
 		const aeMovieComposition * composition;
-
+		
 		uint32_t render_node_iterator;
 
 		float sprite_uv[8];
 		uint16_t sprite_indices[6];
+
+		uint32_t render_node_indices[AE_MOVIE_MAX_RENDER_NODE];
+
+		uint32_t mesh_count;
 	} aeMovieRenderContext;
 
 	void begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context );
 
-	typedef struct aeMovieRenderNode
+	typedef struct aeMovieRenderMesh
 	{
 		uint8_t layer_type;
 
 		uint32_t animate;
-	} aeMovieRenderNode;
 
-	ae_bool_t next_movie_redner_context( aeMovieRenderContext * _context, aeMovieRenderNode * _renderNode );
-	
-	typedef struct aeMovieRenderVertices
-	{
 		uint8_t resource_type;
 		void * resource_data;
 
@@ -98,9 +99,9 @@ extern "C" {
 		float g;
 		float b;
 		float a;
-	} aeMovieRenderVertices;
+	} aeMovieRenderMesh;
 
-	void compute_movie_vertices( const aeMovieRenderContext * _context, aeMovieRenderVertices * _vertices );
+	void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index, aeMovieRenderMesh * _vertices );
 	
 #ifdef __cplusplus
 }

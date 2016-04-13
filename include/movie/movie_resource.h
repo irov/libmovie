@@ -15,7 +15,7 @@ extern "C" {
 		AE_MOVIE_RESOURCE_SOUND = 6,
 		AE_MOVIE_RESOURCE_IMAGE = 7,
 		AE_MOVIE_RESOURCE_SEQUENCE = 8,
-		AE_MOVIE_RESOURCE_ASTRALAX = 9,
+		AE_MOVIE_RESOURCE_PARTICLE = 9,
 		__AE_MOVIE_RESOURCE_END__
 	} aeMovieResourceTypeEnum;
 
@@ -109,7 +109,7 @@ extern "C" {
 		uint32_t atlas_count;
 		aeMovieResourceImage ** atlases;
 
-	} aeMovieResourceAstralax;
+	} aeMovieResourceParticle;
 
 #ifdef __cplusplus
 }

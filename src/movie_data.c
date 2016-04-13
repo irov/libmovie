@@ -1,9 +1,9 @@
 #	include "movie/movie_data.h"
 
-#	include "memory.h"
-#	include "stream.h"
+#	include "movie_memory.h"
+#	include "movie_stream.h"
 
-#	include "utils.h"
+#	include "movie_utils.h"
 
 #	ifndef AE_MOVIE_MAX_COMPOSITION_NAME
 #	define AE_MOVIE_MAX_COMPOSITION_NAME 128
@@ -85,9 +85,9 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 				(void)resource;
 
 			}break;
-		case AE_MOVIE_RESOURCE_ASTRALAX:
+		case AE_MOVIE_RESOURCE_PARTICLE:
 			{
-				const aeMovieResourceAstralax * resource = (const aeMovieResourceAstralax *)base_resource;
+				const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
 
 				DELETEN( _instance, resource->atlases );
 
@@ -507,7 +507,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 		{
 			_layer->renderable = AE_FALSE;
 		}break;
-	case AE_MOVIE_LAYER_TYPE_ASTRALAX:
+	case AE_MOVIE_LAYER_TYPE_PARTICLE:
 		{
 			_layer->renderable = AE_TRUE;
 		}break;
@@ -697,8 +697,6 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				READ( _stream, resource->frameRate );
 				READ( _stream, resource->duration );
 
-				resource->base.data = (*_provider)(type, resource->path, _data);
-
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case AE_MOVIE_RESOURCE_SOUND:
@@ -708,8 +706,6 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				READ_STRING( _instance, _stream, resource->path );
 
 				READ( _stream, resource->duration );
-
-				resource->base.data = (*_provider)(type, resource->path, _data);
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
@@ -724,7 +720,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				READ( _stream, resource->offset_x );
 				READ( _stream, resource->offset_y );
 
-				resource->base.data = (*_provider)(type, resource->path, _data);
+				
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
@@ -753,9 +749,9 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
-		case AE_MOVIE_RESOURCE_ASTRALAX:
+		case AE_MOVIE_RESOURCE_PARTICLE:
 			{
-				aeMovieResourceAstralax * resource = NEW( _instance, aeMovieResourceAstralax );
+				aeMovieResourceParticle * resource = NEW( _instance, aeMovieResourceParticle );
 
 				READ_STRING( _instance, _stream, resource->path );
 
@@ -776,8 +772,6 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 					*it_image = (aeMovieResourceImage *)_movie->resources[resource_id];
 				}
 
-				resource->base.data = (*_provider)(type, resource->path, _data);
-
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		default:
@@ -789,6 +783,8 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 		aeMovieResource * new_resource = (*it_resource);
 
 		new_resource->type = type;
+
+		new_resource->data = (*_provider)(new_resource, _data);
 	}
 
 	uint32_t composition_count = READZ( _stream );
