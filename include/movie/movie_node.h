@@ -75,7 +75,7 @@ extern "C" {
 		uint32_t mesh_count;
 	} aeMovieRenderContext;
 
-	void begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context );
+	aeMovieResult begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context );
 
 	typedef struct aeMovieRenderMesh
 	{

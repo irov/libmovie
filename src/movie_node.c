@@ -384,7 +384,7 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 
 			if( _node->layer->sub_composition != AE_NULL )
 			{
-				_node->composition_opactity = node_relative->composition_opactity * _node->opacity;
+				_node->composition_opactity = node_relative->composition_opactity * local_opacity;
 			}
 			else
 			{
@@ -395,12 +395,10 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 		}
 		else
 		{
-			_node->opacity = __make_movie_layer_properties_interpolate( _node->matrix, _node->layer, _frame, _t );
+			float local_opacity = __make_movie_layer_properties_interpolate( _node->matrix, _node->layer, _frame, _t );
 
-			if( _node->layer->sub_composition != AE_NULL )
-			{
-				_node->composition_opactity = _node->opacity;
-			}
+			_node->opacity = local_opacity;
+			_node->composition_opactity = _node->opacity;
 		}
 	}
 }
@@ -527,7 +525,7 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 	__update_movie_composition_node( _composition, update_revision, beginFrame, endFrame );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __count_movie_redner_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
+static aeMovieResult __count_movie_redner_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
 {
 	uint32_t mesh_count = 0;
 
@@ -548,12 +546,19 @@ static void __count_movie_redner_context( const aeMovieComposition * _compositio
 		}
 
 		_context->render_node_indices[mesh_count++] = iterator;
+
+		if( mesh_count == AE_MOVIE_MAX_RENDER_NODE )
+		{
+			return AE_MOVIE_FAILED;
+		}
 	}
 
 	_context->mesh_count = mesh_count;
+
+	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-void begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
+aeMovieResult begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
 {
 	_context->composition = _composition;
 	
@@ -577,7 +582,12 @@ void begin_movie_render_context( const aeMovieComposition * _composition, aeMovi
 	*sprite_indices++ = 3;
 	*sprite_indices++ = 2;
 
-	__count_movie_redner_context( _composition, _context );
+	if( __count_movie_redner_context( _composition, _context ) == AE_MOVIE_FAILED )
+	{
+		return AE_MOVIE_FAILED;
+	}
+
+	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __make_sprite_vertices( const aeMovieRenderContext * _context, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _mesh )
