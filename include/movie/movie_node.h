@@ -66,8 +66,6 @@ extern "C" {
 	{
 		const aeMovieComposition * composition;
 		
-		uint32_t render_node_iterator;
-
 		float sprite_uv[8];
 		uint16_t sprite_indices[6];
 

@@ -185,7 +185,7 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 		uint8_t block_type;
 		READ( _stream, block_type );
 
-		uint8_t block_count = READZ( _stream );
+		uint32_t block_count = READZ( _stream );
 
 		switch( block_type )
 		{

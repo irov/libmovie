@@ -4,11 +4,12 @@
 
 //////////////////////////////////////////////////////////////////////////
 static const float f_eps = 0.00001f;
+static const float f_neps = -0.00001f;
 static const float pi = 3.14159265358979323846f;
 static const float two_pi = 2.f * 3.14159265358979323846f;
 static const float inv_two_pi = 1.f / (2.f * 3.14159265358979323846f);
 //////////////////////////////////////////////////////////////////////////
-#	define EQUAL_F_Z( f ) ((f >= f_eps) && (f <= f_eps))
+#	define EQUAL_F_Z( f ) ((f >= f_neps) && (f <= f_eps))
 //////////////////////////////////////////////////////////////////////////
 void mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
 {
