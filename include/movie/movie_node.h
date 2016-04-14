@@ -38,6 +38,7 @@ extern "C" {
 		uint32_t matrix_revision;
 
 		ae_matrix4_t matrix;		
+		float composition_opactity;
 		float opacity;
 	} aeMovieNode;
 
@@ -81,6 +82,8 @@ extern "C" {
 		uint8_t layer_type;
 
 		uint32_t animate;
+
+		uint8_t blend_mode;
 
 		uint8_t resource_type;
 		void * resource_data;

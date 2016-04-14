@@ -337,11 +337,25 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 
 			mul_m4_m4( _node->matrix, node_relative->matrix, local_matrix );
 
-			_node->opacity = local_opacity;
+			if( _node->layer->sub_composition != AE_NULL )
+			{
+				_node->composition_opactity = node_relative->composition_opactity * _node->opacity;
+			}
+			else
+			{
+				_node->composition_opactity = node_relative->composition_opactity;
+			}
+
+			_node->opacity = node_relative->composition_opactity * local_opacity;
 		}
 		else
 		{
 			_node->opacity = __make_movie_layer_properties_fixed( _node->matrix, _node->layer, _frame );
+
+			if( _node->layer->sub_composition != AE_NULL )
+			{
+				_node->composition_opactity = _node->opacity;
+			}
 		}
 	}
 }
@@ -368,11 +382,25 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 
 			mul_m4_m4( _node->matrix, node_relative->matrix, local_matrix );
 
-			_node->opacity = local_opacity;
+			if( _node->layer->sub_composition != AE_NULL )
+			{
+				_node->composition_opactity = node_relative->composition_opactity * _node->opacity;
+			}
+			else
+			{
+				_node->composition_opactity = node_relative->composition_opactity;
+			}
+
+			_node->opacity = node_relative->composition_opactity * local_opacity;
 		}
 		else
 		{
 			_node->opacity = __make_movie_layer_properties_interpolate( _node->matrix, _node->layer, _frame, _t );
+
+			if( _node->layer->sub_composition != AE_NULL )
+			{
+				_node->composition_opactity = _node->opacity;
+			}
 		}
 	}
 }
@@ -594,6 +622,7 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 	_vertices->layer_type = layer_type;
 
 	_vertices->animate = node->animate;
+	_vertices->blend_mode = layer->blend_mode;
 	
 	switch( layer_type )
 	{
