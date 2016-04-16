@@ -106,13 +106,6 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 
 		DELETEN( _instance, composition->name );
 
-		if( composition->camera != AE_NULL )
-		{
-			(void)composition->camera;
-
-			DELETEN( _instance, composition->camera );
-		}
-
 		for( const aeMovieLayerData
 			*it_layer = composition->layers,
 			*it_layer_end = composition->layers + composition->layer_count;
@@ -264,13 +257,13 @@ static aeMovieResult __load_movie_data_layer_property( const aeMovieInstance * _
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, immuttable_position_y, property_position_y );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, immuttable_position_z, property_position_z );
 
-	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x );
-	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y );
-	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z );
-
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, immuttable_scale_x, property_scale_x );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, immuttable_scale_y, property_scale_y );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, immuttable_scale_z, property_scale_z );
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z );
 
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_OPACITY, immuttable_opacity, property_opacity );
 
@@ -279,26 +272,9 @@ static aeMovieResult __load_movie_data_layer_property( const aeMovieInstance * _
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_composition_camera( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieCompositionData * _composition )
+static void __load_movie_data_composition_camera( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieCompositionData * _compostionData )
 {
-	if( READB( _stream ) == AE_TRUE )
-	{
-		aeMovieCameraData * camera = NEW( _instance, aeMovieCameraData );
-
-		READN( _stream, camera->camera_position, 3 );
-		READ( _stream, camera->camera_fov );
-		READ( _stream, camera->camera_aspect );
-		READ( _stream, camera->camera_width );
-		READ( _stream, camera->camera_height );
-
-		_composition->camera = camera;
-	}
-	else
-	{
-		_composition->camera = AE_NULL;
-	}
-
-	return AE_MOVIE_SUCCESSFUL;
+	READ( _stream, _compostionData->cameraZoom );
 }
 //////////////////////////////////////////////////////////////////////////
 static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance, const aeMovieStream * _stream, const aeMovieData * _movie, const aeMovieCompositionData * _composition, aeMovieLayerData * _layer )
@@ -455,13 +431,14 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 	READ( _stream, _layer->in_time );
 	READ( _stream, _layer->out_time );
 
-	READ( _stream, _layer->blend_mode );
+	READ( _stream, _layer->blend_mode );	
+	READ( _stream, _layer->threeD );
 	READ( _stream, _layer->params );
 
 	_layer->play_count = READZ( _stream );
 
 	READ( _stream, _layer->stretch );
-
+	
 	if( __load_movie_data_layer_property( _instance, _stream, _layer, _layer->frame_count ) == AE_MOVIE_FAILED )
 	{
 		return AE_MOVIE_FAILED;
@@ -524,17 +501,17 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _instance, const aeMovieStream * _stream, const aeMovieData * _movie, aeMovieCompositionData * _composition )
+static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _instance, const aeMovieStream * _stream, const aeMovieData * _movieData, aeMovieCompositionData * _compositionData )
 {
-	READ_STRING( _instance, _stream, _composition->name );
+	READ_STRING( _instance, _stream, _compositionData->name );
 		
-	READ( _stream, _composition->width );
-	READ( _stream, _composition->height );
+	READ( _stream, _compositionData->width );
+	READ( _stream, _compositionData->height );
 
-	READ( _stream, _composition->frameDuration );
-	READ( _stream, _composition->duration );
+	READ( _stream, _compositionData->frameDuration );
+	READ( _stream, _compositionData->duration );
 
-	_composition->flags = 0;
+	_compositionData->flags = 0;
 
 	for( ;; )
 	{
@@ -548,27 +525,27 @@ static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _ins
 			}break;
 		case 1:
 			{
-				READN( _stream, _composition->loopSegment, 2 );
+				READN( _stream, _compositionData->loopSegment, 2 );
 
-				_composition->flags |= AE_MOVIE_COMPOSITION_LOOP_SEGMENT;
+				_compositionData->flags |= AE_MOVIE_COMPOSITION_LOOP_SEGMENT;
 			}break;
 		case 2:
 			{
-				READN( _stream, _composition->anchorPoint, 3 );
+				READN( _stream, _compositionData->anchorPoint, 3 );
 
-				_composition->flags |= AE_MOVIE_COMPOSITION_ANCHOR_POINT;
+				_compositionData->flags |= AE_MOVIE_COMPOSITION_ANCHOR_POINT;
 			}break;
 		case 3:
 			{
-				READN( _stream, _composition->offsetPoint, 3 );
+				READN( _stream, _compositionData->offsetPoint, 3 );
 
-				_composition->flags |= AE_MOVIE_COMPOSITION_OFFSET_POINT;
+				_compositionData->flags |= AE_MOVIE_COMPOSITION_OFFSET_POINT;
 			}break;
 		case 4:
 			{
-				READN( _stream, _composition->bounds, 4 );
+				READN( _stream, _compositionData->bounds, 4 );
 
-				_composition->flags |= AE_MOVIE_COMPOSITION_BOUNDS;
+				_compositionData->flags |= AE_MOVIE_COMPOSITION_BOUNDS;
 			}break;
 		default:
 			{
@@ -582,30 +559,32 @@ static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _ins
 		}
 	}
 
+	_compositionData->has_threeD = READB( _stream );
+
+	if( _compositionData->has_threeD == AE_TRUE )
+	{
+		__load_movie_data_composition_camera( _instance, _stream, _compositionData );
+	}	
+	
 	uint32_t layer_count = READZ( _stream );
 	
-	_composition->layer_count = layer_count;
-	_composition->layers = NEWN( _instance, aeMovieLayerData, layer_count );
+	_compositionData->layer_count = layer_count;
+	_compositionData->layers = NEWN( _instance, aeMovieLayerData, layer_count );
 
 	for( aeMovieLayerData
-		*it_layer = _composition->layers,
-		*it_layer_end = _composition->layers + layer_count;
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + layer_count;
 	it_layer != it_layer_end;
 	++it_layer )
 	{
 		aeMovieLayerData * layer = it_layer;
 
-		layer->composition = _composition;
+		layer->composition = _compositionData;
 
-		if( __load_movie_data_layer( _instance, _stream, _movie, _composition, layer ) == AE_MOVIE_FAILED )
+		if( __load_movie_data_layer( _instance, _stream, _movieData, _compositionData, layer ) == AE_MOVIE_FAILED )
 		{
 			return AE_MOVIE_FAILED;
 		}
-	}
-
-	if( __load_movie_data_composition_camera( _instance, _stream, _composition ) == AE_MOVIE_FAILED )
-	{
-		return AE_MOVIE_FAILED;
 	}
 
 	return AE_MOVIE_SUCCESSFUL;
@@ -638,8 +617,6 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 	_movie->resource_count = resource_count;
 	_movie->resources = NEWN( _instance, aeMovieResource *, resource_count );
-
-	uint32_t aa = 0;
 
 	for( aeMovieResource
 		**it_resource = _movie->resources,
@@ -826,39 +803,5 @@ const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _
 	}
 
 	return AE_NULL;
-}
-//////////////////////////////////////////////////////////////////////////
-uint32_t get_movie_composition_data_node_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData )
-{
-	uint32_t count = _compositionData->layer_count;
-
-	for( const aeMovieLayerData
-		*it_layer = _compositionData->layers,
-		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
-	it_layer != it_layer_end;
-	++it_layer )
-	{
-		const aeMovieLayerData * layer = it_layer;
-
-		uint8_t layer_type = layer->type;
-
-		switch( layer_type )
-		{			
-		case AE_MOVIE_LAYER_TYPE_MOVIE:
-			{
-				uint32_t movie_layer_count = get_movie_composition_data_node_count( _movie, layer->sub_composition );
-
-				count += movie_layer_count;
-			}break;
-		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-			{
-				uint32_t movie_layer_count = get_movie_composition_data_node_count( _movie, layer->sub_composition );
-
-				count += movie_layer_count;
-			}break;
-		}
-	}
-
-	return count;
 }
 //////////////////////////////////////////////////////////////////////////

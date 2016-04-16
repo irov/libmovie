@@ -21,6 +21,11 @@ extern "C" {
 		AE_MOVIE_NODE_ANIMATE_END
 	};
 
+	typedef struct aeMovieNodeCamera
+	{
+		void * data;
+	} aeMovieNodeCamera;
+
 	typedef struct aeMovieNode
 	{
 		const aeMovieLayerData * layer;
@@ -31,15 +36,17 @@ extern "C" {
 		float out_time;
 		float stretch;
 		float current_time;
-		
+
 		ae_bool_t active;
 		uint32_t animate;
 
 		uint32_t matrix_revision;
+		ae_matrix4_t matrix;
 
-		ae_matrix4_t matrix;		
 		float composition_opactity;
 		float opacity;
+
+		const void * camera_data;
 	} aeMovieNode;
 
 	typedef struct aeMovieComposition
@@ -56,8 +63,18 @@ extern "C" {
 		aeMovieNode * nodes;
 	} aeMovieComposition;
 
-	aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _composition );
+	aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData );
 	void destroy_movie_composition( const aeMovieInstance * _instance, const aeMovieComposition * _composition );
+
+	typedef void * (*ae_movie_composition_node_camera_t)( const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
+
+	typedef struct aeMovieCompositionNodeProvider
+	{
+		ae_movie_composition_node_camera_t camera_provider;
+
+	} aeMovieCompositionNodeProvider;
+
+	void create_movie_composition_element( aeMovieComposition * _composition, const aeMovieCompositionNodeProvider * _provider, void * _data );
 
 	void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
 
@@ -90,7 +107,7 @@ extern "C" {
 
 		uint32_t vertexCount;
 		uint32_t indexCount;
-
+		
 		float position[AE_MOVIE_MAX_VERTICES * 3];
 		const float * uv;
 
@@ -100,6 +117,8 @@ extern "C" {
 		float g;
 		float b;
 		float a;
+
+		const void * camera_data;
 	} aeMovieRenderMesh;
 
 	void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index, aeMovieRenderMesh * _vertices );

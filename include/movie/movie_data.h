@@ -114,7 +114,10 @@ extern "C" {
 		float out_time;
 
 		uint8_t blend_mode;		
+		ae_bool_t threeD;
 		uint32_t params;
+
+		
 
 		uint32_t play_count;
 
@@ -150,15 +153,6 @@ extern "C" {
 		float * property_scale_z;
 		float * property_opacity;
 	} aeMovieLayerData;
-
-	typedef struct 
-	{
-		float camera_position[3];
-		float camera_fov;
-		float camera_aspect;
-		float camera_width;
-		float camera_height;
-	} aeMovieCameraData;
 	
 	typedef enum
 	{
@@ -186,7 +180,9 @@ extern "C" {
 		float offsetPoint[3];
 		float bounds[4];
 
-		aeMovieCameraData * camera;
+		ae_bool_t has_threeD;
+
+		float cameraZoom;
 
 		uint32_t layer_count;
 		aeMovieLayerData * layers;
@@ -210,9 +206,8 @@ extern "C" {
 
 	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie, movie_data_resource_provider_t _provider, void * _data );
 	
-	const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name );
-	uint32_t get_movie_composition_data_node_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData );
-
+	const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name );	
+	
 #ifdef __cplusplus
 }
 #endif

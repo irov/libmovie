@@ -262,18 +262,106 @@ void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator, const 
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _data, const aeMovieCompositionData * _compositionData )
+static void __setup_movie_node_camera( const aeMovieCompositionNodeProvider * _nodeProvider, void * _data, aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent, const void * _cameraData )
+{
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		aeMovieNode * node = _nodes + ((*_iterator)++);
+				
+		if( _compositionData->has_threeD == AE_TRUE )
+		{
+			float width = _compositionData->width;
+			float height = _compositionData->height;
+			float zoom = _compositionData->cameraZoom;
+
+			ae_vector3_t camera_position;
+			camera_position[0] = width * 0.5f;
+			camera_position[1] = height * 0.5f;
+			camera_position[2] = -zoom;
+
+			ae_vector3_t camera_direction;
+			camera_direction[0] = 0.f;
+			camera_direction[1] = 0.f;
+			camera_direction[2] = 1.f;
+
+			float camera_fov = make_camera_fov( height, zoom );
+
+			node->camera_data = (*_nodeProvider->camera_provider)(_compositionData->name, camera_position, camera_direction, camera_fov, width, height, _data);
+		}
+		else
+		{
+			node->camera_data = _cameraData;
+		}
+		
+		switch( layer->type )
+		{
+		case AE_MOVIE_LAYER_TYPE_MOVIE:
+			{
+				__setup_movie_node_camera( _nodeProvider, _data, _nodes, _iterator, layer->sub_composition, node, node->camera_data );
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+			{
+				__setup_movie_node_camera( _nodeProvider, _data, _nodes, _iterator, layer->sub_composition, node, node->camera_data );
+			}break;
+		default:
+			{
+			}break;
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+static uint32_t __get_movie_composition_data_node_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData )
+{
+	uint32_t count = _compositionData->layer_count;
+
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		uint8_t layer_type = layer->type;
+
+		switch( layer_type )
+		{
+		case AE_MOVIE_LAYER_TYPE_MOVIE:
+			{
+				uint32_t movie_layer_count = __get_movie_composition_data_node_count( _movie, layer->sub_composition );
+
+				count += movie_layer_count;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+			{
+				uint32_t movie_layer_count = __get_movie_composition_data_node_count( _movie, layer->sub_composition );
+
+				count += movie_layer_count;
+			}break;
+		}
+	}
+
+	return count;
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData )
 {
 	aeMovieComposition * composition = NEW( _instance, aeMovieComposition );
 
-	composition->movie_data = _data;
+	composition->movie_data = _movieData;
 	composition->composition_data = _compositionData;
 
 	composition->update_revision = 0;
 	composition->timing = 0.f;
 	composition->loop = AE_FALSE;
 
-	uint32_t node_count = get_movie_composition_data_node_count( _data, _compositionData );
+	uint32_t node_count = __get_movie_composition_data_node_count( _movieData, _compositionData );
 		
 	composition->node_count = node_count;
 	composition->nodes = NEWN( _instance, aeMovieNode, node_count );
@@ -286,20 +374,6 @@ aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance
 
 	__setup_movie_node_time( composition->nodes, &node_time_iterator, _compositionData, AE_NULL, 1.f );
 
-	//for( aeMovieNode
-	//	*it_node = composition->nodes,
-	//	*it_node_end = composition->nodes + node_count;
-	//it_node != it_node_end;
-	//++it_node )
-	//{
-	//	aeMovieNode * node = it_node;
-
-	//	float offset_time = __get_node_offset_time( node );
-
-	//	node->in_time = offset_time + node->layer->in_time;
-	//	node->out_time = offset_time + node->layer->out_time;
-	//}
-
 	return composition;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -308,6 +382,15 @@ void destroy_movie_composition( const aeMovieInstance * _instance, const aeMovie
 	DELETE( _instance, _composition->nodes );
 
 	DELETE( _instance, _composition );
+}
+//////////////////////////////////////////////////////////////////////////
+void create_movie_composition_element( aeMovieComposition * _composition, const aeMovieCompositionNodeProvider * _provider, void * _data )
+{
+	const aeMovieCompositionData * compositionData = _composition->composition_data;
+
+	uint32_t node_camera_iterator = 0;
+
+	__setup_movie_node_camera( _provider, _data, _composition->nodes, &node_camera_iterator, compositionData, AE_NULL, AE_NULL );
 }
 //////////////////////////////////////////////////////////////////////////
 void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop )
@@ -633,6 +716,8 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 
 	_vertices->animate = node->animate;
 	_vertices->blend_mode = layer->blend_mode;
+
+	_vertices->camera_data = node->camera_data;
 	
 	switch( layer_type )
 	{
@@ -655,7 +740,7 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			_vertices->r = resource_solid->r;
 			_vertices->g = resource_solid->g;
 			_vertices->b = resource_solid->b;
-			_vertices->a = node->opacity;
+			_vertices->a = node->opacity;			
 		}break;
 	case AE_MOVIE_LAYER_TYPE_SEQUENCE:
 		{
@@ -705,7 +790,7 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			float height = resource_image->height;
 
 			__make_sprite_vertices( _context, offset_x, offset_y, width, height, node->matrix, _vertices );
-						
+	
 			_vertices->r = 1.f;
 			_vertices->g = 1.f;
 			_vertices->b = 1.f;
