@@ -71,11 +71,13 @@ extern "C" {
 
 	typedef void * (*ae_movie_composition_node_camera_t)(const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
 	typedef void * (*ae_movie_composition_node_video_t)(const aeMovieLayerData * _layerData, const aeMovieResourceVideo * _resource, void * _data);
+	typedef void * (*ae_movie_composition_node_sound_t)(const aeMovieLayerData * _layerData, const aeMovieResourceSound * _resource, void * _data);
 
 	typedef struct aeMovieCompositionNodeProvider
 	{
 		ae_movie_composition_node_camera_t camera_provider;
 		ae_movie_composition_node_video_t video_provider;
+		ae_movie_composition_node_sound_t sound_provider;
 
 	} aeMovieCompositionNodeProvider;
 
@@ -83,7 +85,7 @@ extern "C" {
 
 	void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
 
-	typedef void( *begin_movie_node_animate_t )(const void * _element, uint32_t _type, void * _data);
+	typedef void( *begin_movie_node_animate_t )(const void * _element, uint32_t _type, float _offset, void * _data);
 	typedef void( *end_movie_node_animate_t )(const void * _element, uint32_t _type, void * _data);
 
 	void update_movie_composition( aeMovieComposition * _composition, float _timing, begin_movie_node_animate_t _begin, end_movie_node_animate_t _end, void * _data );

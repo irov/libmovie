@@ -459,6 +459,12 @@ void create_movie_composition_element( aeMovieComposition * _composition, const 
 
 				node->element_data = (*_provider->video_provider)(node->layer, resource, _data);
 			}break;
+		case AE_MOVIE_LAYER_TYPE_SOUND:
+			{
+				const aeMovieResourceSound * resource = (const aeMovieResourceSound *)node->layer->resource;
+
+				node->element_data = (*_provider->sound_provider)(node->layer, resource, _data);
+			}break;
 		default:
 			{
 				node->element_data = AE_NULL;
@@ -568,6 +574,40 @@ static void __update_node_matrix( aeMovieNode * _node, uint32_t _revision, uint3
 	}
 }
 //////////////////////////////////////////////////////////////////////////
+static void __update_movie_composition_node_begin( aeMovieNode * _node, begin_movie_node_animate_t _begin, void * _data )
+{
+	if( _node->animate == AE_MOVIE_NODE_ANIMATE_STATIC || _node->animate == AE_MOVIE_NODE_ANIMATE_END )
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
+
+		if( _node->element_data != AE_NULL && _begin != AE_NULL )
+		{
+			(*_begin)(_node->element_data, _node->layer->type, _node->layer->start_time, _data);
+		}
+	}
+	else
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+static void __update_movie_composition_node_end( aeMovieNode * _node, end_movie_node_animate_t _end, void * _data )
+{
+	if( _node->animate == AE_MOVIE_NODE_ANIMATE_PROCESS || _node->animate == AE_MOVIE_NODE_ANIMATE_BEGIN )
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_END;
+
+		if( _node->element_data != AE_NULL && _end != AE_NULL )
+		{
+			(*_end)(_node->element_data, _node->layer->type, _data);
+		}
+	}
+	else
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;		
+	}
+}
+//////////////////////////////////////////////////////////////////////////
 void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, uint32_t _beginFrame, uint32_t _endFrame, begin_movie_node_animate_t _begin, end_movie_node_animate_t _end, void * _data )
 {
 	float frameDuration = _composition->composition_data->frameDuration;
@@ -605,19 +645,7 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 
 			node->active = AE_TRUE;
 
-			if( node->animate == AE_MOVIE_NODE_ANIMATE_STATIC )
-			{
-				node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
-
-				if( node->element_data != AE_NULL && _begin != AE_NULL )
-				{
-					(*_begin)(node->element_data, node->layer->type, _data);
-				}
-			}
-			else
-			{
-				node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
-			}
+			__update_movie_composition_node_begin( node, _begin, _data );
 		}
 		else
 		{
@@ -625,56 +653,23 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 			{
 				__update_node_matrix( node, _revision, frameId, t, (_endFrame + 1) < indexOut );
 
-				if( node->active == AE_FALSE )
-				{
-					node->active = AE_TRUE;
-					node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
+				node->active = AE_TRUE;
 
-					if( node->element_data != AE_NULL && _begin != AE_NULL )
-					{
-						(*_begin)(node->element_data, node->layer->type, _data);
-					}
-				}
-				else
-				{
-					node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
-				}
+				__update_movie_composition_node_begin( node, _begin, _data );
 			}
 			else if( _endFrame >= indexOut && _beginFrame >= indexIn && _beginFrame < indexOut )
 			{
-				if( node->active == AE_FALSE )
-				{
-					node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;
-				}
-				else
-				{
-					node->active = AE_FALSE;
-					node->animate = AE_MOVIE_NODE_ANIMATE_END;
+				node->active = AE_FALSE;
 
-					if( node->element_data != AE_NULL && _end != AE_NULL )
-					{
-						(*_end)(node->element_data, node->layer->type, _data);
-					}
-				}
+				__update_movie_composition_node_end( node, _end, _data );
 			}
 			else if( _beginFrame >= indexIn && _endFrame >= indexIn && _endFrame < indexOut )
 			{
 				__update_node_matrix( node, _revision, frameId, t, (_endFrame + 1) < indexOut );
 
-				if( node->active == AE_FALSE )
-				{
-					node->active = AE_TRUE;
-					node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
+				node->active = AE_TRUE;
 
-					if( node->element_data != AE_NULL && _begin != AE_NULL )
-					{
-						(*_begin)(node->element_data, node->layer->type, _data);
-					}
-				}
-				else
-				{
-					node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
-				}
+				__update_movie_composition_node_begin( node, _begin, _data );
 			}
 		}
 	}

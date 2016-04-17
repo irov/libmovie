@@ -431,6 +431,12 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 	READ( _stream, _layer->in_time );
 	READ( _stream, _layer->out_time );
 
+	if( _layer->in_time < 0.f )
+	{
+		_layer->start_time -= _layer->in_time;
+		_layer->in_time = 0.f;
+	}
+
 	READ( _stream, _layer->blend_mode );	
 	READ( _stream, _layer->threeD );
 	READ( _stream, _layer->params );
