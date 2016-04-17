@@ -104,7 +104,7 @@ extern "C" {
 		aeMovieLayerPolygon * polygon;
 		aeMovieLayerViewportMatte * viewport_matte;
 
-		struct aeMovieResource * resource;
+		aeMovieResource * resource;
 		struct aeMovieCompositionData * sub_composition;
 
 		uint32_t parent_index;

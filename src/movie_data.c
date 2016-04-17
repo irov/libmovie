@@ -670,6 +670,8 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 				READ_STRING( _instance, _stream, resource->path );
 
+				READ( _stream, resource->width );
+				READ( _stream, resource->height );
 				READ( _stream, resource->alpha );
 				READ( _stream, resource->frameRate );
 				READ( _stream, resource->duration );
@@ -707,13 +709,14 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 				READ( _stream, resource->frameDuration );
 
-				uint32_t sequence_count = READZ( _stream );
+				uint32_t image_count = READZ( _stream );
 
-				resource->images = NEWN( _instance, aeMovieResourceImage *, sequence_count );
+				resource->image_count = image_count;
+				resource->images = NEWN( _instance, aeMovieResourceImage *, image_count );
 
 				for( aeMovieResourceImage
 					**it_image = resource->images,
-					**it_image_end = resource->images + sequence_count;
+					**it_image_end = resource->images + image_count;
 				it_image != it_image_end;
 				++it_image )
 				{

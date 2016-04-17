@@ -60,6 +60,9 @@ extern "C" {
 
 		ae_string_t path;
 
+		float width;
+		float height;
+
 		uint8_t alpha;
 		float frameRate;
 		float duration;
