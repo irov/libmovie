@@ -434,9 +434,7 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 			aeMovieNode * node_relative = _node->relative;
 
 			if( node_relative->matrix_revision != _revision )
-			{
-				node_relative->matrix_revision = _revision;
-
+			{				
 				__update_node_matrix_fixed( node_relative, _revision, _frame );
 			}
 
@@ -480,8 +478,6 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 
 			if( node_relative->matrix_revision != _revision )
 			{
-				node_relative->matrix_revision = _revision;
-
 				__update_node_matrix_interpolate( node_relative, _revision, _frame, _t );
 			}
 
@@ -584,6 +580,11 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 				{
 					node->active = AE_TRUE;
 					node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
+
+					if( node->element_data != AE_NULL && _begin != AE_NULL )
+					{
+						(*_begin)(node->element_data, node->layer->type, _data);
+					}
 				}
 				else
 				{
