@@ -46,6 +46,8 @@ extern "C" {
 		float composition_opactity;
 		float opacity;
 
+		aeMovieBlendMode blend_mode;
+
 		const void * camera_data;
 		void * element_data;
 	} aeMovieNode;
