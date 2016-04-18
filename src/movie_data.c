@@ -14,6 +14,8 @@ aeMovieData * create_movie_data( const aeMovieInstance * _instance )
 {
 	aeMovieData * m = NEW( _instance, aeMovieData );
 
+	m->instance = _instance;
+
 	return m;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -272,14 +274,14 @@ static aeMovieResult __load_movie_data_layer_property( const aeMovieInstance * _
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __load_movie_data_composition_camera( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieCompositionData * _compostionData )
+static void __load_movie_data_composition_camera( const aeMovieStream * _stream, aeMovieCompositionData * _compostionData )
 {
 	READ( _stream, _compostionData->cameraZoom );
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance, const aeMovieStream * _stream, const aeMovieData * _movie, const aeMovieCompositionData * _composition, aeMovieLayerData * _layer )
+static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieStream * _stream, const aeMovieCompositionData * _composition, aeMovieLayerData * _layer )
 {
-	READ_STRING( _instance, _stream, _layer->name );
+	READ_STRING( _movieData->instance, _stream, _layer->name );
 
 	_layer->index = READZ( _stream );
 	
@@ -304,7 +306,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 			}break;
 		case 1:
 			{
-				_layer->timeremap = NEW( _instance, aeMovieLayerTimeremap );
+				_layer->timeremap = NEW( _movieData->instance, aeMovieLayerTimeremap );
 
 				_layer->timeremap->immutable = READB( _stream );
 
@@ -314,26 +316,26 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 				}
 				else
 				{
-					_layer->timeremap->times = NEWN( _instance, float, _layer->frame_count );
+					_layer->timeremap->times = NEWN( _movieData->instance, float, _layer->frame_count );
 
 					READN( _stream, _layer->timeremap->times, _layer->frame_count );
 				}
 			}break;
 		case 2:
 			{
-				_layer->mesh = NEW( _instance, aeMovieLayerMesh );
+				_layer->mesh = NEW( _movieData->instance, aeMovieLayerMesh );
 
 				_layer->mesh->immutable = READB( _stream );
 
 				if( _layer->mesh->immutable == AE_TRUE )
 				{
-					READ_MESH( _instance, _stream, &_layer->mesh->immutable_mesh );
+					READ_MESH( _movieData->instance, _stream, &_layer->mesh->immutable_mesh );
 
 					_layer->mesh->meshes = AE_NULL;
 				}
 				else
 				{
-					_layer->mesh->meshes = NEWN( _instance, aeMovieMesh, _layer->frame_count );
+					_layer->mesh->meshes = NEWN( _movieData->instance, aeMovieMesh, _layer->frame_count );
 
 					for( aeMovieMesh
 						*it_mesh = _layer->mesh->meshes,
@@ -341,25 +343,25 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 					it_mesh != it_mesh_end;
 					++it_mesh )
 					{
-						READ_MESH( _instance, _stream, it_mesh );
+						READ_MESH( _movieData->instance, _stream, it_mesh );
 					}
 				}
 			}
 		case 3:
 			{
-				_layer->polygon = NEW( _instance, aeMovieLayerPolygon );
+				_layer->polygon = NEW( _movieData->instance, aeMovieLayerPolygon );
 
 				_layer->polygon->immutable = READB( _stream );
 
 				if( _layer->polygon->immutable == AE_TRUE )
 				{
-					READ_POLYGON( _instance, _stream, &_layer->polygon->immutable_polygon );
+					READ_POLYGON( _movieData->instance, _stream, &_layer->polygon->immutable_polygon );
 
 					_layer->polygon->polygons = AE_NULL;
 				}
 				else
 				{
-					_layer->polygon->polygons = NEWN( _instance, aeMoviePolygon, _layer->frame_count );
+					_layer->polygon->polygons = NEWN( _movieData->instance, aeMoviePolygon, _layer->frame_count );
 
 					for( aeMoviePolygon
 						*it_polygon = _layer->polygon->polygons,
@@ -367,13 +369,13 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 					it_polygon != it_polygon_end;
 					++it_polygon )
 					{
-						READ_POLYGON( _instance, _stream, it_polygon );
+						READ_POLYGON( _movieData->instance, _stream, it_polygon );
 					}
 				}
 			}
 		case 4:
 			{
-				_layer->viewport_matte = NEW( _instance, aeMovieLayerViewportMatte );
+				_layer->viewport_matte = NEW( _movieData->instance, aeMovieLayerViewportMatte );
 
 				_layer->viewport_matte->immutable = READB( _stream );
 
@@ -385,7 +387,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 				}
 				else
 				{
-					_layer->viewport_matte->viewports = NEWN( _instance, aeMovieViewport, _layer->frame_count );
+					_layer->viewport_matte->viewports = NEWN( _movieData->instance, aeMovieViewport, _layer->frame_count );
 
 					for( aeMovieViewport
 						*it_viewport = _layer->viewport_matte->viewports,
@@ -411,14 +413,22 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 	if( is_resource_or_composition == AE_TRUE )
 	{
 		uint32_t resource_index = READZ( _stream );
-		_layer->resource = _movie->resources[resource_index];
+
+		if( resource_index == 0 )
+		{
+			_layer->resource = AE_NULL;
+		}
+		else
+		{
+			_layer->resource = _movieData->resources[resource_index - 1];
+		}
 
 		_layer->sub_composition = AE_NULL;
 	}
 	else
 	{
 		uint32_t composition_index = READZ( _stream );
-		_layer->sub_composition = _movie->compositions + composition_index;
+		_layer->sub_composition = _movieData->compositions + composition_index;
 
 		_layer->resource = AE_NULL;
 	}
@@ -445,7 +455,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 
 	READ( _stream, _layer->stretch );
 	
-	if( __load_movie_data_layer_property( _instance, _stream, _layer, _layer->frame_count ) == AE_MOVIE_FAILED )
+	if( __load_movie_data_layer_property( _movieData->instance, _stream, _layer, _layer->frame_count ) == AE_MOVIE_FAILED )
 	{
 		return AE_MOVIE_FAILED;
 	}
@@ -507,9 +517,9 @@ static aeMovieResult __load_movie_data_layer( const aeMovieInstance * _instance,
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _instance, const aeMovieStream * _stream, const aeMovieData * _movieData, aeMovieCompositionData * _compositionData )
+static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieData, const aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
 {
-	READ_STRING( _instance, _stream, _compositionData->name );
+	READ_STRING( _movieData->instance, _stream, _compositionData->name );
 		
 	READ( _stream, _compositionData->width );
 	READ( _stream, _compositionData->height );
@@ -569,13 +579,13 @@ static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _ins
 
 	if( _compositionData->has_threeD == AE_TRUE )
 	{
-		__load_movie_data_composition_camera( _instance, _stream, _compositionData );
+		__load_movie_data_composition_camera( _stream, _compositionData );
 	}	
 	
 	uint32_t layer_count = READZ( _stream );
 	
 	_compositionData->layer_count = layer_count;
-	_compositionData->layers = NEWN( _instance, aeMovieLayerData, layer_count );
+	_compositionData->layers = NEWN( _movieData->instance, aeMovieLayerData, layer_count );
 
 	for( aeMovieLayerData
 		*it_layer = _compositionData->layers,
@@ -587,7 +597,7 @@ static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _ins
 
 		layer->composition = _compositionData;
 
-		if( __load_movie_data_layer( _instance, _stream, _movieData, _compositionData, layer ) == AE_MOVIE_FAILED )
+		if( __load_movie_data_layer( _movieData, _stream, _compositionData, layer ) == AE_MOVIE_FAILED )
 		{
 			return AE_MOVIE_FAILED;
 		}
@@ -596,7 +606,7 @@ static aeMovieResult __load_movie_data_composition( const aeMovieInstance * _ins
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie, movie_data_resource_provider_t _provider, void * _data )
+aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, movie_data_resource_provider_t _provider, void * _data )
 {
 	char magic[4];
 	READN( _stream, magic, 4 );
@@ -617,16 +627,16 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 		return AE_MOVIE_FAILED;
 	}
 
-	READ_STRING( _instance, _stream, _movie->name );
+	READ_STRING( _movieData->instance, _stream, _movieData->name );
 
 	uint32_t resource_count = READZ( _stream );
 
-	_movie->resource_count = resource_count;
-	_movie->resources = NEWN( _instance, aeMovieResource *, resource_count );
+	_movieData->resource_count = resource_count;
+	_movieData->resources = NEWN( _movieData->instance, aeMovieResource *, resource_count );
 
 	for( aeMovieResource
-		**it_resource = _movie->resources,
-		**it_resource_end = _movie->resources + resource_count;
+		**it_resource = _movieData->resources,
+		**it_resource_end = _movieData->resources + resource_count;
 	it_resource != it_resource_end;
 	++it_resource )
 	{
@@ -637,11 +647,11 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 		{
 		case AE_MOVIE_RESOURCE_SOCKET_SHAPE:
 			{
-				aeMovieResourceSocketShape * resource = NEW( _instance, aeMovieResourceSocketShape );
+				aeMovieResourceSocketShape * resource = NEW( _movieData->instance, aeMovieResourceSocketShape );
 
 				uint32_t polygon_count = READZ( _stream );
 
-				resource->polygons = NEWN( _instance, aeMoviePolygon, polygon_count );
+				resource->polygons = NEWN( _movieData->instance, aeMoviePolygon, polygon_count );
 
 				for( aeMoviePolygon
 					*it_polygon = resource->polygons,
@@ -649,16 +659,16 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				it_polygon != it_polygon_end;
 				++it_polygon )
 				{
-					READ_POLYGON( _instance, _stream, it_polygon );
+					READ_POLYGON( _movieData->instance, _stream, it_polygon );
 				}
 
-				resource->base.data = AE_NULL;
+				resource->data = AE_NULL;
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case AE_MOVIE_RESOURCE_SOLID:
 			{
-				aeMovieResourceSolid * resource = NEW( _instance, aeMovieResourceSolid );
+				aeMovieResourceSolid * resource = NEW( _movieData->instance, aeMovieResourceSolid );
 
 				READ( _stream, resource->width );
 				READ( _stream, resource->height );
@@ -666,15 +676,15 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				READ( _stream, resource->g );
 				READ( _stream, resource->b );
 
-				resource->base.data = AE_NULL;
+				resource->data = AE_NULL;
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case AE_MOVIE_RESOURCE_VIDEO:
 			{
-				aeMovieResourceVideo * resource = NEW( _instance, aeMovieResourceVideo );
+				aeMovieResourceVideo * resource = NEW( _movieData->instance, aeMovieResourceVideo );
 
-				READ_STRING( _instance, _stream, resource->path );
+				READ_STRING( _movieData->instance, _stream, resource->path );
 
 				READ( _stream, resource->width );
 				READ( _stream, resource->height );
@@ -686,9 +696,9 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			}break;
 		case AE_MOVIE_RESOURCE_SOUND:
 			{
-				aeMovieResourceSound * resource = NEW( _instance, aeMovieResourceSound );
+				aeMovieResourceSound * resource = NEW( _movieData->instance, aeMovieResourceSound );
 
-				READ_STRING( _instance, _stream, resource->path );
+				READ_STRING( _movieData->instance, _stream, resource->path );
 
 				READ( _stream, resource->duration );
 
@@ -696,9 +706,9 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			}break;
 		case AE_MOVIE_RESOURCE_IMAGE:
 			{
-				aeMovieResourceImage * resource = NEW( _instance, aeMovieResourceImage );
+				aeMovieResourceImage * resource = NEW( _movieData->instance, aeMovieResourceImage );
 
-				READ_STRING( _instance, _stream, resource->path );
+				READ_STRING( _movieData->instance, _stream, resource->path );
 
 				READ( _stream, resource->width);
 				READ( _stream, resource->height );
@@ -711,14 +721,14 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 			}break;
 		case AE_MOVIE_RESOURCE_SEQUENCE:
 			{
-				aeMovieResourceSequence * resource = NEW( _instance, aeMovieResourceSequence );
+				aeMovieResourceSequence * resource = NEW( _movieData->instance, aeMovieResourceSequence );
 
 				READ( _stream, resource->frameDuration );
 
 				uint32_t image_count = READZ( _stream );
 
 				resource->image_count = image_count;
-				resource->images = NEWN( _instance, aeMovieResourceImage *, image_count );
+				resource->images = NEWN( _movieData->instance, aeMovieResourceImage *, image_count );
 
 				for( aeMovieResourceImage
 					**it_image = resource->images,
@@ -728,24 +738,24 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				{
 					uint32_t resource_id = READZ( _stream );
 
-					*it_image = (aeMovieResourceImage *)_movie->resources[resource_id];
+					*it_image = (aeMovieResourceImage *)_movieData->resources[resource_id];
 				}
 
-				resource->base.data = AE_NULL;
+				resource->data = AE_NULL;
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
 		case AE_MOVIE_RESOURCE_PARTICLE:
 			{
-				aeMovieResourceParticle * resource = NEW( _instance, aeMovieResourceParticle );
+				aeMovieResourceParticle * resource = NEW( _movieData->instance, aeMovieResourceParticle );
 
-				READ_STRING( _instance, _stream, resource->path );
+				READ_STRING( _movieData->instance, _stream, resource->path );
 
 				uint32_t atlas_count = READZ( _stream );
 
 				resource->atlas_count = atlas_count;
 
-				resource->atlases = NEWN( _instance, aeMovieResourceImage *, atlas_count );
+				resource->atlases = NEWN( _movieData->instance, aeMovieResourceImage *, atlas_count );
 
 				for( aeMovieResourceImage
 					**it_image = resource->atlases,
@@ -755,7 +765,7 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 				{
 					uint32_t resource_id = READZ( _stream );
 
-					*it_image = (aeMovieResourceImage *)_movie->resources[resource_id];
+					*it_image = (aeMovieResourceImage *)_movieData->resources[resource_id];
 				}
 
 				*it_resource = (aeMovieResource *)resource;
@@ -775,16 +785,16 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 
 	uint32_t composition_count = READZ( _stream );
 
-	_movie->composition_count = composition_count;
-	_movie->compositions = NEWN( _instance, aeMovieCompositionData, composition_count );
+	_movieData->composition_count = composition_count;
+	_movieData->compositions = NEWN( _movieData->instance, aeMovieCompositionData, composition_count );
 
 	for( aeMovieCompositionData
-		*it_composition = _movie->compositions,
-		*it_composition_end = _movie->compositions + composition_count;
+		*it_composition = _movieData->compositions,
+		*it_composition_end = _movieData->compositions + composition_count;
 	it_composition != it_composition_end;
 	++it_composition )
 	{
-		if( __load_movie_data_composition( _instance, _stream, _movie, it_composition ) == AE_MOVIE_FAILED )
+		if( __load_movie_data_composition( _movieData, _stream, it_composition ) == AE_MOVIE_FAILED )
 		{
 			return AE_MOVIE_FAILED;
 		}
@@ -793,11 +803,11 @@ aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieS
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name )
+const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movieData, const char * _name )
 {
 	for( const aeMovieCompositionData
-		*it_composition = _movie->compositions,
-		*it_composition_end = _movie->compositions + _movie->composition_count;
+		*it_composition = _movieData->compositions,
+		*it_composition_end = _movieData->compositions + _movieData->composition_count;
 	it_composition != it_composition_end;
 	++it_composition )
 	{

@@ -307,23 +307,25 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __setup_movie_node_camera( const aeMovieCompositionNodeProvider * _nodeProvider, void * _data, aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent, const void * _cameraData )
+static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32_t * _iterator, aeMovieNode * _parent, const void * _cameraData )
 {
+	const aeMovieCompositionData * compositionData = _composition->composition_data;
+
 	for( const aeMovieLayerData
-		*it_layer = _compositionData->layers,
-		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+		*it_layer = compositionData->layers,
+		*it_layer_end = compositionData->layers + compositionData->layer_count;
 	it_layer != it_layer_end;
 	++it_layer )
 	{
 		const aeMovieLayerData * layer = it_layer;
 
-		aeMovieNode * node = _nodes + ((*_iterator)++);
+		aeMovieNode * node = _composition->nodes + ((*_iterator)++);
 
-		if( _compositionData->has_threeD == AE_TRUE )
+		if( compositionData->has_threeD == AE_TRUE )
 		{
-			float width = _compositionData->width;
-			float height = _compositionData->height;
-			float zoom = _compositionData->cameraZoom;
+			float width = compositionData->width;
+			float height = compositionData->height;
+			float zoom = compositionData->cameraZoom;
 
 			ae_vector3_t camera_position;
 			camera_position[0] = width * 0.5f;
@@ -337,7 +339,7 @@ static void __setup_movie_node_camera( const aeMovieCompositionNodeProvider * _n
 
 			float camera_fov = make_camera_fov( height, zoom );
 
-			node->camera_data = (*_nodeProvider->camera_provider)(_compositionData->name, camera_position, camera_direction, camera_fov, width, height, _data);
+			node->camera_data = (*_composition->providers.camera_provider)(compositionData->name, camera_position, camera_direction, camera_fov, width, height, _composition->provider_data);
 		}
 		else
 		{
@@ -346,13 +348,10 @@ static void __setup_movie_node_camera( const aeMovieCompositionNodeProvider * _n
 
 		switch( layer->type )
 		{
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 			{
-				__setup_movie_node_camera( _nodeProvider, _data, _nodes, _iterator, layer->sub_composition, node, node->camera_data );
-			}break;
-		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-			{
-				__setup_movie_node_camera( _nodeProvider, _data, _nodes, _iterator, layer->sub_composition, node, node->camera_data );
+				__setup_movie_node_camera( _composition, _iterator, node, node->camera_data );
 			}break;
 		default:
 			{
@@ -395,51 +394,13 @@ static uint32_t __get_movie_composition_data_node_count( const aeMovieData * _mo
 	return count;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieComposition * create_movie_composition( const aeMovieInstance * _instance, const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData )
-{
-	aeMovieComposition * composition = NEW( _instance, aeMovieComposition );
-
-	composition->movie_data = _movieData;
-	composition->composition_data = _compositionData;
-
-	composition->update_revision = 0;
-	composition->timing = 0.f;
-	composition->loop = AE_FALSE;
-
-	uint32_t node_count = __get_movie_composition_data_node_count( _movieData, _compositionData );
-
-	composition->node_count = node_count;
-	composition->nodes = NEWN( _instance, aeMovieNode, node_count );
-
-	uint32_t node_relative_iterator = 0;
-
-	__setup_movie_node_relative( composition->nodes, &node_relative_iterator, _compositionData, AE_NULL );
-
-	uint32_t node_time_iterator = 0;
-
-	__setup_movie_node_time( composition->nodes, &node_time_iterator, _compositionData, AE_NULL, 1.f );
-
-	uint32_t node_blend_mode_iterator = 0;
-
-	__setup_movie_node_blend_mode( composition->nodes, &node_blend_mode_iterator, _compositionData, AE_NULL, AE_MOVIE_BLEND_NORMAL );
-
-	return composition;
-}
-//////////////////////////////////////////////////////////////////////////
-void destroy_movie_composition( const aeMovieInstance * _instance, const aeMovieComposition * _composition )
-{
-	DELETE( _instance, _composition->nodes );
-
-	DELETE( _instance, _composition );
-}
-//////////////////////////////////////////////////////////////////////////
-void create_movie_composition_element( aeMovieComposition * _composition, const aeMovieCompositionNodeProvider * _provider, void * _data )
+void __setup_movie_composition_element( aeMovieComposition * _composition )
 {
 	const aeMovieCompositionData * compositionData = _composition->composition_data;
 
 	uint32_t node_camera_iterator = 0;
 
-	__setup_movie_node_camera( _provider, _data, _composition->nodes, &node_camera_iterator, compositionData, AE_NULL, AE_NULL );
+	__setup_movie_node_camera( _composition, &node_camera_iterator, AE_NULL, AE_NULL );
 
 	for( aeMovieNode
 		*it_node = _composition->nodes,
@@ -457,13 +418,17 @@ void create_movie_composition_element( aeMovieComposition * _composition, const 
 			{
 				const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)node->layer->resource;
 
-				node->element_data = (*_provider->video_provider)(node->layer, resource, _data);
+				node->element_data = (*_composition->providers.video_provider)(node->layer, resource, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SOUND:
 			{
 				const aeMovieResourceSound * resource = (const aeMovieResourceSound *)node->layer->resource;
 
-				node->element_data = (*_provider->sound_provider)(node->layer, resource, _data);
+				node->element_data = (*_composition->providers.sound_provider)(node->layer, resource, _composition->provider_data);
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SLOT:
+			{
+				node->element_data = (*_composition->providers.slot_provider)(node->layer, _composition->provider_data);
 			}break;
 		default:
 			{
@@ -471,6 +436,49 @@ void create_movie_composition_element( aeMovieComposition * _composition, const 
 			}
 		}
 	}
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, const aeMovieCompositionProviders * providers, void * _data )
+{
+	aeMovieComposition * composition = NEW( _movieData->instance, aeMovieComposition );
+
+	composition->movie_data = _movieData;
+	composition->composition_data = _compositionData;
+
+	composition->update_revision = 0;
+	composition->timing = 0.f;
+	composition->loop = AE_FALSE;
+
+	uint32_t node_count = __get_movie_composition_data_node_count( _movieData, _compositionData );
+
+	composition->node_count = node_count;
+	composition->nodes = NEWN( _movieData->instance, aeMovieNode, node_count );
+
+	composition->providers = *providers;
+	composition->provider_data = _data;
+	
+	uint32_t node_relative_iterator = 0;
+
+	__setup_movie_node_relative( composition->nodes, &node_relative_iterator, _compositionData, AE_NULL );
+
+	uint32_t node_time_iterator = 0;
+
+	__setup_movie_node_time( composition->nodes, &node_time_iterator, _compositionData, AE_NULL, 1.f );
+
+	uint32_t node_blend_mode_iterator = 0;
+
+	__setup_movie_node_blend_mode( composition->nodes, &node_blend_mode_iterator, _compositionData, AE_NULL, AE_MOVIE_BLEND_NORMAL );
+
+	__setup_movie_composition_element( composition );
+
+	return composition;
+}
+//////////////////////////////////////////////////////////////////////////
+void destroy_movie_composition( const aeMovieData * _movieData, const aeMovieComposition * _composition )
+{
+	DELETE( _movieData->instance, _composition->nodes );
+
+	DELETE( _movieData->instance, _composition );
 }
 //////////////////////////////////////////////////////////////////////////
 void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop )
@@ -562,7 +570,41 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __update_node_matrix( aeMovieNode * _node, uint32_t _revision, uint32_t _frame, float _t, ae_bool_t _interpolate )
+static void __update_movie_composition_node_begin( aeMovieComposition * _composition, aeMovieNode * _node )
+{
+	if( _node->animate == AE_MOVIE_NODE_ANIMATE_STATIC || _node->animate == AE_MOVIE_NODE_ANIMATE_END )
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
+
+		if( _node->element_data != AE_NULL )
+		{
+			(*_composition->providers.animate_begin)(_node->element_data, _node->layer->type, _node->layer->start_time, _composition->provider_data);
+		}
+	}
+	else
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+static void __update_movie_composition_node_end( aeMovieComposition * _composition, aeMovieNode * _node )
+{
+	if( _node->animate == AE_MOVIE_NODE_ANIMATE_PROCESS || _node->animate == AE_MOVIE_NODE_ANIMATE_BEGIN )
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_END;
+
+		if( _node->element_data != AE_NULL )
+		{
+			(*_composition->providers.animate_end)(_node->element_data, _node->layer->type, _composition->provider_data);
+		}
+	}
+	else
+	{
+		_node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;		
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+static void __update_node_matrix( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, uint32_t _frame, float _t, ae_bool_t _interpolate, ae_bool_t _begin )
 {
 	if( _interpolate == AE_TRUE )
 	{
@@ -572,43 +614,20 @@ static void __update_node_matrix( aeMovieNode * _node, uint32_t _revision, uint3
 	{
 		__update_node_matrix_fixed( _node, _revision, _frame );
 	}
-}
-//////////////////////////////////////////////////////////////////////////
-static void __update_movie_composition_node_begin( aeMovieNode * _node, begin_movie_node_animate_t _begin, void * _data )
-{
-	if( _node->animate == AE_MOVIE_NODE_ANIMATE_STATIC || _node->animate == AE_MOVIE_NODE_ANIMATE_END )
-	{
-		_node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
 
-		if( _node->element_data != AE_NULL && _begin != AE_NULL )
-		{
-			(*_begin)(_node->element_data, _node->layer->type, _node->layer->start_time, _data);
-		}
+	(*_composition->providers.animate_update)(_node->element_data, _node->layer->type, _node->matrix, _composition->provider_data);
+
+	if( _begin == AE_TRUE )
+	{
+		__update_movie_composition_node_begin( _composition, _node );
 	}
 	else
 	{
-		_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
+		__update_movie_composition_node_end( _composition, _node );
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __update_movie_composition_node_end( aeMovieNode * _node, end_movie_node_animate_t _end, void * _data )
-{
-	if( _node->animate == AE_MOVIE_NODE_ANIMATE_PROCESS || _node->animate == AE_MOVIE_NODE_ANIMATE_BEGIN )
-	{
-		_node->animate = AE_MOVIE_NODE_ANIMATE_END;
-
-		if( _node->element_data != AE_NULL && _end != AE_NULL )
-		{
-			(*_end)(_node->element_data, _node->layer->type, _data);
-		}
-	}
-	else
-	{
-		_node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;		
-	}
-}
-//////////////////////////////////////////////////////////////////////////
-void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, uint32_t _beginFrame, uint32_t _endFrame, begin_movie_node_animate_t _begin, end_movie_node_animate_t _end, void * _data )
+void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, uint32_t _beginFrame, uint32_t _endFrame )
 {
 	float frameDuration = _composition->composition_data->frameDuration;
 	float frameDurationInv = 1.f / frameDuration;
@@ -641,41 +660,35 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 
 		if( _composition->loop == AE_TRUE && (node->layer->params & AE_MOVIE_LAYER_PARAM_LOOP) )
 		{
-			__update_node_matrix_interpolate( node, _revision, frameId, t );
-
 			node->active = AE_TRUE;
 
-			__update_movie_composition_node_begin( node, _begin, _data );
+			__update_node_matrix( _composition, node, _revision, frameId, t, AE_FALSE, AE_TRUE );
 		}
 		else
 		{
 			if( _beginFrame < indexIn && _endFrame >= indexIn && _endFrame < indexOut )
 			{
-				__update_node_matrix( node, _revision, frameId, t, (_endFrame + 1) < indexOut );
-
 				node->active = AE_TRUE;
 
-				__update_movie_composition_node_begin( node, _begin, _data );
+				__update_node_matrix( _composition, node, _revision, frameId, t, (_endFrame + 1) < indexOut, AE_TRUE );
 			}
 			else if( _endFrame >= indexOut && _beginFrame >= indexIn && _beginFrame < indexOut )
 			{
 				node->active = AE_FALSE;
 
-				__update_movie_composition_node_end( node, _end, _data );
+				__update_node_matrix( _composition, node, _revision, frameId, t, (_endFrame + 1) < indexOut, AE_FALSE );
 			}
 			else if( _beginFrame >= indexIn && _endFrame >= indexIn && _endFrame < indexOut )
 			{
-				__update_node_matrix( node, _revision, frameId, t, (_endFrame + 1) < indexOut );
-
 				node->active = AE_TRUE;
 
-				__update_movie_composition_node_begin( node, _begin, _data );
+				__update_node_matrix( _composition, node, _revision, frameId, t, (_endFrame + 1) < indexOut, AE_TRUE );
 			}
 		}
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void update_movie_composition( aeMovieComposition * _composition, float _timing, begin_movie_node_animate_t _begin, end_movie_node_animate_t _end, void * _data )
+void update_movie_composition( aeMovieComposition * _composition, float _timing )
 {
 	_composition->update_revision++;
 	uint32_t update_revision = _composition->update_revision;
@@ -695,7 +708,7 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing,
 	{
 		uint32_t lastFrame = (uint32_t)(duration / frameDuration);
 
-		__update_movie_composition_node( _composition, update_revision, beginFrame, lastFrame, _begin, _end, _data );
+		__update_movie_composition_node( _composition, update_revision, beginFrame, lastFrame );
 
 		beginFrame = 0;
 
@@ -704,7 +717,7 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing,
 		endFrame = (uint32_t)(_composition->timing / frameDuration);
 	}
 
-	__update_movie_composition_node( _composition, update_revision, beginFrame, endFrame, _begin, _end, _data );
+	__update_movie_composition_node( _composition, update_revision, beginFrame, endFrame );
 }
 //////////////////////////////////////////////////////////////////////////
 static aeMovieResult __count_movie_redner_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
@@ -819,8 +832,16 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 	_vertices->animate = node->animate;
 	_vertices->blend_mode = node->blend_mode;
 
-	_vertices->resource_type = resource->type;
-	_vertices->resource_data = resource->data;
+	if( resource != AE_NULL )
+	{
+		_vertices->resource_type = resource->type;
+		_vertices->resource_data = resource->data;
+	}
+	else
+	{
+		_vertices->resource_type = AE_MOVIE_RESOURCE_NONE;
+		_vertices->resource_data = AE_NULL;
+	}
 
 	_vertices->camera_data = node->camera_data;
 	_vertices->element_data = node->element_data;

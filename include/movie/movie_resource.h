@@ -9,6 +9,7 @@ extern "C" {
 
 	typedef enum aeMovieResourceTypeEnum
 	{
+		AE_MOVIE_RESOURCE_NONE = 0,
 		AE_MOVIE_RESOURCE_SOCKET_SHAPE = 2,
 		AE_MOVIE_RESOURCE_SOLID = 4,
 		AE_MOVIE_RESOURCE_VIDEO = 5,
@@ -19,16 +20,19 @@ extern "C" {
 		__AE_MOVIE_RESOURCE_END__
 	} aeMovieResourceTypeEnum;
 
+#	define AE_MOVIE_RESOURCE_BASE()\
+	uint8_t type;\
+	void * data
+
 	typedef struct aeMovieResource
 	{
-		uint8_t type;
-		void * data;
+		AE_MOVIE_RESOURCE_BASE();
 		
 	} aeMovieResource;
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		ae_string_t name;
 
@@ -36,7 +40,7 @@ extern "C" {
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		aeMoviePolygon * polygons;
 
@@ -44,7 +48,7 @@ extern "C" {
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		float width;
 		float height;
@@ -56,7 +60,7 @@ extern "C" {
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		ae_string_t path;
 
@@ -71,7 +75,7 @@ extern "C" {
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		ae_string_t path;
 
@@ -81,7 +85,7 @@ extern "C" {
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		ae_string_t path;
 
@@ -94,7 +98,7 @@ extern "C" {
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		float frameDuration;
 
@@ -105,7 +109,7 @@ extern "C" {
 
 	typedef struct
 	{
-		aeMovieResource base;
+		AE_MOVIE_RESOURCE_BASE();
 
 		ae_string_t path;
 
@@ -113,6 +117,8 @@ extern "C" {
 		aeMovieResourceImage ** atlases;
 
 	} aeMovieResourceParticle;
+
+#	undef AE_MOVIE_RESOURCE_BASE
 
 #ifdef __cplusplus
 }

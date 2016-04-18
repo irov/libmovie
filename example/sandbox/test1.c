@@ -64,7 +64,7 @@ int main()
 	stream.read = &read_file;
 	stream.data = f;
 
-	if( load_movie_data( &instance, &stream, movieData, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
+	if( load_movie_data( movieData, &stream, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
 	{
 		return 0;
 	}
@@ -73,12 +73,14 @@ int main()
 
 	const aeMovieCompositionData * compositionData = get_movie_composition_data( movieData, "Tuman" );
 	
-	aeMovieComposition * composition = create_movie_composition( &instance, movieData, compositionData );
+	aeMovieCompositionProviders providers;
+
+	aeMovieComposition * composition = create_movie_composition( movieData, compositionData, &providers, AE_NULL );
 
 
 	while( 1 )
 	{
-		update_movie_composition( composition, 150.f, AE_NULL, AE_NULL, AE_NULL );
+		update_movie_composition( composition, 150.f );
 
 		aeMovieRenderContext context;
 		begin_movie_render_context( composition, &context );
@@ -95,7 +97,7 @@ int main()
 		printf( "SUCCESSFUL!!\n" );
 	}
 
-	destroy_movie_composition( &instance, composition );
+	destroy_movie_composition( movieData, composition );
 
 	delete_movie_data( &instance, movieData );
 	

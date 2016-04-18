@@ -190,6 +190,8 @@ extern "C" {
 
 	typedef struct aeMovieData
 	{
+		const aeMovieInstance * instance;
+
 		ae_string_t name;
 		
 		uint32_t resource_count;
@@ -204,7 +206,7 @@ extern "C" {
 
 	typedef void * (*movie_data_resource_provider_t)(const aeMovieResource * _resource, void * _data);
 
-	aeMovieResult load_movie_data( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieData * _movie, movie_data_resource_provider_t _provider, void * _data );
+	aeMovieResult load_movie_data( aeMovieData * _movie, const aeMovieStream * _stream, movie_data_resource_provider_t _provider, void * _data );
 	
 	const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movie, const char * _name );	
 	
