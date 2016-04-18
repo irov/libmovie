@@ -613,7 +613,7 @@ static void __update_node_matrix( aeMovieComposition * _composition, aeMovieNode
 		__update_node_matrix_fixed( _node, _revision, _frame );
 	}
 
-	(*_composition->providers.animate_update)(_node->element_data, _node->layer->type, _node->matrix, _composition->provider_data);
+	(*_composition->providers.animate_update)(_node->element_data, _node->layer->type, _node->matrix, _node->opacity, _composition->provider_data);
 
 	if( _begin == AE_TRUE )
 	{
@@ -884,6 +884,9 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			frame_sequence %= resource_sequence->image_count;
 
 			aeMovieResourceImage * resource_image = resource_sequence->images[frame_sequence];
+
+			_vertices->resource_type = resource_image->type;
+			_vertices->resource_data = resource_image->data;
 
 			float offset_x = resource_image->offset_x;
 			float offset_y = resource_image->offset_y;

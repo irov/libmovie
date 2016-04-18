@@ -57,7 +57,7 @@ extern "C" {
 	typedef void * (*ae_movie_composition_node_sound_t)(const aeMovieLayerData * _layerData, const aeMovieResourceSound * _resource, void * _data);
 	typedef void * (*ae_movie_composition_node_slot_t)(const aeMovieLayerData * _layerData, void * _data);
 
-	typedef void( *ae_movie_node_animate_update_t )(const void * _element, uint32_t _type, const ae_matrix4_t _matrix, void * _data);
+	typedef void( *ae_movie_node_animate_update_t )(const void * _element, uint32_t _type, const ae_matrix4_t _matrix, float _opacity, void * _data);
 	typedef void( *ae_movie_node_animate_begin_t )(const void * _element, uint32_t _type, float _offset, void * _data);
 	typedef void( *ae_movie_node_animate_end_t )(const void * _element, uint32_t _type, void * _data);
 
