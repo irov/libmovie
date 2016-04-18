@@ -178,12 +178,9 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 		switch( layer->type )
 		{
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
-			{
-				__setup_movie_node_relative( _nodes, _iterator, layer->sub_composition, node );
-			}break;
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				__setup_movie_node_relative( _nodes, _iterator, layer->sub_composition, node );
+				__setup_movie_node_relative( _nodes, _iterator, layer->sub_composition, node );				
 			}break;
 		default:
 			{
@@ -243,17 +240,15 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			node->stretch = _stretch;
 		}
 
-		float to_stretch = _stretch * layer->stretch;
-
 		switch( layer->type )
 		{
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
-			{
-				__setup_movie_node_time( _nodes, _iterator, layer->sub_composition, node, to_stretch, layer->start_time );
-			}break;
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				__setup_movie_node_time( _nodes, _iterator, layer->sub_composition, node, to_stretch, layer->start_time );
+				float to_stretch = _stretch * layer->stretch;
+				float to_startTime = _startTime + layer->start_time;
+
+				__setup_movie_node_time( _nodes, _iterator, layer->sub_composition, node, to_stretch, to_startTime );
 			}break;
 		default:
 			{
@@ -293,13 +288,10 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 		switch( layer->type )
 		{
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
-			{
-				__setup_movie_node_blend_mode( _nodes, _iterator, layer->sub_composition, node, composition_blend_mode );
-			}break;
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				__setup_movie_node_blend_mode( _nodes, _iterator, layer->sub_composition, node, composition_blend_mode );
-			}break;
+				__setup_movie_node_blend_mode( _nodes, _iterator, layer->sub_composition, node, composition_blend_mode );				
+			}break;		
 		default:
 			{
 			}break;
@@ -375,16 +367,14 @@ static uint32_t __get_movie_composition_data_node_count( const aeMovieData * _mo
 		switch( layer_type )
 		{
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
-			{
-				uint32_t movie_layer_count = __get_movie_composition_data_node_count( _movie, layer->sub_composition );
-
-				count += movie_layer_count;
-			}break;
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
 				uint32_t movie_layer_count = __get_movie_composition_data_node_count( _movie, layer->sub_composition );
 
 				count += movie_layer_count;
+			}break;
+		default:
+			{
 			}break;
 		}
 	}

@@ -24,8 +24,8 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 	uint32_t resource_count = _movieData->resource_count;
 
 	for( const aeMovieResource
-		**it_resource = _movieData->resources,
-		**it_resource_end = _movieData->resources + _movieData->resource_count;
+		*const * it_resource = _movieData->resources,
+		*const * it_resource_end = _movieData->resources + _movieData->resource_count;
 	it_resource != it_resource_end;
 	++it_resource )
 	{ 
