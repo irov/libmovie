@@ -109,6 +109,7 @@ extern "C" {
 
 		uint32_t parent_index;
 
+		ae_bool_t reverse_time;
 		float start_time;
 		float in_time;
 		float out_time;

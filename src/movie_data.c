@@ -437,6 +437,8 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 	_layer->parent_index = parent_index;
 
+	_layer->reverse_time = READB( _stream );
+
 	READ( _stream, _layer->start_time );
 	READ( _stream, _layer->in_time );
 	READ( _stream, _layer->out_time );
@@ -448,7 +450,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	}
 
 	READ( _stream, _layer->blend_mode );	
-	READ( _stream, _layer->threeD );
+	_layer->threeD = READB( _stream );
 	READ( _stream, _layer->params );
 
 	_layer->play_count = READZ( _stream );
