@@ -850,7 +850,16 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 	{
 	case AE_MOVIE_LAYER_TYPE_SLOT:
 		{
+			_vertices->vertexCount = 0;
+			_vertices->indexCount = 0;
 
+			_vertices->uv = AE_NULL;
+			_vertices->indices = AE_NULL;
+
+			_vertices->r = 1.f;
+			_vertices->g = 1.f;
+			_vertices->b = 1.f;
+			_vertices->a = node->opacity;
 		}break;
 	case AE_MOVIE_LAYER_TYPE_SOLID:
 		{
