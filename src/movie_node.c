@@ -307,13 +307,11 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32_t * _iterator, aeMovieNode * _parent, const void * _cameraData )
+static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent, const void * _cameraData )
 {
-	const aeMovieCompositionData * compositionData = _composition->composition_data;
-
 	for( const aeMovieLayerData
-		*it_layer = compositionData->layers,
-		*it_layer_end = compositionData->layers + compositionData->layer_count;
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
 	it_layer != it_layer_end;
 	++it_layer )
 	{
@@ -321,11 +319,11 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32
 
 		aeMovieNode * node = _composition->nodes + ((*_iterator)++);
 
-		if( compositionData->has_threeD == AE_TRUE )
+		if( _compositionData->has_threeD == AE_TRUE )
 		{
-			float width = compositionData->width;
-			float height = compositionData->height;
-			float zoom = compositionData->cameraZoom;
+			float width = _compositionData->width;
+			float height = _compositionData->height;
+			float zoom = _compositionData->cameraZoom;
 
 			ae_vector3_t camera_position;
 			camera_position[0] = width * 0.5f;
@@ -339,7 +337,7 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32
 
 			float camera_fov = make_camera_fov( height, zoom );
 
-			node->camera_data = (*_composition->providers.camera_provider)(compositionData->name, camera_position, camera_direction, camera_fov, width, height, _composition->provider_data);
+			node->camera_data = (*_composition->providers.camera_provider)(_compositionData->name, camera_position, camera_direction, camera_fov, width, height, _composition->provider_data);
 		}
 		else
 		{
@@ -351,7 +349,7 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 			{
-				__setup_movie_node_camera( _composition, _iterator, node, node->camera_data );
+				__setup_movie_node_camera( _composition, _iterator, layer->sub_composition, node, node->camera_data );
 			}break;
 		default:
 			{
@@ -397,10 +395,6 @@ static uint32_t __get_movie_composition_data_node_count( const aeMovieData * _mo
 void __setup_movie_composition_element( aeMovieComposition * _composition )
 {
 	const aeMovieCompositionData * compositionData = _composition->composition_data;
-
-	uint32_t node_camera_iterator = 0;
-
-	__setup_movie_node_camera( _composition, &node_camera_iterator, AE_NULL, AE_NULL );
 
 	for( aeMovieNode
 		*it_node = _composition->nodes,
@@ -468,6 +462,10 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	uint32_t node_blend_mode_iterator = 0;
 
 	__setup_movie_node_blend_mode( composition->nodes, &node_blend_mode_iterator, _compositionData, AE_NULL, AE_MOVIE_BLEND_NORMAL );
+
+	uint32_t node_camera_iterator = 0;
+
+	__setup_movie_node_camera( composition, &node_camera_iterator, composition->composition_data, AE_NULL, AE_NULL );
 
 	__setup_movie_composition_element( composition );
 
