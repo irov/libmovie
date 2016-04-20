@@ -420,6 +420,12 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 
 				node->element_data = (*_composition->providers.particle_provider)(node->layer, resource, _composition->provider_data);
 			}
+		case AE_MOVIE_LAYER_TYPE_SOCKET:
+			{
+				const aeMovieResourceSocket * resource = (const aeMovieResourceSocket *)node->layer->resource;
+
+				node->element_data = (*_composition->providers.socket_provider)(node->layer, resource, _composition->provider_data);
+			}
 		case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
 				node->element_data = (*_composition->providers.slot_provider)(node->layer, _composition->provider_data);
@@ -472,10 +478,8 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	return composition;
 }
 //////////////////////////////////////////////////////////////////////////
-void destroy_movie_composition( const aeMovieData * _movieData, const aeMovieComposition * _composition )
+void destroy_movie_composition( const aeMovieComposition * _composition )
 {
-	//const aeMovieCompositionData * compositionData = _composition->composition_data;
-
 	for( const aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -487,9 +491,11 @@ void destroy_movie_composition( const aeMovieData * _movieData, const aeMovieCom
 		(*_composition->providers.node_destroyer)(node->element_data, node->layer->type, _composition->provider_data);
 	}
 
-	DELETE( _movieData->instance, _composition->nodes );
+	const aeMovieInstance * instance = _composition->movie_data->instance;
 
-	DELETE( _movieData->instance, _composition );
+	DELETE( instance, _composition->nodes );
+
+	DELETE( instance, _composition );
 }
 //////////////////////////////////////////////////////////////////////////
 void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop )
@@ -800,7 +806,41 @@ aeMovieResult begin_movie_render_context( const aeMovieComposition * _compositio
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_sprite_vertices( const aeMovieRenderContext * _context, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _mesh )
+static void __make_mesh_vertices( const aeMovieLayerMesh * _layerMesh, uint32_t _frame, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
+{
+	if( _layerMesh->immutable == AE_TRUE )
+	{
+		const aeMovieMesh * mesh = &_layerMesh->immutable_mesh;
+
+		_renderMesh->vertexCount = mesh->vertex_count;
+		_renderMesh->indexCount = mesh->indices_count;
+
+		for( uint32_t i = 0; i != mesh->vertex_count; ++i )
+		{
+			mul_v3_v2_m4( _renderMesh->position + i * 3, mesh->positions + i * 2, _matrix );
+		}
+
+		_renderMesh->uv = mesh->uvs;
+		_renderMesh->indices = mesh->indices;
+	}
+	else
+	{
+		const aeMovieMesh * mesh = _layerMesh->meshes + _frame;
+
+		_renderMesh->vertexCount = mesh->vertex_count;
+		_renderMesh->indexCount = mesh->indices_count;
+
+		for( uint32_t i = 0; i != mesh->vertex_count; ++i )
+		{
+			mul_v3_v2_m4( _renderMesh->position + i * 3, mesh->positions + i * 2, _matrix );
+		}
+
+		_renderMesh->uv = mesh->uvs;
+		_renderMesh->indices = mesh->indices;
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+static void __make_sprite_vertices( const aeMovieRenderContext * _context, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
 {
 	float v_position[8];
 
@@ -815,17 +855,17 @@ static void __make_sprite_vertices( const aeMovieRenderContext * _context, float
 	*v++ = _offset_x + _width * 0.f;
 	*v++ = _offset_y + _height * 1.f;
 
-	_mesh->vertexCount = 4;
-	_mesh->indexCount = 6;
+	_renderMesh->vertexCount = 4;
+	_renderMesh->indexCount = 6;
 
-	mul_v3_v2_m4( _mesh->position + 0, v_position + 0, _matrix );
-	mul_v3_v2_m4( _mesh->position + 3, v_position + 2, _matrix );
-	mul_v3_v2_m4( _mesh->position + 6, v_position + 4, _matrix );
-	mul_v3_v2_m4( _mesh->position + 9, v_position + 6, _matrix );
+	mul_v3_v2_m4( _renderMesh->position + 0, v_position + 0, _matrix );
+	mul_v3_v2_m4( _renderMesh->position + 3, v_position + 2, _matrix );
+	mul_v3_v2_m4( _renderMesh->position + 6, v_position + 4, _matrix );
+	mul_v3_v2_m4( _renderMesh->position + 9, v_position + 6, _matrix );
 
-	_mesh->uv = _context->sprite_uv;
+	_renderMesh->uv = _context->sprite_uv;
 
-	_mesh->indices = _context->sprite_indices;
+	_renderMesh->indices = _context->sprite_indices;
 }
 //////////////////////////////////////////////////////////////////////////
 void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index, aeMovieRenderMesh * _vertices )
@@ -878,10 +918,21 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 		{
 			aeMovieResourceSolid * resource_solid = (aeMovieResourceSolid *)resource;
 
-			float width = resource_solid->width;
-			float height = resource_solid->height;
+			if( layer->mesh == AE_NULL )
+			{
+				float width = resource_solid->width;
+				float height = resource_solid->height;
 
-			__make_sprite_vertices( _context, 0.f, 0.f, width, height, node->matrix, _vertices );
+				__make_sprite_vertices( _context, 0.f, 0.f, width, height, node->matrix, _vertices );
+			}
+			else
+			{
+				float frameDuration = composition->composition_data->frameDuration;
+
+				uint32_t frame = (uint32_t)(node->current_time / frameDuration);
+
+				__make_mesh_vertices( layer->mesh, frame, node->matrix, _vertices );
+			}
 
 			_vertices->r = resource_solid->r;
 			_vertices->g = resource_solid->g;
@@ -915,8 +966,8 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			float offset_x = resource_image->offset_x;
 			float offset_y = resource_image->offset_y;
 
-			float width = resource_image->width;
-			float height = resource_image->height;
+			float width = resource_image->trim_width;
+			float height = resource_image->trim_height;
 
 			__make_sprite_vertices( _context, offset_x, offset_y, width, height, node->matrix, _vertices );
 
@@ -950,8 +1001,8 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			float offset_x = resource_image->offset_x;
 			float offset_y = resource_image->offset_y;
 
-			float width = resource_image->width;
-			float height = resource_image->height;
+			float width = resource_image->trim_width;
+			float height = resource_image->trim_height;
 
 			__make_sprite_vertices( _context, offset_x, offset_y, width, height, node->matrix, _vertices );
 

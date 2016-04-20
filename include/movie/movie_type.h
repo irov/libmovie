@@ -39,7 +39,8 @@ extern "C" {
 	{
 		uint32_t vertex_count;
 		uint32_t indices_count;
-		float * vertices;
+		float * positions;
+		float * uvs;
 		uint16_t * indices;
 
 	} aeMovieMesh;

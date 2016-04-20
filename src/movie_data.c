@@ -19,8 +19,10 @@ aeMovieData * create_movie_data( const aeMovieInstance * _instance )
 	return m;
 }
 //////////////////////////////////////////////////////////////////////////
-void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _movieData )
+void delete_movie_data( const aeMovieData * _movieData )
 {
+	const aeMovieInstance * instance = _movieData->instance;
+
 	uint32_t resource_count = _movieData->resource_count;
 
 	for( const aeMovieResource
@@ -35,12 +37,10 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 
 		switch( type )
 		{
-		case AE_MOVIE_RESOURCE_SOCKET_SHAPE:
+		case AE_MOVIE_RESOURCE_SOCKET:
 			{
-				const aeMovieResourceSocketShape * resource = (const aeMovieResourceSocketShape *)base_resource;
-
-				DELETEN( _instance, resource->polygons );
-
+				const aeMovieResourceSocket * resource = (const aeMovieResourceSocket *)base_resource;
+				
 				(void)resource;
 
 			}break;
@@ -55,7 +55,7 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 			{
 				const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)base_resource;
 
-				DELETEN( _instance, resource->path );
+				DELETEN( instance, resource->path );
 
 				(void)resource;
 
@@ -64,7 +64,7 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 			{
 				const aeMovieResourceSound * resource = (const aeMovieResourceSound *)base_resource;
 
-				DELETEN( _instance, resource->path );
+				DELETEN( instance, resource->path );
 
 				(void)resource;
 
@@ -73,7 +73,7 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 			{
 				const aeMovieResourceImage * resource = (const aeMovieResourceImage *)base_resource;
 
-				DELETEN( _instance, resource->path );
+				DELETEN( instance, resource->path );
 
 				(void)resource;
 
@@ -82,7 +82,7 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 			{
 				const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)base_resource;
 
-				DELETEN( _instance, resource->images );
+				DELETEN( instance, resource->images );
 
 				(void)resource;
 
@@ -91,7 +91,7 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 			{
 				const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
 
-				DELETEN( _instance, resource->atlases );
+				DELETEN( instance, resource->atlases );
 
 				(void)resource;
 			}break;
@@ -106,7 +106,7 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 	{
 		const aeMovieCompositionData * composition = it_composition;
 
-		DELETEN( _instance, composition->name );
+		DELETEN( instance, composition->name );
 
 		for( const aeMovieLayerData
 			*it_layer = composition->layers,
@@ -116,55 +116,48 @@ void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _
 		{
 			const aeMovieLayerData * layer = it_layer;
 			
-			DELETEN( _instance, layer->name );
+			DELETEN( instance, layer->name );
 
 			if( layer->timeremap != AE_NULL )
 			{
-				DELETEN( _instance, layer->timeremap->times );
+				DELETEN( instance, layer->timeremap->times );
 
-				DELETEN( _instance, layer->timeremap );
+				DELETEN( instance, layer->timeremap );
 			}
 
 			if( layer->mesh != AE_NULL )
 			{
-				DELETEN( _instance, layer->mesh->meshes );
+				DELETEN( instance, layer->mesh->meshes );
 
-				DELETEN( _instance, layer->mesh );
-			}
-
-			if( layer->polygon != AE_NULL )
-			{
-				DELETEN( _instance, layer->polygon->polygons );
-
-				DELETEN( _instance, layer->polygon );
+				DELETEN( instance, layer->mesh );
 			}
 
 			if( layer->viewport_matte != AE_NULL )
 			{
-				DELETEN( _instance, layer->viewport_matte->viewports );
+				DELETEN( instance, layer->viewport_matte->viewports );
 
-				DELETEN( _instance, layer->viewport_matte );
+				DELETEN( instance, layer->viewport_matte );
 			}
 
-			DELETEN( _instance, layer->property_anchor_point_x );
-			DELETEN( _instance, layer->property_anchor_point_y );
-			DELETEN( _instance, layer->property_anchor_point_z );
-			DELETEN( _instance, layer->property_position_x );
-			DELETEN( _instance, layer->property_position_y );
-			DELETEN( _instance, layer->property_position_z );
-			DELETEN( _instance, layer->property_rotation_x );
-			DELETEN( _instance, layer->property_rotation_y );
-			DELETEN( _instance, layer->property_rotation_z );
-			DELETEN( _instance, layer->property_scale_x );
-			DELETEN( _instance, layer->property_scale_y );
-			DELETEN( _instance, layer->property_scale_z );
-			DELETEN( _instance, layer->property_opacity );
+			DELETEN( instance, layer->property_anchor_point_x );
+			DELETEN( instance, layer->property_anchor_point_y );
+			DELETEN( instance, layer->property_anchor_point_z );
+			DELETEN( instance, layer->property_position_x );
+			DELETEN( instance, layer->property_position_y );
+			DELETEN( instance, layer->property_position_z );
+			DELETEN( instance, layer->property_rotation_x );
+			DELETEN( instance, layer->property_rotation_y );
+			DELETEN( instance, layer->property_rotation_z );
+			DELETEN( instance, layer->property_scale_x );
+			DELETEN( instance, layer->property_scale_y );
+			DELETEN( instance, layer->property_scale_z );
+			DELETEN( instance, layer->property_opacity );
 		}
 
-		DELETEN( _instance, composition->layers );
+		DELETEN( instance, composition->layers );
 	}
 
-	DELETE( _instance, _movieData );
+	DELETE( instance, _movieData );
 }
 //////////////////////////////////////////////////////////////////////////
 static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * _stream, float * _values )
@@ -291,7 +284,6 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 	_layer->timeremap = AE_NULL;
 	_layer->mesh = AE_NULL;
-	_layer->polygon = AE_NULL;
 	_layer->viewport_matte = AE_NULL;
 
 	for( ;; )
@@ -346,33 +338,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 						READ_MESH( _movieData->instance, _stream, it_mesh );
 					}
 				}
-			}
-		case 3:
-			{
-				_layer->polygon = NEW( _movieData->instance, aeMovieLayerPolygon );
-
-				_layer->polygon->immutable = READB( _stream );
-
-				if( _layer->polygon->immutable == AE_TRUE )
-				{
-					READ_POLYGON( _movieData->instance, _stream, &_layer->polygon->immutable_polygon );
-
-					_layer->polygon->polygons = AE_NULL;
-				}
-				else
-				{
-					_layer->polygon->polygons = NEWN( _movieData->instance, aeMoviePolygon, _layer->frame_count );
-
-					for( aeMoviePolygon
-						*it_polygon = _layer->polygon->polygons,
-						*it_polygon_end = _layer->polygon->polygons + _layer->frame_count;
-					it_polygon != it_polygon_end;
-					++it_polygon )
-					{
-						READ_POLYGON( _movieData->instance, _stream, it_polygon );
-					}
-				}
-			}
+			}break;
 		case 4:
 			{
 				_layer->viewport_matte = NEW( _movieData->instance, aeMovieLayerViewportMatte );
@@ -398,7 +364,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 						READ_VIEWPORT( _stream, it_viewport );
 					}
 				}
-			}
+			}break;
 		}
 
 		if( extension == 0 )
@@ -474,7 +440,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 		{
 			_layer->renderable = AE_FALSE;
 		}break;
-	case AE_MOVIE_LAYER_TYPE_SOCKET_SHAPE:
+	case AE_MOVIE_LAYER_TYPE_SOCKET:
 		{
 			_layer->renderable = AE_FALSE;
 		}break;
@@ -647,22 +613,13 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 
 		switch( type )
 		{
-		case AE_MOVIE_RESOURCE_SOCKET_SHAPE:
+		case AE_MOVIE_RESOURCE_SOCKET:
 			{
-				aeMovieResourceSocketShape * resource = NEW( _movieData->instance, aeMovieResourceSocketShape );
+				aeMovieResourceSocket * resource = NEW( _movieData->instance, aeMovieResourceSocket );
 
 				uint32_t polygon_count = READZ( _stream );
 
-				resource->polygons = NEWN( _movieData->instance, aeMoviePolygon, polygon_count );
-
-				for( aeMoviePolygon
-					*it_polygon = resource->polygons,
-					*it_polygon_end = resource->polygons + polygon_count;
-				it_polygon != it_polygon_end;
-				++it_polygon )
-				{
-					READ_POLYGON( _movieData->instance, _stream, it_polygon );
-				}
+				READ_POLYGON( _movieData->instance, _stream, &resource->polygon );
 
 				resource->data = AE_NULL;
 
@@ -712,12 +669,12 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 
 				READ_STRING( _movieData->instance, _stream, resource->path );
 
-				READ( _stream, resource->width);
-				READ( _stream, resource->height );
+				READ( _stream, resource->base_width );
+				READ( _stream, resource->base_height );
+				READ( _stream, resource->trim_width);
+				READ( _stream, resource->trim_height );
 				READ( _stream, resource->offset_x );
-				READ( _stream, resource->offset_y );
-
-				
+				READ( _stream, resource->offset_y );								
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;

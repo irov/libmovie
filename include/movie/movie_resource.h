@@ -10,7 +10,7 @@ extern "C" {
 	typedef enum aeMovieResourceTypeEnum
 	{
 		AE_MOVIE_RESOURCE_NONE = 0,
-		AE_MOVIE_RESOURCE_SOCKET_SHAPE = 2,
+		AE_MOVIE_RESOURCE_SOCKET = 2,
 		AE_MOVIE_RESOURCE_SOLID = 4,
 		AE_MOVIE_RESOURCE_VIDEO = 5,
 		AE_MOVIE_RESOURCE_SOUND = 6,
@@ -34,17 +34,9 @@ extern "C" {
 	{
 		AE_MOVIE_RESOURCE_BASE();
 
-		ae_string_t name;
+		aeMoviePolygon polygon;
 
-	} aeMovieResourceInternal;
-
-	typedef struct
-	{
-		AE_MOVIE_RESOURCE_BASE();
-
-		aeMoviePolygon * polygons;
-
-	} aeMovieResourceSocketShape;
+	} aeMovieResourceSocket;
 
 	typedef struct
 	{
@@ -89,8 +81,10 @@ extern "C" {
 
 		ae_string_t path;
 
-		float width;
-		float height;
+		float base_width;
+		float base_height;
+		float trim_width;
+		float trim_height;
 		float offset_x;
 		float offset_y;
 

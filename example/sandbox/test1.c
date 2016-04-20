@@ -97,9 +97,9 @@ int main()
 		printf( "SUCCESSFUL!!\n" );
 	}
 
-	destroy_movie_composition( movieData, composition );
+	destroy_movie_composition( composition );
 
-	delete_movie_data( &instance, movieData );
+	delete_movie_data( movieData );
 	
 	return 0;
 }

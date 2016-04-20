@@ -67,7 +67,7 @@ extern "C" {
 	{
 		AE_MOVIE_LAYER_TYPE_MOVIE = 1,
 		AE_MOVIE_LAYER_TYPE_EVENT = 7,
-		AE_MOVIE_LAYER_TYPE_SOCKET_SHAPE = 8,
+		AE_MOVIE_LAYER_TYPE_SOCKET = 8,
 		AE_MOVIE_LAYER_TYPE_SLOT = 11,
 		AE_MOVIE_LAYER_TYPE_NULL = 12,
 		AE_MOVIE_LAYER_TYPE_SOLID = 14,
@@ -101,7 +101,6 @@ extern "C" {
 
 		aeMovieLayerTimeremap * timeremap;
 		aeMovieLayerMesh * mesh;
-		aeMovieLayerPolygon * polygon;
 		aeMovieLayerViewportMatte * viewport_matte;
 
 		aeMovieResource * resource;
@@ -201,7 +200,7 @@ extern "C" {
 	} aeMovieData;
 
 	aeMovieData * create_movie_data( const aeMovieInstance * _instance );
-	void delete_movie_data( const aeMovieInstance * _instance, const aeMovieData * _movie );
+	void delete_movie_data( const aeMovieData * _movie );
 
 	typedef void * (*movie_data_resource_provider_t)(const aeMovieResource * _resource, void * _data);
 

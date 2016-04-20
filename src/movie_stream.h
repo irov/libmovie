@@ -93,7 +93,10 @@ static void ae_magic_read_mesh( const aeMovieInstance * _instance, const aeMovie
 
 	if( vertex_count == 0 )
 	{
-		_mesh->vertices = AE_NULL;
+		_mesh->indices_count = 0;
+
+		_mesh->positions = AE_NULL;
+		_mesh->uvs = AE_NULL;
 		_mesh->indices = AE_NULL;
 
 		return;	
@@ -104,8 +107,11 @@ static void ae_magic_read_mesh( const aeMovieInstance * _instance, const aeMovie
 	_mesh->vertex_count = vertex_count;
 	_mesh->indices_count = indices_count;
 
-	_mesh->vertices = NEWN( _instance, float, vertex_count * 2 );
-	READN( _stream, _mesh->vertices, vertex_count * 2 );
+	_mesh->positions = NEWN( _instance, float, vertex_count * 2 );
+	READN( _stream, _mesh->positions, vertex_count * 2 );
+
+	_mesh->uvs = NEWN( _instance, float, vertex_count * 2 );
+	READN( _stream, _mesh->uvs, vertex_count * 2 );
 
 	_mesh->indices = NEWN( _instance, uint16_t, indices_count );
 	READN( _stream, _mesh->indices, indices_count );

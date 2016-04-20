@@ -56,8 +56,8 @@ extern "C" {
 	typedef void * (*ae_movie_composition_node_video_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResourceVideo * _resource, void * _data);
 	typedef void * (*ae_movie_composition_node_sound_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResourceSound * _resource, void * _data);
 	typedef void * (*ae_movie_composition_node_particle_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResourceParticle * _resource, void * _data);
+	typedef void * (*ae_movie_composition_node_socket_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResourceSocket * _resource, void * _data);
 	typedef void * (*ae_movie_composition_node_slot_provider_t)(const aeMovieLayerData * _layerData, void * _data);
-	typedef void * (*ae_movie_composition_node_socket_provider_t)(const aeMovieLayerData * _layerData, void * _data);
 
 	typedef void( *ae_movie_node_animate_update_t )(const void * _element, uint32_t _type, const ae_matrix4_t _matrix, float _opacity, void * _data);
 	typedef void( *ae_movie_node_animate_begin_t )(const void * _element, uint32_t _type, float _offset, void * _data);
@@ -71,7 +71,8 @@ extern "C" {
 		ae_movie_composition_node_video_provider_t video_provider;
 		ae_movie_composition_node_sound_provider_t sound_provider;
 		ae_movie_composition_node_particle_provider_t particle_provider;
-		ae_movie_composition_node_slot_provider_t slot_provider;		
+		ae_movie_composition_node_socket_provider_t socket_provider;
+		ae_movie_composition_node_slot_provider_t slot_provider;
 
 		ae_movie_composition_node_destroyer_t node_destroyer;
 
@@ -99,7 +100,7 @@ extern "C" {
 	} aeMovieComposition;
 
 	aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, const aeMovieCompositionProviders * providers, void * _data );
-	void destroy_movie_composition( const aeMovieData * _movieData, const aeMovieComposition * _composition );
+	void destroy_movie_composition( const aeMovieComposition * _composition );
 
 	void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
 
