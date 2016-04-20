@@ -236,7 +236,11 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 		else
 		{
 			node->in_time = _parent->in_time + layer->in_time * _stretch - _startTime;
-			node->out_time = _parent->in_time + layer->out_time * _stretch - _startTime;
+
+			float layer_out = _parent->in_time + layer->out_time * _stretch - _startTime;
+			float parent_out = _parent->out_time;
+
+			node->out_time = min_f_f( layer_out, parent_out );
 			node->stretch = _stretch;
 		}
 

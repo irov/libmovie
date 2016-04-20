@@ -3,6 +3,9 @@
 
 #	include <movie/movie_type.h>
 
+float min_f_f( float _a, float _b );
+float max_f_f( float _a, float _b );
+
 void mul_v2_v2_m4( ae_vector2_t _out, const ae_vector2_t _a, const ae_matrix4_t _b );
 void mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b );
 void mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b );
