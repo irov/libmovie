@@ -117,9 +117,7 @@ extern "C" {
 		uint8_t blend_mode;		
 		ae_bool_t threeD;
 		uint32_t params;
-
 		
-
 		uint32_t play_count;
 
 		float stretch;

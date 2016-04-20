@@ -52,21 +52,28 @@ extern "C" {
 		void * element_data;
 	} aeMovieNode;
 
-	typedef void * (*ae_movie_composition_node_camera_t)(const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
-	typedef void * (*ae_movie_composition_node_video_t)(const aeMovieLayerData * _layerData, const aeMovieResourceVideo * _resource, void * _data);
-	typedef void * (*ae_movie_composition_node_sound_t)(const aeMovieLayerData * _layerData, const aeMovieResourceSound * _resource, void * _data);
-	typedef void * (*ae_movie_composition_node_slot_t)(const aeMovieLayerData * _layerData, void * _data);
+	typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
+	typedef void * (*ae_movie_composition_node_video_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResourceVideo * _resource, void * _data);
+	typedef void * (*ae_movie_composition_node_sound_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResourceSound * _resource, void * _data);
+	typedef void * (*ae_movie_composition_node_particle_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResourceParticle * _resource, void * _data);
+	typedef void * (*ae_movie_composition_node_slot_provider_t)(const aeMovieLayerData * _layerData, void * _data);
+	typedef void * (*ae_movie_composition_node_socket_provider_t)(const aeMovieLayerData * _layerData, void * _data);
 
 	typedef void( *ae_movie_node_animate_update_t )(const void * _element, uint32_t _type, const ae_matrix4_t _matrix, float _opacity, void * _data);
 	typedef void( *ae_movie_node_animate_begin_t )(const void * _element, uint32_t _type, float _offset, void * _data);
 	typedef void( *ae_movie_node_animate_end_t )(const void * _element, uint32_t _type, void * _data);
 
+	typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
+
 	typedef struct aeMovieCompositionProviders
 	{
-		ae_movie_composition_node_camera_t camera_provider;
-		ae_movie_composition_node_video_t video_provider;
-		ae_movie_composition_node_sound_t sound_provider;
-		ae_movie_composition_node_slot_t slot_provider;
+		ae_movie_composition_node_camera_provider_t camera_provider;
+		ae_movie_composition_node_video_provider_t video_provider;
+		ae_movie_composition_node_sound_provider_t sound_provider;
+		ae_movie_composition_node_particle_provider_t particle_provider;
+		ae_movie_composition_node_slot_provider_t slot_provider;		
+
+		ae_movie_composition_node_destroyer_t node_destroyer;
 
 		ae_movie_node_animate_update_t animate_update;
 		ae_movie_node_animate_begin_t animate_begin;

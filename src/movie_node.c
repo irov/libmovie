@@ -414,6 +414,12 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 
 				node->element_data = (*_composition->providers.sound_provider)(node->layer, resource, _composition->provider_data);
 			}break;
+		case AE_MOVIE_LAYER_TYPE_PARTICLE:
+			{
+				const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)node->layer->resource;
+
+				node->element_data = (*_composition->providers.particle_provider)(node->layer, resource, _composition->provider_data);
+			}
 		case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
 				node->element_data = (*_composition->providers.slot_provider)(node->layer, _composition->provider_data);
@@ -468,6 +474,19 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 //////////////////////////////////////////////////////////////////////////
 void destroy_movie_composition( const aeMovieData * _movieData, const aeMovieComposition * _composition )
 {
+	//const aeMovieCompositionData * compositionData = _composition->composition_data;
+
+	for( const aeMovieNode
+		*it_node = _composition->nodes,
+		*it_node_end = _composition->nodes + _composition->node_count;
+	it_node != it_node_end;
+	++it_node )
+	{
+		const aeMovieNode * node = it_node;
+
+		(*_composition->providers.node_destroyer)(node->element_data, node->layer->type, _composition->provider_data);
+	}
+
 	DELETE( _movieData->instance, _composition->nodes );
 
 	DELETE( _movieData->instance, _composition );
