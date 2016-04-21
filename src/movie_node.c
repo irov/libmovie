@@ -902,6 +902,7 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 	switch( layer_type )
 	{
 	case AE_MOVIE_LAYER_TYPE_SLOT:
+	case AE_MOVIE_LAYER_TYPE_PARTICLE:
 		{
 			_vertices->vertexCount = 0;
 			_vertices->indexCount = 0;
@@ -989,10 +990,6 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			_vertices->g = 1.f;
 			_vertices->b = 1.f;
 			_vertices->a = node->opacity;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_PARTICLE:
-		{
-
 		}break;
 	case AE_MOVIE_LAYER_TYPE_IMAGE:
 		{
