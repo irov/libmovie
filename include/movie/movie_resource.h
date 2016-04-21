@@ -106,10 +106,7 @@ extern "C" {
 		AE_MOVIE_RESOURCE_BASE();
 
 		ae_string_t path;
-
-		uint32_t atlas_count;
-		aeMovieResourceImage ** atlases;
-
+		
 	} aeMovieResourceParticle;
 
 #	undef AE_MOVIE_RESOURCE_BASE

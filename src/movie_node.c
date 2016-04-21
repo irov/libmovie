@@ -419,13 +419,13 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 				const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)node->layer->resource;
 
 				node->element_data = (*_composition->providers.particle_provider)(node->layer, resource, _composition->provider_data);
-			}
+			}break;
 		case AE_MOVIE_LAYER_TYPE_SOCKET:
 			{
 				const aeMovieResourceSocket * resource = (const aeMovieResourceSocket *)node->layer->resource;
 
 				node->element_data = (*_composition->providers.socket_provider)(node->layer, resource, _composition->provider_data);
-			}
+			}break;
 		case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
 				node->element_data = (*_composition->providers.slot_provider)(node->layer, _composition->provider_data);
@@ -433,7 +433,7 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 		default:
 			{
 				node->element_data = AE_NULL;
-			}
+			}break;
 		}
 	}
 }

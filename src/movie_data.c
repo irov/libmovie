@@ -91,7 +91,7 @@ void delete_movie_data( const aeMovieData * _movieData )
 			{
 				const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
 
-				DELETEN( instance, resource->atlases );
+				DELETEN( instance, resource->path );
 
 				(void)resource;
 			}break;
@@ -709,23 +709,6 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				aeMovieResourceParticle * resource = NEW( _movieData->instance, aeMovieResourceParticle );
 
 				READ_STRING( _movieData->instance, _stream, resource->path );
-
-				uint32_t atlas_count = READZ( _stream );
-
-				resource->atlas_count = atlas_count;
-
-				resource->atlases = NEWN( _movieData->instance, aeMovieResourceImage *, atlas_count );
-
-				for( aeMovieResourceImage
-					**it_image = resource->atlases,
-					**it_image_end = resource->atlases + atlas_count;
-				it_image != it_image_end;
-				++it_image )
-				{
-					uint32_t resource_id = READZ( _stream );
-
-					*it_image = (aeMovieResourceImage *)_movieData->resources[resource_id];
-				}
 
 				*it_resource = (aeMovieResource *)resource;
 			}break;
