@@ -252,7 +252,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			node->stretch = _stretch;
 		}
 
-		node->in_frame = (uint32_t)(node->in_frame * frameDurationInv);
+		node->in_frame = (uint32_t)(node->in_time * frameDurationInv);
 		node->out_frame = (uint32_t)(node->out_time * frameDurationInv);
 
 		switch( layer->type )
