@@ -1070,7 +1070,7 @@ void set_movie_composition_timing( aeMovieComposition * _composition, float _tim
 	__update_movie_composition_node( _composition, update_revision, beginFrame, endFrame );
 }
 //////////////////////////////////////////////////////////////////////////
-void set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData )
+ae_bool_t set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData )
 {
 	for( aeMovieNode
 		*it_node = _composition->nodes,
@@ -1094,8 +1094,10 @@ void set_movie_composition_slot( aeMovieComposition * _composition, const char *
 		
 		node->element_data = _slotData;
 
-		break;
+		return AE_TRUE;
 	}
+
+	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
 void * get_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
@@ -1152,6 +1154,38 @@ ae_bool_t has_movie_composition_slot( aeMovieComposition * _composition, const c
 	}
 
 	return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+void * remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
+{
+	for( aeMovieNode
+		*it_node = _composition->nodes,
+		*it_node_end = _composition->nodes + _composition->node_count;
+	it_node != it_node_end;
+	++it_node )
+	{
+		aeMovieNode * node = it_node;
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( layer->type != AE_MOVIE_LAYER_TYPE_SLOT )
+		{
+			continue;
+		}
+
+		if( ae_strncmp( layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		{
+			continue;
+		}
+
+		void * prev_element_data = node->element_data;
+
+		node->element_data = AE_NULL;
+
+		return prev_element_data;
+	}
+
+	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
 static aeMovieResult __count_movie_redner_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )

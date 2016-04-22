@@ -145,9 +145,10 @@ extern "C" {
 
 	void update_movie_composition( aeMovieComposition * _composition, float _timing );
 
-	void set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData );
+	ae_bool_t set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData );
 	void * get_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
 	ae_bool_t has_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
+	void * remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
 	
 	typedef struct aeMovieRenderContext
 	{
