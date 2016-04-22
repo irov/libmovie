@@ -429,40 +429,32 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 		aeMovieNode * node = it_node;
 
 		uint8_t type = node->layer->type;
-
+				
 		switch( type )
 		{
 		case AE_MOVIE_LAYER_TYPE_VIDEO:
 			{
-				const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)node->layer->resource;
-
-				node->element_data = (*_composition->providers.video_provider)(node->layer, resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SOUND:
 			{
-				const aeMovieResourceSound * resource = (const aeMovieResourceSound *)node->layer->resource;
-
-				node->element_data = (*_composition->providers.sound_provider)(node->layer, resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_PARTICLE:
 			{
-				const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)node->layer->resource;
-
-				node->element_data = (*_composition->providers.particle_provider)(node->layer, resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SOCKET:
 			{
-				const aeMovieResourceSocket * resource = (const aeMovieResourceSocket *)node->layer->resource;
-
-				node->element_data = (*_composition->providers.socket_provider)(node->layer, resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
-				node->element_data = (*_composition->providers.slot_provider)(node->layer, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_EVENT:
 			{
-				node->element_data = (*_composition->providers.event_provider)(node->layer, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
 			}break;
 		default:
 			{
@@ -486,53 +478,10 @@ static void * dummy_ae_movie_composition_node_camera( const ae_string_t _name, c
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_node_video( const aeMovieLayerData * _layerData, const aeMovieResourceVideo * _resource, void * _data )
+static void * dummy_ae_movie_composition_node_provider( const aeMovieLayerData * _layerData, const aeMovieResource * _resource, void * _data )
 {
 	(void)_layerData;
 	(void)_resource;
-	(void)_data;
-
-	return AE_NULL;
-}
-//////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_node_sound( const aeMovieLayerData * _layerData, const aeMovieResourceSound * _resource, void * _data )
-{
-	(void)_layerData;
-	(void)_resource;
-	(void)_data;
-
-	return AE_NULL;
-}
-//////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_node_particle( const aeMovieLayerData * _layerData, const aeMovieResourceParticle * _resource, void * _data )
-{
-	(void)_layerData;
-	(void)_resource;
-	(void)_data;
-
-	return AE_NULL;
-}
-//////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_node_socket( const aeMovieLayerData * _layerData, const aeMovieResourceSocket * _resource, void * _data )
-{
-	(void)_layerData;
-	(void)_resource;
-	(void)_data;
-
-	return AE_NULL;
-}
-//////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_node_slot( const aeMovieLayerData * _layerData, void * _data )
-{
-	(void)_layerData;
-	(void)_data;
-
-	return AE_NULL;
-}
-//////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_node_event( const aeMovieLayerData * _layerData, void * _data )
-{
-	(void)_layerData;
 	(void)_data;
 
 	return AE_NULL;
@@ -604,12 +553,7 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	composition->nodes = NEWN( _movieData->instance, aeMovieNode, node_count );
 
 	composition->providers.camera_provider = providers->camera_provider ? providers->camera_provider : &dummy_ae_movie_composition_node_camera;
-	composition->providers.video_provider = providers->video_provider ? providers->video_provider : &dummy_ae_movie_composition_node_video;
-	composition->providers.sound_provider = providers->sound_provider ? providers->sound_provider : &dummy_ae_movie_composition_node_sound;
-	composition->providers.particle_provider = providers->particle_provider ? providers->particle_provider : &dummy_ae_movie_composition_node_particle;
-	composition->providers.socket_provider = providers->socket_provider ? providers->socket_provider : &dummy_ae_movie_composition_node_socket;
-	composition->providers.slot_provider = providers->slot_provider ? providers->slot_provider : &dummy_ae_movie_composition_node_slot;
-	composition->providers.event_provider = providers->event_provider ? providers->event_provider : &dummy_ae_movie_composition_node_event;
+	composition->providers.node_provider = providers->node_provider ? providers->node_provider : &dummy_ae_movie_composition_node_provider;
 	composition->providers.node_destroyer = providers->node_destroyer ? providers->node_destroyer : &dummy_ae_movie_composition_node_destroyer;
 	composition->providers.animate_update = providers->animate_update ? providers->animate_update : &dummy_ae_movie_node_animate_update;
 	composition->providers.animate_begin = providers->animate_begin ? providers->animate_begin : &dummy_ae_movie_node_animate_begin;
