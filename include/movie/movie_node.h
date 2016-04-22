@@ -34,6 +34,10 @@ extern "C" {
 
 		float in_time;
 		float out_time;
+
+		uint32_t in_frame;
+		uint32_t out_frame;
+
 		float stretch;
 		float current_time;
 
@@ -132,10 +136,12 @@ extern "C" {
 
 	void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
 	void set_movie_composition_play_count( aeMovieComposition * _composition, uint32_t _playCount );
-	void play_movie_composition( aeMovieComposition * _composition );
+	void play_movie_composition( aeMovieComposition * _composition, float _timing );
 	void stop_movie_composition( aeMovieComposition * _composition );
 	void pause_movie_composition( aeMovieComposition * _composition );
 	void resume_movie_composition( aeMovieComposition * _composition );
+
+	void set_movie_composition_timing( aeMovieComposition * _composition, float _timing );
 
 	void update_movie_composition( aeMovieComposition * _composition, float _timing );
 

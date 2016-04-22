@@ -495,6 +495,8 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	READ( _stream, _compositionData->frameDuration );
 	READ( _stream, _compositionData->duration );
 
+	_compositionData->frameCount = (uint32_t)( _compositionData->duration / _compositionData->frameDuration + 0.5f );
+
 	_compositionData->flags = 0;
 
 	for( ;; )

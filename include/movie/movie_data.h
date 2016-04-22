@@ -171,6 +171,8 @@ extern "C" {
 		float frameDuration;
 		float duration;
 
+		uint32_t frameCount;
+
 		uint32_t flags;
 
 		float loopSegment[2];
