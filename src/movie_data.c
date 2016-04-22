@@ -478,7 +478,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 		}break;
 	case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 		{
-			_layer->renderable = AE_FALSE;
+			_layer->renderable = AE_TRUE;
 		}break;
 	}
 

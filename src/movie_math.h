@@ -3,6 +3,9 @@
 
 #	include <movie/movie_type.h>
 
+ae_bool_t equal_f_z( float _a );
+ae_bool_t equal_f_f( float _a, float _b );
+
 float min_f_f( float _a, float _b );
 float max_f_f( float _a, float _b );
 
