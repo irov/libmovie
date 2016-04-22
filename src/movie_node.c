@@ -544,7 +544,7 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	composition->timing = 0.f;
 	composition->loop = AE_FALSE;
 
-	composition->play = AE_TRUE;
+	composition->play = AE_FALSE;
 	composition->pause = AE_FALSE;	
 
 	uint32_t node_count = __get_movie_composition_data_node_count( _movieData, _compositionData );
