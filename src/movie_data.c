@@ -276,10 +276,10 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 	_layer->index = READZ( _stream );
 	
-	READ( _stream, _layer->type );
-
 	_layer->is_track_matte = READB( _stream );
 	_layer->has_track_matte = READB( _stream );
+
+	READ( _stream, _layer->type );
 
 	_layer->frame_count = READZ( _stream );
 
@@ -427,58 +427,65 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 		return AE_MOVIE_FAILED;
 	}
 
-	uint8_t layer_type = _layer->type;
-	
-	switch( layer_type )
+	if( _layer->is_track_matte == AE_TRUE )
 	{
-	case AE_MOVIE_LAYER_TYPE_MOVIE:
+		_layer->renderable = AE_FALSE;
+	}
+	else
+	{
+		uint8_t layer_type = _layer->type;
+
+		switch( layer_type )
 		{
-			_layer->renderable = AE_FALSE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_EVENT:
-		{
-			_layer->renderable = AE_FALSE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_SOCKET:
-		{
-			_layer->renderable = AE_FALSE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_SLOT:
-		{
-			_layer->renderable = AE_TRUE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_NULL:
-		{
-			_layer->renderable = AE_FALSE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_SOLID:
-		{
-			_layer->renderable = AE_TRUE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_SEQUENCE:
-		{
-			_layer->renderable = AE_TRUE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_VIDEO:
-		{
-			_layer->renderable = AE_TRUE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_SOUND:
-		{
-			_layer->renderable = AE_FALSE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_PARTICLE:
-		{
-			_layer->renderable = AE_TRUE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_IMAGE:
-		{
-			_layer->renderable = AE_TRUE;
-		}break;
-	case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-		{
-			_layer->renderable = AE_TRUE;
-		}break;
+		case AE_MOVIE_LAYER_TYPE_MOVIE:
+			{
+				_layer->renderable = AE_FALSE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_EVENT:
+			{
+				_layer->renderable = AE_FALSE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SOCKET:
+			{
+				_layer->renderable = AE_FALSE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SLOT:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_NULL:
+			{
+				_layer->renderable = AE_FALSE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SOLID:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_VIDEO:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SOUND:
+			{
+				_layer->renderable = AE_FALSE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_PARTICLE:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_IMAGE:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
+		}
 	}
 
 	return AE_MOVIE_SUCCESSFUL;
