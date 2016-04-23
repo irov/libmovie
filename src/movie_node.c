@@ -9,7 +9,7 @@
 #	endif
 
 //////////////////////////////////////////////////////////////////////////
-static float __make_movie_layer_properties_fixed( ae_matrix4_t _out, const aeMovieLayerData * _layer, uint32_t _index )
+static float __make_movie_layer_properties_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index )
 {
 	float anchor_point[3];
 	float position[3];
@@ -18,13 +18,13 @@ static float __make_movie_layer_properties_fixed( ae_matrix4_t _out, const aeMov
 	float opacity;
 
 #	define AE_FIXED_PROPERTY( Mask, immutableName, propertyName, outName )\
-	if( _layer->immutable_property_mask & Mask )\
+	if( _transformation->immutable_property_mask & Mask )\
 		{\
-		outName = _layer->immutableName;\
+		outName = _transformation->immutableName;\
 		}\
 		else\
 		{\
-		outName = _layer->propertyName[_index];\
+		outName = _transformation->propertyName[_index];\
 		}
 
 	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, immuttable_anchor_point_x, property_anchor_point_x, anchor_point[0] );
@@ -52,7 +52,7 @@ static float __make_movie_layer_properties_fixed( ae_matrix4_t _out, const aeMov
 	return opacity;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __make_movie_layer_properties_interpolate( ae_matrix4_t _out, const aeMovieLayerData * _layer, uint32_t _index, float _t )
+static float __make_movie_layer_properties_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index, float _t )
 {
 	float anchor_point[3];
 	float position[3];
@@ -61,14 +61,14 @@ static float __make_movie_layer_properties_interpolate( ae_matrix4_t _out, const
 	float opacity;
 
 #	define AE_LINERP_PROPERTY( Mask, immutableName, propertyName, outName )\
-	if( _layer->immutable_property_mask & Mask )\
+	if( _transformation->immutable_property_mask & Mask )\
 				{\
-		outName = _layer->immutableName;\
+		outName = _transformation->immutableName;\
 				}\
 								else\
 				{\
-		float value0 = _layer->propertyName[_index + 0];\
-		float value1 = _layer->propertyName[_index + 1];\
+		float value0 = _transformation->propertyName[_index + 0];\
+		float value1 = _transformation->propertyName[_index + 1];\
 		outName = linerp_f1( value0, value1, _t );\
 				}
 
@@ -89,14 +89,14 @@ static float __make_movie_layer_properties_interpolate( ae_matrix4_t _out, const
 #	undef AE_LINERP_PROPERTY
 
 #	define AE_LINERP_PROPERTY2( Mask, immutableName, propertyName, outName )\
-	if( _layer->immutable_property_mask & Mask )\
+	if( _transformation->immutable_property_mask & Mask )\
 				{\
-		outName = _layer->immutableName; \
+		outName = _transformation->immutableName; \
 				}\
 								else\
 				{\
-		float value0 = _layer->propertyName[_index + 0];\
-		float value1 = _layer->propertyName[_index + 1];\
+		float value0 = _transformation->propertyName[_index + 0];\
+		float value1 = _transformation->propertyName[_index + 1];\
 		float correct_rotate_from = angle_norm( value0 );\
 		float correct_rotate_to = angle_correct_interpolate_from_to( correct_rotate_from, value1 );\
 		outName = linerp_f1( correct_rotate_from, correct_rotate_to, _t ); \
@@ -155,6 +155,45 @@ static const aeMovieLayerData * __find_layer_by_index( const aeMovieCompositionD
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+static void __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _trackMatte )
+{
+	uint32_t begin_index = *_iterator;
+
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		aeMovieNode * node = _nodes + ((*_iterator)++);
+
+		node->prev_track_matte = _trackMatte;
+		
+		if( layer->has_track_matte == AE_TRUE )
+		{
+			aeMovieNode * track_matte_node = _nodes + ((*_iterator) - 1);
+
+			node->track_matte = node;
+		}
+
+		uint8_t layer_type = node->layer->type;
+
+		switch( layer_type )
+		{
+		case AE_MOVIE_LAYER_TYPE_MOVIE:
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+			{
+				__setup_movie_node_track_matte( _nodes, _iterator, layer->sub_composition, node->track_matte );
+			}break;
+		default:
+			{
+			}break;
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent )
 {
 	uint32_t begin_index = *_iterator;
@@ -211,7 +250,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 		}
 
 		aeMovieNode * node = __find_node_by_layer( _nodes, begin_index, end_index, layer );
-
+		
 		const aeMovieLayerData * parent_layer = __find_layer_by_index( _compositionData, parent_index );
 
 		aeMovieNode * parent_node = __find_node_by_layer( _nodes, begin_index, end_index, parent_layer );
@@ -567,6 +606,10 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 
 	__setup_movie_node_relative( composition->nodes, &node_relative_iterator, _compositionData, AE_NULL );
 
+	uint32_t node_track_matte_iterator = 0;
+
+	__setup_movie_node_track_matte( composition->nodes, &node_track_matte_iterator, _compositionData, AE_NULL );
+
 	uint32_t node_time_iterator = 0;
 
 	__setup_movie_node_time( composition->nodes, &node_time_iterator, _compositionData, AE_NULL, 1.f, 0.f );
@@ -690,7 +733,7 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 
 	if( _node->relative == AE_NULL )
 	{
-		float local_opacity = __make_movie_layer_properties_fixed( _node->matrix, _node->layer, _frame );
+		float local_opacity = __make_movie_layer_properties_fixed( _node->matrix, &_node->layer->transformation, _frame );
 
 		_node->composition_opactity = _node->opacity;
 		_node->opacity = local_opacity;
@@ -706,7 +749,7 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 	}
 
 	ae_matrix4_t local_matrix;
-	float local_opacity = __make_movie_layer_properties_fixed( local_matrix, _node->layer, _frame );
+	float local_opacity = __make_movie_layer_properties_fixed( local_matrix, &_node->layer->transformation, _frame );
 
 	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
@@ -733,7 +776,7 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 
 	if( _node->relative == AE_NULL )
 	{
-		float local_opacity = __make_movie_layer_properties_interpolate( _node->matrix, _node->layer, _frame, _t );
+		float local_opacity = __make_movie_layer_properties_interpolate( _node->matrix, &_node->layer->transformation, _frame, _t );
 
 		_node->composition_opactity = _node->opacity;
 		_node->opacity = local_opacity;	
@@ -749,7 +792,7 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 	}
 
 	ae_matrix4_t local_matrix;
-	float local_opacity = __make_movie_layer_properties_interpolate( local_matrix, _node->layer, _frame, _t );
+	float local_opacity = __make_movie_layer_properties_interpolate( local_matrix, &_node->layer->transformation, _frame, _t );
 
 	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 

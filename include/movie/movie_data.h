@@ -36,14 +36,38 @@ extern "C" {
 
 	} aeMovieLayerPolygon;
 
-	typedef struct
+	typedef struct aeMovieLayerTransformation
 	{
-		ae_bool_t immutable;
-		aeMovieViewport immutable_viewport;
+		uint32_t immutable_property_mask;
 
-		aeMovieViewport * viewports;
+		float immuttable_anchor_point_x;
+		float immuttable_anchor_point_y;
+		float immuttable_anchor_point_z;
+		float immuttable_position_x;
+		float immuttable_position_y;
+		float immuttable_position_z;
+		float immuttable_rotation_x;
+		float immuttable_rotation_y;
+		float immuttable_rotation_z;
+		float immuttable_scale_x;
+		float immuttable_scale_y;
+		float immuttable_scale_z;
+		float immuttable_opacity;
 
-	} aeMovieLayerViewportMatte;
+		float * property_anchor_point_x;
+		float * property_anchor_point_y;
+		float * property_anchor_point_z;
+		float * property_position_x;
+		float * property_position_y;
+		float * property_position_z;
+		float * property_rotation_x;
+		float * property_rotation_y;
+		float * property_rotation_z;
+		float * property_scale_x;
+		float * property_scale_y;
+		float * property_scale_z;
+		float * property_opacity;
+	} aeMovieLayerTransformation;
 
 	typedef enum aeMoviePropertyImmutableEnum
 	{
@@ -97,12 +121,15 @@ extern "C" {
 
 		struct aeMovieCompositionData * composition;
 
+		ae_bool_t is_track_matte;
+		
+		ae_bool_t has_track_matte;
+
 		uint32_t frame_count;
 
 		aeMovieLayerTimeremap * timeremap;
 		aeMovieLayerMesh * mesh;
-		aeMovieLayerViewportMatte * viewport_matte;
-
+		
 		aeMovieResource * resource;
 		struct aeMovieCompositionData * sub_composition;
 
@@ -121,35 +148,7 @@ extern "C" {
 
 		float stretch;
 				
-		uint32_t immutable_property_mask;
-
-		float immuttable_anchor_point_x;
-		float immuttable_anchor_point_y;
-		float immuttable_anchor_point_z;
-		float immuttable_position_x;
-		float immuttable_position_y;
-		float immuttable_position_z;
-		float immuttable_rotation_x;
-		float immuttable_rotation_y;
-		float immuttable_rotation_z;
-		float immuttable_scale_x;
-		float immuttable_scale_y;
-		float immuttable_scale_z;
-		float immuttable_opacity;
-
-		float * property_anchor_point_x;
-		float * property_anchor_point_y;
-		float * property_anchor_point_z;
-		float * property_position_x;
-		float * property_position_y;
-		float * property_position_z;
-		float * property_rotation_x;
-		float * property_rotation_y;
-		float * property_rotation_z;
-		float * property_scale_x;
-		float * property_scale_y;
-		float * property_scale_z;
-		float * property_opacity;
+		aeMovieLayerTransformation transformation;
 	} aeMovieLayerData;
 	
 	typedef enum

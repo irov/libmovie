@@ -31,6 +31,8 @@ extern "C" {
 		const aeMovieLayerData * layer;
 
 		struct aeMovieNode * relative;
+		struct aeMovieNode * track_matte;
+		struct aeMovieNode * prev_track_matte;
 
 		float in_time;
 		float out_time;
@@ -127,6 +129,7 @@ extern "C" {
 
 	void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
 	void set_movie_composition_play_count( aeMovieComposition * _composition, uint32_t _playCount );
+
 	void play_movie_composition( aeMovieComposition * _composition, float _timing );
 	void stop_movie_composition( aeMovieComposition * _composition );
 	void pause_movie_composition( aeMovieComposition * _composition );
