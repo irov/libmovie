@@ -1,5 +1,6 @@
 #	include "movie/movie_node.h"
 
+#	include "movie_transformation.h"
 #	include "movie_memory.h"
 #	include "movie_math.h"
 #	include "movie_utils.h"
@@ -8,110 +9,6 @@
 #	define AE_MOVIE_MAX_LAYER_NAME 128
 #	endif
 
-//////////////////////////////////////////////////////////////////////////
-static float __make_movie_layer_properties_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index )
-{
-	float anchor_point[3];
-	float position[3];
-	float scale[3];
-	float rotation[3];
-	float opacity;
-
-#	define AE_FIXED_PROPERTY( Mask, immutableName, propertyName, outName )\
-	if( _transformation->immutable_property_mask & Mask )\
-		{\
-		outName = _transformation->immutableName;\
-		}\
-		else\
-		{\
-		outName = _transformation->propertyName[_index];\
-		}
-
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, immuttable_anchor_point_x, property_anchor_point_x, anchor_point[0] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, immuttable_anchor_point_y, property_anchor_point_y, anchor_point[1] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, immuttable_anchor_point_z, property_anchor_point_z, anchor_point[2] );
-
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, immuttable_position_x, property_position_x, position[0] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, immuttable_position_y, property_position_y, position[1] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, immuttable_position_z, property_position_z, position[2] );
-
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, immuttable_scale_x, property_scale_x, scale[0] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, immuttable_scale_y, property_scale_y, scale[1] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, immuttable_scale_z, property_scale_z, scale[2] );
-
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x, rotation[0] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y, rotation[1] );
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z, rotation[2] );
-
-	AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_OPACITY, immuttable_opacity, property_opacity, opacity );
-
-#	undef AE_FIXED_PROPERTY
-
-	make_transformation_m4( _out, position, anchor_point, scale, rotation );
-
-	return opacity;
-}
-//////////////////////////////////////////////////////////////////////////
-static float __make_movie_layer_properties_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index, float _t )
-{
-	float anchor_point[3];
-	float position[3];
-	float scale[3];
-	float rotation[3];
-	float opacity;
-
-#	define AE_LINERP_PROPERTY( Mask, immutableName, propertyName, outName )\
-	if( _transformation->immutable_property_mask & Mask )\
-				{\
-		outName = _transformation->immutableName;\
-				}\
-								else\
-				{\
-		float value0 = _transformation->propertyName[_index + 0];\
-		float value1 = _transformation->propertyName[_index + 1];\
-		outName = linerp_f1( value0, value1, _t );\
-				}
-
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, immuttable_anchor_point_x, property_anchor_point_x, anchor_point[0] );
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, immuttable_anchor_point_y, property_anchor_point_y, anchor_point[1] );
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, immuttable_anchor_point_z, property_anchor_point_z, anchor_point[2] );
-
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, immuttable_position_x, property_position_x, position[0] );
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, immuttable_position_y, property_position_y, position[1] );
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, immuttable_position_z, property_position_z, position[2] );
-
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, immuttable_scale_x, property_scale_x, scale[0] );
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, immuttable_scale_y, property_scale_y, scale[1] );
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, immuttable_scale_z, property_scale_z, scale[2] );
-
-	AE_LINERP_PROPERTY( AE_MOVIE_IMMUTABLE_OPACITY, immuttable_opacity, property_opacity, opacity );
-
-#	undef AE_LINERP_PROPERTY
-
-#	define AE_LINERP_PROPERTY2( Mask, immutableName, propertyName, outName )\
-	if( _transformation->immutable_property_mask & Mask )\
-				{\
-		outName = _transformation->immutableName; \
-				}\
-								else\
-				{\
-		float value0 = _transformation->propertyName[_index + 0];\
-		float value1 = _transformation->propertyName[_index + 1];\
-		float correct_rotate_from = angle_norm( value0 );\
-		float correct_rotate_to = angle_correct_interpolate_from_to( correct_rotate_from, value1 );\
-		outName = linerp_f1( correct_rotate_from, correct_rotate_to, _t ); \
-				}
-
-	AE_LINERP_PROPERTY2( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x, rotation[0] );
-	AE_LINERP_PROPERTY2( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y, rotation[1] );
-	AE_LINERP_PROPERTY2( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z, rotation[2] );
-
-#	undef AE_LINERP_PROPERTY2
-
-	make_transformation_m4( _out, position, anchor_point, scale, rotation );
-
-	return opacity;
-}
 //////////////////////////////////////////////////////////////////////////
 static aeMovieNode * __find_node_by_layer( aeMovieNode * _nodes, uint32_t _begin, uint32_t _end, const aeMovieLayerData * _layer )
 {
@@ -733,7 +630,7 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 
 	if( _node->relative == AE_NULL )
 	{
-		float local_opacity = __make_movie_layer_properties_fixed( _node->matrix, &_node->layer->transformation, _frame );
+		float local_opacity = make_movie_layer_transformation_fixed( _node->matrix, _node->layer->transformation, _frame );
 
 		_node->composition_opactity = _node->opacity;
 		_node->opacity = local_opacity;
@@ -749,7 +646,7 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 	}
 
 	ae_matrix4_t local_matrix;
-	float local_opacity = __make_movie_layer_properties_fixed( local_matrix, &_node->layer->transformation, _frame );
+	float local_opacity = make_movie_layer_transformation_fixed( local_matrix, _node->layer->transformation, _frame );
 
 	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
@@ -776,7 +673,7 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 
 	if( _node->relative == AE_NULL )
 	{
-		float local_opacity = __make_movie_layer_properties_interpolate( _node->matrix, &_node->layer->transformation, _frame, _t );
+		float local_opacity = make_movie_layer_transformation_interpolate( _node->matrix, _node->layer->transformation, _frame, _t );
 
 		_node->composition_opactity = _node->opacity;
 		_node->opacity = local_opacity;	
@@ -792,7 +689,7 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 	}
 
 	ae_matrix4_t local_matrix;
-	float local_opacity = __make_movie_layer_properties_interpolate( local_matrix, &_node->layer->transformation, _frame, _t );
+	float local_opacity = make_movie_layer_transformation_interpolate( local_matrix, _node->layer->transformation, _frame, _t );
 
 	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 

@@ -1,14 +1,14 @@
 #	ifndef MOVIE_STREAM_H_
 #	define MOVIE_STREAM_H_
 
-#	include <movie/movie_type.h>
-#	include <movie/movie_instance.h>
+#	include "movie/movie_type.h"
+#	include "movie/movie_instance.h"
 
-#	include "memory.h"
+#	include "movie_memory.h"
 
 #	include <stddef.h>
 //////////////////////////////////////////////////////////////////////////
-#	define READ(stream, value) ((*stream->read)(stream->data, &value, sizeof(value)))
+#	define READ(stream, value) ((*stream->read)(stream->data, &(value), sizeof(value)))
 #	define READN(stream, ptr, n) ((*stream->read)(stream->data, ptr, sizeof(*ptr) * n))
 #	define READB(stream) ae_magic_read_bool(stream)
 #	define READZ(stream) ae_magic_read_size(stream)
