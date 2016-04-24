@@ -52,6 +52,15 @@ void delete_movie_data( const aeMovieData * _movieData )
 				(void)resource;
 
 			}break;
+		case AE_MOVIE_RESOURCE_SHAPE:
+			{
+				const aeMovieResourceShape * resource = (const aeMovieResourceShape *)base_resource;
+
+				DELETEN( instance, resource->meshes );
+
+				(void)resource;
+
+			}break;
 		case AE_MOVIE_RESOURCE_VIDEO:
 			{
 				const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)base_resource;
@@ -330,6 +339,10 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 			{
 				_layer->renderable = AE_FALSE;
 			}break;
+		case AE_MOVIE_LAYER_TYPE_SHAPE:
+			{
+				_layer->renderable = AE_TRUE;
+			}break;
 		case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
 				_layer->renderable = AE_TRUE;
@@ -539,9 +552,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				READ( _stream, resource->b );
 				READ( _stream, resource->a );
 
-				ae_bool_t mesh_immutable = READB( _stream );
+				resource->immutable = READB( _stream );
 
-				if( mesh_immutable == AE_TRUE )
+				if( resource->immutable == AE_TRUE )
 				{
 					READ_MESH( _movieData->instance, _stream, &resource->immutable_mesh );
 				}
