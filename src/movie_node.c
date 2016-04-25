@@ -158,9 +158,6 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent, float _stretch, float _startTime )
 {
-	float frameDuration = _compositionData->frameDuration;
-	float frameDurationInv = 1.f / frameDuration;
-
 	for( const aeMovieLayerData
 		*it_layer = _compositionData->layers,
 		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
@@ -187,9 +184,6 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			node->out_time = min_f_f( layer_out, parent_out );
 			node->stretch = _stretch;
 		}
-
-		node->in_frame = (uint32_t)(node->in_time * frameDurationInv);
-		node->out_frame = (uint32_t)(node->out_time * frameDurationInv);
 
 		switch( layer->type )
 		{
@@ -313,7 +307,8 @@ static void __setup_movie_node_loop( aeMovieComposition * _composition )
 	{
 		aeMovieNode * node = it_node;
 
-		if( node->in_frame == 0 && node->out_time == frameCount )
+		if( equal_f_z( node->in_time ) == AE_TRUE && 
+			equal_f_f( node->out_time, _composition->composition_data->duration ) == AE_TRUE )
 		{
 			node->loop = AE_TRUE;
 		}
@@ -765,9 +760,6 @@ static void __update_node_matrix( aeMovieComposition * _composition, aeMovieNode
 //////////////////////////////////////////////////////////////////////////
 void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, uint32_t _beginFrame, uint32_t _endFrame )
 {
-	float frameDuration = _composition->composition_data->frameDuration;
-	float frameDurationInv = 1.f / frameDuration;
-
 	float end_timing = _composition->timing;
 
 	for( aeMovieNode
@@ -780,8 +772,8 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 
 		const aeMovieLayerData * layer = node->layer;
 
-		uint32_t indexIn = node->in_frame;
-		uint32_t indexOut = node->out_frame;
+		uint32_t indexIn = (uint32_t)(node->in_time / layer->composition->frameDuration);
+		uint32_t indexOut = (uint32_t)(node->out_time / layer->composition->frameDuration);
 
 		if( indexIn > _endFrame || indexOut < _beginFrame )
 		{
@@ -803,7 +795,9 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 
 			node->current_time = current_time;
 
-			float frame_time = (current_time) / node->stretch * frameDurationInv;
+			float frameDuration = layer->composition->frameDuration;
+			
+			float frame_time = (current_time) / node->stretch / frameDuration;
 
 			uint32_t frameId = (uint32_t)frame_time;
 
@@ -928,8 +922,8 @@ void set_movie_composition_timing( aeMovieComposition * _composition, float _tim
 
 			const aeMovieLayerData * layer = node->layer;
 
-			uint32_t indexIn = node->in_frame;
-			uint32_t indexOut = node->out_frame;
+			uint32_t indexIn = (uint32_t)(node->in_time / layer->composition->frameDuration);
+			uint32_t indexOut = (uint32_t)(node->out_time / layer->composition->frameDuration);
 
 			if( frame >= indexIn && frame < indexOut )
 			{
@@ -1220,6 +1214,8 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 	_vertices->camera_data = node->camera_data;
 	_vertices->element_data = node->element_data;
 
+	float frameDuration = layer->composition->frameDuration;
+
 	switch( layer_type )
 	{
 	case AE_MOVIE_LAYER_TYPE_SLOT:
@@ -1240,8 +1236,6 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 		{
 			aeMovieResourceShape * resource_shape = (aeMovieResourceShape *)resource;
 
-			float frameDuration = composition->composition_data->frameDuration;
-
 			uint32_t frame = (uint32_t)(node->current_time / frameDuration);
 
 			if( resource_shape->immutable == AE_TRUE )
@@ -1250,10 +1244,6 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			}
 			else
 			{
-				float frameDuration = composition->composition_data->frameDuration;
-
-				uint32_t frame = (uint32_t)(node->current_time / frameDuration);
-
 				const aeMovieMesh * mesh = resource_shape->meshes + frame;
 
 				__make_mesh_vertices( mesh, node->matrix, _vertices );
@@ -1277,8 +1267,6 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			}
 			else
 			{
-				float frameDuration = composition->composition_data->frameDuration;
-
 				uint32_t frame = (uint32_t)(node->current_time / frameDuration);
 
 				__make_layer_mesh_vertices( layer->mesh, frame, node->matrix, _vertices );
@@ -1292,8 +1280,6 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 	case AE_MOVIE_LAYER_TYPE_SEQUENCE:
 		{
 			aeMovieResourceSequence * resource_sequence = (aeMovieResourceSequence *)resource;
-
-			float frameDuration = resource_sequence->frameDuration;
 
 			uint32_t frame_sequence;
 
@@ -1324,9 +1310,7 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 				__make_sprite_vertices( _context, offset_x, offset_y, width, height, node->matrix, _vertices );
 			}
 			else
-			{
-				float frameDuration = composition->composition_data->frameDuration;
-
+			{				
 				uint32_t frame = (uint32_t)(node->current_time / frameDuration);
 
 				__make_layer_mesh_vertices( layer->mesh, frame, node->matrix, _vertices );
@@ -1349,9 +1333,7 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 				__make_sprite_vertices( _context, 0.f, 0.f, width, height, node->matrix, _vertices );
 			}
 			else
-			{
-				float frameDuration = composition->composition_data->frameDuration;
-
+			{				
 				uint32_t frame = (uint32_t)(node->current_time / frameDuration);
 
 				__make_layer_mesh_vertices( layer->mesh, frame, node->matrix, _vertices );
@@ -1378,8 +1360,6 @@ void compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index,
 			}
 			else
 			{
-				float frameDuration = composition->composition_data->frameDuration;
-
 				uint32_t frame = (uint32_t)(node->current_time / frameDuration);
 
 				__make_layer_mesh_vertices( layer->mesh, frame, node->matrix, _vertices );

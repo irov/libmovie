@@ -37,9 +37,6 @@ extern "C" {
 		float in_time;
 		float out_time;
 
-		uint32_t in_frame;
-		uint32_t out_frame;
-
 		float stretch;
 		float current_time;
 
