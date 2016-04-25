@@ -252,6 +252,10 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 		//		__load_movie_data_layer_property( _movieData->instance, _stream, &_layer->track_matte->track_transformation, _layer->track_matte->track_count );
 		//	}break;
+		default:
+			{
+				return AE_MOVIE_FAILED;
+			}break;
 		}
 
 		if( extension == 0 )
@@ -378,6 +382,10 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
 				_layer->renderable = AE_TRUE;
+			}break;
+		default:
+			{
+				return AE_MOVIE_FAILED;
 			}break;
 		}
 	}

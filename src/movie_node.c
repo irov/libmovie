@@ -479,6 +479,7 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	composition->update_revision = 0;
 	composition->timing = 0.f;
 	composition->loop = AE_FALSE;
+	composition->play_count = 1;
 
 	composition->play = AE_FALSE;
 	composition->pause = AE_FALSE;	
