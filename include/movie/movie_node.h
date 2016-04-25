@@ -112,7 +112,7 @@ extern "C" {
 		uint32_t play_iterator;
 
 		uint32_t update_revision;
-		float timing;
+		float time;
 		
 		uint32_t node_count;
 		aeMovieNode * nodes;

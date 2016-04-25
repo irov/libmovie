@@ -472,7 +472,7 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	composition->composition_data = _compositionData;
 
 	composition->update_revision = 0;
-	composition->timing = 0.f;
+	composition->time = 0.f;
 	composition->loop = AE_FALSE;
 	composition->play_count = 1;
 
@@ -564,7 +564,7 @@ void play_movie_composition( aeMovieComposition * _composition, float _timing )
 	if( _composition->pause == AE_FALSE )
 	{
 		_composition->play_iterator = 0;
-		_composition->timing = _timing;
+		_composition->time = _timing;
 		
 		set_movie_composition_timing( _composition, _timing );
 	}
@@ -758,9 +758,9 @@ static void __update_node_matrix( aeMovieComposition * _composition, aeMovieNode
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, uint32_t _beginFrame, uint32_t _endFrame )
+void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, float _beginTime, float _endTime )
 {
-	float end_timing = _composition->timing;
+	float end_timing = _composition->time;
 
 	for( aeMovieNode
 		*it_node = _composition->nodes,
@@ -772,17 +772,20 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 
 		const aeMovieLayerData * layer = node->layer;
 
-		uint32_t indexIn = (uint32_t)(node->in_time / layer->composition->frameDuration);
-		uint32_t indexOut = (uint32_t)(node->out_time / layer->composition->frameDuration);
-
-		if( indexIn > _endFrame || indexOut < _beginFrame )
+		if( node->in_time > _endTime || node->out_time < _beginTime )
 		{
 			continue;
 		}
 
+		uint32_t beginFrame = (uint32_t)(_beginTime / layer->composition->frameDuration + 0.5f);
+		uint32_t endFrame = (uint32_t)(_endTime / layer->composition->frameDuration + 0.5f);
+
+		uint32_t indexIn = (uint32_t)(node->in_time / layer->composition->frameDuration + 0.5f);
+		uint32_t indexOut = (uint32_t)(node->out_time / layer->composition->frameDuration + 0.5f);
+
 		if( node->layer->type == AE_MOVIE_LAYER_TYPE_EVENT )
 		{
-			if( _beginFrame < indexIn && _endFrame >= indexIn )
+			if( beginFrame < indexIn && endFrame >= indexIn )
 			{
 				__update_node_matrix_fixed( node, _revision, 0 );
 
@@ -811,23 +814,23 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 			}
 			else
 			{
-				if( _beginFrame < indexIn && _endFrame >= indexIn && _endFrame < indexOut )
+				if( beginFrame < indexIn && endFrame >= indexIn && endFrame < indexOut )
 				{
 					node->active = AE_TRUE;
 
-					__update_node_matrix( _composition, node, _revision, frameId, t, (_endFrame + 1) < indexOut, AE_TRUE );
+					__update_node_matrix( _composition, node, _revision, frameId, t, (endFrame + 1) < indexOut, AE_TRUE );
 				}
-				else if( _endFrame >= indexOut && _beginFrame >= indexIn && _beginFrame < indexOut )
+				else if( endFrame >= indexOut && beginFrame >= indexIn && beginFrame < indexOut )
 				{
 					node->active = AE_FALSE;
 
-					__update_node_matrix( _composition, node, _revision, frameId, t, (_endFrame + 1) < indexOut, AE_FALSE );
+					__update_node_matrix( _composition, node, _revision, frameId, t, (endFrame + 1) < indexOut, AE_FALSE );
 				}
-				else if( _beginFrame >= indexIn && _endFrame >= indexIn && _endFrame < indexOut )
+				else if( beginFrame >= indexIn && endFrame >= indexIn && endFrame < indexOut )
 				{
 					node->active = AE_TRUE;
 
-					__update_node_matrix( _composition, node, _revision, frameId, t, (_endFrame + 1) < indexOut, AE_TRUE );
+					__update_node_matrix( _composition, node, _revision, frameId, t, (endFrame + 1) < indexOut, AE_TRUE );
 				}
 			}
 		}
@@ -849,26 +852,26 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 	_composition->update_revision++;
 	uint32_t update_revision = _composition->update_revision;
 
-	float begin_timing = _composition->timing;
+	float prev_time = _composition->time;
 
-	_composition->timing += _timing;
+	_composition->time += _timing;
 
 	float frameDuration = _composition->composition_data->frameDuration;
 
-	uint32_t beginFrame = (uint32_t)(begin_timing / frameDuration);
-	uint32_t endFrame = (uint32_t)(_composition->timing / frameDuration);
+	float begin_time = prev_time;
+	float end_time = _composition->time;
 
 	float duration = _composition->composition_data->duration;
 
-	while( _composition->timing >= duration )
+	while( _composition->time >= duration )
 	{
 		uint32_t lastFrame = (uint32_t)(duration / frameDuration);
 
-		__update_movie_composition_node( _composition, update_revision, beginFrame, lastFrame );
+		__update_movie_composition_node( _composition, update_revision, begin_time, end_time );
 
 		if( _composition->loop == AE_FALSE && _composition->play_count == 0 )
 		{
-			_composition->timing = duration - frameDuration;
+			_composition->time = duration - frameDuration;
 
 			_composition->play = AE_FALSE;
 
@@ -878,17 +881,17 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 		}
 		else
 		{
-			beginFrame = 0;
+			begin_time = 0.f;
 
-			_composition->timing -= duration;
+			_composition->time -= duration;
 
-			endFrame = (uint32_t)(_composition->timing / frameDuration);
+			end_time = _composition->time;
 
 			(*_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_LOOP_END, _composition->provider_data);
 		}
 	}
 
-	__update_movie_composition_node( _composition, update_revision, beginFrame, endFrame );
+	__update_movie_composition_node( _composition, update_revision, begin_time, end_time );
 }
 //////////////////////////////////////////////////////////////////////////
 void set_movie_composition_timing( aeMovieComposition * _composition, float _time )
@@ -900,7 +903,7 @@ void set_movie_composition_timing( aeMovieComposition * _composition, float _tim
 		return;
 	}
 
-	if( equal_f_f( _composition->timing, _time ) == AE_TRUE )
+	if( equal_f_f( _composition->time, _time ) == AE_TRUE )
 	{
 		return;
 	}
@@ -908,9 +911,9 @@ void set_movie_composition_timing( aeMovieComposition * _composition, float _tim
 	float frameDuration = _composition->composition_data->frameDuration;
 	float frameDurationInv = 1.f / frameDuration;
 
-	if( _composition->timing > _time )
+	if( _composition->time > _time )
 	{
-		uint32_t frame = (uint32_t)(_composition->timing * frameDurationInv);
+		uint32_t frame = (uint32_t)(_composition->time * frameDurationInv);
 
 		for( aeMovieNode
 			*it_node = _composition->nodes,
@@ -934,19 +937,16 @@ void set_movie_composition_timing( aeMovieComposition * _composition, float _tim
 		}
 	}
 
-	_composition->timing = 0.f;
+	_composition->time = 0.f;
 
 	_composition->update_revision++;
 	uint32_t update_revision = _composition->update_revision;
 
 	float begin_timing = 0.f;
 
-	_composition->timing = _time;
+	_composition->time = _time;
 
-	uint32_t beginFrame = 0;
-	uint32_t endFrame = (uint32_t)(_time * frameDurationInv);
-
-	__update_movie_composition_node( _composition, update_revision, beginFrame, endFrame );
+	__update_movie_composition_node( _composition, update_revision, 0.f, _time );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData )
