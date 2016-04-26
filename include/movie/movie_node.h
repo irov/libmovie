@@ -67,7 +67,7 @@ extern "C" {
 
 	typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
 
-	typedef void( *ae_movie_node_event_t )(const void * _element, const ae_matrix4_t _matrix, float _opacity, void * _data );
+	typedef void( *ae_movie_node_event_t )(const void * _element, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data );
 
 	typedef enum
 	{
