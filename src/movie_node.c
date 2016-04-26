@@ -475,6 +475,7 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	composition->time = 0.f;
 	composition->loop = AE_FALSE;
 	composition->play_count = 1;
+	composition->play_iterator = 0;
 
 	composition->play = AE_FALSE;
 	composition->pause = AE_FALSE;	
@@ -563,7 +564,7 @@ void play_movie_composition( aeMovieComposition * _composition, float _timing )
 
 	if( _composition->pause == AE_FALSE )
 	{
-		_composition->play_iterator = 0;
+		_composition->play_iterator = _composition->play_count;
 		_composition->time = _timing;
 		
 		set_movie_composition_timing( _composition, _timing );
@@ -812,7 +813,7 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		{
 			float t = frame_time - (float)frameId;
 
-			if( (_composition->loop == AE_TRUE || _composition->play_count > 1) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) || (node->loop == AE_TRUE) )
+			if( (_composition->loop == AE_TRUE || _composition->play_iterator > 1) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) || (node->loop == AE_TRUE) )
 			{
 				node->active = AE_TRUE;
 
@@ -869,15 +870,17 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 
 	float duration = _composition->composition_data->duration;
 
-	while( _composition->time >= duration )
+	if( _composition->loop == AE_FALSE && _composition->play_iterator == 1 )
 	{
-		uint32_t lastFrame = (uint32_t)(duration / frameDuration);
+		float last_time = duration - frameDuration;
 
-		__update_movie_composition_node( _composition, update_revision, begin_time, end_time );
-
-		if( _composition->loop == AE_FALSE && _composition->play_count == 0 )
+		if( _composition->time >= last_time )
 		{
-			_composition->time = duration - frameDuration;
+			--_composition->play_iterator;
+
+			__update_movie_composition_node( _composition, update_revision, begin_time, last_time );
+
+			_composition->time = last_time;
 
 			_composition->play = AE_FALSE;
 
@@ -885,8 +888,13 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 
 			return;
 		}
-		else
+	}
+	else
+	{
+		while( _composition->time >= duration )
 		{
+			__update_movie_composition_node( _composition, update_revision, begin_time, duration );
+
 			begin_time = 0.f;
 
 			_composition->time -= duration;
