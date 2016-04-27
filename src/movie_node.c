@@ -109,6 +109,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 		node->matrix_revision = 0;
 
 		node->active = AE_FALSE;
+		node->loop = AE_FALSE;
 		node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;
 
 		if( layer->parent_index == 0 )
@@ -299,6 +300,8 @@ static void __setup_movie_node_loop( aeMovieComposition * _composition )
 {
 	uint32_t frameCount = _composition->composition_data->frameCount;
 
+	float duration = _composition->composition_data->duration;
+
 	for( aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -308,9 +311,13 @@ static void __setup_movie_node_loop( aeMovieComposition * _composition )
 		aeMovieNode * node = it_node;
 
 		if( equal_f_z( node->in_time ) == AE_TRUE && 
-			equal_f_f( node->out_time, _composition->composition_data->duration ) == AE_TRUE )
+			equal_f_f( node->out_time, duration ) == AE_TRUE )
 		{
 			node->loop = AE_TRUE;
+		}
+		else
+		{
+			node->loop = AE_FALSE;
 		}
 	}
 }
@@ -629,7 +636,7 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 	{
 		float local_opacity = make_movie_layer_transformation_fixed( _node->matrix, _node->layer->transformation, _frame );
 
-		_node->composition_opactity = _node->opacity;
+		_node->composition_opactity = 1.f;
 		_node->opacity = local_opacity;
 
 		return;
@@ -672,7 +679,7 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 	{
 		float local_opacity = make_movie_layer_transformation_interpolate( _node->matrix, _node->layer->transformation, _frame, _t );
 
-		_node->composition_opactity = _node->opacity;
+		_node->composition_opactity = 1.f;
 		_node->opacity = local_opacity;	
 
 		return;
@@ -813,11 +820,11 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		{
 			float t = frame_time - (float)frameId;
 
-			if( (_composition->loop == AE_TRUE || _composition->play_iterator > 1) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) || (node->loop == AE_TRUE) )
+			if( ((_composition->loop == AE_TRUE || _composition->play_iterator > 1) && (node->loop == AE_TRUE)) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) )
 			{
 				node->active = AE_TRUE;
 
-				__update_node_matrix( _composition, node, _revision, frameId, t, AE_FALSE, AE_TRUE );
+				__update_node_matrix( _composition, node, _revision, frameId, t, AE_TRUE, AE_TRUE );
 			}
 			else
 			{
@@ -880,6 +887,9 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 
 			__update_movie_composition_node( _composition, update_revision, begin_time, last_time );
 
+			_composition->update_revision++;
+			update_revision = _composition->update_revision;
+
 			_composition->time = last_time;
 
 			_composition->play = AE_FALSE;
@@ -894,6 +904,9 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 		while( _composition->time >= duration )
 		{
 			__update_movie_composition_node( _composition, update_revision, begin_time, duration );
+
+			_composition->update_revision++;
+			update_revision = _composition->update_revision;
 
 			begin_time = 0.f;
 

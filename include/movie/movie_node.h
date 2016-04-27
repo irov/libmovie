@@ -6,8 +6,13 @@
 #	include <movie/movie_resource.h>
 #	include <movie/movie_data.h>
 
+#	ifndef AE_MOVIE_MAX_VERTICES
 #	define AE_MOVIE_MAX_VERTICES 64
-#	define AE_MOVIE_MAX_RENDER_NODE 256
+#	endif
+
+#	ifndef AE_MOVIE_MAX_RENDER_NODE
+#	define AE_MOVIE_MAX_RENDER_NODE 1024
+#	endif
 
 #ifdef __cplusplus
 extern "C" {
