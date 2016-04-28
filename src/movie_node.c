@@ -637,7 +637,7 @@ static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision,
 	{
 		float local_opacity = make_movie_layer_transformation_fixed( _node->matrix, _node->layer->transformation, _frame );
 
-		_node->composition_opactity = 1.f;
+		_node->composition_opactity = local_opacity;
 		_node->opacity = local_opacity;
 
 		return;
@@ -680,7 +680,7 @@ static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _rev
 	{
 		float local_opacity = make_movie_layer_transformation_interpolate( _node->matrix, _node->layer->transformation, _frame, _t );
 
-		_node->composition_opactity = 1.f;
+		_node->composition_opactity = local_opacity;
 		_node->opacity = local_opacity;	
 
 		return;
