@@ -481,8 +481,6 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	composition->update_revision = 0;
 	composition->time = 0.f;
 	composition->loop = AE_FALSE;
-	composition->play_count = 1;
-	composition->play_iterator = 0;
 
 	composition->play = AE_FALSE;
 	composition->pause = AE_FALSE;	
@@ -555,11 +553,6 @@ void set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _l
 	_composition->loop = _loop;
 }
 //////////////////////////////////////////////////////////////////////////
-void set_movie_composition_play_count( aeMovieComposition * _composition, uint32_t _playCount )
-{
-	_composition->play_count = _playCount;
-}
-//////////////////////////////////////////////////////////////////////////
 void play_movie_composition( aeMovieComposition * _composition, float _timing )
 {
 	if( _composition->play == AE_TRUE )
@@ -571,7 +564,6 @@ void play_movie_composition( aeMovieComposition * _composition, float _timing )
 
 	if( _composition->pause == AE_FALSE )
 	{
-		_composition->play_iterator = _composition->play_count;
 		_composition->time = _timing;
 		
 		set_movie_composition_timing( _composition, _timing );
@@ -820,7 +812,7 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		{
 			float t = frame_time - (float)frameId;
 
-			if( ((_composition->loop == AE_TRUE || _composition->play_iterator > 1) && (node->loop == AE_TRUE)) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) )
+			if( (_composition->loop == AE_TRUE && (node->loop == AE_TRUE)) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) )
 			{
 				node->active = AE_TRUE;
 
@@ -877,14 +869,12 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 
 	float duration = _composition->composition_data->duration;
 
-	if( _composition->loop == AE_FALSE && _composition->play_iterator == 1 )
+	if( _composition->loop == AE_FALSE )
 	{
 		float last_time = duration - frameDuration;
 
 		if( _composition->time >= last_time )
 		{
-			--_composition->play_iterator;
-
 			__update_movie_composition_node( _composition, update_revision, begin_time, last_time );
 
 			_composition->update_revision++;
@@ -901,16 +891,28 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 	}
 	else
 	{
-		while( _composition->time >= duration )
+		float loopBegin = _composition->composition_data->loopSegment[0];
+		float loopEnd = _composition->composition_data->loopSegment[1];
+
+		while( _composition->time >= loopEnd )
 		{
-			__update_movie_composition_node( _composition, update_revision, begin_time, duration );
+			__update_movie_composition_node( _composition, update_revision, begin_time, loopEnd );
 
 			_composition->update_revision++;
 			update_revision = _composition->update_revision;
 
-			begin_time = 0.f;
+			if( equal_f_z( loopBegin ) == AE_FALSE )
+			{
+				__update_movie_composition_node( _composition, update_revision, begin_time, loopBegin );
 
-			_composition->time -= duration;
+				_composition->update_revision++;
+				update_revision = _composition->update_revision;
+			}
+
+			begin_time = loopBegin;
+
+			_composition->time += loopBegin;
+			_composition->time -= loopEnd;
 
 			end_time = _composition->time;
 

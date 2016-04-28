@@ -407,6 +407,9 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 
 	_compositionData->flags = 0;
 
+	_compositionData->loopSegment[0] = 0.f;
+	_compositionData->loopSegment[1] = _compositionData->duration;
+
 	for( ;; )
 	{
 		uint8_t flag;
