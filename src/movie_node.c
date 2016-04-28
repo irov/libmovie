@@ -773,10 +773,11 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 {
 	ae_bool_t interrupt = _composition->interrupt;
 	ae_bool_t loop = _composition->loop;
+	float duration = _composition->composition_data->duration;
 	float end_timing = _composition->time;
 
-	float loopBegin = _composition->composition_data->loopSegment[0];
-	float loopEnd = _composition->composition_data->loopSegment[1];
+	float loopBegin = (loop == AE_TRUE) ? _composition->composition_data->loopSegment[0] : 0.f;
+	float loopEnd = (loop == AE_TRUE) ? _composition->composition_data->loopSegment[1] : duration;
 
 	for( aeMovieNode
 		*it_node = _composition->nodes,
