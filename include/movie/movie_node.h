@@ -46,7 +46,6 @@ extern "C" {
 		float current_time;
 
 		ae_bool_t active;
-		ae_bool_t loop;
 
 		uint32_t animate;
 		
