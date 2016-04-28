@@ -772,6 +772,7 @@ static void __update_node_matrix( aeMovieComposition * _composition, aeMovieNode
 void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, float _beginTime, float _endTime )
 {
 	ae_bool_t interrupt = _composition->interrupt;
+	ae_bool_t loop = _composition->loop;
 	float end_timing = _composition->time;
 
 	float loopBegin = _composition->composition_data->loopSegment[0];
@@ -798,8 +799,8 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv);
 		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv);
 
-		uint32_t indexIn = (node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE) ? (uint32_t)(loopBegin * frameDurationInv) : (uint32_t)(node->in_time * frameDurationInv);
-		uint32_t indexOut = (node->out_time >= loopEnd && interrupt == AE_FALSE) ? (uint32_t)(loopEnd * frameDurationInv) : (uint32_t)(node->out_time * frameDurationInv);
+		uint32_t indexIn = (node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE) ? (uint32_t)(loopBegin * frameDurationInv) : (uint32_t)(node->in_time * frameDurationInv);
+		uint32_t indexOut = (node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE) ? (uint32_t)(loopEnd * frameDurationInv) : (uint32_t)(node->out_time * frameDurationInv);
 
 		float current_time = end_timing - node->in_time;
 
