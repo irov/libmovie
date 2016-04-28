@@ -80,6 +80,7 @@ extern "C" {
 		AE_MOVIE_COMPOSITION_STOP,
 		AE_MOVIE_COMPOSITION_PAUSE,
 		AE_MOVIE_COMPOSITION_RESUME,
+		AE_MOVIE_COMPOSITION_INTERRUPT,
 		AE_MOVIE_COMPOSITION_END,
 		AE_MOVIE_COMPOSITION_LOOP_END,
 		__AE_MOVIE_COMPOSITION_STATES__
@@ -111,7 +112,9 @@ extern "C" {
 
 		ae_bool_t play;
 		ae_bool_t pause;
-		ae_bool_t loop;
+		ae_bool_t interrupt;
+
+		ae_bool_t loop;		
 						
 		uint32_t update_revision;
 		float time;

@@ -484,6 +484,7 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 
 	composition->play = AE_FALSE;
 	composition->pause = AE_FALSE;	
+	composition->interrupt = AE_FALSE;
 
 	uint32_t node_count = __get_movie_composition_data_node_count( _movieData, _compositionData );
 
@@ -613,6 +614,23 @@ void resume_movie_composition( aeMovieComposition * _composition )
 	_composition->pause = AE_FALSE;
 
 	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_RESUME, _composition->provider_data);
+}
+//////////////////////////////////////////////////////////////////////////
+void interrupt_movie_composition( aeMovieComposition * _composition )
+{
+	if( _composition->play == AE_FALSE )
+	{
+		return;
+	}
+
+	if( _composition->loop == AE_FALSE )
+	{
+		return;
+	}
+
+	_composition->interrupt = AE_TRUE;
+
+	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_INTERRUPT, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision, uint32_t _frame )
@@ -869,7 +887,7 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 
 	float duration = _composition->composition_data->duration;
 
-	if( _composition->loop == AE_FALSE )
+	if( _composition->loop == AE_FALSE || _composition->interrupt == AE_TRUE )
 	{
 		float last_time = duration - frameDuration;
 
@@ -893,7 +911,7 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 	{
 		float loopBegin = _composition->composition_data->loopSegment[0];
 		float loopEnd = _composition->composition_data->loopSegment[1];
-
+		
 		while( _composition->time >= loopEnd )
 		{
 			__update_movie_composition_node( _composition, update_revision, begin_time, loopEnd );
