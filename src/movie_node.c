@@ -447,9 +447,10 @@ static void dummy_ae_movie_node_animate_end( const void * _element, uint32_t _ty
 	(void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
-void dummy_ae_movie_node_event( const void * _element, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data )
+void dummy_ae_movie_node_event( const void * _element, const char * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data )
 {
 	(void)_element;
+	(void)_name;
 	(void)_matrix;
 	(void)_opacity;
 	(void)_data;
@@ -817,12 +818,12 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 
 			if( beginFrame < indexIn && endFrame >= indexIn )
 			{
-				(*_composition->providers.event)(node->element_data, node->matrix, node->opacity, AE_TRUE, _composition->provider_data);
+				(*_composition->providers.event)(node->element_data, node->layer->name, node->matrix, node->opacity, AE_TRUE, _composition->provider_data);
 			}
 
 			if( beginFrame < indexOut && endFrame >= indexOut )
 			{
-				(*_composition->providers.event)(node->element_data, node->matrix, node->opacity, AE_FALSE, _composition->provider_data);
+				(*_composition->providers.event)(node->element_data, node->layer->name, node->matrix, node->opacity, AE_FALSE, _composition->provider_data);
 			}
 		}
 		else
