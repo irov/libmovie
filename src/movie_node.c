@@ -52,6 +52,92 @@ static const aeMovieLayerData * __find_layer_by_index( const aeMovieCompositionD
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision, uint32_t _frame )
+{
+	if( _node->matrix_revision == _revision )
+	{
+		return;
+	}
+
+	_node->matrix_revision = _revision;
+
+	if( _node->relative == AE_NULL )
+	{
+		float local_opacity = make_movie_layer_transformation_fixed( _node->matrix, _node->layer->transformation, _frame );
+
+		_node->composition_opactity = local_opacity;
+		_node->opacity = local_opacity;
+
+		return;
+	}
+
+	aeMovieNode * node_relative = _node->relative;
+
+	if( node_relative->matrix_revision != _revision )
+	{
+		__update_node_matrix_fixed( node_relative, _revision, _frame );
+	}
+
+	ae_matrix4_t local_matrix;
+	float local_opacity = make_movie_layer_transformation_fixed( local_matrix, _node->layer->transformation, _frame );
+
+	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
+
+	if( _node->layer->sub_composition != AE_NULL )
+	{
+		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
+	}
+	else
+	{
+		_node->composition_opactity = node_relative->composition_opactity;
+	}
+
+	_node->opacity = node_relative->composition_opactity * local_opacity;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _revision, uint32_t _frame, float _t )
+{
+	if( _node->matrix_revision == _revision )
+	{
+		return;
+	}
+
+	_node->matrix_revision = _revision;
+
+	if( _node->relative == AE_NULL )
+	{
+		float local_opacity = make_movie_layer_transformation_interpolate( _node->matrix, _node->layer->transformation, _frame, _t );
+
+		_node->composition_opactity = local_opacity;
+		_node->opacity = local_opacity;
+
+		return;
+	}
+
+	aeMovieNode * node_relative = _node->relative;
+
+	if( node_relative->matrix_revision != _revision )
+	{
+		__update_node_matrix_interpolate( node_relative, _revision, _frame, _t );
+	}
+
+	ae_matrix4_t local_matrix;
+	float local_opacity = make_movie_layer_transformation_interpolate( local_matrix, _node->layer->transformation, _frame, _t );
+
+	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
+
+	if( _node->layer->sub_composition != AE_NULL )
+	{
+		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
+	}
+	else
+	{
+		_node->composition_opactity = node_relative->composition_opactity;
+	}
+
+	_node->opacity = node_relative->composition_opactity * local_opacity;
+}
+//////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _trackMatte )
 {
 	uint32_t begin_index = *_iterator;
@@ -295,12 +381,11 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __setup_movie_node_loop( aeMovieComposition * _composition )
+static void __setup_movie_node_matrix( aeMovieComposition * _composition )
 {
-	uint32_t frameCount = _composition->composition_data->frameCount;
-
-	float duration = _composition->composition_data->duration;
-
+	_composition->update_revision++;
+	uint32_t update_revision = _composition->update_revision;
+	
 	for( aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -309,7 +394,7 @@ static void __setup_movie_node_loop( aeMovieComposition * _composition )
 	{
 		aeMovieNode * node = it_node;
 
-
+		__update_node_matrix_fixed( node, update_revision, 0 );
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -513,8 +598,8 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	uint32_t node_camera_iterator = 0;
 
 	__setup_movie_node_camera( composition, &node_camera_iterator, composition->composition_data, AE_NULL, AE_NULL );
-
-	__setup_movie_node_loop( composition );
+	
+	__setup_movie_node_matrix( composition );
 
 	__setup_movie_composition_element( composition );
 
@@ -623,92 +708,6 @@ void interrupt_movie_composition( aeMovieComposition * _composition )
 	_composition->interrupt = AE_TRUE;
 
 	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_INTERRUPT, _composition->provider_data);
-}
-//////////////////////////////////////////////////////////////////////////
-static void __update_node_matrix_fixed( aeMovieNode * _node, uint32_t _revision, uint32_t _frame )
-{
-	if( _node->matrix_revision == _revision )
-	{
-		return;
-	}
-
-	_node->matrix_revision = _revision;
-
-	if( _node->relative == AE_NULL )
-	{
-		float local_opacity = make_movie_layer_transformation_fixed( _node->matrix, _node->layer->transformation, _frame );
-
-		_node->composition_opactity = local_opacity;
-		_node->opacity = local_opacity;
-
-		return;
-	}
-
-	aeMovieNode * node_relative = _node->relative;
-
-	if( node_relative->matrix_revision != _revision )
-	{
-		__update_node_matrix_fixed( node_relative, _revision, _frame );
-	}
-
-	ae_matrix4_t local_matrix;
-	float local_opacity = make_movie_layer_transformation_fixed( local_matrix, _node->layer->transformation, _frame );
-
-	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
-
-	if( _node->layer->sub_composition != AE_NULL )
-	{
-		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
-	}
-	else
-	{
-		_node->composition_opactity = node_relative->composition_opactity;
-	}
-
-	_node->opacity = node_relative->composition_opactity * local_opacity;
-}
-//////////////////////////////////////////////////////////////////////////
-static void __update_node_matrix_interpolate( aeMovieNode * _node, uint32_t _revision, uint32_t _frame, float _t )
-{
-	if( _node->matrix_revision == _revision )
-	{
-		return;
-	}
-	
-	_node->matrix_revision = _revision;
-
-	if( _node->relative == AE_NULL )
-	{
-		float local_opacity = make_movie_layer_transformation_interpolate( _node->matrix, _node->layer->transformation, _frame, _t );
-
-		_node->composition_opactity = local_opacity;
-		_node->opacity = local_opacity;	
-
-		return;
-	}
-
-	aeMovieNode * node_relative = _node->relative;
-
-	if( node_relative->matrix_revision != _revision )
-	{
-		__update_node_matrix_interpolate( node_relative, _revision, _frame, _t );
-	}
-
-	ae_matrix4_t local_matrix;
-	float local_opacity = make_movie_layer_transformation_interpolate( local_matrix, _node->layer->transformation, _frame, _t );
-
-	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
-
-	if( _node->layer->sub_composition != AE_NULL )
-	{
-		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
-	}
-	else
-	{
-		_node->composition_opactity = node_relative->composition_opactity;
-	}
-
-	_node->opacity = node_relative->composition_opactity * local_opacity;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __update_movie_composition_node_begin( aeMovieComposition * _composition, aeMovieNode * _node, float _time )
