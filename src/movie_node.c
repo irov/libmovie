@@ -831,7 +831,7 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		{
 			float t = frame_time - (float)frameId;
 
-			ae_bool_t node_loop = (equal_f_f( node->in_time, loopBegin ) == AE_TRUE &&	equal_f_f( node->out_time, loopEnd ) == AE_TRUE) ? AE_TRUE : AE_FALSE;
+			ae_bool_t node_loop = (equal_f_f( node->in_time, loopBegin ) == AE_TRUE &&	equal_f_f( node->out_time, loopEnd ) == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? AE_TRUE : AE_FALSE;
 
 			if( (_composition->loop == AE_TRUE && node_loop == AE_TRUE) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) )
 			{
