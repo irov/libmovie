@@ -48,7 +48,7 @@ extern "C" {
 		ae_bool_t active;
 
 		uint32_t animate;
-		
+
 		uint32_t matrix_revision;
 		ae_matrix4_t matrix;
 
@@ -63,7 +63,7 @@ extern "C" {
 
 	typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
 	
-	typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResource * _resource, void * _data);
+	typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResource * _resource, const ae_matrix4_t _matrix, void * _data);
 	
 	typedef void( *ae_movie_node_animate_update_t )(const void * _element, uint32_t _type, const ae_matrix4_t _matrix, float _opacity, void * _data);
 	typedef void( *ae_movie_node_animate_begin_t )(const void * _element, uint32_t _type, float _offset, void * _data);

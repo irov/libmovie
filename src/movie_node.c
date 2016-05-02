@@ -448,27 +448,27 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 		{
 		case AE_MOVIE_LAYER_TYPE_VIDEO:
 			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SOUND:
 			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_PARTICLE:
 			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SOCKET:
 			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
 			}break;
 		case AE_MOVIE_LAYER_TYPE_EVENT:
 			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, _composition->provider_data);
+				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
 			}break;
 		default:
 			{
@@ -492,11 +492,12 @@ static void * dummy_ae_movie_composition_node_camera( const ae_string_t _name, c
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_node_provider( const aeMovieLayerData * _layerData, const aeMovieResource * _resource, void * _data )
+static void * dummy_ae_movie_composition_node_provider( const aeMovieLayerData * _layerData, const aeMovieResource * _resource, const ae_matrix4_t _matrix, void * _data )
 {
 	(void)_layerData;
 	(void)_resource;
 	(void)_data;
+	(void)_matrix;
 
 	return AE_NULL;
 }
