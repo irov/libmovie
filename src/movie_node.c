@@ -254,22 +254,35 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 
 		aeMovieNode * node = _nodes + ((*_iterator)++);
 
+		node->start_time = layer->start_time;
+
 		if( _parent == AE_NULL )
 		{
 			node->in_time = layer->in_time;
-			node->out_time = layer->out_time;
-			node->stretch = _stretch;
+			node->out_time = layer->out_time;			
 		}
 		else
-		{
+		{			
 			node->in_time = _parent->in_time + layer->in_time * _stretch - _startTime;
 
 			float layer_out = _parent->in_time + layer->out_time * _stretch - _startTime;
 			float parent_out = _parent->out_time;
 
 			node->out_time = min_f_f( layer_out, parent_out );
-			node->stretch = _stretch;
 		}
+
+		if( node->in_time < 0.f )
+		{
+			node->start_time -= layer->in_time;
+			node->in_time = 0.f;
+		}
+
+		if( node->out_time > _compositionData->duration )
+		{
+			node->out_time = _compositionData->duration;
+		}
+		
+		node->stretch = _stretch;
 
 		switch( layer->type )
 		{
@@ -719,7 +732,7 @@ static void __update_movie_composition_node_begin( aeMovieComposition * _composi
 
 		if( _node->element_data != AE_NULL )
 		{
-			(*_composition->providers.animate_begin)(_node->element_data, _node->layer->type, _node->layer->start_time + _time - _node->layer->in_time, _composition->provider_data);
+			(*_composition->providers.animate_begin)(_node->element_data, _node->layer->type, _node->start_time + _time - _node->in_time, _composition->provider_data);
 		}
 	}
 	else
@@ -774,7 +787,6 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 {
 	ae_bool_t interrupt = _composition->interrupt;
 	ae_bool_t loop = _composition->loop;
-
 	float duration = _composition->composition_data->duration;
 	float end_timing = _composition->time;
 

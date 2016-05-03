@@ -158,7 +158,7 @@ static void __load_movie_data_composition_camera( const aeMovieStream * _stream,
 	READ( _stream, _compostionData->cameraZoom );
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieStream * _stream, const aeMovieCompositionData * _composition, aeMovieLayerData * _layer )
+static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
 {
 	READ_STRING( _movieData->instance, _stream, _layer->name );
 
@@ -227,31 +227,6 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 					}
 				}
 			}break;
-		//case 4:
-		//	{
-		//		_layer->track_matte = NEW( _movieData->instance, aeMovieLayerTrackMatte );
-
-		//		_layer->track_matte->track_image = READB( _stream );
-
-		//		if( _layer->track_matte->track_image == AE_TRUE )
-		//		{
-		//			READ_STRING( _movieData->instance, _stream, _layer->track_matte->image_path );
-
-		//			_layer->track_matte->solid_width = 0.f;
-		//			_layer->track_matte->solid_height = 0.f;
-		//		}
-		//		else
-		//		{
-		//			_layer->track_matte->image_path = AE_NULL;
-
-		//			READ( _stream, _layer->track_matte->solid_width );
-		//			READ( _stream, _layer->track_matte->solid_height );					
-		//		}
-
-		//		_layer->track_matte->track_count = READZ( _stream );
-
-		//		__load_movie_data_layer_property( _movieData->instance, _stream, &_layer->track_matte->track_transformation, _layer->track_matte->track_count );
-		//	}break;
 		default:
 			{
 				return AE_MOVIE_FAILED;
@@ -304,6 +279,11 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	{
 		_layer->start_time -= _layer->in_time;
 		_layer->in_time = 0.f;
+	}
+
+	if( _layer->out_time > _compositionData->duration )
+	{
+		_layer->out_time = _compositionData->duration;
 	}
 
 	READ( _stream, _layer->blend_mode );	
