@@ -39,7 +39,6 @@ extern "C" {
 		struct aeMovieNode * track_matte;
 		struct aeMovieNode * prev_track_matte;
 
-		float start_time;
 		float in_time;
 		float out_time;
 
