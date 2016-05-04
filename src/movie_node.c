@@ -545,9 +545,8 @@ void dummy_ae_movie_node_event( const void * _element, const char * _name, const
 	(void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
-void dummy_ae_movie_composition_state( struct aeMovieComposition * _composition, aeMovieCompositionStateFlag _state, void * _data )
+void dummy_ae_movie_composition_state( aeMovieCompositionStateFlag _state, void * _data )
 {
-	(void)_composition;
 	(void)_state;
 	(void)_data;
 }
@@ -655,7 +654,7 @@ void play_movie_composition( aeMovieComposition * _composition, float _timing )
 		_composition->pause = AE_FALSE;
 	}
 
-	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_PLAY, _composition->provider_data);
+	(_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_PLAY, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 void stop_movie_composition( aeMovieComposition * _composition )
@@ -670,7 +669,7 @@ void stop_movie_composition( aeMovieComposition * _composition )
 		_composition->pause = AE_FALSE;
 	}
 
-	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_STOP, _composition->provider_data);
+	(_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_STOP, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 void pause_movie_composition( aeMovieComposition * _composition )
@@ -682,7 +681,7 @@ void pause_movie_composition( aeMovieComposition * _composition )
 
 	_composition->pause = AE_TRUE;
 
-	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_PAUSE, _composition->provider_data);
+	(_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_PAUSE, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 void resume_movie_composition( aeMovieComposition * _composition )
@@ -694,7 +693,7 @@ void resume_movie_composition( aeMovieComposition * _composition )
 
 	_composition->pause = AE_FALSE;
 
-	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_RESUME, _composition->provider_data);
+	(_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_RESUME, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 void interrupt_movie_composition( aeMovieComposition * _composition )
@@ -711,7 +710,7 @@ void interrupt_movie_composition( aeMovieComposition * _composition )
 
 	_composition->interrupt = AE_TRUE;
 
-	(_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_INTERRUPT, _composition->provider_data);
+	(_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_INTERRUPT, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 static void __update_movie_composition_node_begin( aeMovieComposition * _composition, aeMovieNode * _node, float _time )
@@ -907,7 +906,7 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 
 			_composition->play = AE_FALSE;
 
-			(*_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_END, _composition->provider_data);
+			(*_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_END, _composition->provider_data);
 
 			return;
 		}
@@ -939,7 +938,7 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 
 			end_time = _composition->time;
 
-			(*_composition->providers.composition_state)(_composition, AE_MOVIE_COMPOSITION_LOOP_END, _composition->provider_data);
+			(*_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_LOOP_END, _composition->provider_data);
 		}
 	}
 
