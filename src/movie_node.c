@@ -834,6 +834,7 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 
 	if( _node->layer->has_track_matte == AE_TRUE )
 	{
+		_vertices->track_matte_type = _node->track_matte->layer->type;
 		_vertices->track_matte_data = _node->track_matte->element_data;
 	}
 
