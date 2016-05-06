@@ -839,6 +839,10 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 	{
 		_vertices->track_matte_data = _node->track_matte_data;
 	}
+	else
+	{
+		_vertices->track_matte_data = AE_NULL;
+	}
 
 	float frameDuration = layer->composition->frameDuration;
 
