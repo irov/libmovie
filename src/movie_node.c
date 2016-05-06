@@ -48,6 +48,7 @@ typedef struct aeMovieNode
 
 	const void * camera_data;
 	void * element_data;
+	void * track_matte_data;
 } aeMovieNode;
 //////////////////////////////////////////////////////////////////////////
 static aeMovieNode * __find_node_by_layer( aeMovieNode * _nodes, uint32_t _begin, uint32_t _end, const aeMovieLayerData * _layer )
@@ -534,7 +535,7 @@ static void dummy_ae_movie_composition_node_update( const void * _element, uint3
 	(void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
-static void dummy_ae_movie_composition_track_matte_update( const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _data )
+static void * dummy_ae_movie_composition_track_matte_update( const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _data )
 {
 	(void)_element;
 	(void)_type;
@@ -542,6 +543,8 @@ static void dummy_ae_movie_composition_track_matte_update( const void * _element
 	(void)_offset;
 	(void)_mesh;
 	(void)_data;
+
+	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
 void dummy_ae_movie_node_event( const void * _element, const char * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data )
@@ -834,8 +837,7 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 
 	if( _node->layer->has_track_matte == AE_TRUE )
 	{
-		_vertices->track_matte_type = _node->track_matte->layer->type;
-		_vertices->track_matte_data = _node->track_matte->element_data;
+		_vertices->track_matte_data = _node->track_matte_data;
 	}
 
 	float frameDuration = layer->composition->frameDuration;
@@ -1002,7 +1004,9 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 
 			if( _node->element_data != AE_NULL )
 			{
-				(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, _composition->provider_data);
+				void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, _composition->provider_data);
+
+				_node->track_matte_data = track_matte_data;
 			}
 		}
 		else
