@@ -8,5 +8,25 @@ void make_movie_instance( aeMovieInstance * _instance, movie_alloc_t _alloc, mov
 	_instance->memory_free = _free;
 	_instance->memory_free_n = _free_n;
 	_instance->memory_data = _data;
+
+	float * sprite_uv = _instance->sprite_uv;
+
+	*sprite_uv++ = 0.f;
+	*sprite_uv++ = 0.f;
+	*sprite_uv++ = 1.f;
+	*sprite_uv++ = 0.f;
+	*sprite_uv++ = 1.f;
+	*sprite_uv++ = 1.f;
+	*sprite_uv++ = 0.f;
+	*sprite_uv++ = 1.f;
+
+	uint16_t * sprite_indices = _instance->sprite_indices;
+
+	*sprite_indices++ = 0;
+	*sprite_indices++ = 3;
+	*sprite_indices++ = 1;
+	*sprite_indices++ = 1;
+	*sprite_indices++ = 3;
+	*sprite_indices++ = 2;
 }
 //////////////////////////////////////////////////////////////////////////

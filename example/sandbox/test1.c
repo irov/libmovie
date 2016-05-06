@@ -83,10 +83,10 @@ int main()
 		update_movie_composition( composition, 150.f );
 
 		aeMovieRenderContext context;
-		begin_movie_render_context( composition, &context );
+		uint32_t render_count = begin_movie_render_context( composition, &context );
 
 		
-		for( uint32_t i = 0; i != context.render_count; ++i )
+		for( uint32_t i = 0; i != render_count; ++i )
 		{			
 			aeMovieRenderMesh mesh;
 			compute_movie_mesh( &context, i, &mesh );

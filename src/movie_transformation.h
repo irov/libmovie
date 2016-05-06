@@ -58,7 +58,6 @@ typedef struct aeMovieLayerTransformation
 aeMovieResult load_movie_layer_transformation( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, uint32_t _count );
 void delete_movie_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation );
 
-float make_movie_layer_transformation_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index );
-float make_movie_layer_transformation_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index, float _t );
+float make_movie_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t );
 
 #	endif

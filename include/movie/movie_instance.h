@@ -21,6 +21,9 @@ extern "C" {
 		movie_free_t memory_free;
 		movie_free_n_t memory_free_n;
 		void * memory_data;
+
+		float sprite_uv[8];
+		uint16_t sprite_indices[6];
 	} aeMovieInstance;
 
 	void make_movie_instance( aeMovieInstance * _instance, movie_alloc_t _alloc, movie_alloc_n_t _alloc_n, movie_free_t _free, movie_free_n_t _free_n, void * _data );
