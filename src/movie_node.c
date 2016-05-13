@@ -158,6 +158,10 @@ static void __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _it
 
 			node->track_matte = track_matte_node;
 		}
+		else
+		{
+			node->track_matte = AE_NULL;
+		}
 
 		uint8_t layer_type = node->layer->type;
 
