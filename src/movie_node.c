@@ -152,9 +152,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t 
 		if( _trackMatte == AE_NULL )
 		{
 			if( layer->has_track_matte == AE_TRUE )
-			{
-				aeMovieNode * track_matte_node;
-				
+			{			
 				switch( layer_type )
 				{
 				case AE_MOVIE_LAYER_TYPE_MOVIE:
