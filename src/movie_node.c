@@ -1395,6 +1395,11 @@ static uint32_t __count_movie_redner_context( const aeMovieComposition * _compos
 			continue;
 		}
 
+		if( layer->has_track_matte == AE_TRUE && node->track_matte->active == AE_FALSE )
+		{
+			continue;
+		}
+
 		_context->render_node_indices[render_count] = iterator;
 
 		++render_count;
