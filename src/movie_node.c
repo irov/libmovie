@@ -154,9 +154,9 @@ static void __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _it
 		
 		if( layer->has_track_matte == AE_TRUE )
 		{
-			aeMovieNode * track_matte_node = _nodes + ((*_iterator) - 1);
+			aeMovieNode * track_matte_node = _nodes + (*_iterator);
 
-			node->track_matte = node;
+			node->track_matte = track_matte_node;
 		}
 
 		uint8_t layer_type = node->layer->type;
@@ -810,9 +810,9 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 	_vertices->camera_data = _node->camera_data;
 	_vertices->element_data = _node->element_data;
 
-	if( _node->layer->has_track_matte == AE_TRUE )
+	if( _node->layer->has_track_matte == AE_TRUE && _node->track_matte->active == AE_TRUE )
 	{
-		_vertices->track_matte_data = _node->track_matte_data;
+		_vertices->track_matte_data = _node->track_matte->track_matte_data;
 	}
 	else
 	{
