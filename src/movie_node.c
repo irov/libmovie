@@ -459,37 +459,9 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 
 		uint8_t type = node->layer->type;
 				
-		switch( type )
-		{
-		case AE_MOVIE_LAYER_TYPE_VIDEO:
-			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
-			}break;
-		case AE_MOVIE_LAYER_TYPE_SOUND:
-			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
-			}break;
-		case AE_MOVIE_LAYER_TYPE_PARTICLE:
-			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
-			}break;
-		case AE_MOVIE_LAYER_TYPE_SOCKET:
-			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
-			}break;
-		case AE_MOVIE_LAYER_TYPE_SLOT:
-			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
-			}break;
-		case AE_MOVIE_LAYER_TYPE_EVENT:
-			{
-				node->element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
-			}break;
-		default:
-			{
-				node->element_data = AE_NULL;
-			}break;
-		}
+		void * element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
+
+		node->element_data = element_data;
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1009,23 +981,17 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
 
-			if( _node->element_data != AE_NULL )
-			{
-				void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, _composition->provider_data);
+			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, _composition->provider_data);
 
-				_node->track_matte_data = track_matte_data;
-			}
+			_node->track_matte_data = track_matte_data;
 		}
 		else
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
 
-			if( _node->element_data != AE_NULL )
-			{
-				void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _composition->provider_data);
+			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _composition->provider_data);
 
-				_node->track_matte_data = track_matte_data;
-			}
+			_node->track_matte_data = track_matte_data;
 		}
 	}
 	else
@@ -1034,12 +1000,9 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_END;
 
-			if( _node->element_data != AE_NULL )
-			{
-				void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _composition->provider_data);
+			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _composition->provider_data);
 
-				_node->track_matte_data = track_matte_data;
-			}
+			_node->track_matte_data = track_matte_data;
 		}
 		else
 		{
