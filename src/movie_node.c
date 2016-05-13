@@ -25,7 +25,6 @@ typedef struct aeMovieNode
 
 	struct aeMovieNode * relative;
 	struct aeMovieNode * track_matte;
-	struct aeMovieNode * prev_track_matte;
 
 	float start_time;
 	float in_time;
@@ -136,10 +135,8 @@ static void __update_movie_composition_node_matrix( aeMovieNode * _node, uint32_
 	_node->opacity = node_relative->composition_opactity * local_opacity;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _trackMatte )
+static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _trackMatte )
 {
-	uint32_t begin_index = *_iterator;
-
 	for( const aeMovieLayerData
 		*it_layer = _compositionData->layers,
 		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
@@ -150,33 +147,67 @@ static void __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _it
 
 		aeMovieNode * node = _nodes + ((*_iterator)++);
 
-		node->prev_track_matte = _trackMatte;
-		
-		if( layer->has_track_matte == AE_TRUE )
-		{
-			aeMovieNode * track_matte_node = _nodes + (*_iterator);
+		uint8_t layer_type = node->layer->type;
 
-			node->track_matte = track_matte_node;
+		if( _trackMatte == AE_NULL )
+		{
+			if( layer->has_track_matte == AE_TRUE )
+			{
+				aeMovieNode * track_matte_node;
+				
+				switch( layer_type )
+				{
+				case AE_MOVIE_LAYER_TYPE_MOVIE:
+				case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+					{
+						uint32_t sub_composition_node_count = __get_movie_composition_data_node_count( node->layer->sub_composition );
+
+						aeMovieNode * track_matte_node = _nodes + (*_iterator) + sub_composition_node_count;
+
+						node->track_matte = track_matte_node;
+					}break;
+				default:
+					{
+						aeMovieNode * track_matte_node = _nodes + (*_iterator);
+
+						node->track_matte = track_matte_node;
+					}break;
+				}
+			}
+			else
+			{
+				node->track_matte = AE_NULL;
+			}
 		}
 		else
 		{
-			node->track_matte = AE_NULL;
+			if( layer->has_track_matte == AE_TRUE )
+			{
+				return AE_FALSE;
+			}
+			else
+			{
+				node->track_matte = _trackMatte;
+			}
 		}
-
-		uint8_t layer_type = node->layer->type;
-
+		
 		switch( layer_type )
 		{
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				__setup_movie_node_track_matte( _nodes, _iterator, layer->sub_composition, node->track_matte );
+				if( __setup_movie_node_track_matte( _nodes, _iterator, layer->sub_composition, node->track_matte ) == AE_FALSE )
+				{
+					return AE_FALSE;
+				}
 			}break;
 		default:
 			{
 			}break;
 		}
 	}
+
+	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent )
@@ -417,7 +448,7 @@ static void __setup_movie_node_matrix( aeMovieComposition * _composition )
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static uint32_t __get_movie_composition_data_node_count( const aeMovieData * _movie, const aeMovieCompositionData * _compositionData )
+static uint32_t __get_movie_composition_data_node_count( const aeMovieCompositionData * _compositionData )
 {
 	uint32_t count = _compositionData->layer_count;
 
@@ -436,7 +467,7 @@ static uint32_t __get_movie_composition_data_node_count( const aeMovieData * _mo
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				uint32_t movie_layer_count = __get_movie_composition_data_node_count( _movie, layer->sub_composition );
+				uint32_t movie_layer_count = __get_movie_composition_data_node_count( layer->sub_composition );
 
 				count += movie_layer_count;
 			}break;
@@ -553,7 +584,7 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 	composition->pause = AE_FALSE;	
 	composition->interrupt = AE_FALSE;
 
-	uint32_t node_count = __get_movie_composition_data_node_count( _movieData, _compositionData );
+	uint32_t node_count = __get_movie_composition_data_node_count( _compositionData );
 
 	composition->node_count = node_count;
 	composition->nodes = NEWN( _movieData->instance, aeMovieNode, node_count );
@@ -574,7 +605,10 @@ aeMovieComposition * create_movie_composition( const aeMovieData * _movieData, c
 
 	uint32_t node_track_matte_iterator = 0;
 
-	__setup_movie_node_track_matte( composition->nodes, &node_track_matte_iterator, _compositionData, AE_NULL );
+	if( __setup_movie_node_track_matte( composition->nodes, &node_track_matte_iterator, _compositionData, AE_NULL ) == AE_FALSE )
+	{
+		return AE_NULL;
+	}
 
 	uint32_t node_time_iterator = 0;
 
@@ -814,7 +848,7 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 	_vertices->camera_data = _node->camera_data;
 	_vertices->element_data = _node->element_data;
 
-	if( _node->layer->has_track_matte == AE_TRUE && _node->track_matte->active == AE_TRUE )
+	if( _node->track_matte != AE_NULL && _node->track_matte->active == AE_TRUE )
 	{
 		_vertices->track_matte_data = _node->track_matte->track_matte_data;
 	}
@@ -822,7 +856,7 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 	{
 		_vertices->track_matte_data = AE_NULL;
 	}
-
+	
 	float frameDuration = layer->composition->frameDuration;
 
 	uint32_t frame = (uint32_t)(_node->current_time / frameDuration);
@@ -1395,7 +1429,7 @@ static uint32_t __count_movie_redner_context( const aeMovieComposition * _compos
 			continue;
 		}
 
-		if( layer->has_track_matte == AE_TRUE && node->track_matte->active == AE_FALSE )
+		if( node->track_matte != AE_NULL && node->track_matte->active == AE_FALSE )
 		{
 			continue;
 		}
