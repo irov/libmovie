@@ -1092,7 +1092,7 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv);
 
 		uint32_t indexIn = (node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? (uint32_t)(loopBegin * frameDurationInv) : (uint32_t)(node->in_time * frameDurationInv);
-		uint32_t indexOut = (node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? (uint32_t)(loopEnd * frameDurationInv) : (uint32_t)(node->out_time * frameDurationInv);
+		uint32_t indexOut = (node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? ((uint32_t)(loopEnd * frameDurationInv) - 1) : (uint32_t)(node->out_time * frameDurationInv);
 
 		float current_time = composition_time - node->in_time + node->start_time;
 
@@ -1120,7 +1120,7 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		{
 			float t = frame_time - (float)frameId;
 
-			ae_bool_t node_loop = (equal_f_f( node->in_time, loopBegin ) == AE_TRUE &&	equal_f_f( node->out_time, loopEnd ) == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? AE_TRUE : AE_FALSE;
+			ae_bool_t node_loop = (loopBegin >= node->in_time && node->out_time >= loopEnd && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? AE_TRUE : AE_FALSE;
 
 			if( (_composition->loop == AE_TRUE && node_loop == AE_TRUE) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP) )
 			{
@@ -1211,13 +1211,13 @@ void update_movie_composition( aeMovieComposition * _composition, float _timing 
 			_composition->update_revision++;
 			update_revision = _composition->update_revision;
 
-			if( equal_f_z( loopBegin ) == AE_FALSE )
-			{
-				__update_movie_composition_node( _composition, update_revision, begin_time, loopBegin );
+			//if( equal_f_z( loopBegin ) == AE_FALSE )
+			//{
+			//	__update_movie_composition_node( _composition, update_revision, 0.f, loopBegin );
 
-				_composition->update_revision++;
-				update_revision = _composition->update_revision;
-			}
+			//	_composition->update_revision++;
+			//	update_revision = _composition->update_revision;
+			//}
 
 			begin_time = loopBegin;
 
