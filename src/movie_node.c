@@ -135,6 +135,38 @@ static void __update_movie_composition_node_matrix( aeMovieNode * _node, uint32_
 	_node->opacity = node_relative->composition_opactity * local_opacity;
 }
 //////////////////////////////////////////////////////////////////////////
+static uint32_t __get_movie_composition_data_node_count( const aeMovieCompositionData * _compositionData )
+{
+	uint32_t count = _compositionData->layer_count;
+
+	for( const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		uint8_t layer_type = layer->type;
+
+		switch( layer_type )
+		{
+		case AE_MOVIE_LAYER_TYPE_MOVIE:
+		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+			{
+				uint32_t movie_layer_count = __get_movie_composition_data_node_count( layer->sub_composition );
+
+				count += movie_layer_count;
+			}break;
+		default:
+			{
+			}break;
+		}
+	}
+
+	return count;
+}
+//////////////////////////////////////////////////////////////////////////
 static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _trackMatte )
 {
 	for( const aeMovieLayerData
@@ -444,38 +476,6 @@ static void __setup_movie_node_matrix( aeMovieComposition * _composition )
 
 		__update_movie_composition_node_matrix( node, update_revision, 0, AE_FALSE, 0.f );
 	}
-}
-//////////////////////////////////////////////////////////////////////////
-static uint32_t __get_movie_composition_data_node_count( const aeMovieCompositionData * _compositionData )
-{
-	uint32_t count = _compositionData->layer_count;
-
-	for( const aeMovieLayerData
-		*it_layer = _compositionData->layers,
-		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
-	it_layer != it_layer_end;
-	++it_layer )
-	{
-		const aeMovieLayerData * layer = it_layer;
-
-		uint8_t layer_type = layer->type;
-
-		switch( layer_type )
-		{
-		case AE_MOVIE_LAYER_TYPE_MOVIE:
-		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-			{
-				uint32_t movie_layer_count = __get_movie_composition_data_node_count( layer->sub_composition );
-
-				count += movie_layer_count;
-			}break;
-		default:
-			{
-			}break;
-		}
-	}
-
-	return count;
 }
 //////////////////////////////////////////////////////////////////////////
 void __setup_movie_composition_element( aeMovieComposition * _composition )
