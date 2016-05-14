@@ -540,13 +540,14 @@ static void dummy_ae_movie_composition_node_update( const void * _element, uint3
 	(void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
-static void * dummy_ae_movie_composition_track_matte_update( const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _data )
+static void * dummy_ae_movie_composition_track_matte_update( const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data )
 {
 	(void)_element;
 	(void)_type;
 	(void)_state;
 	(void)_offset;
 	(void)_mesh;
+	(void)_track_matte_data;
 	(void)_data;
 
 	return AE_NULL;
@@ -1017,7 +1018,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
 
-			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, _composition->provider_data);
+			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, AE_NULL, _composition->provider_data);
 
 			_node->track_matte_data = track_matte_data;
 		}
@@ -1025,7 +1026,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
 
-			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _composition->provider_data);
+			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _node->track_matte_data, _composition->provider_data);
 		}
 	}
 	else
@@ -1034,7 +1035,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_END;
 
-			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _composition->provider_data);
+			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _node->track_matte_data, _composition->provider_data);
 
 			_node->track_matte_data = AE_NULL;
 		}

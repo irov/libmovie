@@ -64,7 +64,7 @@ extern "C" {
 	}aeMovieNodeUpdateState;
 
 	typedef void( *ae_movie_composition_node_update_t )(const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, float _opacity, void * _data);
-	typedef void * ( *ae_movie_composition_track_matte_update_t )(const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _data);
+	typedef void * ( *ae_movie_composition_track_matte_update_t )(const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data);
 
 	typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
 
