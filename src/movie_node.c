@@ -1025,9 +1025,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
 
-			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _composition->provider_data);
-
-			_node->track_matte_data = track_matte_data;
+			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _composition->provider_data);
 		}
 	}
 	else
@@ -1036,9 +1034,9 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_END;
 
-			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _composition->provider_data);
+			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _composition->provider_data);
 
-			_node->track_matte_data = track_matte_data;
+			_node->track_matte_data = AE_NULL;
 		}
 		else
 		{
