@@ -5,6 +5,8 @@
 #	include "movie_math.h"
 #	include "movie_utils.h"
 
+#	include "movie_struct.h"
+
 #	ifndef AE_MOVIE_MAX_LAYER_NAME
 #	define AE_MOVIE_MAX_LAYER_NAME 128
 #	endif
@@ -18,37 +20,6 @@ typedef enum
 	AE_MOVIE_NODE_ANIMATE_END,
 	__AE_MOVIE_NODE_ANIMATE_STATES__
 } aeMovieNodeAnimationStateEnum;
-//////////////////////////////////////////////////////////////////////////
-typedef struct aeMovieNode
-{
-	const aeMovieLayerData * layer;
-
-	struct aeMovieNode * relative;
-	struct aeMovieNode * track_matte;
-
-	float start_time;
-	float in_time;
-	float out_time;
-
-	float stretch;
-	float current_time;
-
-	ae_bool_t active;
-
-	uint32_t animate;
-
-	uint32_t matrix_revision;
-	ae_matrix4_t matrix;
-
-	float composition_opactity;
-	float opacity;
-
-	aeMovieBlendMode blend_mode;
-
-	const void * camera_data;
-	void * element_data;
-	void * track_matte_data;
-} aeMovieNode;
 //////////////////////////////////////////////////////////////////////////
 static aeMovieNode * __find_node_by_layer( aeMovieNode * _nodes, uint32_t _begin, uint32_t _end, const aeMovieLayerData * _layer )
 {
@@ -647,6 +618,48 @@ void ae_destroy_movie_composition( const aeMovieComposition * _composition )
 	DELETE( instance, _composition );
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _composition, ae_vector3_t _point )
+{
+	if( _composition->composition_data->flags & AE_MOVIE_COMPOSITION_ANCHOR_POINT )
+	{
+		_point[0] = _composition->composition_data->anchor_point[0];
+		_point[1] = _composition->composition_data->anchor_point[1];
+		_point[2] = _composition->composition_data->anchor_point[2];
+
+		return AE_TRUE;
+	}
+
+	return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+float ae_get_movie_composition_time( const aeMovieComposition * _composition )
+{
+	return _composition->time;
+}
+//////////////////////////////////////////////////////////////////////////
+uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition )
+{
+	uint32_t max_render_node = 0;
+
+	uint32_t node_count = _composition->node_count;
+	
+	for( uint32_t iterator = 0; iterator != node_count; ++iterator )
+	{
+		const aeMovieNode * node = _composition->nodes + iterator;
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( layer->renderable == AE_FALSE )
+		{
+			continue;
+		}
+
+		++max_render_node;
+	}
+
+	return max_render_node;
+}
+//////////////////////////////////////////////////////////////////////////
 void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop )
 {
 	_composition->loop = _loop;
@@ -698,7 +711,7 @@ void ae_interrupt_movie_composition( aeMovieComposition * _composition, ae_bool_
 	
 	if( _skip == AE_TRUE )
 	{
-		ae_set_movie_composition_time( _composition, _composition->composition_data->loopSegment[1] );
+		ae_set_movie_composition_time( _composition, _composition->composition_data->loop_segment[1] );
 	}
 
 	(_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_INTERRUPT, _composition->provider_data);
@@ -1048,8 +1061,8 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 	float duration = _composition->composition_data->duration;
 	float composition_time = _composition->time;
 
-	float loopBegin = (loop == AE_TRUE) ? _composition->composition_data->loopSegment[0] : 0.f;
-	float loopEnd = (loop == AE_TRUE) ? _composition->composition_data->loopSegment[1] : duration;
+	float loopBegin = (loop == AE_TRUE) ? _composition->composition_data->loop_segment[0] : 0.f;
+	float loopEnd = (loop == AE_TRUE) ? _composition->composition_data->loop_segment[1] : duration;
 
 	for( aeMovieNode
 		*it_node = _composition->nodes,
@@ -1141,8 +1154,8 @@ void __skip_movie_composition_node( aeMovieComposition * _composition, uint32_t 
 	float duration = _composition->composition_data->duration;
 	float composition_time = _composition->time;
 
-	float loopBegin = (loop == AE_TRUE) ? _composition->composition_data->loopSegment[0] : 0.f;
-	float loopEnd = (loop == AE_TRUE) ? _composition->composition_data->loopSegment[1] : duration;
+	float loopBegin = (loop == AE_TRUE) ? _composition->composition_data->loop_segment[0] : 0.f;
+	float loopEnd = (loop == AE_TRUE) ? _composition->composition_data->loop_segment[1] : duration;
 
 	for( aeMovieNode
 		*it_node = _composition->nodes,
@@ -1250,8 +1263,8 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 	}
 	else
 	{
-		float loopBegin = _composition->composition_data->loopSegment[0];
-		float loopEnd = _composition->composition_data->loopSegment[1];
+		float loopBegin = _composition->composition_data->loop_segment[0];
+		float loopEnd = _composition->composition_data->loop_segment[1];
 		
 		while( _composition->time >= loopEnd )
 		{
@@ -1426,11 +1439,14 @@ void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, cons
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static uint32_t __count_movie_redner_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
+ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _vertices )
 {
-	uint32_t render_count = 0;
+	uint32_t render_node_index = *_iterator;
+	uint32_t render_node_max_count = _composition->node_count;
 
-	for( uint32_t iterator = 0; iterator != _composition->node_count; ++iterator )
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
+	for( uint32_t iterator = render_node_index; iterator != render_node_max_count; ++iterator )
 	{
 		const aeMovieNode * node = _composition->nodes + iterator;
 
@@ -1451,36 +1467,13 @@ static uint32_t __count_movie_redner_context( const aeMovieComposition * _compos
 			continue;
 		}
 
-		_context->render_node_indices[render_count] = iterator;
+		*_iterator = iterator + 1;
 
-		++render_count;
+		__compute_movie_node( instance, node, _vertices );
 
-		if( render_count == AE_MOVIE_MAX_RENDER_NODE )
-		{
-			break;
-		}
+		return AE_TRUE;
 	}
 
-	return render_count;
-}
-//////////////////////////////////////////////////////////////////////////
-uint32_t ae_begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context )
-{
-	_context->composition = _composition;
-
-	uint32_t render_count = __count_movie_redner_context( _composition, _context );
-
-	return render_count;
-}
-//////////////////////////////////////////////////////////////////////////
-void ae_compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index, aeMovieRenderMesh * _vertices )
-{
-	const aeMovieComposition * composition = _context->composition;
-	const aeMovieInstance * instance = composition->movie_data->instance;
-	uint32_t node_index = _context->render_node_indices[_index];
-
-	const aeMovieNode * node = composition->nodes + node_index;
-
-	__compute_movie_node( instance, node, _vertices );
+	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////

@@ -115,10 +115,10 @@ extern "C" {
 
 		uint32_t flags;
 
-		float loopSegment[2];
-		float anchorPoint[3];
-		float offsetPoint[3];
-		float bounds[4];
+		ae_vector2_t loop_segment;
+		ae_vector3_t anchor_point;
+		ae_vector3_t offset_point;
+		ae_vector4_t bounds;
 
 		ae_bool_t has_threeD;
 

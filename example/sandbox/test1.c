@@ -48,10 +48,9 @@ static void * resource_provider( const aeMovieResource * _resource, void * _data
 
 int main()
 {
-	aeMovieInstance instance;
-	ae_make_movie_instance( &instance, &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL );
+	aeMovieInstance * instance = ae_create_movie_instance( &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL );
 
-	aeMovieData * movieData = ae_create_movie_data( &instance );
+	aeMovieData * movieData = ae_create_movie_data( instance );
 
 	FILE * f = fopen( "02_Sad.aem", "rb" );
 
@@ -82,15 +81,11 @@ int main()
 	{
 		ae_update_movie_composition( composition, 150.f );
 
-		aeMovieRenderContext context;
-		uint32_t render_count = ae_begin_movie_render_context( composition, &context );
+		uint32_t mesh_iterator = 0;
 
-		
-		for( uint32_t i = 0; i != render_count; ++i )
-		{			
-			aeMovieRenderMesh mesh;
-			ae_compute_movie_mesh( &context, i, &mesh );
-
+		aeMovieRenderMesh mesh;
+		while( ae_compute_movie_mesh( composition, &mesh_iterator, &mesh ) == AE_TRUE )
+		{	
 			printf( "a" );
 		}
 

@@ -2,9 +2,9 @@
 #	define MOVIE_STREAM_H_
 
 #	include "movie/movie_type.h"
-#	include "movie/movie_instance.h"
 
 #	include "movie_memory.h"
+#	include "movie_struct.h"
 
 #	include <stddef.h>
 //////////////////////////////////////////////////////////////////////////

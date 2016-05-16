@@ -87,6 +87,7 @@
     <ClInclude Include="..\src\movie_math.h" />
     <ClInclude Include="..\src\movie_memory.h" />
     <ClInclude Include="..\src\movie_stream.h" />
+    <ClInclude Include="..\src\movie_struct.h" />
     <ClInclude Include="..\src\movie_transformation.h" />
     <ClInclude Include="..\src\movie_utils.h" />
   </ItemGroup>

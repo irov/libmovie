@@ -10,10 +10,6 @@
 #	define AE_MOVIE_MAX_VERTICES 64
 #	endif
 
-#	ifndef AE_MOVIE_MAX_RENDER_NODE
-#	define AE_MOVIE_MAX_RENDER_NODE 1024
-#	endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -97,28 +93,14 @@ extern "C" {
 
 	} aeMovieCompositionProviders;
 
-	typedef struct aeMovieComposition
-	{
-		const aeMovieData * movie_data;
-		const aeMovieCompositionData * composition_data;
-
-		ae_bool_t play;		
-		ae_bool_t interrupt;
-
-		ae_bool_t loop;
-
-		uint32_t update_revision;
-		float time;
-		
-		uint32_t node_count;
-		aeMovieNode * nodes;
-
-		aeMovieCompositionProviders providers;
-		void * provider_data;
-	} aeMovieComposition;
+	typedef struct aeMovieComposition aeMovieComposition;
 
 	aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, const aeMovieCompositionProviders * providers, void * _data );
 	void ae_destroy_movie_composition( const aeMovieComposition * _composition );
+
+	ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _composition, ae_vector3_t _point );
+	float ae_get_movie_composition_time( const aeMovieComposition * _composition );
+	uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition );
 
 	void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
 
@@ -135,16 +117,9 @@ extern "C" {
 	ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
 	void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
 	
-	typedef struct aeMovieRenderContext
-	{
-		const aeMovieComposition * composition;
+	typedef struct aeMovieRenderContext aeMovieRenderContext;
 
-		uint32_t render_node_indices[AE_MOVIE_MAX_RENDER_NODE];
-	} aeMovieRenderContext;
-
-	uint32_t ae_begin_movie_render_context( const aeMovieComposition * _composition, aeMovieRenderContext * _context );
-
-	void ae_compute_movie_mesh( const aeMovieRenderContext * _context, uint32_t _index, aeMovieRenderMesh * _vertices );
+	ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _vertices );
 	
 #ifdef __cplusplus
 }

@@ -387,8 +387,8 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 
 	_compositionData->flags = 0;
 
-	_compositionData->loopSegment[0] = 0.f;
-	_compositionData->loopSegment[1] = _compositionData->duration;
+	_compositionData->loop_segment[0] = 0.f;
+	_compositionData->loop_segment[1] = _compositionData->duration;
 
 	for( ;; )
 	{
@@ -402,19 +402,19 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 			}break;
 		case 1:
 			{
-				READN( _stream, _compositionData->loopSegment, 2 );
+				READN( _stream, _compositionData->loop_segment, 2 );
 
 				_compositionData->flags |= AE_MOVIE_COMPOSITION_LOOP_SEGMENT;
 			}break;
 		case 2:
 			{
-				READN( _stream, _compositionData->anchorPoint, 3 );
+				READN( _stream, _compositionData->anchor_point, 3 );
 
 				_compositionData->flags |= AE_MOVIE_COMPOSITION_ANCHOR_POINT;
 			}break;
 		case 3:
 			{
-				READN( _stream, _compositionData->offsetPoint, 3 );
+				READN( _stream, _compositionData->offset_point, 3 );
 
 				_compositionData->flags |= AE_MOVIE_COMPOSITION_OFFSET_POINT;
 			}break;
