@@ -74,8 +74,6 @@ extern "C" {
 	{
 		AE_MOVIE_COMPOSITION_PLAY,
 		AE_MOVIE_COMPOSITION_STOP,
-		AE_MOVIE_COMPOSITION_PAUSE,
-		AE_MOVIE_COMPOSITION_RESUME,
 		AE_MOVIE_COMPOSITION_INTERRUPT,
 		AE_MOVIE_COMPOSITION_END,
 		AE_MOVIE_COMPOSITION_LOOP_END,
@@ -104,8 +102,7 @@ extern "C" {
 		const aeMovieData * movie_data;
 		const aeMovieCompositionData * composition_data;
 
-		ae_bool_t play;
-		ae_bool_t pause;
+		ae_bool_t play;		
 		ae_bool_t interrupt;
 
 		ae_bool_t loop;
@@ -127,9 +124,7 @@ extern "C" {
 
 	void play_movie_composition( aeMovieComposition * _composition, float _timing );
 	void stop_movie_composition( aeMovieComposition * _composition );
-	void pause_movie_composition( aeMovieComposition * _composition );
-	void resume_movie_composition( aeMovieComposition * _composition );
-	void interrupt_movie_composition( aeMovieComposition * _composition );
+	void interrupt_movie_composition( aeMovieComposition * _composition, ae_bool_t _skip );
 
 	void set_movie_composition_timing( aeMovieComposition * _composition, float _timing );
 
