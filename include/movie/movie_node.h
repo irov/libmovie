@@ -126,7 +126,7 @@ extern "C" {
 	void stop_movie_composition( aeMovieComposition * _composition );
 	void interrupt_movie_composition( aeMovieComposition * _composition, ae_bool_t _skip );
 
-	void set_movie_composition_timing( aeMovieComposition * _composition, float _timing );
+	void set_movie_composition_time( aeMovieComposition * _composition, float _timing );
 
 	void update_movie_composition( aeMovieComposition * _composition, float _timing );
 
