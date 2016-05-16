@@ -60,11 +60,11 @@ extern "C" {
 		AE_MOVIE_FAILED = -1
 	} aeMovieResult;
 
-	typedef void( *movie_stream_read_t )(void * _data, void * _buff, uint32_t _size);
+	typedef void( *ae_movie_stream_read_t )(void * _data, void * _buff, uint32_t _size);
 
 	typedef struct
 	{
-		movie_stream_read_t read;
+		ae_movie_stream_read_t read;
 		void * data;
 	} aeMovieStream;
 	

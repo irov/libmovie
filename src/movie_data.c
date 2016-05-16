@@ -11,7 +11,7 @@
 #	endif
 
 //////////////////////////////////////////////////////////////////////////
-aeMovieData * create_movie_data( const aeMovieInstance * _instance )
+aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance )
 {
 	aeMovieData * m = NEW( _instance, aeMovieData );
 
@@ -20,7 +20,7 @@ aeMovieData * create_movie_data( const aeMovieInstance * _instance )
 	return m;
 }
 //////////////////////////////////////////////////////////////////////////
-void delete_movie_data( const aeMovieData * _movieData )
+void ae_delete_movie_data( const aeMovieData * _movieData )
 {
 	const aeMovieInstance * instance = _movieData->instance;
 
@@ -467,7 +467,7 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, movie_data_resource_provider_t _provider, void * _data )
+aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
 {
 	char magic[4];
 	READN( _stream, magic, 4 );
@@ -703,7 +703,7 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-const aeMovieCompositionData * get_movie_composition_data( const aeMovieData * _movieData, const char * _name )
+const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const char * _name )
 {
 	for( const aeMovieCompositionData
 		*it_composition = _movieData->compositions,

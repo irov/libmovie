@@ -49,9 +49,9 @@ static void * resource_provider( const aeMovieResource * _resource, void * _data
 int main()
 {
 	aeMovieInstance instance;
-	make_movie_instance( &instance, &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL );
+	ae_make_movie_instance( &instance, &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL );
 
-	aeMovieData * movieData = create_movie_data( &instance );
+	aeMovieData * movieData = ae_create_movie_data( &instance );
 
 	FILE * f = fopen( "02_Sad.aem", "rb" );
 
@@ -64,32 +64,32 @@ int main()
 	stream.read = &read_file;
 	stream.data = f;
 
-	if( load_movie_data( movieData, &stream, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
+	if( ae_load_movie_data( movieData, &stream, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
 	{
 		return 0;
 	}
 
 	fclose( f );
 
-	const aeMovieCompositionData * compositionData = get_movie_composition_data( movieData, "Tuman" );
+	const aeMovieCompositionData * compositionData = ae_get_movie_composition_data( movieData, "Tuman" );
 	
 	aeMovieCompositionProviders providers;
 
-	aeMovieComposition * composition = create_movie_composition( movieData, compositionData, &providers, AE_NULL );
+	aeMovieComposition * composition = ae_create_movie_composition( movieData, compositionData, &providers, AE_NULL );
 
 
 	while( 1 )
 	{
-		update_movie_composition( composition, 150.f );
+		ae_update_movie_composition( composition, 150.f );
 
 		aeMovieRenderContext context;
-		uint32_t render_count = begin_movie_render_context( composition, &context );
+		uint32_t render_count = ae_begin_movie_render_context( composition, &context );
 
 		
 		for( uint32_t i = 0; i != render_count; ++i )
 		{			
 			aeMovieRenderMesh mesh;
-			compute_movie_mesh( &context, i, &mesh );
+			ae_compute_movie_mesh( &context, i, &mesh );
 
 			printf( "a" );
 		}
@@ -97,9 +97,9 @@ int main()
 		printf( "SUCCESSFUL!!\n" );
 	}
 
-	destroy_movie_composition( composition );
+	ae_destroy_movie_composition( composition );
 
-	delete_movie_data( movieData );
+	ae_delete_movie_data( movieData );
 	
 	return 0;
 }
