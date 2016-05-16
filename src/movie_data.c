@@ -495,7 +495,7 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 	_movieData->resource_count = resource_count;
 	_movieData->resources = NEWN( _movieData->instance, aeMovieResource *, resource_count );
 
-	for( aeMovieResource
+	for( const aeMovieResource
 		**it_resource = _movieData->resources,
 		**it_resource_end = _movieData->resources + resource_count;
 	it_resource != it_resource_end;
@@ -533,6 +533,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				}
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		case AE_MOVIE_RESOURCE_SHAPE:
 			{
@@ -566,6 +569,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				}
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		case AE_MOVIE_RESOURCE_SOLID:
 			{
@@ -578,6 +584,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				READ( _stream, resource->b );
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		case AE_MOVIE_RESOURCE_VIDEO:
 			{
@@ -592,6 +601,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				READ( _stream, resource->duration );
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		case AE_MOVIE_RESOURCE_SOUND:
 			{
@@ -602,6 +614,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				READ( _stream, resource->duration );
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		case AE_MOVIE_RESOURCE_IMAGE:
 			{
@@ -617,6 +632,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				READ( _stream, resource->offset_y );								
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		case AE_MOVIE_RESOURCE_SEQUENCE:
 			{
@@ -643,6 +661,9 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				resource->data = AE_NULL;
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		case AE_MOVIE_RESOURCE_PARTICLE:
 			{
@@ -651,18 +672,15 @@ aeMovieResult load_movie_data( aeMovieData * _movieData, const aeMovieStream * _
 				READ_STRING( _movieData->instance, _stream, resource->path );
 
 				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
 			}break;
 		default:
 			{
 				return AE_MOVIE_FAILED;
 			}break;
 		}
-
-		aeMovieResource * new_resource = (*it_resource);
-
-		new_resource->type = type;
-
-		new_resource->data = (*_provider)(new_resource, _data);
 	}
 
 	uint32_t composition_count = READZ( _stream );

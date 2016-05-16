@@ -71,7 +71,7 @@ extern "C" {
 		aeMovieLayerTimeremap * timeremap;
 		aeMovieLayerMesh * mesh;
 		
-		aeMovieResource * resource;
+		const aeMovieResource * resource;
 		struct aeMovieCompositionData * sub_composition;
 
 		uint32_t parent_index;
@@ -135,7 +135,7 @@ extern "C" {
 		ae_string_t name;
 		
 		uint32_t resource_count;
-		aeMovieResource ** resources;
+		const aeMovieResource ** resources;
 
 		uint32_t composition_count;
 		aeMovieCompositionData * compositions;
