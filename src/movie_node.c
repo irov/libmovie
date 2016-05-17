@@ -632,11 +632,6 @@ ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _com
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-float ae_get_movie_composition_time( const aeMovieComposition * _composition )
-{
-	return _composition->time;
-}
-//////////////////////////////////////////////////////////////////////////
 uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition )
 {
 	uint32_t max_render_node = 0;
@@ -671,8 +666,6 @@ void ae_play_movie_composition( aeMovieComposition * _composition, float _timing
 	{
 		return;
 	}
-		
-	_composition->time = _timing;
 		
 	ae_set_movie_composition_time( _composition, _timing );
 		
@@ -1255,6 +1248,7 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 			_composition->time = last_time;
 
 			_composition->play = AE_FALSE;
+			_composition->interrupt = AE_FALSE;
 
 			(*_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_END, _composition->provider_data);
 
@@ -1319,6 +1313,11 @@ void ae_set_movie_composition_time( aeMovieComposition * _composition, float _ti
 	}
 
 	_composition->time = _time;
+}
+//////////////////////////////////////////////////////////////////////////
+float ae_get_movie_composition_time( const aeMovieComposition * _composition )
+{
+	return _composition->time;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData )

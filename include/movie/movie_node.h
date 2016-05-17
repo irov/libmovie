@@ -99,7 +99,7 @@ extern "C" {
 	void ae_destroy_movie_composition( const aeMovieComposition * _composition );
 
 	ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _composition, ae_vector3_t _point );
-	float ae_get_movie_composition_time( const aeMovieComposition * _composition );
+	
 	uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition );
 
 	void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
@@ -109,6 +109,7 @@ extern "C" {
 	void ae_interrupt_movie_composition( aeMovieComposition * _composition, ae_bool_t _skip );
 
 	void ae_set_movie_composition_time( aeMovieComposition * _composition, float _timing );
+	float ae_get_movie_composition_time( const aeMovieComposition * _composition );
 
 	void ae_update_movie_composition( aeMovieComposition * _composition, float _timing );
 
@@ -116,8 +117,6 @@ extern "C" {
 	void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
 	ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
 	void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
-	
-	typedef struct aeMovieRenderContext aeMovieRenderContext;
 
 	ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _vertices );
 	
