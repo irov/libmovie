@@ -18,8 +18,6 @@ extern "C" {
 	{
 		uint8_t layer_type;
 
-		uint32_t animate;
-
 		uint8_t blend_mode;
 
 		uint8_t resource_type;
@@ -59,8 +57,8 @@ extern "C" {
 		__AE_MOVIE_NODE_UPDATE_STATES__,
 	}aeMovieNodeUpdateState;
 
-	typedef void( *ae_movie_composition_node_update_t )(const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, float _opacity, void * _data);
-	typedef void * ( *ae_movie_composition_track_matte_update_t )(const void * _element, uint32_t _type, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data);
+	typedef void( *ae_movie_composition_node_update_t )(const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, float _opacity, void * _data);
+	typedef void * ( *ae_movie_composition_track_matte_update_t )(const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data);
 
 	typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
 
