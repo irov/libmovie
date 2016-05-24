@@ -118,8 +118,7 @@ extern "C" {
 
 	ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _vertices );
 
-	float ae_get_movie_composition_node_in_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type );
-	float ae_get_movie_composition_node_out_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type );
+	ae_bool_t ae_get_movie_composition_node_in_out_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out );
 	
 #ifdef __cplusplus
 }
