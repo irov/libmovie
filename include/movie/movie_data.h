@@ -29,6 +29,7 @@ extern "C" {
 
 	typedef enum aeMovieLayerTypeEnum
 	{
+		AE_MOVIE_LAYER_TYPE_ANY = 0,
 		AE_MOVIE_LAYER_TYPE_MOVIE = 1,
 		AE_MOVIE_LAYER_TYPE_EVENT = 7,
 		AE_MOVIE_LAYER_TYPE_SOCKET = 8,

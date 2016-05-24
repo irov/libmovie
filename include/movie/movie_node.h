@@ -117,6 +117,9 @@ extern "C" {
 	void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
 
 	ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _vertices );
+
+	float ae_get_movie_composition_node_in_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type );
+	float ae_get_movie_composition_node_out_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type );
 	
 #ifdef __cplusplus
 }

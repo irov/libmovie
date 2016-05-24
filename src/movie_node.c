@@ -1464,3 +1464,59 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
+float ae_get_movie_composition_node_in_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type )
+{
+	for( aeMovieNode
+		*it_node = _composition->nodes,
+		*it_node_end = _composition->nodes + _composition->node_count;
+	it_node != it_node_end;
+	++it_node )
+	{
+		const aeMovieNode * node = it_node;
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( ae_strncmp( layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		{
+			continue;
+		}
+
+		if( _type != AE_MOVIE_LAYER_TYPE_ANY && layer->type != _type )
+		{
+			continue;
+		}
+
+		return node->in_time;
+	}
+
+	return -1.f;
+}
+//////////////////////////////////////////////////////////////////////////
+float ae_get_movie_composition_node_out( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type )
+{
+	for( aeMovieNode
+		*it_node = _composition->nodes,
+		*it_node_end = _composition->nodes + _composition->node_count;
+	it_node != it_node_end;
+	++it_node )
+	{
+		const aeMovieNode * node = it_node;
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( ae_strncmp( layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		{
+			continue;
+		}
+
+		if( _type != AE_MOVIE_LAYER_TYPE_ANY && layer->type != _type )
+		{
+			continue;
+		}
+
+		return node->out_time;
+	}
+
+	return -1.f;
+}
+//////////////////////////////////////////////////////////////////////////
