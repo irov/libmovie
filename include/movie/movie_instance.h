@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-	static const uint32_t ae_movie_version = 1;
-
 	typedef void * (*ae_movie_alloc_t)(void * _data, uint32_t _size);
 	typedef void * (*ae_movie_alloc_n_t)(void * _data, uint32_t _size, uint32_t _n);
 	typedef void( *ae_movie_free_t )(void * _data, const void * _ptr);

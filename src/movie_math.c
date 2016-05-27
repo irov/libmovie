@@ -9,7 +9,8 @@ static const float pi = 3.14159265358979323846f;
 static const float two_pi = 2.f * 3.14159265358979323846f;
 static const float inv_two_pi = 1.f / (2.f * 3.14159265358979323846f);
 //////////////////////////////////////////////////////////////////////////
-#	define EQUAL_F_Z( f ) ((f >= f_neps) && (f <= f_eps))
+#	define EQUAL_F_Z( v ) ((v >= f_neps) && (v <= f_eps))
+#	define EQUAL_F_1( v ) ((v >= 1.f + f_neps) && (v <= 1.f + f_eps))
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t equal_f_z( float _a )
 {
@@ -116,102 +117,83 @@ void copy_m4( ae_matrix4_t _out, const ae_matrix4_t _in )
 	*_out++ = *_in++;
 }
 //////////////////////////////////////////////////////////////////////////
-void make_rotate_z_axis_m4( float * _out, float _angle )
+void make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
 {
-	float c = cosf( _angle );
-	float s = sinf( _angle );
+	float x = _quaternion[0];
+	float y = _quaternion[1];
+	float z = _quaternion[2];
+	float w = _quaternion[3];
 
-	_out[0 * 4 + 0] = c;
-	_out[0 * 4 + 1] = -s;
-	_out[0 * 4 + 2] = 0.f;
-	_out[0 * 4 + 3] = 0.f;
+	float x2 = x + x;
+	float y2 = y + y;
+	float z2 = z + z;
+	float xx = x * x2;
+	float xy = x * y2;
+	float xz = x * z2;
+	float yy = y * y2;
+	float yz = y * z2;
+	float zz = z * z2;
+	float wx = w * x2;
+	float wy = w * y2;
+	float wz = w * z2;
 
-	_out[1 * 4 + 0] = s;
-	_out[1 * 4 + 1] = c;
-	_out[1 * 4 + 2] = 0.f;
-	_out[1 * 4 + 3] = 0.f;
-
-	_out[2 * 4 + 0] = 0.f;
-	_out[2 * 4 + 1] = 0.f;
-	_out[2 * 4 + 2] = 1.f;
-	_out[2 * 4 + 3] = 0.f;
-
-	_out[3 * 4 + 0] = 0.f;
-	_out[3 * 4 + 1] = 0.f;
-	_out[3 * 4 + 2] = 0.f;
-	_out[3 * 4 + 3] = 1.f;
+	_m[0 * 4 + 0] = 1.f - (yy + zz);
+	_m[0 * 4 + 1] = xy - wz;
+	_m[0 * 4 + 2] = xz + wy;			
+	_m[0 * 4 + 3] = 0.f;
+	_m[1 * 4 + 0] = xy + wz;
+	_m[1 * 4 + 1] = 1.f - (xx + zz);
+	_m[1 * 4 + 2] = yz - wx;
+	_m[1 * 4 + 3] = 0.f;
+	_m[2 * 4 + 0] = xz - wy;
+	_m[2 * 4 + 1] = yz + wx;
+	_m[2 * 4 + 2] = 1.f - (xx + yy);
+	_m[2 * 4 + 3] = 0.f;
+	_m[3 * 4 + 0] = 0.f;
+	_m[3 * 4 + 1] = 0.f;
+	_m[3 * 4 + 2] = 0.f;
+	_m[3 * 4 + 3] = 1.0f;
 }
 //////////////////////////////////////////////////////////////////////////
-void make_rotate_m4_euler( ae_matrix4_t _out, float _x, float _y, float _z )
+void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale, const ae_quaternion_t _quaternion )
 {
-	float ca = cosf( _x );
-	float cb = cosf( _y );
-	float cy = cosf( _z );
-
-	float sa = sinf( _x );
-	float sb = sinf( _y );
-	float sy = sinf( _z );
-
-	_out[0 * 4 + 0] = ca * cb;
-	_out[0 * 4 + 1] = ca * sb * sy - sa * cy;
-	_out[0 * 4 + 2] = ca * sb * cy + sa * sy;
-	_out[0 * 4 + 3] = 0.f;
-
-	_out[1 * 4 + 0] = sa * cb;
-	_out[1 * 4 + 1] = sa * sb * sy + ca * cy;
-	_out[1 * 4 + 2] = sa * sb * cy - ca * sy;
-	_out[1 * 4 + 3] = 0.f;
-
-	_out[2 * 4 + 0] = -sb;
-	_out[2 * 4 + 1] = cb * sy;
-	_out[2 * 4 + 2] = cb * cy;
-	_out[2 * 4 + 3] = 0.f;
-
-	_out[3 * 4 + 0] = 0.f;
-	_out[3 * 4 + 1] = 0.f;
-	_out[3 * 4 + 2] = 0.f;
-	_out[3 * 4 + 3] = 1.f;
-}
-//////////////////////////////////////////////////////////////////////////
-void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale, const ae_vector3_t _orientation )
-{
-	ae_matrix4_t mat_scale;
-	ident_m4( mat_scale );
-
-	mat_scale[3 * 4 + 0] = -_origin[0] * _scale[0];
-	mat_scale[3 * 4 + 1] = -_origin[1] * _scale[1];
-	mat_scale[3 * 4 + 2] = -_origin[2] * _scale[2];
-
-	mat_scale[0 * 4 + 0] = _scale[0];
-	mat_scale[1 * 4 + 1] = _scale[1];
-	mat_scale[2 * 4 + 2] = _scale[2];
-
-	if( EQUAL_F_Z( _orientation[1] ) &&
-		EQUAL_F_Z( _orientation[2] ) )
+	if( EQUAL_F_Z( _quaternion[0] ) && 
+		EQUAL_F_Z( _quaternion[1] ) &&
+		EQUAL_F_Z( _quaternion[2] ) &&
+		EQUAL_F_1( _quaternion[3] ) )
 	{
-		if( EQUAL_F_Z( _orientation[0] ) )
-		{
-			copy_m4( _lm, mat_scale );
-		}
-		else
-		{
-			ae_matrix4_t mat_rot;
-			make_rotate_z_axis_m4( mat_rot, _orientation[0] );
+		ident_m4( _lm );
 
-			mul_m4_m4( _lm, mat_scale, mat_rot );
-		}
+		_lm[0 * 4 + 0] = _scale[0];
+		_lm[1 * 4 + 1] = _scale[1];
+		_lm[2 * 4 + 2] = _scale[2];
+
+		_lm[3 * 4 + 0] = _position[0] - _origin[0] * _scale[0];
+		_lm[3 * 4 + 1] = _position[1] - _origin[1] * _scale[1];
+		_lm[3 * 4 + 2] = _position[2] - _origin[2] * _scale[2];
 	}
 	else
 	{
-		ae_matrix4_t mat_rot;
-		make_rotate_m4_euler( mat_rot, _orientation[0], _orientation[1], _orientation[2] );
+		ae_matrix4_t mat_scale;
+		ident_m4( mat_scale );
 
-		mul_m4_m4( _lm, mat_scale, mat_rot );
+		mat_scale[3 * 4 + 0] = -_origin[0] * _scale[0];
+		mat_scale[3 * 4 + 1] = -_origin[1] * _scale[1];
+		mat_scale[3 * 4 + 2] = -_origin[2] * _scale[2];
+
+		mat_scale[0 * 4 + 0] = _scale[0];
+		mat_scale[1 * 4 + 1] = _scale[1];
+		mat_scale[2 * 4 + 2] = _scale[2];
+
+		ae_matrix4_t mat_rotate;
+		make_quaternion_m4( mat_rotate, _quaternion );
+
+		mul_m4_m4( _lm, mat_scale, mat_rotate );
+
+		_lm[3 * 4 + 0] += _position[0];
+		_lm[3 * 4 + 1] += _position[1];
+		_lm[3 * 4 + 2] += _position[2];
 	}
-
-	_lm[3 * 4 + 0] += _position[0];
-	_lm[3 * 4 + 1] += _position[1];
-	_lm[3 * 4 + 2] += _position[2];
 }
 //////////////////////////////////////////////////////////////////////////
 void norm_v3_v3( ae_vector3_t _out, const ae_vector3_t _rhs )
@@ -348,9 +330,25 @@ float angle_correct_interpolate_from_to( float _from, float _to )
 	return correct_angle;
 }
 //////////////////////////////////////////////////////////////////////////
-float linerp_f1( float _in1, float _in2, float _scale )
+float linerp_f1( float _in1, float _in2, float _t )
 {
-	return _in1 + (_in2 - _in1) * _scale;
+	return _in1 * (1.f - _t) + _in2 * _t;
+}
+//////////////////////////////////////////////////////////////////////////
+void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, float _t )
+{
+	_q[0] = _q1[0] * (1.f - _t) + _q2[0] * _t;
+	_q[1] = _q1[1] * (1.f - _t) + _q2[1] * _t;
+	_q[2] = _q1[2] * (1.f - _t) + _q2[2] * _t;
+	_q[3] = _q1[3] * (1.f - _t) + _q2[3] * _t;
+		
+	float q_dot = _q[0] * _q[0] + _q[1] * _q[1] + _q[2] * _q[2] + _q[3] * _q[3];
+	float inv_length = 1.f / sqrtf( q_dot );
+
+	_q[0] *= inv_length;
+	_q[1] *= inv_length;
+	_q[2] *= inv_length;
+	_q[3] *= inv_length;
 }
 //////////////////////////////////////////////////////////////////////////
 float make_camera_fov( float _height, float _zoom )

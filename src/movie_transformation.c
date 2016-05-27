@@ -95,9 +95,10 @@ aeMovieResult load_movie_layer_transformation( const aeMovieInstance * _instance
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, immuttable_scale_y, property_scale_y );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, immuttable_scale_z, property_scale_z );
 
-	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x );
-	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y );
-	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, immuttable_quaternion_x, property_quaternion_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, immuttable_quaternion_y, property_quaternion_y );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, immuttable_quaternion_z, property_quaternion_z );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, immuttable_quaternion_w, property_quaternion_w );
 
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_OPACITY, immuttable_opacity, property_opacity );
 
@@ -114,12 +115,13 @@ void delete_movie_layer_transformation( const aeMovieInstance * _instance, const
 	DELETEN( _instance, _transformation->property_position_x );
 	DELETEN( _instance, _transformation->property_position_y );
 	DELETEN( _instance, _transformation->property_position_z );
-	DELETEN( _instance, _transformation->property_rotation_x );
-	DELETEN( _instance, _transformation->property_rotation_y );
-	DELETEN( _instance, _transformation->property_rotation_z );
 	DELETEN( _instance, _transformation->property_scale_x );
 	DELETEN( _instance, _transformation->property_scale_y );
 	DELETEN( _instance, _transformation->property_scale_z );
+	DELETEN( _instance, _transformation->property_quaternion_x );
+	DELETEN( _instance, _transformation->property_quaternion_y );
+	DELETEN( _instance, _transformation->property_quaternion_z );
+	DELETEN( _instance, _transformation->property_quaternion_w );
 	DELETEN( _instance, _transformation->property_opacity );
 }
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +130,7 @@ float make_movie_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTran
 	float anchor_point[3];
 	float position[3];
 	float scale[3];
-	float rotation[3];
+	float quaternion[4];
 	float opacity;
 
 	if( _interpolate == AE_TRUE )
@@ -164,14 +166,25 @@ float make_movie_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTran
 	}else{\
 		float value0 = _transformation->propertyName[_index + 0];\
 		float value1 = _transformation->propertyName[_index + 1];\
-		float correct_rotate_from = angle_norm( value0 );\
-		float correct_rotate_to = angle_correct_interpolate_from_to( correct_rotate_from, value1 );\
-		outName = linerp_f1( correct_rotate_from, correct_rotate_to, _t );\
+		outName = linerp_q( value0, value1, _t );\
 		}
 
-		AE_LINERP_PROPERTY2( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x, rotation[0] );
-		AE_LINERP_PROPERTY2( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y, rotation[1] );
-		AE_LINERP_PROPERTY2( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z, rotation[2] );
+#	define AE_GET_PROPERTY_QUATERNION( Mask, immutableName, propertyName, Index )\
+		((_transformation->immutable_property_mask & Mask) ? _transformation->immutableName : _transformation->propertyName[_index + Index])
+
+		ae_quaternion_t q1;
+		q1[0] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_X, immuttable_quaternion_x, property_quaternion_x, 0 );
+		q1[1] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_Y, immuttable_quaternion_y, property_quaternion_y, 0 );
+		q1[2] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_Z, immuttable_quaternion_z, property_quaternion_z, 0 );
+		q1[3] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_W, immuttable_quaternion_w, property_quaternion_w, 0 );
+
+		ae_quaternion_t q2;
+		q2[0] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_X, immuttable_quaternion_x, property_quaternion_x, 1 );
+		q2[1] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_Y, immuttable_quaternion_y, property_quaternion_y, 1 );
+		q2[2] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_Z, immuttable_quaternion_z, property_quaternion_z, 1 );
+		q2[3] = AE_GET_PROPERTY_QUATERNION( AE_MOVIE_IMMUTABLE_QUATERNION_W, immuttable_quaternion_w, property_quaternion_w, 1 );
+
+		linerp_q( quaternion, q1, q2, _t );
 
 #	undef AE_LINERP_PROPERTY2
 	}
@@ -199,16 +212,17 @@ float make_movie_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTran
 		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, immuttable_scale_y, property_scale_y, scale[1] );
 		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, immuttable_scale_z, property_scale_z, scale[2] );
 
-		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_X, immuttable_rotation_x, property_rotation_x, rotation[0] );
-		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Y, immuttable_rotation_y, property_rotation_y, rotation[1] );
-		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_ROTATION_Z, immuttable_rotation_z, property_rotation_z, rotation[2] );
+		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, immuttable_quaternion_x, property_quaternion_x, quaternion[0] );
+		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, immuttable_quaternion_y, property_quaternion_y, quaternion[1] );
+		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, immuttable_quaternion_z, property_quaternion_z, quaternion[2] );
+		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, immuttable_quaternion_w, property_quaternion_w, quaternion[3] );
 
 		AE_FIXED_PROPERTY( AE_MOVIE_IMMUTABLE_OPACITY, immuttable_opacity, property_opacity, opacity );
 
 #	undef AE_FIXED_PROPERTY
 	}
 
-	make_transformation_m4( _out, position, anchor_point, scale, rotation );
+	make_transformation_m4( _out, position, anchor_point, scale, quaternion );
 
 	return opacity;
 }

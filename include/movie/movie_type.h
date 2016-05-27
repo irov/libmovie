@@ -13,6 +13,7 @@ extern "C" {
 	typedef float ae_vector2_t[2];
 	typedef float ae_vector3_t[3];
 	typedef float ae_vector4_t[4];
+	typedef float ae_quaternion_t[4];
 	typedef float ae_matrix4_t[16];
 	
 	static const uint8_t AE_TRUE = 1;
