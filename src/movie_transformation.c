@@ -31,15 +31,17 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 			}break;
 		case 1:
 			{
-				float block_base;
-				READ( _stream, block_base );
+				float block_begin;
+				READ( _stream, block_begin );
 
-				float block_add;
-				READ( _stream, block_add );
+				float block_end;
+				READ( _stream, block_end );
+
+				float block_add = (block_end - block_begin) / (block_count - 1);
 
 				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
 				{
-					float block_value = block_base + block_add * block_index;
+					float block_value = block_begin + block_add * block_index;
 					*stream_values++ = block_value;
 				}
 			}break;
