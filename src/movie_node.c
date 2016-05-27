@@ -1226,12 +1226,12 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 
 		if( _composition->time >= last_time )
 		{
+			_composition->time = last_time;
+
 			__update_movie_composition_node( _composition, update_revision, begin_time, last_time );
 
 			_composition->update_revision++;
 			update_revision = _composition->update_revision;
-
-			_composition->time = last_time;
 
 			_composition->play = AE_FALSE;
 			_composition->interrupt = AE_FALSE;
