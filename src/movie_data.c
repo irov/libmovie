@@ -9,7 +9,8 @@
 #	ifndef AE_MOVIE_MAX_COMPOSITION_NAME
 #	define AE_MOVIE_MAX_COMPOSITION_NAME 128
 #	endif
-
+//////////////////////////////////////////////////////////////////////////
+static const uint32_t ae_movie_version = 3;
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance )
 {
@@ -466,8 +467,6 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 
 	return AE_MOVIE_SUCCESSFUL;
 }
-//////////////////////////////////////////////////////////////////////////
-static const uint32_t ae_movie_version = 2;
 //////////////////////////////////////////////////////////////////////////
 aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
 {

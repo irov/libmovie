@@ -37,11 +37,12 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 				float block_end;
 				READ( _stream, block_end );
 
-				float block_add = (block_end - block_begin) / (block_count - 1);
+				float block_add = (block_end - block_begin) / (float)block_count;
 
 				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
 				{
 					float block_value = block_begin + block_add * block_index;
+
 					*stream_values++ = block_value;
 				}
 			}break;
@@ -162,15 +163,6 @@ float make_movie_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTran
 
 #	undef AE_LINERP_PROPERTY
 
-#	define AE_LINERP_PROPERTY2( Mask, immutableName, propertyName, outName )\
-	if( _transformation->immutable_property_mask & Mask ){\
-		outName = _transformation->immutableName;\
-	}else{\
-		float value0 = _transformation->propertyName[_index + 0];\
-		float value1 = _transformation->propertyName[_index + 1];\
-		outName = linerp_q( value0, value1, _t );\
-		}
-
 #	define AE_GET_PROPERTY_QUATERNION( Mask, immutableName, propertyName, Index )\
 		((_transformation->immutable_property_mask & Mask) ? _transformation->immutableName : _transformation->propertyName[_index + Index])
 
@@ -188,7 +180,7 @@ float make_movie_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTran
 
 		linerp_q( quaternion, q1, q2, _t );
 
-#	undef AE_LINERP_PROPERTY2
+#	undef AE_GET_PROPERTY_QUATERNION
 	}
 	else
 	{
