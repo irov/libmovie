@@ -337,10 +337,12 @@ float linerp_f1( float _in1, float _in2, float _t )
 //////////////////////////////////////////////////////////////////////////
 void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, float _t )
 {
-	_q[0] = _q1[0] * (1.f - _t) + _q2[0] * _t;
-	_q[1] = _q1[1] * (1.f - _t) + _q2[1] * _t;
-	_q[2] = _q1[2] * (1.f - _t) + _q2[2] * _t;
-	_q[3] = _q1[3] * (1.f - _t) + _q2[3] * _t;
+	float inv_t = 1.f - _t;
+
+	_q[0] = _q1[0] * inv_t + _q2[0] * _t;
+	_q[1] = _q1[1] * inv_t + _q2[1] * _t;
+	_q[2] = _q1[2] * inv_t + _q2[2] * _t;
+	_q[3] = _q1[3] * inv_t + _q2[3] * _t;
 		
 	float q_dot = _q[0] * _q[0] + _q[1] * _q[1] + _q[2] * _q[2] + _q[3] * _q[3];
 	float inv_length = 1.f / sqrtf( q_dot );
