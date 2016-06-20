@@ -3,7 +3,6 @@
 #	include "movie_transformation.h"
 #	include "movie_memory.h"
 #	include "movie_math.h"
-#	include "movie_utils.h"
 
 #	include "movie_struct.h"
 
@@ -1310,6 +1309,8 @@ float ae_get_movie_composition_time( const aeMovieComposition * _composition )
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData )
 {
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
 	for( aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -1325,7 +1326,7 @@ ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, cons
 			continue;
 		}
 
-		if( ae_strncmp( layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		if( STRNCMP( instance, layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
 		{
 			continue;
 		}
@@ -1340,6 +1341,8 @@ ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, cons
 //////////////////////////////////////////////////////////////////////////
 void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
 {
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
 	for( aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -1355,7 +1358,7 @@ void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const c
 			continue;
 		}
 
-		if( ae_strncmp( layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		if( STRNCMP( instance, layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
 		{
 			continue;
 		}
@@ -1368,6 +1371,8 @@ void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const c
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
 {
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
 	for( aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -1383,7 +1388,7 @@ ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, cons
 			continue;
 		}
 
-		if( ae_strncmp( layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		if( STRNCMP( instance, layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
 		{
 			continue;
 		}
@@ -1396,6 +1401,8 @@ ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, cons
 //////////////////////////////////////////////////////////////////////////
 void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
 {
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
 	for( aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -1411,7 +1418,7 @@ void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, cons
 			continue;
 		}
 
-		if( ae_strncmp( layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		if( STRNCMP( instance, layer->name, _slotName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
 		{
 			continue;
 		}
@@ -1466,6 +1473,8 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_in_out_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out )
 {
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
 	for( aeMovieNode
 		*it_node = _composition->nodes,
 		*it_node_end = _composition->nodes + _composition->node_count;
@@ -1476,7 +1485,7 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( aeMovieComposition * _compo
 
 		const aeMovieLayerData * layer = node->layer;
 
-		if( ae_strncmp( layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		if( STRNCMP( instance, layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
 		{
 			continue;
 		}

@@ -3,7 +3,27 @@
 #	include "movie_struct.h"
 
 //////////////////////////////////////////////////////////////////////////
-aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, void * _data )
+static int32_t ae_strncmp( void * _data, const char * _src, const char * _dst, uint32_t _count )
+{
+	(void)_data;
+
+	if( _count == 0 )
+	{
+		return 0;
+	}
+
+	int32_t cmp = 0;
+
+	while( !(cmp = *(unsigned char *)_src - *(unsigned char *)_dst) && *_dst && _count-- )
+	{
+		++_src;
+		++_dst;
+	}
+
+	return cmp;
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, void * _data )
 {
 	aeMovieInstance * instance = (*_alloc)(_data, sizeof( aeMovieInstance ));
 
@@ -11,7 +31,13 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 	instance->memory_alloc_n = _alloc_n;
 	instance->memory_free = _free;
 	instance->memory_free_n = _free_n;
-	instance->memory_data = _data;
+	instance->strncmp = _strncmp;
+	instance->instance_data = _data;
+
+	if( instance->strncmp == AE_NULL )
+	{
+		instance->strncmp = &ae_strncmp;
+	}
 
 	float * sprite_uv = instance->sprite_uv;
 
@@ -38,6 +64,6 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 //////////////////////////////////////////////////////////////////////////
 void ae_delete_movie_instance( aeMovieInstance * _instance )
 {
-	(*_instance->memory_free)(_instance->memory_data, _instance);
+	(*_instance->memory_free)(_instance->instance_data, _instance);
 }
 //////////////////////////////////////////////////////////////////////////

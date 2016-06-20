@@ -11,8 +11,10 @@ typedef struct aeMovieInstance
 	ae_movie_alloc_t memory_alloc;
 	ae_movie_alloc_n_t memory_alloc_n;
 	ae_movie_free_t memory_free;
-	ae_movie_free_n_t memory_free_n;
-	void * memory_data;
+	ae_movie_free_n_t memory_free_n;	
+	ae_movie_strncmp_t strncmp;
+	void * instance_data;
+	
 
 	float sprite_uv[8];
 	uint16_t sprite_indices[6];	

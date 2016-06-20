@@ -89,7 +89,6 @@
     <ClInclude Include="..\src\movie_stream.h" />
     <ClInclude Include="..\src\movie_struct.h" />
     <ClInclude Include="..\src\movie_transformation.h" />
-    <ClInclude Include="..\src\movie_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\movie_data.c" />
@@ -97,7 +96,6 @@
     <ClCompile Include="..\src\movie_math.c" />
     <ClCompile Include="..\src\movie_node.c" />
     <ClCompile Include="..\src\movie_transformation.c" />
-    <ClCompile Include="..\src\movie_utils.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
