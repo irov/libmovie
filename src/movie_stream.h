@@ -93,6 +93,7 @@ static void ae_magic_read_mesh( const aeMovieInstance * _instance, const aeMovie
 
 	if( vertex_count == 0 )
 	{
+		_mesh->vertex_count = 0;
 		_mesh->indices_count = 0;
 
 		_mesh->positions = AE_NULL;
