@@ -845,20 +845,6 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 
 	switch( layer_type )
 	{
-	case AE_MOVIE_LAYER_TYPE_SLOT:
-	case AE_MOVIE_LAYER_TYPE_PARTICLE:
-		{
-			_vertices->vertexCount = 0;
-			_vertices->indexCount = 0;
-
-			_vertices->uv = AE_NULL;
-			_vertices->indices = AE_NULL;
-
-			_vertices->r = 1.f;
-			_vertices->g = 1.f;
-			_vertices->b = 1.f;
-			_vertices->a = _node->opacity;
-		}break;
 	case AE_MOVIE_LAYER_TYPE_SHAPE:
 		{
 			aeMovieResourceShape * resource_shape = (aeMovieResourceShape *)resource;
@@ -987,11 +973,34 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 			_vertices->b = 1.f;
 			_vertices->a = _node->opacity;
 		}break;
+	default:
+		{
+			_vertices->vertexCount = 0;
+			_vertices->indexCount = 0;
+
+			_vertices->r = 1.f;
+			_vertices->g = 1.f;
+			_vertices->b = 1.f;
+			_vertices->a = _node->opacity;
+		}break;
 	}
 }
 //////////////////////////////////////////////////////////////////////////
 static void __update_movie_composition_track_matte_state( aeMovieComposition * _composition, aeMovieNode * _node, ae_bool_t _loop, ae_bool_t _begin, float _time )
 {
+	uint8_t layer_type = _node->layer->type;
+
+	switch( layer_type )
+	{
+	case AE_MOVIE_LAYER_TYPE_MOVIE:
+		{
+			return;
+		}break;
+	default:
+		{
+		}break;
+	}
+
 	aeMovieRenderMesh vertices;
 	__compute_movie_node( _composition->movie_data->instance, _node, &vertices );
 
@@ -1001,7 +1010,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
 
-			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, _loop, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, AE_NULL, _composition->provider_data);
+			void * track_matte_data = (*_composition->providers.track_matte_update)(_node->element_data, layer_type, _loop, AE_MOVIE_NODE_UPDATE_BEGIN, _node->start_time + _time - _node->in_time, &vertices, AE_NULL, _composition->provider_data);
 
 			_node->track_matte_data = track_matte_data;
 		}
@@ -1009,7 +1018,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
 
-			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, _loop, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _node->track_matte_data, _composition->provider_data);
+			(*_composition->providers.track_matte_update)(_node->element_data, layer_type, _loop, AE_MOVIE_NODE_UPDATE_UPDATE, 0.f, &vertices, _node->track_matte_data, _composition->provider_data);
 		}
 	}
 	else
@@ -1018,7 +1027,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_END;
 
-			(*_composition->providers.track_matte_update)(_node->element_data, _node->layer->type, _loop, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _node->track_matte_data, _composition->provider_data);
+			(*_composition->providers.track_matte_update)(_node->element_data, layer_type, _loop, AE_MOVIE_NODE_UPDATE_END, 0.f, &vertices, _node->track_matte_data, _composition->provider_data);
 
 			_node->track_matte_data = AE_NULL;
 		}
