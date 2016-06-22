@@ -990,6 +990,17 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 {
 	uint8_t layer_type = _node->layer->type;
 
+	switch( layer_type )
+	{
+	case AE_MOVIE_LAYER_TYPE_MOVIE:
+		{
+			return;
+		}break;
+	default:
+		{
+		}break;
+	}
+
 	aeMovieRenderMesh vertices;
 	__compute_movie_node( _composition->movie_data->instance, _node, &vertices );
 
