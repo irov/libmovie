@@ -37,7 +37,7 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 				float block_end;
 				READ( _stream, block_end );
 
-				float block_add = (block_end - block_begin) / (float)block_count;
+				float block_add = (block_end - block_begin) / (float)(block_count - 1);
 
 				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
 				{
