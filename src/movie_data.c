@@ -115,8 +115,6 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 	{
 		const aeMovieCompositionData * composition = it_composition;
 
-		DELETEN( instance, composition->name );
-
 		for( const aeMovieLayerData
 			*it_layer = composition->layers,
 			*it_layer_end = composition->layers + composition->layer_count;
@@ -125,8 +123,6 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 		{
 			const aeMovieLayerData * layer = it_layer;
 			
-			DELETEN( instance, layer->name );
-
 			if( layer->timeremap != AE_NULL )
 			{
 				DELETEN( instance, layer->timeremap->times );
@@ -144,9 +140,13 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 			delete_movie_layer_transformation( instance, layer->transformation );
 
 			DELETE( instance, layer->transformation );
+
+			DELETEN( instance, layer->name );
 		}
 
 		DELETEN( instance, composition->layers );
+
+		DELETEN( instance, composition->name );
 	}
 
 	DELETE( instance, _movieData );

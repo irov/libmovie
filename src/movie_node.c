@@ -307,7 +307,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			}
 			else
 			{
-				node->start_time = _startTime;
+				node->start_time = 0.f;
 				node->in_time = layer_in;
 			}
 
