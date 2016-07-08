@@ -302,12 +302,12 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 
 			if( parent_in > layer_in )
 			{
-				node->start_time = parent_in - layer_in;
+				node->start_time = parent_in - layer_in + _startTime;
 				node->in_time = parent_in;
 			}
 			else
 			{
-				node->start_time = 0.f;
+				node->start_time = _startTime;
 				node->in_time = layer_in;
 			}
 
@@ -1083,8 +1083,11 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv);
 		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv);
 
-		uint32_t indexIn = (_beginTime > loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? (uint32_t)(loopBegin * frameDurationInv) : (uint32_t)(node->in_time * frameDurationInv);
-		uint32_t indexOut = (_beginTime > loopBegin && node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? ((uint32_t)(loopEnd * frameDurationInv)) : (uint32_t)(node->out_time * frameDurationInv);
+		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
+		float out_time = (_beginTime >= loopBegin && node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
+
+		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv);
+		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv);
 
 		float current_time = composition_time - node->in_time + node->start_time;
 
