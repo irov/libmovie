@@ -62,7 +62,7 @@ static const aeMovieLayerData * __find_layer_by_index( const aeMovieCompositionD
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __update_movie_composition_node_matrix( aeMovieNode * _node, uint32_t _revision, uint32_t _frame, ae_bool_t _interpolate, float _t )
+static void __update_movie_composition_node_matrix( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, uint32_t _frame, ae_bool_t _interpolate, float _t )
 {
 	if( _node->matrix_revision == _revision )
 	{
@@ -84,8 +84,20 @@ static void __update_movie_composition_node_matrix( aeMovieNode * _node, uint32_
 	aeMovieNode * node_relative = _node->relative;
 
 	if( node_relative->matrix_revision != _revision )
-	{
-		__update_movie_composition_node_matrix( node_relative, _revision, _frame, _interpolate, _t );
+	{		
+		float composition_time = _composition->time;
+
+		float frameDuration = node_relative->layer->composition->frameDuration;
+
+		float current_time = composition_time - node_relative->in_time + node_relative->start_time;
+
+		float frame_time = current_time / node_relative->stretch / frameDuration;
+
+		uint32_t frame_relative = (uint32_t)frame_time;
+
+		float t_relative = frame_time - (float)frame_relative;
+
+		__update_movie_composition_node_matrix( _composition, node_relative, _revision, frame_relative, _interpolate, t_relative );
 	}
 
 	ae_matrix4_t local_matrix;
@@ -291,7 +303,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 		{
 			node->start_time = 0.f;
 			node->in_time = layer->in_time;
-			node->out_time = layer->out_time;			
+			node->out_time = layer->out_time;
 		}
 		else
 		{
@@ -302,7 +314,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 
 			if( parent_in > layer_in )
 			{
-				node->start_time = parent_in - layer_in + _startTime;
+				node->start_time = parent_in - layer_in;
 				node->in_time = parent_in;
 			}
 			else
@@ -444,7 +456,7 @@ static void __setup_movie_node_matrix( aeMovieComposition * _composition )
 	{
 		aeMovieNode * node = it_node;
 
-		__update_movie_composition_node_matrix( node, update_revision, 0, AE_FALSE, 0.f );
+		__update_movie_composition_node_matrix( _composition, node, update_revision, 0, AE_FALSE, 0.f );
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1040,7 +1052,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 //////////////////////////////////////////////////////////////////////////
 static void __update_node( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, float _time, uint32_t _frame, float _t, ae_bool_t _loop, ae_bool_t _interpolate, ae_bool_t _begin )
 {
-	__update_movie_composition_node_matrix( _node, _revision, _frame, _interpolate, _t );
+	__update_movie_composition_node_matrix( _composition, _node, _revision, _frame, _interpolate, _t );
 
 	if( _node->layer->is_track_matte == AE_TRUE )
 	{
@@ -1099,7 +1111,7 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 
 		if( node->layer->type == AE_MOVIE_LAYER_TYPE_EVENT )
 		{
-			__update_movie_composition_node_matrix( node, _revision, frameId, AE_FALSE, 0.f );
+			__update_movie_composition_node_matrix( _composition, node, _revision, frameId, AE_FALSE, 0.f );
 
 			if( beginFrame < indexIn && endFrame >= indexIn )
 			{
