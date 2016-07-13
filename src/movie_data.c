@@ -725,3 +725,13 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData )
+{
+	return _movieData->composition_count;
+}
+//////////////////////////////////////////////////////////////////////////
+const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, uint32_t _index )
+{
+	return _movieData->compositions[_index];
+}
+//////////////////////////////////////////////////////////////////////////
