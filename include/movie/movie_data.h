@@ -139,7 +139,7 @@ extern "C" {
 		const aeMovieResource ** resources;
 
 		uint32_t composition_count;
-		aeMovieCompositionData * compositions;
+		const aeMovieCompositionData * compositions;
 	} aeMovieData;
 
 	aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance );

@@ -685,11 +685,12 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 	uint32_t composition_count = READZ( _stream );
 
 	_movieData->composition_count = composition_count;
-	_movieData->compositions = NEWN( _movieData->instance, aeMovieCompositionData, composition_count );
 
+	aeMovieCompositionData * compositions = NEWN( _movieData->instance, aeMovieCompositionData, composition_count );
+	
 	for( aeMovieCompositionData
-		*it_composition = _movieData->compositions,
-		*it_composition_end = _movieData->compositions + composition_count;
+		*it_composition = compositions,
+		*it_composition_end = compositions + composition_count;
 	it_composition != it_composition_end;
 	++it_composition )
 	{
@@ -698,6 +699,8 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 			return AE_MOVIE_FAILED;
 		}
 	}
+
+	_movieData->compositions = compositions;
 
 	return AE_MOVIE_SUCCESSFUL;
 }
@@ -732,6 +735,6 @@ uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData )
 //////////////////////////////////////////////////////////////////////////
 const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, uint32_t _index )
 {
-	return _movieData->compositions[_index];
+	return _movieData->compositions + _index;
 }
 //////////////////////////////////////////////////////////////////////////
