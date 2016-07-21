@@ -157,7 +157,7 @@ static void __load_movie_data_composition_camera( const aeMovieStream * _stream,
 	READ( _stream, _compostionData->cameraZoom );
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
+static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, const aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
 {
 	READ_STRING( _movieData->instance, _stream, _layer->name );
 
@@ -259,7 +259,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	else
 	{
 		uint32_t composition_index = READZ( _stream );
-		_layer->sub_composition = _movieData->compositions + composition_index;
+		_layer->sub_composition = _compositions + composition_index;
 
 		_layer->resource = AE_NULL;
 	}
@@ -372,7 +372,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieData, const aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
+static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, const aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
 {
 	READ_STRING( _movieData->instance, _stream, _compositionData->name );
 		
@@ -457,7 +457,7 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 
 		layer->composition = _compositionData;
 
-		if( __load_movie_data_layer( _movieData, _stream, _compositionData, layer ) == AE_MOVIE_FAILED )
+		if( __load_movie_data_layer( _movieData, _compositions, _stream, _compositionData, layer ) == AE_MOVIE_FAILED )
 		{
 			return AE_MOVIE_FAILED;
 		}
@@ -694,7 +694,7 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 	it_composition != it_composition_end;
 	++it_composition )
 	{
-		if( __load_movie_data_composition( _movieData, _stream, it_composition ) == AE_MOVIE_FAILED )
+		if( __load_movie_data_composition( _movieData, compositions, _stream, it_composition ) == AE_MOVIE_FAILED )
 		{
 			return AE_MOVIE_FAILED;
 		}
