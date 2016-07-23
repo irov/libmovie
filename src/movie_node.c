@@ -774,6 +774,50 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
 	_renderMesh->indices = _mesh->indices;
 }
 //////////////////////////////////////////////////////////////////////////
+static float __bezier_point( float a, float b, float c, float d, float t )
+{
+	float t2 = t * t;
+	float t3 = t2 * t;
+
+	float ti = 1.f - t;
+	float ti2 = ti * ti;
+	float ti3 = ti2 * ti;		
+
+	return a * ti3 + 3.f * b * t * ti2 + 3.f * c * t2 * ti + d * t3;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __bezier_warp_x( const aeMovieBezierWarp * _bezier_warp, float _u, float _v )
+{
+	const ae_vector2_t * c = _bezier_warp->corners;
+	const ae_vector2_t * b  = _bezier_warp->beziers;
+
+	float bx = __bezier_point( c[0][0], b[0][0], b[7][0], c[3][0], _v );
+	float ex = __bezier_point( c[1][0], b[3][0], b[4][0], c[2][0], _v );
+
+	float mx0 = (b[1][0] - b[6][0]) * (1.f - _u) + b[6][0];
+	float mx1 = (b[2][0] - b[5][0]) * (1.f - _u) + b[5][0];
+
+	float x = __bezier_point( bx, mx0, mx1, ex, _u );
+
+	return x;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __bezier_warp_y( const aeMovieBezierWarp * _bezier_warp, float _u, float _v )
+{
+	const ae_vector2_t * c = _bezier_warp->corners;
+	const ae_vector2_t * b = _bezier_warp->beziers;
+
+	float by = __bezier_point( c[0][1], b[0][1], b[7][1], c[3][1], _v );
+	float ey = __bezier_point( c[1][1], b[3][1], b[4][1], c[2][1], _v );
+
+	float my0 = (b[1][1] - b[6][1]) * (1.f - _u) + b[6][1];
+	float my1 = (b[2][1] - b[5][1]) * (1.f - _u) + b[5][1];
+
+	float x = __bezier_point( by, my0, my1, ey, _u );
+
+	return x;
+}
+//////////////////////////////////////////////////////////////////////////
 static void __make_sprite_vertices( const aeMovieInstance * _instance, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
 {
 	float v_position[8];
@@ -1098,8 +1142,8 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
 		float out_time = (_beginTime >= loopBegin && node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
 
-		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv);
-		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv);
+		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.5f);
+		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.5f);
 
 		float current_time = composition_time - node->in_time + node->start_time;
 

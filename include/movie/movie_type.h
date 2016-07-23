@@ -46,6 +46,30 @@ extern "C" {
 
 	} aeMovieMesh;
 
+	typedef struct
+	{
+		ae_vector2_t corners[4];
+		ae_vector2_t beziers[8];
+
+		//ae_vector2_t corner_left_top;
+		//ae_vector2_t corner_right_top;
+		//ae_vector2_t corner_right_bottom;
+		//ae_vector2_t corner_left_bottom;
+
+		//ae_vector2_t bezier_left_top_down;
+		//ae_vector2_t bezier_left_top_right;
+
+		//ae_vector2_t bezier_right_top_left;
+		//ae_vector2_t bezier_right_top_down;
+
+		//ae_vector2_t bezier_right_bottom_up;
+		//ae_vector2_t bezier_right_bottom_left;
+
+		//ae_vector2_t bezier_left_bottom_right;
+		//ae_vector2_t bezier_left_bottom_up;
+
+	} aeMovieBezierWarp;
+
 	typedef enum
 	{
 		AE_MOVIE_BLEND_NORMAL = 0,

@@ -27,6 +27,15 @@ extern "C" {
 		
 	} aeMovieLayerMesh;
 
+	typedef struct
+	{
+		ae_bool_t immutable;
+		aeMovieBezierWarp immutable_bezier_warp;
+
+		aeMovieBezierWarp * bezier_warps;
+
+	} aeMovieLayerBezierWarp;
+
 	typedef enum aeMovieLayerTypeEnum
 	{
 		AE_MOVIE_LAYER_TYPE_ANY = 0,
@@ -71,9 +80,10 @@ extern "C" {
 
 		aeMovieLayerTimeremap * timeremap;
 		aeMovieLayerMesh * mesh;
+		aeMovieLayerBezierWarp * bezier_warp;
 		
 		const aeMovieResource * resource;
-		struct aeMovieCompositionData * sub_composition;
+		const struct aeMovieCompositionData * sub_composition;
 
 		uint32_t parent_index;
 

@@ -226,6 +226,32 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 					}
 				}
 			}break;
+		case 3:
+			{
+				_layer->bezier_warp = NEW( _movieData->instance, aeMovieLayerBezierWarp );
+
+				_layer->bezier_warp->immutable = READB( _stream );
+
+				if( _layer->bezier_warp->immutable == AE_TRUE )
+				{
+					READN( _stream, _layer->bezier_warp->immutable_bezier_warp.corners, 4 );
+					READN( _stream, _layer->bezier_warp->immutable_bezier_warp.beziers, 8 );
+				}
+				else
+				{
+					_layer->bezier_warp->bezier_warps = NEWN( _movieData->instance, aeMovieBezierWarp, _layer->frame_count );
+
+					for( aeMovieBezierWarp
+						*it_bezier_warp = _layer->bezier_warp->bezier_warps,
+						*it_bezier_warp_end = _layer->bezier_warp->bezier_warps + _layer->frame_count;
+					it_bezier_warp != it_bezier_warp_end;
+					++it_bezier_warp )
+					{
+						READN( _stream, it_bezier_warp->corners, 4 );
+						READN( _stream, it_bezier_warp->beziers, 8 );
+					}
+				}
+			}
 		default:
 			{
 				return AE_MOVIE_FAILED;
