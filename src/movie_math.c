@@ -335,6 +335,12 @@ float linerp_f1( float _in1, float _in2, float _t )
 	return _in1 * (1.f - _t) + _in2 * _t;
 }
 //////////////////////////////////////////////////////////////////////////
+void linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_t _in2, float _t )
+{
+	_out[0] = linerp_f1( _in1[0], _in2[0], _t );
+	_out[1] = linerp_f1( _in1[1], _in2[1], _t );
+}
+//////////////////////////////////////////////////////////////////////////
 void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, float _t )
 {
 	float inv_t = 1.f - _t;

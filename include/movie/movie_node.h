@@ -6,10 +6,6 @@
 #	include <movie/movie_resource.h>
 #	include <movie/movie_data.h>
 
-#	ifndef AE_MOVIE_MAX_VERTICES
-#	define AE_MOVIE_MAX_VERTICES 64
-#	endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

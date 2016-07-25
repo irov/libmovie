@@ -765,7 +765,9 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
 	_renderMesh->vertexCount = _mesh->vertex_count;
 	_renderMesh->indexCount = _mesh->indices_count;
 
-	for( uint32_t i = 0; i != _mesh->vertex_count; ++i )
+	uint32_t vertex_count = _mesh->vertex_count;
+
+	for( uint32_t i = 0; i != vertex_count; ++i )
 	{
 		mul_v3_v2_m4( _renderMesh->position + i * 3, _mesh->positions + i * 2, _matrix );
 	}
@@ -774,51 +776,7 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
 	_renderMesh->indices = _mesh->indices;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __bezier_point( float a, float b, float c, float d, float t )
-{
-	float t2 = t * t;
-	float t3 = t2 * t;
-
-	float ti = 1.f - t;
-	float ti2 = ti * ti;
-	float ti3 = ti2 * ti;		
-
-	return a * ti3 + 3.f * b * t * ti2 + 3.f * c * t2 * ti + d * t3;
-}
-//////////////////////////////////////////////////////////////////////////
-static float __bezier_warp_x( const aeMovieBezierWarp * _bezier_warp, float _u, float _v )
-{
-	const ae_vector2_t * c = _bezier_warp->corners;
-	const ae_vector2_t * b  = _bezier_warp->beziers;
-
-	float bx = __bezier_point( c[0][0], b[0][0], b[7][0], c[3][0], _v );
-	float ex = __bezier_point( c[1][0], b[3][0], b[4][0], c[2][0], _v );
-
-	float mx0 = (b[1][0] - b[6][0]) * (1.f - _u) + b[6][0];
-	float mx1 = (b[2][0] - b[5][0]) * (1.f - _u) + b[5][0];
-
-	float x = __bezier_point( bx, mx0, mx1, ex, _u );
-
-	return x;
-}
-//////////////////////////////////////////////////////////////////////////
-static float __bezier_warp_y( const aeMovieBezierWarp * _bezier_warp, float _u, float _v )
-{
-	const ae_vector2_t * c = _bezier_warp->corners;
-	const ae_vector2_t * b = _bezier_warp->beziers;
-
-	float by = __bezier_point( c[0][1], b[0][1], b[7][1], c[3][1], _v );
-	float ey = __bezier_point( c[1][1], b[3][1], b[4][1], c[2][1], _v );
-
-	float my0 = (b[1][1] - b[6][1]) * (1.f - _u) + b[6][1];
-	float my1 = (b[2][1] - b[5][1]) * (1.f - _u) + b[5][1];
-
-	float x = __bezier_point( by, my0, my1, ey, _u );
-
-	return x;
-}
-//////////////////////////////////////////////////////////////////////////
-static void __make_sprite_vertices( const aeMovieInstance * _instance, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
+static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
 {
 	float v_position[8];
 
@@ -850,6 +808,109 @@ static void __make_layer_mesh_vertices( const aeMovieLayerMesh * _layerMesh, uin
 	const aeMovieMesh * mesh = (_layerMesh->immutable == AE_TRUE) ? &_layerMesh->immutable_mesh : (_layerMesh->meshes + _frame);
 
 	__make_mesh_vertices( mesh, _matrix, _renderMesh );
+}
+//////////////////////////////////////////////////////////////////////////
+static float __bezier_point( float a, float b, float c, float d, float t )
+{
+	float t2 = t * t;
+	float t3 = t2 * t;
+
+	float ti = 1.f - t;
+	float ti2 = ti * ti;
+	float ti3 = ti2 * ti;
+
+	return a * ti3 + 3.f * b * t * ti2 + 3.f * c * t2 * ti + d * t3;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __bezier_warp_x( const aeMovieBezierWarp * _bezier_warp, float _u, float _v )
+{
+	const ae_vector2_t * c = _bezier_warp->corners;
+	const ae_vector2_t * b = _bezier_warp->beziers;
+
+	float bx = __bezier_point( c[0][0], b[0][0], b[7][0], c[3][0], _v );
+	float ex = __bezier_point( c[1][0], b[3][0], b[4][0], c[2][0], _v );
+
+	float mx0 = (b[1][0] - b[6][0]) * (1.f - _v) + b[6][0];
+	float mx1 = (b[2][0] - b[5][0]) * (1.f - _v) + b[5][0];
+
+	float x = __bezier_point( bx, mx0, mx1, ex, _u );
+
+	return x;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __bezier_warp_y( const aeMovieBezierWarp * _bezier_warp, float _u, float _v )
+{
+	const ae_vector2_t * c = _bezier_warp->corners;
+	const ae_vector2_t * b = _bezier_warp->beziers;
+
+	float by = __bezier_point( c[0][1], b[0][1], b[7][1], c[3][1], _v );
+	float ey = __bezier_point( c[1][1], b[3][1], b[4][1], c[2][1], _v );
+
+	float my0 = (b[1][1] - b[6][1]) * (1.f - _v) + b[6][1];
+	float my1 = (b[2][1] - b[5][1]) * (1.f - _v) + b[5][1];
+
+	float x = __bezier_point( by, my0, my1, ey, _u );
+
+	return x;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieBezierWarp * _bezierWarp, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
+{
+	_renderMesh->vertexCount = AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT; //81
+	_renderMesh->indexCount = AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT; //384
+
+	float du = 0.f;
+	float dv = 0.f;
+
+	ae_vector3_t * positions = (ae_vector3_t *)_renderMesh->position;
+
+	for( uint32_t v = 0; v != AE_MOVIE_BEZIER_WARP_GRID; ++v )
+	{
+		for( uint32_t u = 0; u != AE_MOVIE_BEZIER_WARP_GRID; ++u )
+		{
+			float x = __bezier_warp_x( _bezierWarp, du, dv );
+			float y = __bezier_warp_y( _bezierWarp, du, dv );
+
+			float position[2] = {x, y};
+
+			mul_v3_v2_m4( *positions++, position, _matrix );
+
+			du += ae_movie_bezier_warp_grid_invf;
+		}
+
+		du = 0.f;
+		dv += ae_movie_bezier_warp_grid_invf;
+	}
+
+	_renderMesh->uv = _instance->bezier_warp_uv;
+	_renderMesh->indices = _instance->bezier_warp_indices;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerBezierWarp * _bezierWarp, uint32_t _frame, float _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
+{
+	if( _bezierWarp->immutable == AE_TRUE )
+	{
+		__make_bezier_warp_vertices( _instance, &_bezierWarp->immutable_bezier_warp, _matrix, _renderMesh );
+	}
+	else
+	{
+		aeMovieBezierWarp bezierWarp;
+		
+		const aeMovieBezierWarp * bezier_warp_frame_current = _bezierWarp->bezier_warps + _frame + 0;
+		const aeMovieBezierWarp * bezier_warp_frame_next = _bezierWarp->bezier_warps + _frame + 1;
+
+		for( uint32_t i = 0; i != 4; ++i )
+		{
+			linerp_f2( bezierWarp.corners[i], bezier_warp_frame_current->corners[i], bezier_warp_frame_next->corners[i], _t );			
+		}
+
+		for( uint32_t i = 0; i != 8; ++i )
+		{
+			linerp_f2( bezierWarp.beziers[i], bezier_warp_frame_current->beziers[i], bezier_warp_frame_next->beziers[i], _t );
+		}
+
+		__make_bezier_warp_vertices( _instance, &bezierWarp, _matrix, _renderMesh );
+	}	
 }
 //////////////////////////////////////////////////////////////////////////
 static void __compute_movie_node( const aeMovieInstance * _instance, const aeMovieNode * _node, aeMovieRenderMesh * _vertices )
@@ -889,16 +950,23 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 	float frameDuration = layer->composition->frameDuration;
 
 	uint32_t frame;
+	float t_frame;
 
 	if( layer->reverse_time == AE_TRUE )
 	{
-		frame = (uint32_t)((_node->out_time - _node->in_time - _node->current_time) / frameDuration);
+		float frame_time = (_node->out_time - _node->in_time - _node->current_time) / frameDuration;
+
+		frame = (uint32_t)frame_time;
+		
 	}
 	else
 	{
-		frame = (uint32_t)((_node->current_time) / frameDuration);
-	}
+		float frame_time = (_node->current_time) / frameDuration;
 
+		frame = (uint32_t)frame_time;
+		t_frame = frame_time - (float)frame;
+	}
+	
 	switch( layer_type )
 	{
 	case AE_MOVIE_LAYER_TYPE_SHAPE:
@@ -925,16 +993,20 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 		{
 			aeMovieResourceSolid * resource_solid = (aeMovieResourceSolid *)resource;
 
-			if( layer->mesh == AE_NULL )
+			if( layer->mesh != AE_NULL )
+			{
+				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+			}
+			else if( layer->bezier_warp != AE_NULL )
+			{
+				__make_layer_bezier_warp_vertices( _instance, layer->bezier_warp, frame, t_frame, _node->matrix, _vertices );
+			}
+			else
 			{
 				float width = resource_solid->width;
 				float height = resource_solid->height;
 
-				__make_sprite_vertices( _instance, 0.f, 0.f, width, height, _node->matrix, _vertices );
-			}
-			else
-			{
-				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+				__make_layer_sprite_vertices( _instance, 0.f, 0.f, width, height, _node->matrix, _vertices );
 			}
 
 			_vertices->r = resource_solid->r;
@@ -964,7 +1036,15 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 			_vertices->resource_type = resource_image->type;
 			_vertices->resource_data = resource_image->data;
 
-			if( layer->mesh == AE_NULL )
+			if( layer->mesh != AE_NULL )
+			{
+				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+			}
+			else if( layer->bezier_warp != AE_NULL )
+			{
+				__make_layer_bezier_warp_vertices( _instance, layer->bezier_warp, frame, t_frame, _node->matrix, _vertices );
+			}
+			else
 			{
 				float offset_x = resource_image->offset_x;
 				float offset_y = resource_image->offset_y;
@@ -972,11 +1052,7 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 				float width = resource_image->trim_width;
 				float height = resource_image->trim_height;
 
-				__make_sprite_vertices( _instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
-			}
-			else
-			{
-				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+				__make_layer_sprite_vertices( _instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
 			}
 
 			_vertices->r = 1.f;
@@ -988,16 +1064,20 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 		{
 			aeMovieResourceVideo * resource_video = (aeMovieResourceVideo *)resource;
 
-			if( layer->mesh == AE_NULL )
+			if( layer->mesh != AE_NULL )
+			{
+				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+			}
+			else if( layer->bezier_warp != AE_NULL )
+			{
+				__make_layer_bezier_warp_vertices( _instance, layer->bezier_warp, frame, t_frame, _node->matrix, _vertices );
+			}
+			else
 			{
 				float width = resource_video->width;
 				float height = resource_video->height;
 
-				__make_sprite_vertices( _instance, 0.f, 0.f, width, height, _node->matrix, _vertices );
-			}
-			else
-			{
-				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+				__make_layer_sprite_vertices( _instance, 0.f, 0.f, width, height, _node->matrix, _vertices );
 			}
 
 			_vertices->r = 1.f;
@@ -1009,7 +1089,15 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 		{
 			aeMovieResourceImage * resource_image = (aeMovieResourceImage *)resource;
 
-			if( layer->mesh == AE_NULL )
+			if( layer->mesh != AE_NULL )
+			{
+				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+			}
+			else if( layer->bezier_warp != AE_NULL )
+			{
+				__make_layer_bezier_warp_vertices( _instance, layer->bezier_warp, frame, t_frame, _node->matrix, _vertices );
+			}
+			else
 			{
 				float offset_x = resource_image->offset_x;
 				float offset_y = resource_image->offset_y;
@@ -1017,11 +1105,7 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 				float width = resource_image->trim_width;
 				float height = resource_image->trim_height;
 
-				__make_sprite_vertices( _instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
-			}
-			else
-			{
-				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+				__make_layer_sprite_vertices( _instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
 			}
 
 			_vertices->r = 1.f;

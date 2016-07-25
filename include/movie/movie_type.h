@@ -46,6 +46,19 @@ extern "C" {
 
 	} aeMovieMesh;
 
+#	ifndef AE_MOVIE_BEZIER_WARP_GRID
+#	define AE_MOVIE_BEZIER_WARP_GRID 9
+#	endif
+
+	static const float ae_movie_bezier_warp_grid_invf = (1.f / (float)(AE_MOVIE_BEZIER_WARP_GRID - 1));
+
+#	define AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT (AE_MOVIE_BEZIER_WARP_GRID * AE_MOVIE_BEZIER_WARP_GRID)
+#	define AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT ((AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1) * 6)
+
+#	ifndef AE_MOVIE_MAX_VERTICES
+#	define AE_MOVIE_MAX_VERTICES (AE_MOVIE_BEZIER_WARP_GRID * AE_MOVIE_BEZIER_WARP_GRID)
+#	endif
+
 	typedef struct
 	{
 		ae_vector2_t corners[4];

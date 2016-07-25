@@ -137,6 +137,13 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 				DELETEN( instance, layer->mesh );
 			}
 
+			if( layer->bezier_warp != AE_NULL )
+			{
+				DELETEN( instance, layer->bezier_warp->bezier_warps );
+
+				DELETEN( instance, layer->bezier_warp );
+			}
+
 			delete_movie_layer_transformation( instance, layer->transformation );
 
 			DELETE( instance, layer->transformation );
@@ -192,12 +199,16 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 				if( _layer->timeremap->immutable == AE_TRUE )
 				{
 					READ( _stream, _layer->timeremap->immutable_time );
+
+					_layer->timeremap->times = AE_NULL;
 				}
 				else
 				{
-					_layer->timeremap->times = NEWN( _movieData->instance, float, _layer->frame_count );
+					uint32_t frame_count = READZ( _stream );
 
-					READN( _stream, _layer->timeremap->times, _layer->frame_count );
+					_layer->timeremap->times = NEWN( _movieData->instance, float, frame_count );
+
+					READN( _stream, _layer->timeremap->times, frame_count );
 				}
 			}break;
 		case 2:
@@ -214,11 +225,13 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 				}
 				else
 				{
-					_layer->mesh->meshes = NEWN( _movieData->instance, aeMovieMesh, _layer->frame_count );
+					uint32_t frame_count = READZ( _stream );
+
+					_layer->mesh->meshes = NEWN( _movieData->instance, aeMovieMesh, frame_count );
 
 					for( aeMovieMesh
 						*it_mesh = _layer->mesh->meshes,
-						*it_mesh_end = _layer->mesh->meshes + _layer->frame_count;
+						*it_mesh_end = _layer->mesh->meshes + frame_count;
 					it_mesh != it_mesh_end;
 					++it_mesh )
 					{
@@ -236,14 +249,18 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 				{
 					READN( _stream, _layer->bezier_warp->immutable_bezier_warp.corners, 4 );
 					READN( _stream, _layer->bezier_warp->immutable_bezier_warp.beziers, 8 );
+
+					_layer->bezier_warp->bezier_warps = AE_NULL;
 				}
 				else
 				{
-					_layer->bezier_warp->bezier_warps = NEWN( _movieData->instance, aeMovieBezierWarp, _layer->frame_count );
+					uint32_t frame_count = READZ( _stream );
+
+					_layer->bezier_warp->bezier_warps = NEWN( _movieData->instance, aeMovieBezierWarp, frame_count );
 
 					for( aeMovieBezierWarp
 						*it_bezier_warp = _layer->bezier_warp->bezier_warps,
-						*it_bezier_warp_end = _layer->bezier_warp->bezier_warps + _layer->frame_count;
+						*it_bezier_warp_end = _layer->bezier_warp->bezier_warps + frame_count;
 					it_bezier_warp != it_bezier_warp_end;
 					++it_bezier_warp )
 					{
@@ -251,7 +268,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 						READN( _stream, it_bezier_warp->beziers, 8 );
 					}
 				}
-			}
+			}break;
 		default:
 			{
 				return AE_MOVIE_FAILED;

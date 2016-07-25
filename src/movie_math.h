@@ -27,6 +27,7 @@ float angle_norm( float _angle );
 float angle_correct_interpolate_from_to( float _from, float _to );
 
 float linerp_f1( float _in1, float _in2, float _t );
+void linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_t _in2, float _t );
 void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, float _t );
 
 float make_camera_fov( float _height, float _zoom );
