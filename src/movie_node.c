@@ -1220,14 +1220,14 @@ void __update_movie_composition_node( aeMovieComposition * _composition, uint32_
 		float frameDuration = layer->composition->frameDuration;
 		float frameDurationInv = 1.f / frameDuration;
 
-		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv);
-		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv);
 
 		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
 		float out_time = (_beginTime >= loopBegin && node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
 
-		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.5f);
-		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.5f);
+		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv + 0.001f);
+		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv + 0.001f);
+		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.001f);
+		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.001f);
 
 		float current_time = composition_time - node->in_time + node->start_time;
 
