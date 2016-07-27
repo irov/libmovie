@@ -31,6 +31,11 @@ float max_f_f( float _a, float _b )
 {
 	return (_a > _b) ? _a : _b;
 }
+//////////////////////////////////////////////////////////////////////////
+float minimax_f_f( float _v, float _min, float _max )
+{
+	return (_v > _min) ? ((_v < _max) ? _v : _max) : _min;
+}
 void mul_v2_v2_m4( ae_vector2_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
 {
 	_out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _b[3 * 4 + 0];

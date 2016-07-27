@@ -67,6 +67,9 @@ typedef struct aeMovieComposition
 	uint32_t update_revision;
 	float time;
 
+	float work_area_begin;
+	float work_area_end;
+
 	uint32_t node_count;
 	aeMovieNode * nodes;
 

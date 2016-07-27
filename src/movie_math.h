@@ -8,6 +8,7 @@ ae_bool_t equal_f_f( float _a, float _b );
 
 float min_f_f( float _a, float _b );
 float max_f_f( float _a, float _b );
+float minimax_f_f( float _v, float _min, float _max );
 
 void mul_v2_v2_m4( ae_vector2_t _out, const ae_vector2_t _a, const ae_matrix4_t _b );
 void mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b );
