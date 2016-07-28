@@ -97,7 +97,7 @@ extern "C" {
 	uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition );
 
 	void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
-	void ae_set_movie_composition_work_area( aeMovieComposition * _composition, float _begin, float _end );
+	ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition, float _begin, float _end );
 	void ae_remove_movie_composition_work_area( aeMovieComposition * _composition );
 
 	void ae_play_movie_composition( aeMovieComposition * _composition, float _time );
@@ -106,6 +106,8 @@ extern "C" {
 
 	void ae_set_movie_composition_time( aeMovieComposition * _composition, float _timing );
 	float ae_get_movie_composition_time( const aeMovieComposition * _composition );
+
+	float ae_get_movie_composition_duration( const aeMovieComposition * _composition );
 
 	void ae_update_movie_composition( aeMovieComposition * _composition, float _timing );
 
