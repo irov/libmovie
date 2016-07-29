@@ -1267,7 +1267,8 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 	ae_bool_t interrupt = _composition->interrupt;
 	ae_bool_t loop = _composition->loop;
 	float duration = _composition->composition_data->duration;
-	float composition_time = _composition->time;
+
+	_composition->time = _endTime;
 
 	float loopBegin = __get_movie_loop_work_begin( _composition );
 	float loopEnd = __get_movie_loop_work_end( _composition );
@@ -1287,6 +1288,11 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 			continue;
 		}
 
+		if( node->in_time > _beginTime && node->out_time < _endTime )
+		{
+			continue;
+		}
+
 		float frameDuration = layer->composition->frameDuration;
 		float frameDurationInv = 1.f / frameDuration;
 
@@ -1299,9 +1305,14 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.001f);
 		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.001f);
 
-		float current_time = composition_time - node->in_time + node->start_time;
+		float current_time = _composition->time - node->in_time + node->start_time;
 
 		node->current_time = current_time;
+
+		if( node->current_time < 0.f )
+		{
+			return;
+		}
 
 		float frame_time = current_time / node->stretch * frameDurationInv;
 
@@ -1378,6 +1389,11 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, ui
 			continue;
 		}
 
+		if( node->in_time > _beginTime && node->out_time < _endTime )
+		{
+			continue;
+		}
+
 		float frameDuration = layer->composition->frameDuration;
 		float frameDurationInv = 1.f / frameDuration;
 
@@ -1439,7 +1455,6 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 	float frameDuration = _composition->composition_data->frameDuration;
 
 	float begin_time = prev_time;
-	float end_time = _composition->time;
 
 	float duration = _composition->work_area_end - _composition->work_area_begin;
 
@@ -1449,8 +1464,6 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 
 		if( _composition->time >= last_time )
 		{
-			_composition->time = last_time;
-
 			__update_movie_composition_node( _composition, update_revision, begin_time, last_time );
 
 			_composition->update_revision++;
@@ -1471,6 +1484,8 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 		
 		while( _composition->time >= loopEnd )
 		{
+			float new_composition_time = _composition->time - loopEnd + loopBegin;
+
 			__update_movie_composition_node( _composition, update_revision, begin_time, loopEnd );
 
 			_composition->update_revision++;
@@ -1478,16 +1493,13 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 
 			begin_time = loopBegin;
 
-			_composition->time += loopBegin;
-			_composition->time -= loopEnd;
-
-			end_time = _composition->time;
-
+			_composition->time = new_composition_time;
+			
 			(*_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_LOOP_END, _composition->provider_data);
 		}
 	}
 
-	__update_movie_composition_node( _composition, update_revision, begin_time, end_time );
+	__update_movie_composition_node( _composition, update_revision, begin_time, _composition->time );
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_set_movie_composition_time( aeMovieComposition * _composition, float _time )
@@ -1514,16 +1526,12 @@ void ae_set_movie_composition_time( aeMovieComposition * _composition, float _ti
 		_composition->update_revision++;
 		update_revision = _composition->update_revision;
 
-		_composition->time = 0.f;
-
 		__update_movie_composition_node( _composition, update_revision, 0.f, _time );
 	}
 	else
 	{
 		__update_movie_composition_node( _composition, update_revision, _composition->time, _time );
 	}
-
-	_composition->time = _time;
 }
 //////////////////////////////////////////////////////////////////////////
 float ae_get_movie_composition_time( const aeMovieComposition * _composition )
