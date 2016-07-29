@@ -1309,11 +1309,6 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 
 		node->current_time = current_time;
 
-		if( node->current_time < 0.f )
-		{
-			return;
-		}
-
 		float frame_time = current_time / node->stretch * frameDurationInv;
 
 		uint32_t frameId = (uint32_t)frame_time;
