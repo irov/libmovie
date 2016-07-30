@@ -13,6 +13,7 @@ typedef struct aeMovieInstance
 	ae_movie_free_t memory_free;
 	ae_movie_free_n_t memory_free_n;	
 	ae_movie_strncmp_t strncmp;
+	ae_movie_logerror_t logerror;
 	void * instance_data;
 	
 
