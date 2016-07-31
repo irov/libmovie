@@ -189,6 +189,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t 
 			else
 			{
 				node->track_matte = AE_NULL;
+				node->track_matte_data = AE_NULL;
 			}
 		}
 		else
@@ -246,6 +247,8 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 		{
 			node->relative = _parent;
 		}
+
+		node->current_time = 0.f;
 
 		switch( layer->type )
 		{
