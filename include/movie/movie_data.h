@@ -165,6 +165,9 @@ extern "C" {
 
 	uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData );
 	const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, uint32_t _index );
+
+	uint32_t ae_get_composition_data_event_count(const aeMovieCompositionData * _compositionData);
+	const char * ae_get_composition_data_event_name(const aeMovieCompositionData * _compositionData, uint32_t _index);
 	
 #ifdef __cplusplus
 }

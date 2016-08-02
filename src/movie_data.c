@@ -787,3 +787,69 @@ const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeM
 	return _movieData->compositions + _index;
 }
 //////////////////////////////////////////////////////////////////////////
+uint32_t ae_get_composition_data_event_count(const aeMovieCompositionData * _compositionData)
+{
+	uint32_t count = 0;
+
+	for(const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer)
+	{
+		uint8_t type = it_layer->type;
+		if(type == AE_MOVIE_LAYER_TYPE_EVENT)
+		{
+			++count;
+		}
+		else if(type == AE_MOVIE_LAYER_TYPE_MOVIE)
+		{
+			count += ae_get_composition_data_event_count(it_layer->sub_composition);
+		}
+	}
+
+	return count;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_bool_t __ae_get_composition_data_event_name(const aeMovieCompositionData * _compositionData, uint32_t * _iterator, uint32_t _index, const char ** _name)
+{
+	for(const aeMovieLayerData
+		*it_layer = _compositionData->layers,
+		*it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	it_layer != it_layer_end;
+	++it_layer)
+	{
+		uint8_t type = it_layer->type;
+		if(type == AE_MOVIE_LAYER_TYPE_EVENT)
+		{
+			if((*_iterator)++ == _index)
+			{
+				*_name = it_layer->name;
+				
+				return AE_TRUE;
+			}
+		}
+		else if(type == AE_MOVIE_LAYER_TYPE_MOVIE)
+		{
+			if(__ae_get_composition_data_event_name(it_layer->sub_composition, _iterator, _index, _name) == AE_TRUE)
+			{
+				return AE_TRUE;
+			}
+		}
+	}
+
+	return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+const char * ae_get_composition_data_event_name(const aeMovieCompositionData * _compositionData, uint32_t _index)
+{	
+	uint32_t iterator = 0;
+	const char * name;
+	if(__ae_get_composition_data_event_name(_compositionData, &iterator, _index, &name) == AE_FALSE)
+	{
+		return AE_NULL;
+	}
+
+	return name;
+}
+//////////////////////////////////////////////////////////////////////////
