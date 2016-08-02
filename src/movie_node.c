@@ -463,7 +463,7 @@ static void __setup_movie_node_matrix( aeMovieComposition * _composition )
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void __setup_movie_composition_element( aeMovieComposition * _composition )
+static void __setup_movie_composition_element( aeMovieComposition * _composition )
 {
 	const aeMovieCompositionData * compositionData = _composition->composition_data;
 
@@ -483,6 +483,24 @@ void __setup_movie_composition_element( aeMovieComposition * _composition )
 	}
 }
 //////////////////////////////////////////////////////////////////////////
+static void __setup_movie_composition_active(aeMovieComposition * _composition)
+{
+	const aeMovieCompositionData * compositionData = _composition->composition_data;
+
+	for(aeMovieNode
+		*it_node = _composition->nodes,
+		*it_node_end = _composition->nodes + _composition->node_count;
+	it_node != it_node_end;
+	++it_node)
+	{
+		aeMovieNode * node = it_node;
+
+		if(equal_f_z(node->in_time) == AE_TRUE)
+		{
+			node->active = AE_TRUE;
+		}
+	}
+}
 //////////////////////////////////////////////////////////////////////////
 static void * __dummy_ae_movie_composition_node_camera( const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data )
 {
@@ -612,6 +630,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 	__setup_movie_node_matrix( composition );
 
 	__setup_movie_composition_element( composition );
+	__setup_movie_composition_active(composition);
 
 	return composition;
 }
