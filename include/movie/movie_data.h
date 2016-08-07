@@ -8,12 +8,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
+
 	typedef struct
 	{
-		ae_bool_t immutable;
-		float immutable_time;
-
 		float * times;
 
 	} aeMovieLayerTimeremap;
@@ -24,7 +21,7 @@ extern "C" {
 		aeMovieMesh immutable_mesh;
 
 		aeMovieMesh * meshes;
-		
+
 	} aeMovieLayerMesh;
 
 	typedef struct
@@ -67,13 +64,13 @@ extern "C" {
 
 		uint32_t index;
 		uint8_t type;
-		
+
 		ae_bool_t renderable;
 
 		struct aeMovieCompositionData * composition;
 
 		ae_bool_t is_track_matte;
-		
+
 		ae_bool_t has_track_matte;
 
 		uint32_t frame_count;
@@ -81,7 +78,7 @@ extern "C" {
 		aeMovieLayerTimeremap * timeremap;
 		aeMovieLayerMesh * mesh;
 		aeMovieLayerBezierWarp * bezier_warp;
-		
+
 		const aeMovieResource * resource;
 		const struct aeMovieCompositionData * sub_composition;
 
@@ -92,17 +89,17 @@ extern "C" {
 		float in_time;
 		float out_time;
 
-		uint8_t blend_mode;		
+		uint8_t blend_mode;
 		ae_bool_t threeD;
 		uint32_t params;
-		
+
 		uint32_t play_count;
 
 		float stretch;
-				
+
 		struct aeMovieLayerTransformation * transformation;
 	} aeMovieLayerData;
-	
+
 	typedef enum
 	{
 		AE_MOVIE_COMPOSITION_LOOP_SEGMENT = 0x00000001,
@@ -115,7 +112,7 @@ extern "C" {
 	typedef struct aeMovieCompositionData
 	{
 		ae_string_t name;
-		
+
 		float width;
 		float height;
 
@@ -144,7 +141,7 @@ extern "C" {
 		const aeMovieInstance * instance;
 
 		ae_string_t name;
-		
+
 		uint32_t resource_count;
 		const aeMovieResource ** resources;
 
@@ -158,7 +155,7 @@ extern "C" {
 	typedef void * (*ae_movie_data_resource_provider_t)(const aeMovieResource * _resource, void * _data);
 
 	aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data );
-	
+
 	const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const char * _name );
 
 	float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
@@ -166,9 +163,9 @@ extern "C" {
 	uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData );
 	const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, uint32_t _index );
 
-	uint32_t ae_get_composition_data_event_count(const aeMovieCompositionData * _compositionData);
-	const char * ae_get_composition_data_event_name(const aeMovieCompositionData * _compositionData, uint32_t _index);
-	
+	uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _compositionData );
+	const char * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t _index );
+
 #ifdef __cplusplus
 }
 #endif
