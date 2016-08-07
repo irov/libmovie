@@ -115,9 +115,11 @@ extern "C" {
 
 		float width;
 		float height;
+				
+		float duration;
 
 		float frameDuration;
-		float duration;
+		float frameDurationInv;
 
 		uint32_t frameCount;
 

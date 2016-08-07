@@ -72,14 +72,12 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 
 	float * bezier_warp_uv = instance->bezier_warp_uv;
 
-	float bezier_warp_grid_inv = 1.f / (float)(AE_MOVIE_BEZIER_WARP_GRID - 1);
-
 	for( uint32_t v = 0; v != AE_MOVIE_BEZIER_WARP_GRID; ++v )
 	{
 		for( uint32_t u = 0; u != AE_MOVIE_BEZIER_WARP_GRID; ++u )
 		{
-			*bezier_warp_uv++ = (float)u * bezier_warp_grid_inv;
-			*bezier_warp_uv++ = (float)v * bezier_warp_grid_inv;
+			*bezier_warp_uv++ = (float)u * ae_movie_bezier_warp_grid_invf;
+			*bezier_warp_uv++ = (float)v * ae_movie_bezier_warp_grid_invf;
 		}
 	}
 

@@ -87,11 +87,11 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 	{
 		float composition_time = _composition->time;
 
-		float frameDuration = node_relative->layer->composition->frameDuration;
+		float frameDurationInv = node_relative->layer->composition->frameDurationInv;
 
 		float current_time = composition_time - node_relative->in_time + node_relative->start_time;
 
-		float frame_time = current_time / node_relative->stretch / frameDuration;
+		float frame_time = current_time / node_relative->stretch * frameDurationInv;
 
 		uint32_t frame_relative = (uint32_t)frame_time;
 
@@ -1039,21 +1039,21 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 		_vertices->track_matte_data = AE_NULL;
 	}
 
-	float frameDuration = layer->composition->frameDuration;
+	float frameDurationInv = layer->composition->frameDurationInv;
 
 	uint32_t frame;
 	float t_frame;
 
 	if( layer->reverse_time == AE_TRUE )
 	{
-		float frame_time = (_node->out_time - _node->in_time - _node->current_time) / frameDuration;
+		float frame_time = (_node->out_time - _node->in_time - _node->current_time) * frameDurationInv;
 
 		frame = (uint32_t)frame_time;
 		t_frame = frame_time - (float)frame;
 	}
 	else
 	{
-		float frame_time = (_node->current_time) / frameDuration;
+		float frame_time = (_node->current_time) * frameDurationInv;
 
 		frame = (uint32_t)frame_time;
 		t_frame = frame_time - (float)frame;
@@ -1116,17 +1116,17 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 		{
 			float time = layer->timeremap->times[frame];
 
-			frame_sequence = (uint32_t)(time / resource_sequence->frameDuration);
+			frame_sequence = (uint32_t)(time * resource_sequence->frameDurationInv);
 		}
 		else
 		{
 			if( layer->reverse_time == AE_TRUE )
 			{
-				frame_sequence = (uint32_t)((_node->out_time - _node->in_time - (layer->start_time + _node->current_time)) / resource_sequence->frameDuration);
+				frame_sequence = (uint32_t)((_node->out_time - _node->in_time - (layer->start_time + _node->current_time)) * resource_sequence->frameDurationInv);
 			}
 			else
 			{
-				frame_sequence = (uint32_t)((layer->start_time + _node->current_time) / resource_sequence->frameDuration);
+				frame_sequence = (uint32_t)((layer->start_time + _node->current_time) * resource_sequence->frameDurationInv);
 			}
 		}
 
@@ -1345,8 +1345,7 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 
 		const aeMovieLayerData * layer = node->layer;
 
-		float frameDuration = layer->composition->frameDuration;
-		float frameDurationInv = 1.f / frameDuration;
+		float frameDurationInv = layer->composition->frameDurationInv;
 
 		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
 		float out_time = (_beginTime >= loopBegin && node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
@@ -1445,8 +1444,7 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, ui
 
 		const aeMovieLayerData * layer = node->layer;
 
-		float frameDuration = layer->composition->frameDuration;
-		float frameDurationInv = 1.f / frameDuration;
+		float frameDurationInv = layer->composition->frameDurationInv;
 
 		float in_time = node->in_time;
 		float out_time = node->out_time;

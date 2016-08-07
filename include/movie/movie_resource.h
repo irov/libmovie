@@ -114,7 +114,7 @@ extern "C" {
 	{
 		AE_MOVIE_RESOURCE_BASE();
 
-		float frameDuration;
+		float frameDurationInv;
 
 		uint32_t image_count;
 		aeMovieResourceImage ** images;

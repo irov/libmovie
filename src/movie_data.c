@@ -8,7 +8,7 @@
 #	define AE_MOVIE_MAX_COMPOSITION_NAME 128
 #	endif
 //////////////////////////////////////////////////////////////////////////
-static const uint32_t ae_movie_version = 3;
+static const uint32_t ae_movie_version = 4;
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance )
 {
@@ -412,10 +412,11 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	READ( _stream, _compositionData->width );
 	READ( _stream, _compositionData->height );
 
-	READ( _stream, _compositionData->frameDuration );
 	READ( _stream, _compositionData->duration );
-
-	_compositionData->frameCount = (uint32_t)(_compositionData->duration / _compositionData->frameDuration + 0.5f);
+	READ( _stream, _compositionData->frameDuration );
+	READ( _stream, _compositionData->frameDurationInv );
+	
+	_compositionData->frameCount = (uint32_t)(_compositionData->duration * _compositionData->frameDurationInv + 0.5f);
 
 	_compositionData->flags = 0;
 
@@ -672,7 +673,7 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 		{
 			aeMovieResourceSequence * resource = NEW( _movieData->instance, aeMovieResourceSequence );
 
-			READ( _stream, resource->frameDuration );
+			READ( _stream, resource->frameDurationInv );
 
 			uint32_t image_count = READZ( _stream );
 
