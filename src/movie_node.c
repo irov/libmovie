@@ -75,7 +75,7 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 	{
 		float local_opacity = make_movie_layer_transformation( _node->matrix, _node->layer->transformation, _frame, _interpolate, _t );
 
-		_node->composition_opactity = local_opacity;
+		_node->composition_opactity = 1.f;
 		_node->opacity = local_opacity;
 
 		return;
