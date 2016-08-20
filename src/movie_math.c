@@ -167,7 +167,16 @@ void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, con
 		EQUAL_F_Z( _quaternion[2] ) &&
 		EQUAL_F_1( _quaternion[3] ) )
 	{
-		ident_m4( _lm );
+		_lm[0 * 4 + 1] = 0.f;
+		_lm[0 * 4 + 2] = 0.f;
+		_lm[0 * 4 + 3] = 0.f;
+		_lm[1 * 4 + 0] = 0.f;
+		_lm[1 * 4 + 2] = 0.f;
+		_lm[1 * 4 + 3] = 0.f;
+		_lm[2 * 4 + 0] = 0.f;
+		_lm[2 * 4 + 1] = 0.f;
+		_lm[2 * 4 + 3] = 0.f;
+		_lm[3 * 4 + 3] = 1.f;
 
 		_lm[0 * 4 + 0] = _scale[0];
 		_lm[1 * 4 + 1] = _scale[1];
@@ -180,15 +189,25 @@ void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, con
 	else
 	{
 		ae_matrix4_t mat_scale;
-		ident_m4( mat_scale );
-
-		mat_scale[3 * 4 + 0] = -_origin[0] * _scale[0];
-		mat_scale[3 * 4 + 1] = -_origin[1] * _scale[1];
-		mat_scale[3 * 4 + 2] = -_origin[2] * _scale[2];
+		
+		mat_scale[0 * 4 + 1] = 0.f;
+		mat_scale[0 * 4 + 2] = 0.f;
+		mat_scale[0 * 4 + 3] = 0.f;
+		mat_scale[1 * 4 + 0] = 0.f;
+		mat_scale[1 * 4 + 2] = 0.f;
+		mat_scale[1 * 4 + 3] = 0.f;
+		mat_scale[2 * 4 + 0] = 0.f;
+		mat_scale[2 * 4 + 1] = 0.f;
+		mat_scale[2 * 4 + 3] = 0.f;
+		mat_scale[3 * 4 + 3] = 1.f;
 
 		mat_scale[0 * 4 + 0] = _scale[0];
 		mat_scale[1 * 4 + 1] = _scale[1];
 		mat_scale[2 * 4 + 2] = _scale[2];
+
+		mat_scale[3 * 4 + 0] = -_origin[0] * _scale[0];
+		mat_scale[3 * 4 + 1] = -_origin[1] * _scale[1];
+		mat_scale[3 * 4 + 2] = -_origin[2] * _scale[2];
 
 		ae_matrix4_t mat_rotate;
 		make_quaternion_m4( mat_rotate, _quaternion );

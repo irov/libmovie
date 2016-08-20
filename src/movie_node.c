@@ -10,6 +10,14 @@
 #	define AE_MOVIE_MAX_LAYER_NAME 128
 #	endif
 
+#	ifdef _DEBUG
+#	ifndef AE_MOVIE_NO_DEBUG
+#	ifndef AE_MOVIE_DEBUG
+#	define AE_MOVIE_DEBUG
+#	endif
+#	endif
+#	endif
+
 //////////////////////////////////////////////////////////////////////////
 typedef enum
 {
@@ -75,7 +83,15 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 	{
 		float local_opacity = make_movie_layer_transformation( _node->matrix, _node->layer->transformation, _frame, _interpolate, _t );
 
-		_node->composition_opactity = 1.f;
+		if( _node->layer->sub_composition != AE_NULL )
+		{
+			_node->composition_opactity = local_opacity;			
+		}
+		else
+		{ 
+			_node->composition_opactity = 1.f;
+		}
+
 		_node->opacity = local_opacity;
 
 		return;
@@ -1279,6 +1295,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 	}
 }
 //////////////////////////////////////////////////////////////////////////
+#	ifdef AE_MOVIE_DEBUG
 static ae_bool_t __test_error_composition_layer_frame( const aeMovieInstance * _instance, const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layerData, uint32_t _frameId )
 {
 	if( _frameId >= _layerData->frame_count )
@@ -1295,9 +1312,11 @@ static ae_bool_t __test_error_composition_layer_frame( const aeMovieInstance * _
 
 	return AE_TRUE;
 }
+#	endif
 //////////////////////////////////////////////////////////////////////////
 static void __update_node( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, float _time, uint32_t _frameId, float _t, ae_bool_t _loop, ae_bool_t _interpolate, ae_bool_t _begin )
 {
+#	ifdef AE_MOVIE_DEBUG
 	if( __test_error_composition_layer_frame( _composition->movie_data->instance
 		, _composition->composition_data
 		, _node->layer
@@ -1306,6 +1325,7 @@ static void __update_node( aeMovieComposition * _composition, aeMovieNode * _nod
 	{
 		return;
 	}
+#	endif
 
 	__update_movie_composition_node_matrix( _composition, _node, _revision, _frameId, _interpolate, _t );
 
@@ -1348,7 +1368,7 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 		float frameDurationInv = layer->composition->frameDurationInv;
 
 		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
-		float out_time = (_beginTime >= loopBegin && node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
+		float out_time = (node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
 
 		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv + 0.001f);
 		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv + 0.001f);
@@ -1412,13 +1432,15 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 			{
 				node->active = node_deactive;
 
-				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_FALSE );
+				uint32_t frameEnd = indexOut - indexIn;
+
+				__update_node( _composition, node, _revision, _endTime, frameEnd, 0.f, node_loop, AE_FALSE, AE_FALSE );
 			}
 			else if( beginFrame >= indexIn && endFrame >= indexIn && endFrame < indexOut )
 			{
 				node->active = AE_TRUE;
 
-				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_TRUE );
+				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, (frameId + 1) < indexOut, AE_TRUE );
 			}
 		}
 	}
