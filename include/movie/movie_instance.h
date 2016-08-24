@@ -12,7 +12,7 @@ extern "C" {
 	typedef void( *ae_movie_free_t )(void * _data, const void * _ptr);
 	typedef void( *ae_movie_free_n_t )(void * _data, const void * _ptr);
 
-	typedef int32_t( *ae_movie_strncmp_t )(void * _data, const char * _src, const char * _dst, uint32_t _count);
+	typedef int32_t( *ae_movie_strncmp_t )(void * _data, const ae_char_t * _src, const ae_char_t * _dst, uint32_t _count);
 
 	typedef enum
 	{
@@ -22,7 +22,7 @@ extern "C" {
 		AE_ERROR_CRITICAL		
 	} aeMovieErrorCode;
 
-	typedef void( *ae_movie_logerror_t )(void * _data, aeMovieErrorCode _code, const char * _compositionName, const char * _layerName, const char * _message);
+	typedef void( *ae_movie_logerror_t )(void * _data, aeMovieErrorCode _code, const ae_char_t * _compositionName, const ae_char_t * _layerName, const ae_char_t * _message);
 
 	typedef struct aeMovieInstance aeMovieInstance;
 

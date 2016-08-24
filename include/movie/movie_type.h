@@ -8,7 +8,8 @@ extern "C" {
 #endif
 		
 	typedef uint8_t ae_bool_t;
-	typedef char * ae_string_t;
+	typedef char ae_char_t;
+	typedef ae_char_t * ae_string_t;
 
 	typedef float ae_vector2_t[2];
 	typedef float ae_vector3_t[3];
@@ -45,6 +46,10 @@ extern "C" {
 		uint16_t * indices;
 
 	} aeMovieMesh;
+
+#	ifndef AE_MOVIE_MAX_LAYER_NAME
+#	define AE_MOVIE_MAX_LAYER_NAME 128
+#	endif
 
 #	ifndef AE_MOVIE_BEZIER_WARP_GRID
 #	define AE_MOVIE_BEZIER_WARP_GRID 9

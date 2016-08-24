@@ -502,7 +502,7 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 //////////////////////////////////////////////////////////////////////////
 aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
 {
-	char magic[4];
+	uint8_t magic[4];
 	READN( _stream, magic, 4 );
 
 	if( magic[0] != 'A' ||
@@ -739,7 +739,45 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const char * _name )
+void ae_trim_image_resources( aeMovieData * _movieData, ae_movie_data_tream_image_resource_t _provider, void * _data )
+{
+	for( const aeMovieResource
+		**it_resource = _movieData->resources,
+		**it_resource_end = _movieData->resources + _movieData->resource_count;
+	it_resource != it_resource_end;
+	++it_resource )
+	{
+		const aeMovieResource * resource = *it_resource;
+
+		if( resource->type == AE_MOVIE_RESOURCE_IMAGE )
+		{
+			const aeMovieResourceImage * imageResource = (const aeMovieResourceImage *)resource;
+
+			float base_width;
+			float base_height;
+			float trim_width;
+			float trim_height;
+			float offset_x;
+			float offset_y;
+
+			if( (*_provider)(imageResource, &base_width, &base_height, &trim_width, &trim_height, &offset_x, &offset_y, _data) == AE_FALSE )
+			{
+				continue;
+			}
+
+			aeMovieResourceImage * mutable_imageResource = (aeMovieResourceImage *)imageResource;
+
+			mutable_imageResource->base_width = base_width;
+			mutable_imageResource->base_height = base_height;
+			mutable_imageResource->trim_width = trim_width;
+			mutable_imageResource->trim_height = trim_height;
+			mutable_imageResource->offset_x = offset_x;
+			mutable_imageResource->offset_y = offset_y;
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name )
 {
 	const aeMovieInstance * instance = _movieData->instance;
 
@@ -802,7 +840,7 @@ uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _co
 	return count;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_bool_t __ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t * _iterator, uint32_t _index, const char ** _name )
+static ae_bool_t __ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t * _iterator, uint32_t _index, const ae_char_t ** _name )
 {
 	for( const aeMovieLayerData
 		 *it_layer = _compositionData->layers,
@@ -833,10 +871,10 @@ static ae_bool_t __ae_get_composition_data_event_name( const aeMovieCompositionD
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-const char * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t _index )
+const ae_char_t * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t _index )
 {
 	uint32_t iterator = 0;
-	const char * name;
+	const ae_char_t * name;
 	if( __ae_get_composition_data_event_name( _compositionData, &iterator, _index, &name ) == AE_FALSE )
 	{
 		return AE_NULL;

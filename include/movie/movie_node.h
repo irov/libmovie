@@ -40,7 +40,7 @@ extern "C" {
 
 	typedef struct aeMovieNode aeMovieNode;
 
-	typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
+	typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_char_t * _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
 
 	typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResource * _resource, const ae_matrix4_t _matrix, void * _data);
 
@@ -58,7 +58,7 @@ extern "C" {
 
 	typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
 
-	typedef void( *ae_movie_node_event_t )(const void * _element, const char * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data);
+	typedef void( *ae_movie_node_event_t )(const void * _element, const ae_char_t * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data);
 
 	typedef enum
 	{
@@ -111,14 +111,14 @@ extern "C" {
 
 	void ae_update_movie_composition( aeMovieComposition * _composition, float _timing );
 
-	ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData );
-	void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
-	ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
-	void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName );
+	ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData );
+	void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName );
+	ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName );
+	void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName );
 
 	ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _vertices );
 
-	ae_bool_t ae_get_movie_composition_node_in_out_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out );
+	ae_bool_t ae_get_movie_composition_node_in_out_time( aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out );
 
 #ifdef __cplusplus
 }

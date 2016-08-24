@@ -6,10 +6,6 @@
 
 #	include "movie_struct.h"
 
-#	ifndef AE_MOVIE_MAX_LAYER_NAME
-#	define AE_MOVIE_MAX_LAYER_NAME 128
-#	endif
-
 #	ifdef _DEBUG
 #	ifndef AE_MOVIE_NO_DEBUG
 #	ifndef AE_MOVIE_DEBUG
@@ -518,7 +514,7 @@ static void __setup_movie_composition_active( aeMovieComposition * _composition 
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void * __dummy_ae_movie_composition_node_camera( const ae_string_t _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data )
+static void * __dummy_ae_movie_composition_node_camera( const ae_char_t * _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data )
 {
 	(void)_name;
 	(void)_position;
@@ -574,7 +570,7 @@ static void * __dummy_ae_movie_composition_track_matte_update( const void * _ele
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __dummy_ae_movie_node_event( const void * _element, const char * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data )
+static void __dummy_ae_movie_node_event( const void * _element, const ae_char_t * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data )
 {
 	(void)_element;
 	(void)_name;
@@ -1566,11 +1562,13 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 		float loopBegin = max_f_f( _composition->composition_data->loop_segment[0], _composition->work_area_begin );
 		float loopEnd = min_f_f( _composition->composition_data->loop_segment[1], _composition->work_area_end );
 
-		while( _composition->time >= loopEnd )
-		{
-			float new_composition_time = _composition->time - loopEnd + loopBegin;
+		float last_time = loopEnd - frameDuration;
 
-			__update_movie_composition_node( _composition, update_revision, begin_time, loopEnd );
+		while( _composition->time >= last_time )
+		{
+			float new_composition_time = _composition->time - last_time + loopBegin;
+
+			__update_movie_composition_node( _composition, update_revision, begin_time, last_time );
 
 			_composition->update_revision++;
 			update_revision = _composition->update_revision;
@@ -1630,7 +1628,7 @@ float ae_get_movie_composition_duration( const aeMovieComposition * _composition
 	return duration;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName, void * _slotData )
+ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -1662,7 +1660,7 @@ ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, cons
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
+void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -1692,7 +1690,7 @@ void * ae_get_movie_composition_slot( aeMovieComposition * _composition, const c
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
+ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -1722,7 +1720,7 @@ ae_bool_t ae_has_movie_composition_slot( aeMovieComposition * _composition, cons
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const char * _slotName )
+void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -1794,7 +1792,7 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_node_in_out_time( aeMovieComposition * _composition, const char * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out )
+ae_bool_t ae_get_movie_composition_node_in_out_time( aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 

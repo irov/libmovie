@@ -3,7 +3,7 @@
 #	include "movie_struct.h"
 
 //////////////////////////////////////////////////////////////////////////
-static int32_t __ae_strncmp( void * _data, const char * _src, const char * _dst, uint32_t _count )
+static int32_t __ae_strncmp( void * _data, const ae_char_t * _src, const ae_char_t * _dst, uint32_t _count )
 {
 	(void)_data;
 
@@ -14,7 +14,7 @@ static int32_t __ae_strncmp( void * _data, const char * _src, const char * _dst,
 
 	int32_t cmp = 0;
 
-	while( !(cmp = *(unsigned char *)_src - *(unsigned char *)_dst) && *_dst && _count-- )
+	while( !(cmp = *(uint8_t *)_src - *(uint8_t *)_dst) && *_dst && _count-- )
 	{
 		++_src;
 		++_dst;
@@ -23,7 +23,7 @@ static int32_t __ae_strncmp( void * _data, const char * _src, const char * _dst,
 	return cmp;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_logerror( void * _data, aeMovieErrorCode _code, const char * _compositionName, const char * _layerName, const char * _message )
+static void __ae_movie_logerror( void * _data, aeMovieErrorCode _code, const ae_char_t * _compositionName, const ae_char_t * _layerName, const ae_char_t * _message )
 {
 	//SILENT
 }

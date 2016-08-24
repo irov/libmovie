@@ -50,11 +50,11 @@ static uint32_t ae_magic_read_size( const aeMovieStream * _stream )
 	return size;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_string( const aeMovieInstance * _instance, const aeMovieStream * _stream, char ** _str )
+static void ae_magic_read_string( const aeMovieInstance * _instance, const aeMovieStream * _stream, ae_string_t * _str )
 {
 	uint32_t size = READZ( _stream );
 
-	char * str = NEWN( _instance, char, size + 1 );
+	ae_string_t str = NEWN( _instance, ae_char_t, size + 1 );
 	READN( _stream, str, size );
 
 	str[size] = '\0';

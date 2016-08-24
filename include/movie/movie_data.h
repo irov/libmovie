@@ -158,7 +158,11 @@ extern "C" {
 
 	aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data );
 
-	const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const char * _name );
+	typedef ae_bool_t (*ae_movie_data_tream_image_resource_t)(const aeMovieResourceImage * _imageResource, float * base_width, float * base_height, float * trim_width, float * trim_height, float * offset_x,	float * offset_y, void * _data);
+
+	void ae_trim_image_resources( aeMovieData * _movieData, ae_movie_data_tream_image_resource_t _provider, void * _data );
+
+	const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 
 	float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
 
@@ -166,7 +170,7 @@ extern "C" {
 	const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, uint32_t _index );
 
 	uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _compositionData );
-	const char * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t _index );
+	const ae_char_t * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t _index );
 
 #ifdef __cplusplus
 }
