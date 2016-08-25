@@ -39,6 +39,7 @@ typedef struct aeMovieNode
 	float current_time;
 
 	ae_bool_t active;
+	ae_bool_t ignore;
 
 	uint32_t animate;
 

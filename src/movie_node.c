@@ -253,6 +253,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 		node->matrix_revision = 0;
 
 		node->active = AE_FALSE;
+		node->ignore = AE_FALSE;
 		node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;
 
 		if( layer->parent_index == 0 )
@@ -344,6 +345,12 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			float parent_out = _parent->out_time;
 
 			node->out_time = min_f_f( layer_out, parent_out );
+
+			if( node->out_time <= 0.f )
+			{
+				node->out_time = 0.f;
+				node->ignore = AE_TRUE;
+			}
 		}
 
 		node->stretch = _stretch;
@@ -506,6 +513,11 @@ static void __setup_movie_composition_active( aeMovieComposition * _composition 
 	++it_node )
 	{
 		aeMovieNode * node = it_node;
+
+		if( node->ignore == AE_TRUE )
+		{
+			continue;
+		}
 
 		if( equal_f_z( node->in_time ) == AE_TRUE )
 		{
@@ -1359,6 +1371,11 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 	{
 		aeMovieNode * node = it_node;
 
+		if( node->ignore == AE_TRUE )
+		{
+			continue;
+		}
+
 		const aeMovieLayerData * layer = node->layer;
 
 		float frameDurationInv = layer->composition->frameDurationInv;
@@ -1459,6 +1476,11 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, ui
 	++it_node )
 	{
 		aeMovieNode * node = it_node;
+
+		if( node->ignore == AE_TRUE )
+		{
+			continue;
+		}
 
 		const aeMovieLayerData * layer = node->layer;
 
