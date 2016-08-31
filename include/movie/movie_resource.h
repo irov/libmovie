@@ -101,6 +101,8 @@ extern "C" {
 
 		ae_string_t path;
 
+		ae_bool_t premultiplied;
+
 		float base_width;
 		float base_height;
 		float trim_width;
