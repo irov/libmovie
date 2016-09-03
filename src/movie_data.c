@@ -318,7 +318,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 		_layer->out_time = _compositionData->duration;
 	}
 
-	READ( _stream, _layer->blend_mode );
+	READ( _stream, _layer->blend_mode ); 
 	_layer->threeD = READB( _stream );
 	READ( _stream, _layer->params );
 
