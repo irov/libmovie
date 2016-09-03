@@ -70,7 +70,6 @@ extern "C" {
 		struct aeMovieCompositionData * composition;
 
 		ae_bool_t is_track_matte;
-
 		ae_bool_t has_track_matte;
 
 		uint32_t frame_count;
