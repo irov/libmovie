@@ -389,3 +389,20 @@ float make_camera_fov( float _height, float _zoom )
 
 	return camera_fov;
 }
+//////////////////////////////////////////////////////////////////////////
+float linerp_c(const ae_color_t _c1, const ae_color_t _c2, float _t)
+{
+	if( _c1 == 255 && _c2 == 255 )
+	{
+		return 1.f;
+	}
+
+	const float inv_255 = 1.f / 255.f;
+
+	float c1f = (float)_c1 * inv_255;
+	float c2f = (float)_c2 * inv_255;
+
+	float cf = linerp_f1(c1f, c2f, _t);
+
+	return cf;
+}

@@ -1029,6 +1029,51 @@ static void __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance
 	}
 }
 //////////////////////////////////////////////////////////////////////////
+static float __compute_movie_color_r(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t )
+{
+	if (_colorVertex->immutable_r == AE_TRUE)
+	{
+		return _colorVertex->immutable_color_vertex_r;
+	}
+	
+	ae_color_t c0 = _colorVertex->color_vertites_r[_frame + 0];
+	ae_color_t c1 = _colorVertex->color_vertites_r[_frame + 1];
+
+	float cf = linerp_c(c0, c1, t);
+
+	return cf;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __compute_movie_color_g(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+{
+	if (_colorVertex->immutable_g == AE_TRUE)
+	{
+		return _colorVertex->immutable_color_vertex_g;
+	}
+
+	ae_color_t c0 = _colorVertex->color_vertites_g[_frame + 0];
+	ae_color_t c1 = _colorVertex->color_vertites_g[_frame + 1];
+
+	float cf = linerp_c(c0, c1, t);
+
+	return cf;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __compute_movie_color_b(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+{
+	if (_colorVertex->immutable_b == AE_TRUE)
+	{
+		return _colorVertex->immutable_color_vertex_b;
+	}
+
+	ae_color_t c0 = _colorVertex->color_vertites_b[_frame + 0];
+	ae_color_t c1 = _colorVertex->color_vertites_b[_frame + 1];
+
+	float cf = linerp_c(c0, c1, t);
+
+	return cf;
+}
+//////////////////////////////////////////////////////////////////////////
 static void __compute_movie_node( const aeMovieInstance * _instance, const aeMovieNode * _node, aeMovieRenderMesh * _vertices )
 {
 	const aeMovieLayerData * layer = _node->layer;
@@ -1248,6 +1293,13 @@ static void __compute_movie_node( const aeMovieInstance * _instance, const aeMov
 			_vertices->b = 1.f;
 			_vertices->a = _node->opacity;
 		}break;
+	}
+
+	if( layer->color_vertex != AE_NULL )
+	{
+		_vertices->r *= __compute_movie_color_r(layer->color_vertex, frame, t_frame);
+		_vertices->g *= __compute_movie_color_g(layer->color_vertex, frame, t_frame);
+		_vertices->b *= __compute_movie_color_b(layer->color_vertex, frame, t_frame);
 	}
 }
 //////////////////////////////////////////////////////////////////////////

@@ -33,6 +33,23 @@ extern "C" {
 
 	} aeMovieLayerBezierWarp;
 
+	typedef struct
+	{
+		ae_bool_t immutable_r;
+		float immutable_color_vertex_r;
+
+		ae_bool_t immutable_g;
+		float immutable_color_vertex_g;
+
+		ae_bool_t immutable_b;
+		float immutable_color_vertex_b;
+
+		ae_color_t * color_vertites_r;
+		ae_color_t * color_vertites_g;
+		ae_color_t * color_vertites_b;
+
+	} aeMovieLayerColorVertex;
+
 	typedef enum aeMovieLayerTypeEnum
 	{
 		AE_MOVIE_LAYER_TYPE_ANY = 0,
@@ -77,6 +94,7 @@ extern "C" {
 		aeMovieLayerTimeremap * timeremap;
 		aeMovieLayerMesh * mesh;
 		aeMovieLayerBezierWarp * bezier_warp;
+		aeMovieLayerColorVertex * color_vertex;
 
 		const aeMovieResource * resource;
 		const struct aeMovieCompositionData * sub_composition;

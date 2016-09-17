@@ -259,6 +259,61 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 				}
 			}
 		}break;
+		case 4:
+		{
+			_layer->color_vertex = NEW(_movieData->instance, aeMovieLayerColorVertex);
+
+			_layer->color_vertex->immutable_r = READB(_stream);
+
+			if (_layer->color_vertex->immutable_r == AE_TRUE)
+			{
+				READ(_stream, _layer->color_vertex->immutable_color_vertex_r);
+
+				_layer->color_vertex->color_vertites_r = AE_NULL;
+			}
+			else
+			{
+				uint32_t frame_count = READZ(_stream);
+
+				_layer->color_vertex->color_vertites_r = NEWN(_movieData->instance, ae_color_t, frame_count);
+
+				READN(_stream, _layer->color_vertex->color_vertites_r, frame_count);
+			}
+
+			_layer->color_vertex->immutable_g = READB(_stream);
+
+			if (_layer->color_vertex->immutable_g == AE_TRUE)
+			{
+				READ(_stream, _layer->color_vertex->immutable_color_vertex_g);
+
+				_layer->color_vertex->color_vertites_g = AE_NULL;
+			}
+			else
+			{
+				uint32_t frame_count = READZ(_stream);
+
+				_layer->color_vertex->color_vertites_g = NEWN(_movieData->instance, ae_color_t, frame_count);
+
+				READN(_stream, _layer->color_vertex->color_vertites_g, frame_count);
+			}
+
+			_layer->color_vertex->immutable_b = READB(_stream);
+
+			if (_layer->color_vertex->immutable_b == AE_TRUE)
+			{
+				READ(_stream, _layer->color_vertex->immutable_color_vertex_b);
+
+				_layer->color_vertex->color_vertites_b = AE_NULL;
+			}
+			else
+			{
+				uint32_t frame_count = READZ(_stream);
+
+				_layer->color_vertex->color_vertites_b = NEWN(_movieData->instance, ae_color_t, frame_count);
+
+				READN(_stream, _layer->color_vertex->color_vertites_b, frame_count);
+			}
+		}break;
 		default:
 		{
 			return AE_MOVIE_FAILED;

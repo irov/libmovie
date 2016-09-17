@@ -21,6 +21,8 @@ extern "C" {
 	static const uint8_t AE_FALSE = 0;
 	static void * AE_NULL = 0;
 
+	typedef uint8_t ae_color_t;
+
 	typedef struct
 	{
 		uint32_t point_count;
