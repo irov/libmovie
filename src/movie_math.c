@@ -8,6 +8,7 @@ static const float f_neps = -0.00001f;
 static const float pi = 3.14159265358979323846f;
 static const float two_pi = 2.f * 3.14159265358979323846f;
 static const float inv_two_pi = 1.f / (2.f * 3.14159265358979323846f);
+static const float inv_255 = 1.f / 255.f;
 //////////////////////////////////////////////////////////////////////////
 #	define EQUAL_F_Z( v ) ((v >= f_neps) && (v <= f_eps))
 #	define EQUAL_F_1( v ) ((v >= 1.f + f_neps) && (v <= 1.f + f_eps))
@@ -396,8 +397,6 @@ float linerp_c(const ae_color_t _c1, const ae_color_t _c2, float _t)
 	{
 		return 1.f;
 	}
-
-	const float inv_255 = 1.f / 255.f;
 
 	float c1f = (float)_c1 * inv_255;
 	float c2f = (float)_c2 * inv_255;
