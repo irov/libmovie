@@ -65,6 +65,7 @@ typedef struct aeMovieComposition
 	ae_bool_t interrupt;
 
 	ae_bool_t loop;
+	ae_bool_t interpolate;
 
 	uint32_t update_revision;
 	float time;

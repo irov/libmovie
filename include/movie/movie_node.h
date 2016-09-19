@@ -97,6 +97,8 @@ extern "C" {
 	uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition );
 
 	void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
+	void ae_set_movie_composition_interpolate( aeMovieComposition * _composition, ae_bool_t _interpolate );
+
 	ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition, float _begin, float _end );
 	void ae_remove_movie_composition_work_area( aeMovieComposition * _composition );
 

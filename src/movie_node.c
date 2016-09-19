@@ -609,6 +609,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 	composition->work_area_begin = 0.f;
 	composition->work_area_end = _compositionData->duration;
 	composition->loop = AE_FALSE;
+	composition->interpolate = AE_TRUE;
 
 	composition->play = AE_FALSE;
 	composition->interrupt = AE_FALSE;
@@ -719,6 +720,11 @@ uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _c
 void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop )
 {
 	_composition->loop = _loop;
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_set_movie_composition_interpolate( aeMovieComposition * _composition, ae_bool_t _interpolate )
+{
+	_composition->interpolate = _interpolate;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition, float _begin, float _end )
@@ -965,15 +971,15 @@ static float __bezier_warp_y( const aeMovieBezierWarp * _bezier_warp, float _u, 
 	float my0 = (b[1][1] - b[6][1]) * (1.f - _v) + b[6][1];
 	float my1 = (b[2][1] - b[5][1]) * (1.f - _v) + b[5][1];
 
-	float x = __bezier_point( by, my0, my1, ey, _u );
+	float y = __bezier_point( by, my0, my1, ey, _u );
 
-	return x;
+	return y;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieBezierWarp * _bezierWarp, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
 {
-	_renderMesh->vertexCount = AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT; //81
-	_renderMesh->indexCount = AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT; //384
+	_renderMesh->vertexCount = AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
+	_renderMesh->indexCount = AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
 
 	float du = 0.f;
 	float dv = 0.f;
@@ -1406,10 +1412,10 @@ static void __update_node( aeMovieComposition * _composition, aeMovieNode * _nod
 //////////////////////////////////////////////////////////////////////////
 static void __update_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, float _beginTime, float _endTime )
 {
-	ae_bool_t interrupt = _composition->interrupt;
-	ae_bool_t loop = _composition->loop;
-	float duration = _composition->composition_data->duration;
-
+	ae_bool_t composition_interpolate = _composition->interpolate;
+	ae_bool_t composition_interrupt = _composition->interrupt;
+	ae_bool_t composition_loop = _composition->loop;
+	
 	_composition->time = _endTime;
 
 	float loopBegin = __get_movie_loop_work_begin( _composition );
@@ -1432,8 +1438,8 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 
 		float frameDurationInv = layer->composition->frameDurationInv;
 
-		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
-		float out_time = (node->out_time >= loopEnd && interrupt == AE_FALSE && loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
+		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && composition_interrupt == AE_FALSE && composition_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
+		float out_time = (node->out_time >= loopEnd && composition_interrupt == AE_FALSE && composition_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
 
 		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv + 0.001f);
 		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv + 0.001f);
@@ -1481,20 +1487,20 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 
 			float t = frame_time - (float)frameId;
 
-			ae_bool_t node_loop = ((loop == AE_TRUE && interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
-
-			ae_bool_t node_interpolate = (node_loop == AE_TRUE) ? AE_TRUE : ((endFrame + 1) < indexOut);
-
-			ae_bool_t node_deactive = (node_loop == AE_TRUE) ? AE_TRUE : AE_FALSE;
+			ae_bool_t node_loop = ((composition_loop == AE_TRUE && composition_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
 
 			if( beginFrame < indexIn && endFrame >= indexIn && endFrame < indexOut )
 			{
 				node->active = AE_TRUE;
 
+				ae_bool_t node_interpolate = (node_loop == AE_TRUE) ? composition_interpolate : ((endFrame + 1) < indexOut);
+
 				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_TRUE );
 			}
 			else if( endFrame >= indexOut && beginFrame >= indexIn && beginFrame < indexOut )
 			{
+				ae_bool_t node_deactive = (node_loop == AE_TRUE) ? AE_TRUE : AE_FALSE;
+
 				node->active = node_deactive;
 
 				uint32_t frameEnd = indexOut - indexIn;
@@ -1505,7 +1511,9 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 			{
 				node->active = AE_TRUE;
 
-				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, (frameId + 1) < indexOut, AE_TRUE );
+				ae_bool_t node_interpolate = composition_interpolate ? ((frameId + 1) < indexOut) : AE_FALSE;
+
+				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_TRUE );
 			}
 		}
 	}

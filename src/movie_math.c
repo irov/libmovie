@@ -423,11 +423,6 @@ float make_camera_fov( float _height, float _zoom )
 //////////////////////////////////////////////////////////////////////////
 float linerp_c(const ae_color_t _c1, const ae_color_t _c2, float _t)
 {
-	if( _c1 == 255 && _c2 == 255 )
-	{
-		return 1.f;
-	}
-
 	float c1f = table_inv_255[_c1];
 	float c2f = table_inv_255[_c2];
 
