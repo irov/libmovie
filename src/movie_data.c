@@ -180,6 +180,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	_layer->timeremap = AE_NULL;
 	_layer->mesh = AE_NULL;
 	_layer->bezier_warp = AE_NULL;
+	_layer->color_vertex = AE_NULL;
 
 	for( ;; )
 	{
