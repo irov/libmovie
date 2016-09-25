@@ -891,7 +891,7 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
 
 	for( uint32_t i = 0; i != vertex_count; ++i )
 	{
-		mul_v3_v2_m4( _renderMesh->position + i * 3, _mesh->positions + i * 2, _matrix );
+		mul_v3_v2_m4( _renderMesh->position[i], _mesh->positions[i], _matrix );
 	}
 
 	_renderMesh->uv = _mesh->uvs;
@@ -900,9 +900,9 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
 //////////////////////////////////////////////////////////////////////////
 static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _renderMesh )
 {
-	float v_position[8];
+    ae_vector2_t v_position[4];
 
-	float * v = v_position;
+	float * v = &v_position[0][0];
 
 	*v++ = _offset_x + _width * 0.f;
 	*v++ = _offset_y + _height * 0.f;
@@ -916,10 +916,10 @@ static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, flo
 	_renderMesh->vertexCount = 4;
 	_renderMesh->indexCount = 6;
 
-	mul_v3_v2_m4( _renderMesh->position + 0, v_position + 0, _matrix );
-	mul_v3_v2_m4( _renderMesh->position + 3, v_position + 2, _matrix );
-	mul_v3_v2_m4( _renderMesh->position + 6, v_position + 4, _matrix );
-	mul_v3_v2_m4( _renderMesh->position + 9, v_position + 6, _matrix );
+	mul_v3_v2_m4( _renderMesh->position[0], v_position[0], _matrix );
+	mul_v3_v2_m4( _renderMesh->position[1], v_position[1], _matrix );
+	mul_v3_v2_m4( _renderMesh->position[2], v_position[2], _matrix );
+	mul_v3_v2_m4( _renderMesh->position[3], v_position[3], _matrix );
 
 	_renderMesh->uv = _instance->sprite_uv;
 	_renderMesh->indices = _instance->sprite_indices;

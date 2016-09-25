@@ -50,7 +50,7 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 		instance->logerror = &__ae_movie_logerror;
 	}
 
-	float * sprite_uv = instance->sprite_uv;
+	float * sprite_uv = &instance->sprite_uv[0][0];
 
 	*sprite_uv++ = 0.f;
 	*sprite_uv++ = 0.f;
@@ -70,7 +70,7 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 	*sprite_indices++ = 3;
 	*sprite_indices++ = 2;
 
-	float * bezier_warp_uv = instance->bezier_warp_uv;
+	float * bezier_warp_uv = &instance->bezier_warp_uv[0][0];
 
 	for( uint32_t v = 0; v != AE_MOVIE_BEZIER_WARP_GRID; ++v )
 	{
