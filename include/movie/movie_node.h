@@ -22,8 +22,8 @@ extern "C" {
 		uint32_t vertexCount;
 		uint32_t indexCount;
 
-		float position[AE_MOVIE_MAX_VERTICES * 3];
-		const float * uv;
+		ae_vector3_t position[AE_MOVIE_MAX_VERTICES];
+		const ae_vector2_t * uv;
 
 		const uint16_t * indices;
 
