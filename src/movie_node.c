@@ -66,6 +66,51 @@ static const aeMovieLayerData * __find_layer_by_index( const aeMovieCompositionD
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+static float __compute_movie_color_r(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+{
+    if( _colorVertex->immutable_r == AE_TRUE )
+    {
+        return _colorVertex->immutable_color_vertex_r;
+    }
+
+    ae_color_t c0 = _colorVertex->color_vertites_r[_frame + 0];
+    ae_color_t c1 = _colorVertex->color_vertites_r[_frame + 1];
+
+    float cf = linerp_c(c0, c1, t);
+
+    return cf;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __compute_movie_color_g(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+{
+    if( _colorVertex->immutable_g == AE_TRUE )
+    {
+        return _colorVertex->immutable_color_vertex_g;
+    }
+
+    ae_color_t c0 = _colorVertex->color_vertites_g[_frame + 0];
+    ae_color_t c1 = _colorVertex->color_vertites_g[_frame + 1];
+
+    float cf = linerp_c(c0, c1, t);
+
+    return cf;
+}
+//////////////////////////////////////////////////////////////////////////
+static float __compute_movie_color_b(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+{
+    if( _colorVertex->immutable_b == AE_TRUE )
+    {
+        return _colorVertex->immutable_color_vertex_b;
+    }
+
+    ae_color_t c0 = _colorVertex->color_vertites_b[_frame + 0];
+    ae_color_t c1 = _colorVertex->color_vertites_b[_frame + 1];
+
+    float cf = linerp_c(c0, c1, t);
+
+    return cf;
+}
+//////////////////////////////////////////////////////////////////////////
 static void __update_movie_composition_node_matrix( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, uint32_t _frame, ae_bool_t _interpolate, float _t )
 {
 	if( _node->matrix_revision == _revision )
@@ -75,6 +120,17 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 
 	_node->matrix_revision = _revision;
 
+    float local_r = 1.f;
+    float local_g = 1.f;
+    float local_b = 1.f;
+
+    if( _node->layer->color_vertex != AE_NULL )
+    {
+        local_r = __compute_movie_color_r(_node->layer->color_vertex, _frame, _t);
+        local_g = __compute_movie_color_g(_node->layer->color_vertex, _frame, _t);
+        local_b = __compute_movie_color_b(_node->layer->color_vertex, _frame, _t);
+    }
+
 	if( _node->relative == AE_NULL )
 	{
 		float local_opacity = make_movie_layer_transformation( _node->matrix, _node->layer->transformation, _frame, _interpolate, _t );
@@ -82,13 +138,25 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 		if( _node->layer->sub_composition != AE_NULL )
 		{
 			_node->composition_opactity = local_opacity;
-		}
+            
+            _node->composition_r = local_r;
+            _node->composition_g = local_g;
+            _node->composition_b = local_b;
+        }
 		else
 		{
 			_node->composition_opactity = 1.f;
+
+            _node->composition_r = 1.f;
+            _node->composition_g = 1.f;
+            _node->composition_b = 1.f;
 		}
 
 		_node->opacity = local_opacity;
+
+        _node->r = local_r;
+        _node->g = local_g;
+        _node->b = local_b;
 
 		return;
 	}
@@ -120,13 +188,25 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 	if( _node->layer->sub_composition != AE_NULL )
 	{
 		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
+        
+        _node->composition_r = node_relative->composition_r * local_r;
+        _node->composition_g = node_relative->composition_g * local_g;
+        _node->composition_b = node_relative->composition_b * local_b;
 	}
 	else
 	{
 		_node->composition_opactity = node_relative->composition_opactity;
+        
+        _node->composition_r = node_relative->composition_r;
+        _node->composition_g = node_relative->composition_g;
+        _node->composition_b = node_relative->composition_b;
 	}
 
 	_node->opacity = node_relative->composition_opactity * local_opacity;
+    
+    _node->r = node_relative->composition_r * local_r;
+    _node->g = node_relative->composition_g * local_g;
+    _node->b = node_relative->composition_b * local_b;
 }
 //////////////////////////////////////////////////////////////////////////
 static uint32_t __get_movie_composition_data_node_count( const aeMovieCompositionData * _compositionData )
@@ -1035,51 +1115,6 @@ static void __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static float __compute_movie_color_r(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t )
-{
-	if (_colorVertex->immutable_r == AE_TRUE)
-	{
-		return _colorVertex->immutable_color_vertex_r;
-	}
-	
-	ae_color_t c0 = _colorVertex->color_vertites_r[_frame + 0];
-	ae_color_t c1 = _colorVertex->color_vertites_r[_frame + 1];
-
-	float cf = linerp_c(c0, c1, t);
-
-	return cf;
-}
-//////////////////////////////////////////////////////////////////////////
-static float __compute_movie_color_g(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
-{
-	if (_colorVertex->immutable_g == AE_TRUE)
-	{
-		return _colorVertex->immutable_color_vertex_g;
-	}
-
-	ae_color_t c0 = _colorVertex->color_vertites_g[_frame + 0];
-	ae_color_t c1 = _colorVertex->color_vertites_g[_frame + 1];
-
-	float cf = linerp_c(c0, c1, t);
-
-	return cf;
-}
-//////////////////////////////////////////////////////////////////////////
-static float __compute_movie_color_b(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
-{
-	if (_colorVertex->immutable_b == AE_TRUE)
-	{
-		return _colorVertex->immutable_color_vertex_b;
-	}
-
-	ae_color_t c0 = _colorVertex->color_vertites_b[_frame + 0];
-	ae_color_t c1 = _colorVertex->color_vertites_b[_frame + 1];
-
-	float cf = linerp_c(c0, c1, t);
-
-	return cf;
-}
-//////////////////////////////////////////////////////////////////////////
 static void __compute_movie_node( const aeMovieComposition * _composition, const aeMovieNode * _node, aeMovieRenderMesh * _vertices )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
@@ -1162,10 +1197,10 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 				__make_mesh_vertices( mesh, _node->matrix, _vertices );
 			}
 
-			_vertices->r = resource_shape->r;
-			_vertices->g = resource_shape->g;
-			_vertices->b = resource_shape->b;
-			_vertices->a = resource_shape->a * _node->opacity;
+			_vertices->r = _node->r * resource_shape->r;
+			_vertices->g = _node->g * resource_shape->g;
+			_vertices->b = _node->b * resource_shape->b;
+			_vertices->a = _node->opacity * resource_shape->a;
 		}break;
 	case AE_MOVIE_LAYER_TYPE_SOLID:
 		{
@@ -1187,9 +1222,9 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 				__make_layer_sprite_vertices( instance, 0.f, 0.f, width, height, _node->matrix, _vertices );
 			}
 
-			_vertices->r = resource_solid->r;
-			_vertices->g = resource_solid->g;
-			_vertices->b = resource_solid->b;
+			_vertices->r = _node->r * resource_solid->r;
+			_vertices->g = _node->g * resource_solid->g;
+			_vertices->b = _node->b * resource_solid->b;
 			_vertices->a = _node->opacity;
 		}break;
 	case AE_MOVIE_LAYER_TYPE_SEQUENCE:
@@ -1242,9 +1277,9 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 				__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
 			}
 
-			_vertices->r = 1.f;
-			_vertices->g = 1.f;
-			_vertices->b = 1.f;
+			_vertices->r = _node->r;
+			_vertices->g = _node->g;
+			_vertices->b = _node->b;
 			_vertices->a = _node->opacity;
 		}break;
 	case AE_MOVIE_LAYER_TYPE_VIDEO:
@@ -1267,9 +1302,9 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 				__make_layer_sprite_vertices( instance, 0.f, 0.f, width, height, _node->matrix, _vertices );
 			}
 
-			_vertices->r = 1.f;
-			_vertices->g = 1.f;
-			_vertices->b = 1.f;
+			_vertices->r = _node->r;
+			_vertices->g = _node->g;
+			_vertices->b = _node->b;
 			_vertices->a = _node->opacity;
 		}break;
 	case AE_MOVIE_LAYER_TYPE_IMAGE:
@@ -1295,9 +1330,9 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 				__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
 			}
 
-			_vertices->r = 1.f;
-			_vertices->g = 1.f;
-			_vertices->b = 1.f;
+			_vertices->r = _node->r;
+			_vertices->g = _node->g;
+			_vertices->b = _node->b;
 			_vertices->a = _node->opacity;
 		}break;
 	default:
@@ -1305,18 +1340,11 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 			_vertices->vertexCount = 0;
 			_vertices->indexCount = 0;
 
-			_vertices->r = 1.f;
-			_vertices->g = 1.f;
-			_vertices->b = 1.f;
+			_vertices->r = _node->r;
+			_vertices->g = _node->g;
+			_vertices->b = _node->b;
 			_vertices->a = _node->opacity;
 		}break;
-	}
-
-	if( layer->color_vertex != AE_NULL )
-	{
-		_vertices->r *= __compute_movie_color_r(layer->color_vertex, frame, t_frame);
-		_vertices->g *= __compute_movie_color_g(layer->color_vertex, frame, t_frame);
-		_vertices->b *= __compute_movie_color_b(layer->color_vertex, frame, t_frame);
 	}
 }
 //////////////////////////////////////////////////////////////////////////

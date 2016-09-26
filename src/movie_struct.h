@@ -49,6 +49,13 @@ typedef struct aeMovieNode
 	float composition_opactity;
 	float opacity;
 
+    float composition_r;
+    float composition_g;
+    float composition_b;
+    float r;    
+    float g;
+    float b;
+
 	aeMovieBlendMode blend_mode;
 
 	const void * camera_data;
