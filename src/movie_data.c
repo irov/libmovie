@@ -274,6 +274,8 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 			}
 			else
 			{
+				_layer->color_vertex->immutable_color_vertex_r = 1.f;
+
 				uint32_t frame_count = READZ(_stream);
 
 				_layer->color_vertex->color_vertites_r = NEWN(_movieData->instance, ae_color_t, frame_count);
@@ -291,6 +293,8 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 			}
 			else
 			{
+				_layer->color_vertex->immutable_color_vertex_g = 1.f;
+
 				uint32_t frame_count = READZ(_stream);
 
 				_layer->color_vertex->color_vertites_g = NEWN(_movieData->instance, ae_color_t, frame_count);
@@ -308,6 +312,8 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 			}
 			else
 			{
+				_layer->color_vertex->immutable_color_vertex_b = 1.f;
+
 				uint32_t frame_count = READZ(_stream);
 
 				_layer->color_vertex->color_vertites_b = NEWN(_movieData->instance, ae_color_t, frame_count);
