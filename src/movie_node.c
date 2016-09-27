@@ -729,6 +729,11 @@ void ae_destroy_movie_composition( const aeMovieComposition * _composition )
 	{
 		const aeMovieNode * node = it_node;
 
+        if( node->animate != AE_MOVIE_NODE_ANIMATE_STATIC && node->animate != AE_MOVIE_NODE_ANIMATE_END )
+        {
+            (*_composition->providers.track_matte_update)(node->element_data, node->layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_END, 0.f, AE_NULL, node->track_matte_data, _composition->provider_data);
+        }
+
 		(*_composition->providers.node_destroyer)(node->element_data, node->layer->type, _composition->provider_data);
 	}
 
