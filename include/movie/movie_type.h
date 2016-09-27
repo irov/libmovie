@@ -43,8 +43,8 @@ extern "C" {
 	{
 		uint32_t vertex_count;
 		uint32_t indices_count;
-		ae_vector2_t * positions;
-		ae_vector2_t * uvs;
+		const ae_vector2_t * positions;
+		const ae_vector2_t * uvs;
 		uint16_t * indices;
 
 	} aeMovieMesh;

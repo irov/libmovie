@@ -10,7 +10,8 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 
 	float * stream_values = _values;
 
-	for( uint32_t i = 0; i != count; ++i )
+	uint32_t i = 0;
+	for( ; i != count; ++i )
 	{
 		uint8_t block_type;
 		READ( _stream, block_type );
@@ -24,7 +25,8 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 				float block_value;
 				READ( _stream, block_value );
 
-				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
+				uint32_t block_index = 0;
+				for( ; block_index != block_count; ++block_index )
 				{
 					*stream_values++ = block_value;
 				}
@@ -39,7 +41,8 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 
 				float block_add = (block_end - block_begin) / (float)(block_count - 1);
 
-				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
+				uint32_t block_index = 0;
+				for( ; block_index != block_count; ++block_index )
 				{
 					float block_value = block_begin + block_add * block_index;
 
@@ -48,7 +51,8 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 			}break;
 		case 3:
 			{
-				for( uint32_t block_index = 0; block_index != block_count; ++block_index )
+				uint32_t block_index = 0;
+				for( ; block_index != block_count; ++block_index )
 				{
 					float block_value;
 					READ( _stream, block_value );

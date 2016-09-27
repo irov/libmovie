@@ -28,6 +28,44 @@ static void __ae_movie_logerror( void * _data, aeMovieErrorCode _code, const ae_
 	//SILENT
 }
 //////////////////////////////////////////////////////////////////////////
+static void __ae_movie_instance_setup_bezier_warp_uv( aeMovieInstance * instance )
+{
+	float * bezier_warp_uv = &instance->bezier_warp_uv[0][0];
+
+	uint32_t v = 0;
+	for( ; v != AE_MOVIE_BEZIER_WARP_GRID; ++v )
+	{
+		uint32_t u = 0;
+		for( ; u != AE_MOVIE_BEZIER_WARP_GRID; ++u )
+		{
+			*bezier_warp_uv++ = (float)u * ae_movie_bezier_warp_grid_invf;
+			*bezier_warp_uv++ = (float)v * ae_movie_bezier_warp_grid_invf;
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+static void __ae_movie_instance_setup_bezier_warp_indices( aeMovieInstance * instance )
+{
+	uint16_t * bezier_warp_indices = instance->bezier_warp_indices;
+
+	uint32_t bezier_warp_quad_count = (AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1);
+
+	uint32_t v = 0;
+	for( ; v != AE_MOVIE_BEZIER_WARP_GRID - 1; ++v )
+	{
+		uint32_t u = 0;
+		for( ; u != AE_MOVIE_BEZIER_WARP_GRID - 1; ++u )
+		{
+			*bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 0;
+			*bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 0;
+			*bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 1;
+			*bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 1;
+			*bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 0;
+			*bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 1;
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
 aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logerror_t _error, void * _data )
 {
 	aeMovieInstance * instance = (*_alloc)(_data, sizeof( aeMovieInstance ));
@@ -70,33 +108,8 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 	*sprite_indices++ = 3;
 	*sprite_indices++ = 2;
 
-	float * bezier_warp_uv = &instance->bezier_warp_uv[0][0];
-
-	for( uint32_t v = 0; v != AE_MOVIE_BEZIER_WARP_GRID; ++v )
-	{
-		for( uint32_t u = 0; u != AE_MOVIE_BEZIER_WARP_GRID; ++u )
-		{
-			*bezier_warp_uv++ = (float)u * ae_movie_bezier_warp_grid_invf;
-			*bezier_warp_uv++ = (float)v * ae_movie_bezier_warp_grid_invf;
-		}
-	}
-
-	uint16_t * bezier_warp_indices = instance->bezier_warp_indices;
-
-	uint32_t bezier_warp_quad_count = (AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1);
-
-	for( uint32_t v = 0; v != AE_MOVIE_BEZIER_WARP_GRID - 1; ++v )
-	{
-		for( uint32_t u = 0; u != AE_MOVIE_BEZIER_WARP_GRID - 1; ++u )
-		{
-			*bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 0;
-			*bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 0;
-			*bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 1;
-			*bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 1;
-			*bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 0;
-			*bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 1;
-		}
-	}
+	__ae_movie_instance_setup_bezier_warp_uv( instance );
+	__ae_movie_instance_setup_bezier_warp_indices( instance );
 
 	return instance;
 }

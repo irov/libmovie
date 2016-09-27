@@ -25,11 +25,9 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
 	uint32_t resource_count = _movieData->resource_count;
 
-	for( const aeMovieResource
-		 *const * it_resource = _movieData->resources,
-		 *const * it_resource_end = _movieData->resources + _movieData->resource_count;
-	it_resource != it_resource_end;
-	++it_resource )
+	const aeMovieResource * const * it_resource = _movieData->resources;
+	const aeMovieResource * const * it_resource_end = _movieData->resources + _movieData->resource_count;
+	for( ; it_resource != it_resource_end; ++it_resource )
 	{
 		const aeMovieResource * base_resource = *it_resource;
 
@@ -107,19 +105,15 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 		}
 	}
 
-	for( const aeMovieCompositionData
-		 *it_composition = _movieData->compositions,
-		 *it_composition_end = _movieData->compositions + _movieData->composition_count;
-	it_composition != it_composition_end;
-	++it_composition )
+	const aeMovieCompositionData * it_composition = _movieData->compositions;
+	const aeMovieCompositionData * it_composition_end = _movieData->compositions + _movieData->composition_count;
+	for( ; it_composition != it_composition_end; ++it_composition )
 	{
 		const aeMovieCompositionData * composition = it_composition;
 
-		for( const aeMovieLayerData
-			 *it_layer = composition->layers,
-			 *it_layer_end = composition->layers + composition->layer_count;
-		it_layer != it_layer_end;
-		++it_layer )
+		const aeMovieLayerData * it_layer = composition->layers;
+		const aeMovieLayerData * it_layer_end = composition->layers + composition->layer_count;
+		for( ; it_layer != it_layer_end; ++it_layer )
 		{
 			const aeMovieLayerData * layer = it_layer;
 
@@ -220,11 +214,9 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 				_layer->mesh->meshes = NEWN( _movieData->instance, aeMovieMesh, frame_count );
 
-				for( aeMovieMesh
-					 *it_mesh = _layer->mesh->meshes,
-					 *it_mesh_end = _layer->mesh->meshes + frame_count;
-				it_mesh != it_mesh_end;
-				++it_mesh )
+				aeMovieMesh * it_mesh = _layer->mesh->meshes;
+				aeMovieMesh * it_mesh_end = _layer->mesh->meshes + frame_count;
+				for( ; it_mesh != it_mesh_end; ++it_mesh )
 				{
 					READ_MESH( _movieData->instance, _stream, it_mesh );
 				}
@@ -249,11 +241,9 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 				_layer->bezier_warp->bezier_warps = NEWN( _movieData->instance, aeMovieBezierWarp, frame_count );
 
-				for( aeMovieBezierWarp
-					 *it_bezier_warp = _layer->bezier_warp->bezier_warps,
-					 *it_bezier_warp_end = _layer->bezier_warp->bezier_warps + frame_count;
-				it_bezier_warp != it_bezier_warp_end;
-				++it_bezier_warp )
+				aeMovieBezierWarp * it_bezier_warp = _layer->bezier_warp->bezier_warps;
+				aeMovieBezierWarp * it_bezier_warp_end = _layer->bezier_warp->bezier_warps + frame_count;
+				for( ; it_bezier_warp != it_bezier_warp_end; ++it_bezier_warp )
 				{
 					READN( _stream, it_bezier_warp->corners, 4 );
 					READN( _stream, it_bezier_warp->beziers, 8 );
@@ -543,11 +533,9 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	_compositionData->layer_count = layer_count;
 	_compositionData->layers = NEWN( _movieData->instance, aeMovieLayerData, layer_count );
 
-	for( aeMovieLayerData
-		 *it_layer = _compositionData->layers,
-		 *it_layer_end = _compositionData->layers + layer_count;
-	it_layer != it_layer_end;
-	++it_layer )
+	aeMovieLayerData * it_layer = _compositionData->layers;
+	aeMovieLayerData * it_layer_end = _compositionData->layers + layer_count;
+	for( ; it_layer != it_layer_end; ++it_layer )
 	{
 		aeMovieLayerData * layer = it_layer;
 
@@ -590,11 +578,9 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 	_movieData->resource_count = resource_count;
 	_movieData->resources = NEWN( _movieData->instance, aeMovieResource *, resource_count );
 
-	for( const aeMovieResource
-		 **it_resource = _movieData->resources,
-		 **it_resource_end = _movieData->resources + resource_count;
-	it_resource != it_resource_end;
-	++it_resource )
+	const aeMovieResource ** it_resource = _movieData->resources;
+	const aeMovieResource ** it_resource_end = _movieData->resources + resource_count;
+	for( ; it_resource != it_resource_end; ++it_resource )
 	{
 		uint8_t type;
 		READ( _stream, type );
@@ -617,11 +603,9 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 
 				resource->polygons = NEWN( _movieData->instance, aeMoviePolygon, polygon_count );
 
-				for( aeMoviePolygon
-					 *it_polygon = resource->polygons,
-					 *it_polygon_end = resource->polygons + polygon_count;
-				it_polygon != it_polygon_end;
-				++it_polygon )
+				aeMoviePolygon * it_polygon = resource->polygons;
+				aeMoviePolygon * it_polygon_end = resource->polygons + polygon_count;
+				for( ; it_polygon != it_polygon_end; ++it_polygon )
 				{
 					READ_POLYGON( _movieData->instance, _stream, it_polygon );
 				}
@@ -653,11 +637,9 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 
 				resource->meshes = NEWN( _movieData->instance, aeMovieMesh, mesh_count );
 
-				for( aeMovieMesh
-					 *it_mesh = resource->meshes,
-					 *it_mesh_end = resource->meshes + mesh_count;
-				it_mesh != it_mesh_end;
-				++it_mesh )
+				aeMovieMesh * it_mesh = resource->meshes;
+				aeMovieMesh * it_mesh_end = resource->meshes + mesh_count;
+				for( ; it_mesh != it_mesh_end; ++it_mesh )
 				{
 					READ_MESH( _movieData->instance, _stream, it_mesh );
 				}
@@ -744,11 +726,9 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 			resource->image_count = image_count;
 			resource->images = NEWN( _movieData->instance, aeMovieResourceImage *, image_count );
 
-			for( aeMovieResourceImage
-				 **it_image = resource->images,
-				 **it_image_end = resource->images + image_count;
-			it_image != it_image_end;
-			++it_image )
+			aeMovieResourceImage ** it_image = resource->images;
+			aeMovieResourceImage ** it_image_end = resource->images + image_count;
+			for( ; it_image != it_image_end; ++it_image )
 			{
 				uint32_t resource_id = READZ( _stream );
 
@@ -786,11 +766,9 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 
 	aeMovieCompositionData * compositions = NEWN( _movieData->instance, aeMovieCompositionData, composition_count );
 
-	for( aeMovieCompositionData
-		 *it_composition = compositions,
-		 *it_composition_end = compositions + composition_count;
-	it_composition != it_composition_end;
-	++it_composition )
+	aeMovieCompositionData * it_composition = compositions;
+	aeMovieCompositionData * it_composition_end = compositions + composition_count;
+	for( ; it_composition != it_composition_end; ++it_composition )
 	{
 		if( __load_movie_data_composition( _movieData, compositions, _stream, it_composition ) == AE_MOVIE_FAILED )
 		{
@@ -805,11 +783,9 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 //////////////////////////////////////////////////////////////////////////
 void ae_trim_image_resources( aeMovieData * _movieData, ae_movie_data_tream_image_resource_t _provider, void * _data )
 {
-	for( const aeMovieResource
-		**it_resource = _movieData->resources,
-		**it_resource_end = _movieData->resources + _movieData->resource_count;
-	it_resource != it_resource_end;
-	++it_resource )
+	const aeMovieResource ** it_resource = _movieData->resources;
+	const aeMovieResource ** it_resource_end = _movieData->resources + _movieData->resource_count;
+	for( ; it_resource != it_resource_end; ++it_resource )
 	{
 		const aeMovieResource * resource = *it_resource;
 
@@ -845,11 +821,9 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
 {
 	const aeMovieInstance * instance = _movieData->instance;
 
-	for( const aeMovieCompositionData
-		 *it_composition = _movieData->compositions,
-		 *it_composition_end = _movieData->compositions + _movieData->composition_count;
-	it_composition != it_composition_end;
-	++it_composition )
+	const aeMovieCompositionData * it_composition = _movieData->compositions;
+	const aeMovieCompositionData * it_composition_end = _movieData->compositions + _movieData->composition_count;
+	for( ; it_composition != it_composition_end; ++it_composition )
 	{
 		const aeMovieCompositionData * composition = it_composition;
 
@@ -883,11 +857,9 @@ uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _co
 {
 	uint32_t count = 0;
 
-	for( const aeMovieLayerData
-		 *it_layer = _compositionData->layers,
-		 *it_layer_end = _compositionData->layers + _compositionData->layer_count;
-	it_layer != it_layer_end;
-	++it_layer )
+	const aeMovieLayerData * it_layer = _compositionData->layers;
+	const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	for( ; it_layer != it_layer_end; ++it_layer )
 	{
 		uint8_t type = it_layer->type;
 
@@ -906,11 +878,9 @@ uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _co
 //////////////////////////////////////////////////////////////////////////
 static ae_bool_t __ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t * _iterator, uint32_t _index, const ae_char_t ** _name )
 {
-	for( const aeMovieLayerData
-		 *it_layer = _compositionData->layers,
-		 *it_layer_end = _compositionData->layers + _compositionData->layer_count;
-	it_layer != it_layer_end;
-	++it_layer )
+	const aeMovieLayerData * it_layer = _compositionData->layers;
+	const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	for( ; it_layer != it_layer_end; ++it_layer )
 	{
 		uint8_t type = it_layer->type;
 
