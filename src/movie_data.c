@@ -19,6 +19,34 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance )
 	return m;
 }
 //////////////////////////////////////////////////////////////////////////
+static void __ae_delete_mesh_t( const aeMovieInstance * _instance, const aeMovieMesh * _mesh )
+{
+	DELETEN( _instance, _mesh->positions );
+	DELETEN( _instance, _mesh->uvs );
+	DELETEN( _instance, _mesh->indices );
+}
+//////////////////////////////////////////////////////////////////////////
+static void __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const aeMovieLayerMesh * _layerMesh, uint32_t _count )
+{
+	if( _layerMesh->immutable == AE_TRUE )
+	{
+		__ae_delete_mesh_t( _instance, &_layerMesh->immutable_mesh );
+	}
+	else
+	{
+		aeMovieMesh * it_mesh = _layerMesh->meshes;
+		aeMovieMesh * it_mesh_end = _layerMesh->meshes + _count;
+		for( ; it_mesh != it_mesh_end; ++it_mesh )
+		{
+			const aeMovieMesh * mesh = it_mesh;
+
+			__ae_delete_mesh_t( _instance, mesh );
+		}
+
+		DELETEN( _instance, _layerMesh->meshes );
+	}
+}
+//////////////////////////////////////////////////////////////////////////
 void ae_delete_movie_data( const aeMovieData * _movieData )
 {
 	const aeMovieInstance * instance = _movieData->instance;
@@ -36,73 +64,86 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 		switch( type )
 		{
 		case AE_MOVIE_RESOURCE_SOCKET:
-		{
-			const aeMovieResourceSocket * resource = (const aeMovieResourceSocket *)base_resource;
+			{
+				const aeMovieResourceSocket * resource = (const aeMovieResourceSocket *)base_resource;
 
-			(void)resource;
+				(void)resource;
 
-		}break;
+			}break;
 		case AE_MOVIE_RESOURCE_SOLID:
-		{
-			const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
+			{
+				const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
 
-			(void)resource;
+				(void)resource;
 
-		}break;
+			}break;
 		case AE_MOVIE_RESOURCE_SHAPE:
-		{
-			const aeMovieResourceShape * resource = (const aeMovieResourceShape *)base_resource;
+			{
+				const aeMovieResourceShape * resource = (const aeMovieResourceShape *)base_resource;
 
-			DELETEN( instance, resource->meshes );
+				DELETEN( instance, resource->meshes );
 
-			(void)resource;
+				(void)resource;
 
-		}break;
+			}break;
 		case AE_MOVIE_RESOURCE_VIDEO:
-		{
-			const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)base_resource;
+			{
+				const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)base_resource;
 
-			DELETEN( instance, resource->path );
+				DELETEN( instance, resource->path );
 
-			(void)resource;
+				(void)resource;
 
-		}break;
+			}break;
 		case AE_MOVIE_RESOURCE_SOUND:
-		{
-			const aeMovieResourceSound * resource = (const aeMovieResourceSound *)base_resource;
+			{
+				const aeMovieResourceSound * resource = (const aeMovieResourceSound *)base_resource;
 
-			DELETEN( instance, resource->path );
+				DELETEN( instance, resource->path );
 
-			(void)resource;
+				(void)resource;
 
-		}break;
+			}break;
 		case AE_MOVIE_RESOURCE_IMAGE:
-		{
-			const aeMovieResourceImage * resource = (const aeMovieResourceImage *)base_resource;
+			{
+				const aeMovieResourceImage * resource = (const aeMovieResourceImage *)base_resource;
 
-			DELETEN( instance, resource->path );
+				DELETEN( instance, resource->path );
 
-			(void)resource;
+				(void)resource;
 
-		}break;
+			}break;
 		case AE_MOVIE_RESOURCE_SEQUENCE:
-		{
-			const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)base_resource;
+			{
+				const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)base_resource;
 
-			DELETEN( instance, resource->images );
+				DELETEN( instance, resource->images );
 
-			(void)resource;
+				(void)resource;
 
-		}break;
+			}break;
 		case AE_MOVIE_RESOURCE_PARTICLE:
-		{
-			const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
+			{
+				const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
 
-			DELETEN( instance, resource->path );
+				DELETEN( instance, resource->path );
 
-			(void)resource;
-		}break;
+				(void)resource;
+			}break;
+		case AE_MOVIE_RESOURCE_MESH:
+			{
+				const aeMovieResourceMesh * resource = (const aeMovieResourceMesh *)base_resource;
+
+				DELETEN( instance, resource->path );
+				DELETEN( instance, resource->mesh.positions );
+				DELETEN( instance, resource->mesh.uvs );
+
+
+				(void)resource;
+			}break;
 		}
+
+		DELETE( instance, base_resource );
 	}
 
 	const aeMovieCompositionData * it_composition = _movieData->compositions;
@@ -126,7 +167,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
 			if( layer->mesh != AE_NULL )
 			{
-				DELETEN( instance, layer->mesh->meshes );
+				__ae_delete_layer_mesh_t( instance, layer->mesh, layer->frame_count );
 
 				DELETEN( instance, layer->mesh );
 			}
@@ -588,175 +629,193 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream 
 		switch( type )
 		{
 		case AE_MOVIE_RESOURCE_SOCKET:
-		{
-			aeMovieResourceSocket * resource = NEW( _movieData->instance, aeMovieResourceSocket );
-
-			ae_bool_t polygon_immutable = READB( _stream );
-
-			if( polygon_immutable == AE_TRUE )
 			{
-				READ_POLYGON( _movieData->instance, _stream, &resource->immutable_polygon );
-			}
-			else
-			{
-				uint32_t polygon_count = READZ( _stream );
+				aeMovieResourceSocket * resource = NEW( _movieData->instance, aeMovieResourceSocket );
 
-				resource->polygons = NEWN( _movieData->instance, aeMoviePolygon, polygon_count );
+				ae_bool_t polygon_immutable = READB( _stream );
 
-				aeMoviePolygon * it_polygon = resource->polygons;
-				aeMoviePolygon * it_polygon_end = resource->polygons + polygon_count;
-				for( ; it_polygon != it_polygon_end; ++it_polygon )
+				if( polygon_immutable == AE_TRUE )
 				{
-					READ_POLYGON( _movieData->instance, _stream, it_polygon );
+					READ_POLYGON( _movieData->instance, _stream, &resource->immutable_polygon );
 				}
-			}
+				else
+				{
+					uint32_t polygon_count = READZ( _stream );
 
-			*it_resource = (aeMovieResource *)resource;
+					resource->polygons = NEWN( _movieData->instance, aeMoviePolygon, polygon_count );
 
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
+					aeMoviePolygon * it_polygon = resource->polygons;
+					aeMoviePolygon * it_polygon_end = resource->polygons + polygon_count;
+					for( ; it_polygon != it_polygon_end; ++it_polygon )
+					{
+						READ_POLYGON( _movieData->instance, _stream, it_polygon );
+					}
+				}
+
+				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
 		case AE_MOVIE_RESOURCE_SHAPE:
-		{
-			aeMovieResourceShape * resource = NEW( _movieData->instance, aeMovieResourceShape );
-
-			READ( _stream, resource->r );
-			READ( _stream, resource->g );
-			READ( _stream, resource->b );
-			READ( _stream, resource->a );
-
-			resource->immutable = READB( _stream );
-
-			if( resource->immutable == AE_TRUE )
 			{
-				READ_MESH( _movieData->instance, _stream, &resource->immutable_mesh );
-			}
-			else
-			{
-				uint32_t mesh_count = READZ( _stream );
+				aeMovieResourceShape * resource = NEW( _movieData->instance, aeMovieResourceShape );
 
-				resource->meshes = NEWN( _movieData->instance, aeMovieMesh, mesh_count );
+				READ( _stream, resource->r );
+				READ( _stream, resource->g );
+				READ( _stream, resource->b );
+				READ( _stream, resource->a );
 
-				aeMovieMesh * it_mesh = resource->meshes;
-				aeMovieMesh * it_mesh_end = resource->meshes + mesh_count;
-				for( ; it_mesh != it_mesh_end; ++it_mesh )
+				resource->immutable = READB( _stream );
+
+				if( resource->immutable == AE_TRUE )
 				{
-					READ_MESH( _movieData->instance, _stream, it_mesh );
+					READ_MESH( _movieData->instance, _stream, &resource->immutable_mesh );
 				}
-			}
+				else
+				{
+					uint32_t mesh_count = READZ( _stream );
 
-			*it_resource = (aeMovieResource *)resource;
+					resource->meshes = NEWN( _movieData->instance, aeMovieMesh, mesh_count );
 
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
+					aeMovieMesh * it_mesh = resource->meshes;
+					aeMovieMesh * it_mesh_end = resource->meshes + mesh_count;
+					for( ; it_mesh != it_mesh_end; ++it_mesh )
+					{
+						READ_MESH( _movieData->instance, _stream, it_mesh );
+					}
+				}
+
+				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
 		case AE_MOVIE_RESOURCE_SOLID:
-		{
-			aeMovieResourceSolid * resource = NEW( _movieData->instance, aeMovieResourceSolid );
-
-			READ( _stream, resource->width );
-			READ( _stream, resource->height );
-			READ( _stream, resource->r );
-			READ( _stream, resource->g );
-			READ( _stream, resource->b );
-
-			*it_resource = (aeMovieResource *)resource;
-
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
-		case AE_MOVIE_RESOURCE_VIDEO:
-		{
-			aeMovieResourceVideo * resource = NEW( _movieData->instance, aeMovieResourceVideo );
-
-			READ_STRING( _movieData->instance, _stream, resource->path );
-
-			READ( _stream, resource->width );
-			READ( _stream, resource->height );
-			READ( _stream, resource->alpha );
-			READ( _stream, resource->frameRate );
-			READ( _stream, resource->duration );
-
-			*it_resource = (aeMovieResource *)resource;
-
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
-		case AE_MOVIE_RESOURCE_SOUND:
-		{
-			aeMovieResourceSound * resource = NEW( _movieData->instance, aeMovieResourceSound );
-
-			READ_STRING( _movieData->instance, _stream, resource->path );
-
-			READ( _stream, resource->duration );
-
-			*it_resource = (aeMovieResource *)resource;
-
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
-		case AE_MOVIE_RESOURCE_IMAGE:
-		{
-			aeMovieResourceImage * resource = NEW( _movieData->instance, aeMovieResourceImage );
-
-			READ_STRING( _movieData->instance, _stream, resource->path );
-
-			READ( _stream, resource->premultiplied );
-
-			READ( _stream, resource->base_width );
-			READ( _stream, resource->base_height );
-			READ( _stream, resource->trim_width );
-			READ( _stream, resource->trim_height );
-			READ( _stream, resource->offset_x );
-			READ( _stream, resource->offset_y );
-
-			*it_resource = (aeMovieResource *)resource;
-
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
-		case AE_MOVIE_RESOURCE_SEQUENCE:
-		{
-			aeMovieResourceSequence * resource = NEW( _movieData->instance, aeMovieResourceSequence );
-
-			READ( _stream, resource->frameDurationInv );
-
-			uint32_t image_count = READZ( _stream );
-
-			resource->image_count = image_count;
-			resource->images = NEWN( _movieData->instance, aeMovieResourceImage *, image_count );
-
-			aeMovieResourceImage ** it_image = resource->images;
-			aeMovieResourceImage ** it_image_end = resource->images + image_count;
-			for( ; it_image != it_image_end; ++it_image )
 			{
-				uint32_t resource_id = READZ( _stream );
+				aeMovieResourceSolid * resource = NEW( _movieData->instance, aeMovieResourceSolid );
 
-				*it_image = (aeMovieResourceImage *)_movieData->resources[resource_id];
-			}
+				READ( _stream, resource->width );
+				READ( _stream, resource->height );
+				READ( _stream, resource->r );
+				READ( _stream, resource->g );
+				READ( _stream, resource->b );
 
-			resource->data = AE_NULL;
+				*it_resource = (aeMovieResource *)resource;
 
-			*it_resource = (aeMovieResource *)resource;
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
+		case AE_MOVIE_RESOURCE_VIDEO:
+			{
+				aeMovieResourceVideo * resource = NEW( _movieData->instance, aeMovieResourceVideo );
 
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
+				READ_STRING( _movieData->instance, _stream, resource->path );
+
+				READ( _stream, resource->width );
+				READ( _stream, resource->height );
+				READ( _stream, resource->alpha );
+				READ( _stream, resource->frameRate );
+				READ( _stream, resource->duration );
+
+				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
+		case AE_MOVIE_RESOURCE_SOUND:
+			{
+				aeMovieResourceSound * resource = NEW( _movieData->instance, aeMovieResourceSound );
+
+				READ_STRING( _movieData->instance, _stream, resource->path );
+
+				READ( _stream, resource->duration );
+
+				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
+		case AE_MOVIE_RESOURCE_IMAGE:
+			{
+				aeMovieResourceImage * resource = NEW( _movieData->instance, aeMovieResourceImage );
+
+				READ_STRING( _movieData->instance, _stream, resource->path );
+
+				READ( _stream, resource->premultiplied );
+
+				READ( _stream, resource->base_width );
+				READ( _stream, resource->base_height );
+				READ( _stream, resource->trim_width );
+				READ( _stream, resource->trim_height );
+				READ( _stream, resource->offset_x );
+				READ( _stream, resource->offset_y );
+
+				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
+		case AE_MOVIE_RESOURCE_SEQUENCE:
+			{
+				aeMovieResourceSequence * resource = NEW( _movieData->instance, aeMovieResourceSequence );
+
+				READ( _stream, resource->frameDurationInv );
+
+				uint32_t image_count = READZ( _stream );
+
+				resource->image_count = image_count;
+				resource->images = NEWN( _movieData->instance, aeMovieResourceImage *, image_count );
+
+				aeMovieResourceImage ** it_image = resource->images;
+				aeMovieResourceImage ** it_image_end = resource->images + image_count;
+				for( ; it_image != it_image_end; ++it_image )
+				{
+					uint32_t resource_id = READZ( _stream );
+
+					*it_image = (aeMovieResourceImage *)_movieData->resources[resource_id];
+				}
+
+				resource->data = AE_NULL;
+
+				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
 		case AE_MOVIE_RESOURCE_PARTICLE:
-		{
-			aeMovieResourceParticle * resource = NEW( _movieData->instance, aeMovieResourceParticle );
+			{
+				aeMovieResourceParticle * resource = NEW( _movieData->instance, aeMovieResourceParticle );
 
-			READ_STRING( _movieData->instance, _stream, resource->path );
+				READ_STRING( _movieData->instance, _stream, resource->path );
 
-			*it_resource = (aeMovieResource *)resource;
+				*it_resource = (aeMovieResource *)resource;
 
-			resource->type = type;
-			resource->data = (*_provider)(*it_resource, _data);
-		}break;
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
+		case AE_MOVIE_RESOURCE_MESH:
+			{
+				aeMovieResourceMesh * resource = NEW( _movieData->instance, aeMovieResourceMesh );
+
+				READ_STRING( _movieData->instance, _stream, resource->path );
+
+				READ( _stream, resource->premultiplied );
+
+				READ( _stream, resource->width );
+				READ( _stream, resource->height );
+
+				READ_MESH( _movieData->instance, _stream, &resource->mesh );
+
+				*it_resource = (aeMovieResource *)resource;
+
+				resource->type = type;
+				resource->data = (*_provider)(*it_resource, _data);
+			}break;
 		default:
-		{
-			return AE_MOVIE_FAILED;
-		}break;
+			{
+				return AE_MOVIE_FAILED;
+			}break;
 		}
 	}
 

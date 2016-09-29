@@ -1301,31 +1301,62 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 		}break;
 	case AE_MOVIE_LAYER_TYPE_IMAGE:
 		{
-			aeMovieResourceImage * resource_image = (aeMovieResourceImage *)resource;
-
-			if( layer->mesh != AE_NULL )
+			if( resource->type == AE_MOVIE_RESOURCE_IMAGE )
 			{
-				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+				aeMovieResourceImage * resource_image = (aeMovieResourceImage *)resource;
+
+				if( layer->mesh != AE_NULL )
+				{
+					__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+				}
+				else if( layer->bezier_warp != AE_NULL )
+				{
+					__make_layer_bezier_warp_vertices( instance, layer->bezier_warp, frame, t_frame, _node->matrix, _vertices );
+				}
+				else
+				{
+					float offset_x = resource_image->offset_x;
+					float offset_y = resource_image->offset_y;
+
+					float width = resource_image->trim_width;
+					float height = resource_image->trim_height;
+
+					__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
+				}
+
+				_vertices->r = _node->r;
+				_vertices->g = _node->g;
+				_vertices->b = _node->b;
+				_vertices->a = _node->opacity;
 			}
-			else if( layer->bezier_warp != AE_NULL )
+			else if( resource->type == AE_MOVIE_RESOURCE_MESH )
 			{
-				__make_layer_bezier_warp_vertices( instance, layer->bezier_warp, frame, t_frame, _node->matrix, _vertices );
+				aeMovieResourceMesh * resource_mesh = (aeMovieResourceMesh *)resource;
+
+				//if( layer->mesh != AE_NULL )
+				//{
+				//	__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _vertices );
+				//}
+				//else if( layer->bezier_warp != AE_NULL )
+				//{
+				//	__make_layer_bezier_warp_vertices( instance, layer->bezier_warp, frame, t_frame, _node->matrix, _vertices );
+				//}
+				//else
+				//{
+				//	float offset_x = resource_mesh->offset_x;
+				//	float offset_y = resource_mesh->offset_y;
+
+				//	float width = resource_mesh->trim_width;
+				//	float height = resource_mesh->trim_height;
+
+				//	__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
+				//}
+
+				//_vertices->r = _node->r;
+				//_vertices->g = _node->g;
+				//_vertices->b = _node->b;
+				//_vertices->a = _node->opacity;
 			}
-			else
-			{
-				float offset_x = resource_image->offset_x;
-				float offset_y = resource_image->offset_y;
-
-				float width = resource_image->trim_width;
-				float height = resource_image->trim_height;
-
-				__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _vertices );
-			}
-
-			_vertices->r = _node->r;
-			_vertices->g = _node->g;
-			_vertices->b = _node->b;
-			_vertices->a = _node->opacity;
 		}break;
 	default:
 		{
