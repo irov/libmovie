@@ -32,6 +32,8 @@ void linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_t _
 void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, float _t );
 float linerp_c(const ae_color_t _c1, const ae_color_t _c2, float _t);
 
+float tof_c(const ae_color_t _c);
+
 float make_camera_fov( float _height, float _zoom );
 
 #	endif

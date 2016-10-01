@@ -430,3 +430,10 @@ float linerp_c(const ae_color_t _c1, const ae_color_t _c2, float _t)
 
 	return cf;
 }
+//////////////////////////////////////////////////////////////////////////
+float tof_c(const ae_color_t _c)
+{
+    float cf = table_inv_255[_c];
+
+    return cf;
+}

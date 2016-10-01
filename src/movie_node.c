@@ -62,11 +62,20 @@ static const aeMovieLayerData * __find_layer_by_index( const aeMovieCompositionD
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __compute_movie_color_r(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+static float __compute_movie_color_r(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, ae_bool_t _interpolate, float t)
 {
     if( _colorVertex->immutable_r == AE_TRUE )
     {
         return _colorVertex->immutable_color_vertex_r;
+    }
+
+    if( _interpolate == AE_FALSE )
+    {
+        ae_color_t c = _colorVertex->color_vertites_r[_frame];
+
+        float cf = tof_c(c);
+
+        return cf;
     }
 
     ae_color_t c0 = _colorVertex->color_vertites_r[_frame + 0];
@@ -77,11 +86,20 @@ static float __compute_movie_color_r(const aeMovieLayerColorVertex * _colorVerte
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __compute_movie_color_g(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+static float __compute_movie_color_g(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, ae_bool_t _interpolate, float t)
 {
     if( _colorVertex->immutable_g == AE_TRUE )
     {
         return _colorVertex->immutable_color_vertex_g;
+    }
+
+    if( _interpolate == AE_FALSE )
+    {
+        ae_color_t c = _colorVertex->color_vertites_g[_frame];
+
+        float cf = tof_c(c);
+
+        return cf;
     }
 
     ae_color_t c0 = _colorVertex->color_vertites_g[_frame + 0];
@@ -92,11 +110,20 @@ static float __compute_movie_color_g(const aeMovieLayerColorVertex * _colorVerte
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __compute_movie_color_b(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, float t)
+static float __compute_movie_color_b(const aeMovieLayerColorVertex * _colorVertex, uint32_t _frame, ae_bool_t _interpolate, float t)
 {
     if( _colorVertex->immutable_b == AE_TRUE )
     {
         return _colorVertex->immutable_color_vertex_b;
+    }
+
+    if( _interpolate == AE_FALSE )
+    {
+        ae_color_t c = _colorVertex->color_vertites_b[_frame];
+
+        float cf = tof_c(c);
+
+        return cf;
     }
 
     ae_color_t c0 = _colorVertex->color_vertites_b[_frame + 0];
@@ -122,9 +149,9 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 
     if( _node->layer->color_vertex != AE_NULL )
     {
-        local_r = __compute_movie_color_r(_node->layer->color_vertex, _frame, _t);
-        local_g = __compute_movie_color_g(_node->layer->color_vertex, _frame, _t);
-        local_b = __compute_movie_color_b(_node->layer->color_vertex, _frame, _t);
+        local_r = __compute_movie_color_r(_node->layer->color_vertex, _frame, _interpolate, _t);
+        local_g = __compute_movie_color_g(_node->layer->color_vertex, _frame, _interpolate, _t);
+        local_b = __compute_movie_color_b(_node->layer->color_vertex, _frame, _interpolate, _t);
     }
 
 	if( _node->relative == AE_NULL )
@@ -347,8 +374,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 	}
 
 	uint32_t end_index = *_iterator;
-
-	
+    	
 	const aeMovieLayerData *it_layer2 = _compositionData->layers;
 	const aeMovieLayerData *it_layer2_end = _compositionData->layers + _compositionData->layer_count;
 	for( ; it_layer2 != it_layer2_end; ++it_layer2 )
@@ -481,8 +507,7 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent, const void * _cameraData )
-{
-	
+{	
 	const aeMovieLayerData *it_layer = _compositionData->layers;
 	const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
 	for( ; it_layer != it_layer_end; ++it_layer )
@@ -721,8 +746,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_destroy_movie_composition( const aeMovieComposition * _composition )
-{
-	
+{	
 	const aeMovieNode *it_node = _composition->nodes;
 	const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -1084,19 +1108,25 @@ static void __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance
 		const aeMovieBezierWarp * bezier_warp_frame_current = _bezierWarp->bezier_warps + _frame + 0;
 		const aeMovieBezierWarp * bezier_warp_frame_next = _bezierWarp->bezier_warps + _frame + 1;
 
-		linerp_f2( bezierWarp.corners[0], bezier_warp_frame_current->corners[0], bezier_warp_frame_next->corners[0], _t );
-		linerp_f2( bezierWarp.corners[1], bezier_warp_frame_current->corners[1], bezier_warp_frame_next->corners[1], _t );
-		linerp_f2( bezierWarp.corners[2], bezier_warp_frame_current->corners[2], bezier_warp_frame_next->corners[2], _t );
-		linerp_f2( bezierWarp.corners[3], bezier_warp_frame_current->corners[3], bezier_warp_frame_next->corners[3], _t );
+        const ae_vector2_t * current_corners = bezier_warp_frame_current->corners;
+        const ae_vector2_t * next_corners = bezier_warp_frame_next->corners;
 
-		linerp_f2( bezierWarp.beziers[0], bezier_warp_frame_current->beziers[0], bezier_warp_frame_next->beziers[0], _t );
-		linerp_f2( bezierWarp.beziers[1], bezier_warp_frame_current->beziers[1], bezier_warp_frame_next->beziers[1], _t );
-		linerp_f2( bezierWarp.beziers[2], bezier_warp_frame_current->beziers[2], bezier_warp_frame_next->beziers[2], _t );
-		linerp_f2( bezierWarp.beziers[3], bezier_warp_frame_current->beziers[3], bezier_warp_frame_next->beziers[3], _t );
-		linerp_f2( bezierWarp.beziers[4], bezier_warp_frame_current->beziers[4], bezier_warp_frame_next->beziers[4], _t );
-		linerp_f2( bezierWarp.beziers[5], bezier_warp_frame_current->beziers[5], bezier_warp_frame_next->beziers[5], _t );
-		linerp_f2( bezierWarp.beziers[6], bezier_warp_frame_current->beziers[6], bezier_warp_frame_next->beziers[6], _t );
-		linerp_f2( bezierWarp.beziers[7], bezier_warp_frame_current->beziers[7], bezier_warp_frame_next->beziers[7], _t );
+		linerp_f2( bezierWarp.corners[0], current_corners[0], next_corners[0], _t );
+		linerp_f2( bezierWarp.corners[1], current_corners[1], next_corners[1], _t );
+		linerp_f2( bezierWarp.corners[2], current_corners[2], next_corners[2], _t );
+		linerp_f2( bezierWarp.corners[3], current_corners[3], next_corners[3], _t );
+
+        const ae_vector2_t * current_beziers = bezier_warp_frame_current->beziers;
+        const ae_vector2_t * next_beziers = bezier_warp_frame_next->beziers;
+
+		linerp_f2( bezierWarp.beziers[0], current_beziers[0], next_beziers[0], _t );
+		linerp_f2( bezierWarp.beziers[1], current_beziers[1], next_beziers[1], _t );
+		linerp_f2( bezierWarp.beziers[2], current_beziers[2], next_beziers[2], _t );
+		linerp_f2( bezierWarp.beziers[3], current_beziers[3], next_beziers[3], _t );
+		linerp_f2( bezierWarp.beziers[4], current_beziers[4], next_beziers[4], _t );
+		linerp_f2( bezierWarp.beziers[5], current_beziers[5], next_beziers[5], _t );
+		linerp_f2( bezierWarp.beziers[6], current_beziers[6], next_beziers[6], _t );
+		linerp_f2( bezierWarp.beziers[7], current_beziers[7], next_beziers[7], _t );
 
 		__make_bezier_warp_vertices( _instance, &bezierWarp, _matrix, _render );
 	}
