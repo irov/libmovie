@@ -75,8 +75,10 @@ static void ae_magic_read_polygon( const aeMovieInstance * _instance, const aeMo
 		return;
 	}
 
-	_polygon->points = NEWN( _instance, float, point_count * 2 );
-	READN( _stream, _polygon->points, point_count * 2 );
+    ae_vector2_t * points = NEWN( _instance, ae_vector2_t, point_count );
+	READN( _stream, points, point_count );
+
+    _polygon->points = points;
 }
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_viewport( const aeMovieStream * _stream, aeMovieViewport * _viewport )

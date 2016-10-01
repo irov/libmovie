@@ -50,6 +50,15 @@ extern "C" {
 
 	} aeMovieLayerColorVertex;
 
+    typedef struct
+    {
+        ae_bool_t immutable;
+        aeMoviePolygon immutable_polygon;
+
+        aeMoviePolygon * polygons;
+
+    } aeMovieLayerPolygon;
+
 	typedef enum aeMovieLayerTypeEnum
 	{
 		AE_MOVIE_LAYER_TYPE_ANY = 0,
@@ -91,10 +100,11 @@ extern "C" {
 
 		uint32_t frame_count;
 
-		aeMovieLayerTimeremap * timeremap;
-		aeMovieLayerMesh * mesh;
-		aeMovieLayerBezierWarp * bezier_warp;
-		aeMovieLayerColorVertex * color_vertex;
+        const aeMovieLayerTimeremap * timeremap;
+        const aeMovieLayerMesh * mesh;
+        const aeMovieLayerBezierWarp * bezier_warp;
+        const aeMovieLayerColorVertex * color_vertex;
+        const aeMovieLayerPolygon * polygon;
 
 		const aeMovieResource * resource;
 		const struct aeMovieCompositionData * sub_composition;
