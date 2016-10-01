@@ -753,6 +753,11 @@ void ae_destroy_movie_composition( const aeMovieComposition * _composition )
 	{
 		const aeMovieNode * node = it_node;
 
+		if( node->animate != AE_MOVIE_NODE_ANIMATE_STATIC && node->animate != AE_MOVIE_NODE_ANIMATE_END )
+		{
+			(*_composition->providers.track_matte_update)(node->element_data, node->layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_END, 0.f, AE_NULL, node->track_matte_data, _composition->provider_data);			
+		}
+
 		(*_composition->providers.node_destroyer)(node->element_data, node->layer->type, _composition->provider_data);
 	}
 
@@ -861,6 +866,21 @@ void ae_stop_movie_composition( aeMovieComposition * _composition )
 	if( _composition->play == AE_FALSE )
 	{
 		return;
+	}
+
+	aeMovieNode *it_node = _composition->nodes;
+	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
+	for( ; it_node != it_node_end; ++it_node )
+	{
+		aeMovieNode * node = it_node;
+
+		if( node->animate != AE_MOVIE_NODE_ANIMATE_STATIC && node->animate != AE_MOVIE_NODE_ANIMATE_END )
+		{
+			(*_composition->providers.track_matte_update)(node->element_data, node->layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_END, 0.f, AE_NULL, node->track_matte_data, _composition->provider_data);
+
+			node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;
+			node->track_matte_data = AE_NULL;
+		}
 	}
 
 	_composition->play = AE_FALSE;
