@@ -8,7 +8,7 @@
 #	define AE_MOVIE_MAX_COMPOSITION_NAME 128
 #	endif
 //////////////////////////////////////////////////////////////////////////
-static const uint32_t ae_movie_version = 5;
+static const uint32_t ae_movie_version = 6;
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data(const aeMovieInstance * _instance)
 {
@@ -703,10 +703,23 @@ aeMovieResult ae_load_movie_data(aeMovieData * _movieData, const aeMovieStream *
 
                 READ(_stream, resource->base_width);
                 READ(_stream, resource->base_height);
-                READ(_stream, resource->trim_width);
-                READ(_stream, resource->trim_height);
-                READ(_stream, resource->offset_x);
-                READ(_stream, resource->offset_y);
+				
+				ae_bool_t trim = READB( _stream );
+
+				if( trim == AE_TRUE )
+				{
+					READ( _stream, resource->trim_width );
+					READ( _stream, resource->trim_height );
+					READ( _stream, resource->offset_x );
+					READ( _stream, resource->offset_y );
+				}
+				else
+				{
+					resource->trim_width = resource->base_width;
+					resource->trim_height = resource->base_height;
+					resource->offset_x = 0.f;
+					resource->offset_y = 0.f;
+				}
 
                 *it_resource = (aeMovieResource *)resource;
 
