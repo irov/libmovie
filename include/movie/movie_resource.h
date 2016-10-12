@@ -16,7 +16,6 @@ extern "C" {
 		AE_MOVIE_RESOURCE_IMAGE = 7,
 		AE_MOVIE_RESOURCE_SEQUENCE = 8,
 		AE_MOVIE_RESOURCE_PARTICLE = 9,
-		AE_MOVIE_RESOURCE_MESH = 10,
 		__AE_MOVIE_RESOURCE_END__
 	} aeMovieResourceTypeEnum;
 
@@ -82,22 +81,9 @@ extern "C" {
 		float offset_x;
 		float offset_y;
 
+		aeMovieMesh * mesh;
+
 	} aeMovieResourceImage;
-
-	typedef struct
-	{
-		AE_MOVIE_RESOURCE_BASE();
-
-		ae_string_t path;
-
-		ae_bool_t premultiplied;
-
-		float width;
-		float height;
-
-		aeMovieMesh mesh;
-
-	} aeMovieResourceMesh;
 
 	typedef struct
 	{

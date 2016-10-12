@@ -94,6 +94,11 @@ void ae_delete_movie_data(const aeMovieData * _movieData)
 
                 DELETEN(instance, resource->path);
 
+				if( resource->mesh != AE_NULL )
+				{
+					__ae_delete_mesh_t( instance, resource->mesh );
+				}
+
                 (void)resource;
 
             }break;
@@ -111,16 +116,6 @@ void ae_delete_movie_data(const aeMovieData * _movieData)
                 const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
 
                 DELETEN(instance, resource->path);
-
-                (void)resource;
-            }break;
-        case AE_MOVIE_RESOURCE_MESH:
-            {
-                const aeMovieResourceMesh * resource = (const aeMovieResourceMesh *)base_resource;
-
-                DELETEN(instance, resource->path);
-
-                __ae_delete_mesh_t(instance, &resource->mesh);
 
                 (void)resource;
             }break;
@@ -721,6 +716,19 @@ aeMovieResult ae_load_movie_data(aeMovieData * _movieData, const aeMovieStream *
 					resource->offset_y = 0.f;
 				}
 
+				ae_bool_t mesh = READB( _stream );
+
+				if( mesh == AE_TRUE )
+				{
+					resource->mesh = NEW( _movieData->instance, aeMovieMesh );
+
+					READ_MESH( _movieData->instance, _stream, resource->mesh );
+				}
+				else
+				{
+					resource->mesh = AE_NULL;
+				}
+
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
@@ -758,24 +766,6 @@ aeMovieResult ae_load_movie_data(aeMovieData * _movieData, const aeMovieStream *
                 aeMovieResourceParticle * resource = NEW(_movieData->instance, aeMovieResourceParticle);
 
                 READ_STRING(_movieData->instance, _stream, resource->path);
-
-                *it_resource = (aeMovieResource *)resource;
-
-                resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
-            }break;
-        case AE_MOVIE_RESOURCE_MESH:
-            {
-                aeMovieResourceMesh * resource = NEW(_movieData->instance, aeMovieResourceMesh);
-
-                READ_STRING(_movieData->instance, _stream, resource->path);
-
-                READ(_stream, resource->premultiplied);
-
-                READ(_stream, resource->width);
-                READ(_stream, resource->height);
-
-                READ_MESH(_movieData->instance, _stream, &resource->mesh);
 
                 *it_resource = (aeMovieResource *)resource;
 

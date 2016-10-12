@@ -1344,10 +1344,10 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 		}break;
 	case AE_MOVIE_LAYER_TYPE_IMAGE:
 		{
-			if( resource->type == AE_MOVIE_RESOURCE_IMAGE )
-			{
-				aeMovieResourceImage * resource_image = (aeMovieResourceImage *)resource;
+			aeMovieResourceImage * resource_image = (aeMovieResourceImage *)resource;
 
+			if( resource_image->mesh == AE_NULL )
+			{
 				if( layer->mesh != AE_NULL )
 				{
 					__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _render );
@@ -1366,23 +1366,16 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 
 					__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _render );
 				}
-
-				_render->r = _node->r;
-				_render->g = _node->g;
-				_render->b = _node->b;
-				_render->a = _node->opacity;
 			}
-			else if( resource->type == AE_MOVIE_RESOURCE_MESH )
+			else
 			{
-				aeMovieResourceMesh * resource_mesh = (aeMovieResourceMesh *)resource;
-
-                __make_mesh_vertices(&resource_mesh->mesh, _node->matrix, _render);
-
-                _render->r = _node->r;
-                _render->g = _node->g;
-                _render->b = _node->b;
-                _render->a = _node->opacity;
+				__make_mesh_vertices( resource_image->mesh, _node->matrix, _render );
 			}
+
+			_render->r = _node->r;
+			_render->g = _node->g;
+			_render->b = _node->b;
+			_render->a = _node->opacity;
 		}break;
 	default:
 		{
