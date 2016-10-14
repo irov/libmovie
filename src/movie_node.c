@@ -1186,7 +1186,7 @@ static uint32_t __compute_movie_node_frame( const aeMovieNode * _node, ae_bool_t
     return frame;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __compute_movie_node( const aeMovieComposition * _composition, const aeMovieNode * _node, aeMovieRenderMesh * _render )
+static void __compute_movie_node( const aeMovieComposition * _composition, const aeMovieNode * _node, aeMovieRenderMesh * _render, ae_bool_t _trackmatte )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 	const aeMovieLayerData * layer = _node->layer;
@@ -1224,7 +1224,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 	}
 
 	float t_frame = 0.f;
-    uint32_t frame = __compute_movie_node_frame(_node, interpolate, &t_frame);
+	uint32_t frame = __compute_movie_node_frame( _node, interpolate, &t_frame );
 
 	switch( layer_type )
 	{
@@ -1292,7 +1292,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 
 			_render->resource_type = resource_image->type;
 			_render->resource_data = resource_image->data;
-
+			
 			if( layer->mesh != AE_NULL )
 			{
 				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _render );
@@ -1300,6 +1300,10 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 			else if( layer->bezier_warp != AE_NULL )
 			{
 				__make_layer_bezier_warp_vertices( instance, layer->bezier_warp, frame, t_frame, _node->matrix, _render );
+			}
+			else if( resource_image->mesh != AE_NULL && _trackmatte == AE_FALSE )
+			{
+				__make_mesh_vertices( resource_image->mesh, _node->matrix, _render );
 			}
 			else
 			{
@@ -1346,30 +1350,27 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 		{
 			aeMovieResourceImage * resource_image = (aeMovieResourceImage *)resource;
 
-			if( resource_image->mesh == AE_NULL )
+			if( layer->mesh != AE_NULL )
 			{
-				if( layer->mesh != AE_NULL )
-				{
-					__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _render );
-				}
-				else if( layer->bezier_warp != AE_NULL )
-				{
-					__make_layer_bezier_warp_vertices( instance, layer->bezier_warp, frame, t_frame, _node->matrix, _render );
-				}
-				else
-				{
-					float offset_x = resource_image->offset_x;
-					float offset_y = resource_image->offset_y;
-
-					float width = resource_image->trim_width;
-					float height = resource_image->trim_height;
-
-					__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _render );
-				}
+				__make_layer_mesh_vertices( layer->mesh, frame, _node->matrix, _render );
+			}
+			else if( layer->bezier_warp != AE_NULL )
+			{
+				__make_layer_bezier_warp_vertices( instance, layer->bezier_warp, frame, t_frame, _node->matrix, _render );
+			}
+			else if( resource_image->mesh != AE_NULL && _trackmatte == AE_FALSE )
+			{
+				__make_mesh_vertices( resource_image->mesh, _node->matrix, _render );
 			}
 			else
 			{
-				__make_mesh_vertices( resource_image->mesh, _node->matrix, _render );
+				float offset_x = resource_image->offset_x;
+				float offset_y = resource_image->offset_y;
+
+				float width = resource_image->trim_width;
+				float height = resource_image->trim_height;
+
+				__make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _render );
 			}
 
 			_render->r = _node->r;
@@ -1406,7 +1407,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 	}
 
 	aeMovieRenderMesh vertices;
-	__compute_movie_node( _composition, _node, &vertices );
+	__compute_movie_node( _composition, _node, &vertices, AE_TRUE );
 
 	if( _begin == AE_TRUE )
 	{
@@ -1977,7 +1978,7 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 
 		*_iterator = iterator + 1;
 
-		__compute_movie_node( _composition, node, _render);
+		__compute_movie_node( _composition, node, _render, AE_FALSE );
 
 		return AE_TRUE;
 	}
