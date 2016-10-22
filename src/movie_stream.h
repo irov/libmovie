@@ -93,7 +93,7 @@ static void ae_magic_read_mesh( const aeMovieInstance * _instance, const aeMovie
 {
 	uint16_t vertex_count = READZ( _stream );
 
-	if( vertex_count == 0 )
+	if( vertex_count == 0 || vertex_count > AE_MOVIE_MAX_VERTICES )
 	{
 		_mesh->vertex_count = 0;
 		_mesh->indices_count = 0;

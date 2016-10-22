@@ -134,11 +134,47 @@ static float __compute_movie_color_b(const aeMovieLayerColorVertex * _colorVerte
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __update_movie_composition_node_matrix( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, uint32_t _frame, ae_bool_t _interpolate, float _t )
+#	ifdef AE_MOVIE_DEBUG
+static ae_bool_t __test_error_composition_layer_frame( const aeMovieInstance * _instance, const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layerData, uint32_t _frameId, const char * _msg )
+{
+	if( _frameId >= _layerData->frame_count )
+	{
+		_instance->logerror( _instance->instance_data
+			, AE_ERROR_INTERNAL
+			, _compositionData->name
+			, _layerData->name
+			, _msg
+			);
+
+		return AE_FALSE;
+	}
+
+	return AE_TRUE;
+}
+#	endif
+//////////////////////////////////////////////////////////////////////////
+static void __update_movie_composition_node_matrix( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, uint32_t _frameId, ae_bool_t _interpolate, float _t )
 {
 	if( _node->matrix_revision == _revision )
 	{
 		return;
+	}
+
+#	ifdef AE_MOVIE_DEBUG
+	if( __test_error_composition_layer_frame( _composition->movie_data->instance
+		, _composition->composition_data
+		, _node->layer
+		, _frameId
+		, "__update_movie_composition_node_matrix frame id out count"
+		) == AE_FALSE )
+	{
+		return;
+	}
+#	endif
+
+	if( _frameId >= _node->layer->frame_count )
+	{
+
 	}
 
 	_node->matrix_revision = _revision;
@@ -149,14 +185,14 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 
     if( _node->layer->color_vertex != AE_NULL )
     {
-        local_r = __compute_movie_color_r(_node->layer->color_vertex, _frame, _interpolate, _t);
-        local_g = __compute_movie_color_g(_node->layer->color_vertex, _frame, _interpolate, _t);
-        local_b = __compute_movie_color_b(_node->layer->color_vertex, _frame, _interpolate, _t);
+        local_r = __compute_movie_color_r(_node->layer->color_vertex, _frameId, _interpolate, _t);
+        local_g = __compute_movie_color_g(_node->layer->color_vertex, _frameId, _interpolate, _t);
+        local_b = __compute_movie_color_b(_node->layer->color_vertex, _frameId, _interpolate, _t);
     }
 
 	if( _node->relative == AE_NULL )
 	{
-		float local_opacity = make_movie_layer_transformation( _node->matrix, _node->layer->transformation, _frame, _interpolate, _t );
+		float local_opacity = make_movie_layer_transformation( _node->matrix, _node->layer->transformation, _frameId, _interpolate, _t );
 
 		if( _node->layer->sub_composition != AE_NULL )
 		{
@@ -196,6 +232,11 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 
 		float frame_time = current_time / node_relative->stretch * frameDurationInv;
 
+		if( frame_time < 0.f )
+		{
+			frame_time = 0.f;
+		}
+
 		uint32_t frame_relative = (uint32_t)frame_time;
 
 		float t_relative = frame_time - (float)frame_relative;
@@ -204,7 +245,7 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 	}
 
 	ae_matrix4_t local_matrix;
-	float local_opacity = make_movie_layer_transformation( local_matrix, _node->layer->transformation, _frame, _interpolate, _t );
+	float local_opacity = make_movie_layer_transformation( local_matrix, _node->layer->transformation, _frameId, _interpolate, _t );
 
 	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
@@ -1444,25 +1485,6 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-#	ifdef AE_MOVIE_DEBUG
-static ae_bool_t __test_error_composition_layer_frame( const aeMovieInstance * _instance, const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layerData, uint32_t _frameId )
-{
-	if( _frameId >= _layerData->frame_count )
-	{
-		_instance->logerror( _instance->instance_data
-			, AE_ERROR_INTERNAL
-			, _compositionData->name
-			, _layerData->name
-			, "frame id out count"
-			);
-
-		return AE_FALSE;
-	}
-
-	return AE_TRUE;
-}
-#	endif
-//////////////////////////////////////////////////////////////////////////
 static void __update_node( aeMovieComposition * _composition, aeMovieNode * _node, uint32_t _revision, float _time, uint32_t _frameId, float _t, ae_bool_t _loop, ae_bool_t _interpolate, ae_bool_t _begin )
 {
 #	ifdef AE_MOVIE_DEBUG
@@ -1470,6 +1492,7 @@ static void __update_node( aeMovieComposition * _composition, aeMovieNode * _nod
 		, _composition->composition_data
 		, _node->layer
 		, _frameId
+		, "__update_node frame id out count"
 		) == AE_FALSE )
 	{
 		return;
