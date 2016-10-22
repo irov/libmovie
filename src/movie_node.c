@@ -439,13 +439,14 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			float parent_out = _parent->out_time;
 
 			node->out_time = min_f_f( layer_out, parent_out );
-
-			if( node->out_time <= 0.f )
-			{
-				node->out_time = 0.f;
-				node->ignore = AE_TRUE;
-			}
-		}
+            
+            if( node->out_time <= 0.f || node->out_time < node->in_time )
+            {
+                node->in_time = 0.f;
+                node->out_time = 0.f;
+                node->ignore = AE_TRUE;
+            }
+        }
 
 		node->stretch = _stretch;
 
