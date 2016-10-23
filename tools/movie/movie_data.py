@@ -66,4 +66,17 @@ class aeMovieData(object):
 
         print "successful"
         pass
+
+
+    def get_images(self):
+        images = []
+        for resource in self.resources:
+            type = resource.type
+            if type == AE_MOVIE_RESOURCE_IMAGE:
+                images.append(resource.path)
+                pass
+            pass
+
+        return images
+        pass
     pass

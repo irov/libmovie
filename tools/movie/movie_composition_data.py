@@ -65,11 +65,4 @@ class aeMovieCompositionData(object):
                 pass
             pass
         pass
-
-    def get_images(self):
-        for layer in self.layers:
-            type = layer.type
-            if type == AE_MOVIE_LAYER_TYPE_MOVIE:
-                pass
-        pass
     pass
