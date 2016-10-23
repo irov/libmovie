@@ -305,14 +305,4 @@ class aeMovieData(object):
 
         print "successful"
         pass
-
-m = aeMovieData()
-
-f = open("ui/ui.aem", "rb")
-
-with f:
-    if m.load(f) is False:
-        print "failed"
-        pass
     pass
-
