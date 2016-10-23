@@ -9,3 +9,7 @@ with f:
         print "failed"
         pass
     pass
+
+for composition in m.compositions:
+    print composition.name
+    pass
