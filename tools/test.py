@@ -13,3 +13,7 @@ with f:
 for composition in m.compositions:
     print composition.name
     pass
+
+for image in m.get_images():
+    print image
+    pass
