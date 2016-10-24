@@ -29,6 +29,9 @@ class aeMovieLayerData(object):
         self.in_time = 0.0
         self.out_time = 0.0
 
+        self.resource = None
+        self.sub_composition = None
+
         self.blend_mode = 0
         self.threeD = False
         self.params = 0
@@ -153,9 +156,22 @@ class aeMovieLayerData(object):
 
         if is_resource_or_composition is True:
             resource_index = read_size(f)
+
+            if resource_index == 0:
+                self.resource = None
+                pass
+            else:
+                self.resource = resource_index - 1
+                pass
+
+            self.sub_composition = None
             pass
         else:
             composition_index = read_size(f)
+
+            self.sub_composition = composition_index
+
+            self.resource = None
             pass
 
         self.parent_index = read_size(f)
@@ -186,5 +202,7 @@ class aeMovieLayerData(object):
                 return False
                 pass
             pass
+
+        return True
         pass
     pass

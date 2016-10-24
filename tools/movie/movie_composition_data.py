@@ -4,6 +4,7 @@ from movie_layer_data import *
 class aeMovieCompositionData(object):
     def __init__(self):
         self.name = ""
+        self.master = False
         self.width = 0.0
         self.height = 0.0
         self.duration = 0.0
@@ -19,6 +20,7 @@ class aeMovieCompositionData(object):
 
     def load(self, f):
         self.name = read_string(f)
+        self.master = read_bool(f)
 
         self.width = read_float(f)
         self.height = read_float(f)
@@ -64,5 +66,7 @@ class aeMovieCompositionData(object):
                 return False
                 pass
             pass
+
+        return True
         pass
     pass

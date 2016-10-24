@@ -52,7 +52,7 @@ int main()
 
 	aeMovieData * movieData = ae_create_movie_data( instance );
 
-	FILE * f = fopen( "02_Sad.aem", "rb" );
+	FILE * f = fopen( "ui.aem", "rb" );
 
 	if( f == NULL )
 	{
@@ -71,6 +71,11 @@ int main()
 	fclose( f );
 
 	const aeMovieCompositionData * compositionData = ae_get_movie_composition_data( movieData, "Tuman" );
+
+    if( compositionData == AE_NULL )
+    {
+        return 0;
+    }
 	
 	aeMovieCompositionProviders providers;
 

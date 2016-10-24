@@ -17,19 +17,13 @@ class aeMovieData(object):
 
         version = read_uint32_t(f)
 
-        print version, AE_MOVIE_VERSION
-
         if version != AE_MOVIE_VERSION:
             return False
             pass
 
         self.movie_name = read_string(f)
 
-        print "movie_name", self.movie_name
-
         resource_count = read_size(f)
-
-        print "resource_count", resource_count
 
         resource_factory = {}
         resource_factory[AE_MOVIE_RESOURCE_SOLID] = aeMovieResourceSolid
@@ -64,19 +58,77 @@ class aeMovieData(object):
                 pass
             pass
 
-        print "successful"
+        return True
         pass
 
 
     def get_images(self):
-        images = []
-        for resource in self.resources:
-            type = resource.type
-            if type == AE_MOVIE_RESOURCE_IMAGE:
-                images.append(resource.path)
+        images = [resource.path for resource in self.resources if resource.type == AE_MOVIE_RESOURCE_IMAGE]
+
+        return images
+        pass
+
+    def get_composition(self, compositionName):
+        for composition in self.compositions:
+            if composition.name == compositionName:
+                return composition
                 pass
             pass
 
+        return None
+        pass
+
+    def __collect_composition_images(self, composition, images):
+        for layer in composition.layers:
+            if layer.type == AE_MOVIE_LAYER_TYPE_SEQUENCE:
+                resource = self.resources[layer.resource]
+                for resource_image_index in resource.images:
+                    resource_image = self.resources[resource_image_index]
+
+                    path = resource_image.path
+
+                    if path in images:
+                        continue
+                        pass
+
+                    images.append(path)
+                    pass
+                pass
+            elif layer.type == AE_MOVIE_LAYER_TYPE_IMAGE:
+                resource_image = self.resources[layer.resource]
+
+                path = resource_image.path
+
+                if path in images:
+                    continue
+                    pass
+
+                images.append(path)
+                pass
+            elif layer.type == AE_MOVIE_LAYER_TYPE_MOVIE:
+                sub_composition = self.compositions[layer.sub_composition]
+
+                self.__collect_composition_images(sub_composition, images)
+            pass
+        pass
+
+    def get_composition_images(self, compositionName):
+        composition = self.get_composition(compositionName)
+
+        if composition is None:
+            return None
+            pass
+
+        images = []
+
+        self.__collect_composition_images(composition, images)
+
         return images
+        pass
+
+    def get_master_compositions(self):
+        compositions = [composition.name for composition in self.compositions if composition.master is True]
+
+        return compositions
         pass
     pass

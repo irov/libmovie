@@ -367,8 +367,7 @@ static aeMovieResult __load_movie_data_layer(const aeMovieData * _movieData, con
         }
     }
 
-    uint8_t is_resource_or_composition;
-    READ(_stream, is_resource_or_composition);
+    ae_bool_t is_resource_or_composition = READB( _stream);
 
     if( is_resource_or_composition == AE_TRUE )
     {
@@ -505,6 +504,8 @@ static aeMovieResult __load_movie_data_composition(const aeMovieData * _movieDat
 {
     READ_STRING(_movieData->instance, _stream, _compositionData->name);
 
+    READ( _stream, _compositionData->master );
+
     READ(_stream, _compositionData->width);
     READ(_stream, _compositionData->height);
 
@@ -531,25 +532,25 @@ static aeMovieResult __load_movie_data_composition(const aeMovieData * _movieDat
             }break;
         case 1:
             {
-                READN(_stream, _compositionData->loop_segment, 2);
+                READ(_stream, _compositionData->loop_segment);
 
                 _compositionData->flags |= AE_MOVIE_COMPOSITION_LOOP_SEGMENT;
             }break;
         case 2:
             {
-                READN(_stream, _compositionData->anchor_point, 3);
+                READ(_stream, _compositionData->anchor_point);
 
                 _compositionData->flags |= AE_MOVIE_COMPOSITION_ANCHOR_POINT;
             }break;
         case 3:
             {
-                READN(_stream, _compositionData->offset_point, 3);
+                READ(_stream, _compositionData->offset_point);
 
                 _compositionData->flags |= AE_MOVIE_COMPOSITION_OFFSET_POINT;
             }break;
         case 4:
             {
-                READN(_stream, _compositionData->bounds, 4);
+                READ(_stream, _compositionData->bounds);
 
                 _compositionData->flags |= AE_MOVIE_COMPOSITION_BOUNDS;
             }break;
@@ -687,9 +688,9 @@ aeMovieResult ae_load_movie_data(aeMovieData * _movieData, const aeMovieStream *
                 READ(_stream, resource->base_width);
                 READ(_stream, resource->base_height);
 				
-				ae_bool_t trim = READB( _stream );
+				ae_bool_t is_trim = READB( _stream );
 
-				if( trim == AE_TRUE )
+				if( is_trim == AE_TRUE )
 				{
 					READ( _stream, resource->trim_width );
 					READ( _stream, resource->trim_height );
@@ -704,9 +705,9 @@ aeMovieResult ae_load_movie_data(aeMovieData * _movieData, const aeMovieStream *
 					resource->offset_y = 0.f;
 				}
 
-				ae_bool_t mesh = READB( _stream );
+				ae_bool_t is_mesh = READB( _stream );
 
-				if( mesh == AE_TRUE )
+				if( is_mesh == AE_TRUE )
 				{
 					resource->mesh = NEW( _movieData->instance, aeMovieMesh );
 

@@ -140,6 +140,8 @@ extern "C" {
 	{
 		ae_string_t name;
 
+        ae_bool_t master;
+
 		float width;
 		float height;
 				
