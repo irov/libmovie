@@ -59,7 +59,7 @@ class aeMovieCompositionData(object):
 
         layer_count = read_size(f)
 
-        self.layers = [aeMovieLayerData() for index in xrange(layer_count)]
+        self.layers = map(apply, [aeMovieLayerData] * layer_count)
 
         for layer in self.layers:
             if layer.load(f) is False:

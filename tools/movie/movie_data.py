@@ -50,7 +50,7 @@ class aeMovieData(object):
 
         composition_count = read_size(f)
 
-        self.compositions = [aeMovieCompositionData() for index in xrange(composition_count)]
+        self.compositions = map(apply, [aeMovieCompositionData] * composition_count)
 
         for composition in self.compositions:
             if composition.load(f) is False:
