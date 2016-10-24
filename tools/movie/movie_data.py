@@ -109,6 +109,12 @@ class aeMovieData(object):
                 sub_composition = self.compositions[layer.sub_composition]
 
                 self.__collect_composition_images(sub_composition, images)
+                pass
+            elif layer.type == AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                sub_composition = self.compositions[layer.sub_composition]
+
+                self.__collect_composition_images(sub_composition, images)
+                pass
             pass
         pass
 
