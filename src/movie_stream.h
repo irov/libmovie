@@ -8,8 +8,8 @@
 
 #	include <stddef.h>
 //////////////////////////////////////////////////////////////////////////
-#	define READ(stream, value) ((*stream->read)(stream->data, &(value), sizeof(value)))
-#	define READN(stream, ptr, n) ((*stream->read)(stream->data, ptr, sizeof(*ptr) * n))
+#	define READ(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#	define READN(stream, ptr, n) ae_magic_read_value(stream, ptr, sizeof(*ptr) * n)
 #	define READB(stream) ae_magic_read_bool(stream)
 #	define READZ(stream) ae_magic_read_size(stream)
 //////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,73 @@
 #	define READ_VIEWPORT(stream, ptr) (ae_magic_read_viewport(stream, ptr))
 #	define READ_MESH(instance, stream, ptr) (ae_magic_read_mesh(instance, stream, ptr))
 //////////////////////////////////////////////////////////////////////////
-static ae_bool_t ae_magic_read_bool( const aeMovieStream * _stream )
+static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _size )
+{
+	size_t carriage = _stream->carriage;
+	size_t capacity = _stream->capacity;
+	size_t reading = _stream->reading;
+
+	if( _size > 4096 )
+	{
+		size_t tail = capacity - carriage;
+
+		if( tail != 0 )
+		{
+			const void * buff_carriage = _stream->buff + carriage;
+			_stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
+		}
+
+		size_t correct_read = _size - tail;
+		void * correct_ptr = (uint8_t *)_ptr + tail;
+
+		size_t bytesRead = _stream->memory_read( _stream->data, correct_ptr, correct_read );
+
+		_stream->carriage = 0;
+		_stream->capacity = 0;
+
+		_stream->reading += bytesRead;
+
+		return;
+	}
+
+	if( carriage + _size <= capacity )
+	{
+		const void * buff_carriage = _stream->buff + carriage;
+
+		_stream->memory_copy( _stream->data, buff_carriage, _ptr, _size );
+
+		_stream->carriage += _size;
+
+		return;
+	}
+
+	size_t tail = capacity - carriage;
+
+	if( tail != 0 )
+	{
+		const void * buff_carriage = _stream->buff + carriage;
+
+		_stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
+	}
+
+	size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, 4096 );
+
+	size_t readSize = _size - tail;
+
+	if( readSize > bytesRead )
+	{
+		readSize = bytesRead;
+	}
+	
+	_stream->memory_copy( _stream->data, _stream->buff, _ptr, readSize );
+
+	_stream->carriage = readSize;
+	_stream->capacity = bytesRead;
+
+	_stream->reading += 4096;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
 {
 	ae_bool_t value;
 	READ( _stream, value );
@@ -26,7 +92,7 @@ static ae_bool_t ae_magic_read_bool( const aeMovieStream * _stream )
 	return value;
 }
 //////////////////////////////////////////////////////////////////////////
-static uint32_t ae_magic_read_size( const aeMovieStream * _stream )
+static uint32_t ae_magic_read_size( aeMovieStream * _stream )
 {
 	uint8_t size255;
 	READ( _stream, size255 );
@@ -50,7 +116,7 @@ static uint32_t ae_magic_read_size( const aeMovieStream * _stream )
 	return size;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_string( const aeMovieInstance * _instance, const aeMovieStream * _stream, ae_string_t * _str )
+static void ae_magic_read_string( const aeMovieInstance * _instance, aeMovieStream * _stream, ae_string_t * _str )
 {
 	uint32_t size = READZ( _stream );
 
@@ -62,7 +128,7 @@ static void ae_magic_read_string( const aeMovieInstance * _instance, const aeMov
 	*_str = str;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_polygon( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMoviePolygon * _polygon )
+static void ae_magic_read_polygon( const aeMovieInstance * _instance, aeMovieStream * _stream, aeMoviePolygon * _polygon )
 {
 	uint32_t point_count = READZ( _stream );
 	
@@ -81,7 +147,7 @@ static void ae_magic_read_polygon( const aeMovieInstance * _instance, const aeMo
     _polygon->points = points;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_viewport( const aeMovieStream * _stream, aeMovieViewport * _viewport )
+static void ae_magic_read_viewport( aeMovieStream * _stream, aeMovieViewport * _viewport )
 {
 	READ( _stream, _viewport->begin_x );
 	READ( _stream, _viewport->begin_y );
@@ -89,7 +155,7 @@ static void ae_magic_read_viewport( const aeMovieStream * _stream, aeMovieViewpo
 	READ( _stream, _viewport->end_y );
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_mesh( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieMesh * _mesh )
+static void ae_magic_read_mesh( const aeMovieInstance * _instance, aeMovieStream * _stream, aeMovieMesh * _mesh )
 {
 	uint16_t vertex_count = READZ( _stream );
 

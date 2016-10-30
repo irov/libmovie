@@ -197,12 +197,12 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 	DELETE( instance, _movieData );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __load_movie_data_composition_camera( const aeMovieStream * _stream, aeMovieCompositionData * _compostionData )
+static void __load_movie_data_composition_camera( aeMovieStream * _stream, aeMovieCompositionData * _compostionData )
 {
 	READ( _stream, _compostionData->cameraZoom );
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, const aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
+static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
 {
 	const aeMovieInstance * instance = _movieData->instance;
 
@@ -526,7 +526,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, const aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
+static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
 {
 	READ_STRING( _movieData->instance, _stream, _compositionData->name );
 
@@ -621,8 +621,12 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult ae_load_movie_data( aeMovieData * _movieData, const aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
+aeMovieResult ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
 {
+	_stream->carriage = 0;
+	_stream->capacity = 0;
+	_stream->reading = 0;
+
 	uint8_t magic[4];
 	READN( _stream, magic, 4 );
 

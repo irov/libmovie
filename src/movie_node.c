@@ -172,11 +172,6 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 	}
 #	endif
 
-	if( _frameId >= _node->layer->frame_count )
-	{
-
-	}
-
 	_node->matrix_revision = _revision;
 
     float local_r = 1.f;

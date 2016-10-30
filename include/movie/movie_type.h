@@ -122,12 +122,21 @@ extern "C" {
         AE_MOVIE_INVALID_VERSION = -3,
 	} aeMovieResult;
 
-	typedef void( *ae_movie_stream_read_t )(void * _data, void * _buff, uint32_t _size);
+	typedef size_t( *ae_movie_stream_memory_read_t )(void * _data, void * _buff, size_t _size);
+	typedef void( *ae_movie_stream_memory_copy_t )(void * _data, const void * _src, void * _dst, size_t _size);
 
 	typedef struct
 	{
-		ae_movie_stream_read_t read;
+		ae_movie_stream_memory_read_t memory_read;
+		ae_movie_stream_memory_copy_t memory_copy;
+
 		void * data;
+
+		size_t carriage;
+		size_t capacity;
+		size_t reading;
+
+		uint8_t buff[4096];
 	} aeMovieStream;
 	
 #ifdef __cplusplus

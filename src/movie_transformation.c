@@ -4,7 +4,7 @@
 #	include "movie_math.h"
 
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * _stream, float * _values )
+static aeMovieResult __load_movie_data_layer_property_zp( aeMovieStream * _stream, float * _values )
 {
 	uint32_t count = READZ( _stream );
 
@@ -70,7 +70,7 @@ static aeMovieResult __load_movie_data_layer_property_zp( const aeMovieStream * 
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult load_movie_layer_transformation( const aeMovieInstance * _instance, const aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, uint32_t _count )
+aeMovieResult load_movie_layer_transformation( const aeMovieInstance * _instance, aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, uint32_t _count )
 {
 	uint32_t immutable_property_mask;
 	READ( _stream, immutable_property_mask );
