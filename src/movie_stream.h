@@ -24,7 +24,7 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 	size_t capacity = _stream->capacity;
 	size_t reading = _stream->reading;
 
-	if( _size > 4096 )
+	if( _size > AE_MOVIE_STREAM_BUFFER_SIZE )
 	{
 		size_t tail = capacity - carriage;
 
@@ -67,7 +67,7 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 		_stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
 	}
 
-	size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, 4096 );
+	size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, AE_MOVIE_STREAM_BUFFER_SIZE );
 
 	size_t readSize = _size - tail;
 
@@ -81,7 +81,7 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 	_stream->carriage = readSize;
 	_stream->capacity = bytesRead;
 
-	_stream->reading += 4096;
+	_stream->reading += AE_MOVIE_STREAM_BUFFER_SIZE;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )

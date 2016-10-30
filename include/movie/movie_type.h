@@ -125,6 +125,8 @@ extern "C" {
 	typedef size_t( *ae_movie_stream_memory_read_t )(void * _data, void * _buff, size_t _size);
 	typedef void( *ae_movie_stream_memory_copy_t )(void * _data, const void * _src, void * _dst, size_t _size);
 
+#	define AE_MOVIE_STREAM_BUFFER_SIZE 32768
+
 	typedef struct
 	{
 		ae_movie_stream_memory_read_t memory_read;
@@ -136,7 +138,7 @@ extern "C" {
 		size_t capacity;
 		size_t reading;
 
-		uint8_t buff[4096];
+		uint8_t buff[AE_MOVIE_STREAM_BUFFER_SIZE];
 	} aeMovieStream;
 	
 #ifdef __cplusplus
