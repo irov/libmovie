@@ -122,13 +122,13 @@ void delete_movie_layer_transformation( const aeMovieInstance * _instance, const
 	DELETEN( _instance, _transformation->property_position_x );
 	DELETEN( _instance, _transformation->property_position_y );
 	DELETEN( _instance, _transformation->property_position_z );
-	DELETEN( _instance, _transformation->property_scale_x );
-	DELETEN( _instance, _transformation->property_scale_y );
-	DELETEN( _instance, _transformation->property_scale_z );
 	DELETEN( _instance, _transformation->property_quaternion_x );
 	DELETEN( _instance, _transformation->property_quaternion_y );
 	DELETEN( _instance, _transformation->property_quaternion_z );
 	DELETEN( _instance, _transformation->property_quaternion_w );
+	DELETEN( _instance, _transformation->property_scale_x );
+	DELETEN( _instance, _transformation->property_scale_y );
+	DELETEN( _instance, _transformation->property_scale_z );
 	DELETEN( _instance, _transformation->property_opacity );
 }
 //////////////////////////////////////////////////////////////////////////
