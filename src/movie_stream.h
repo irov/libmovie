@@ -18,13 +18,14 @@
 #	define READ_VIEWPORT(stream, ptr) (ae_magic_read_viewport(stream, ptr))
 #	define READ_MESH(instance, stream, ptr) (ae_magic_read_mesh(instance, stream, ptr))
 //////////////////////////////////////////////////////////////////////////
+#	ifdef AE_MOVIE_STREAM_CACHE
 static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _size )
 {
 	size_t carriage = _stream->carriage;
 	size_t capacity = _stream->capacity;
 	size_t reading = _stream->reading;
 
-	if( _size > AE_MOVIE_STREAM_BUFFER_SIZE )
+	if( _size > AE_MOVIE_STREAM_CACHE_BUFFER_SIZE )
 	{
 		size_t tail = capacity - carriage;
 
@@ -67,7 +68,7 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 		_stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
 	}
 
-	size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, AE_MOVIE_STREAM_BUFFER_SIZE );
+	size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, AE_MOVIE_STREAM_CACHE_BUFFER_SIZE );
 
 	size_t readSize = _size - tail;
 
@@ -81,8 +82,16 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 	_stream->carriage = readSize;
 	_stream->capacity = bytesRead;
 
-	_stream->reading += AE_MOVIE_STREAM_BUFFER_SIZE;
+	_stream->reading += AE_MOVIE_STREAM_CACHE_BUFFER_SIZE;
 }
+#else
+static void ae_magic_read_value(aeMovieStream * _stream, void * _ptr, size_t _size)
+{
+	size_t bytesRead = _stream->memory_read(_stream->data, _ptr, _size);
+	
+	(void)bytesRead;
+}
+#endif
 //////////////////////////////////////////////////////////////////////////
 static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
 {

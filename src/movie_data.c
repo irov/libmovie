@@ -621,11 +621,18 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
+static void __initialize_stream( aeMovieStream * _stream )
 {
+#	ifdef AE_MOVIE_STREAM_CACHE
 	_stream->carriage = 0;
 	_stream->capacity = 0;
 	_stream->reading = 0;
+#	endif
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieResult ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
+{
+	__initialize_stream( _stream );
 
 	uint8_t magic[4];
 	READN( _stream, magic, 4 );
