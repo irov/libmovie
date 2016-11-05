@@ -2,6 +2,7 @@
 #define MOVIE_TYPE_H_
 
 #	include <stdint.h>
+#	include <stddef.h>
 
 typedef uint8_t ae_bool_t;
 typedef char ae_char_t;
