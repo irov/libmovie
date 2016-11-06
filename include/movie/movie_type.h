@@ -42,7 +42,7 @@ typedef struct
 	uint32_t indices_count;
 	const ae_vector2_t * positions;
 	const ae_vector2_t * uvs;
-	uint16_t * indices;
+	const uint16_t * indices;
 
 } aeMovieMesh;
 

@@ -153,7 +153,7 @@ static void ae_magic_read_polygon( const aeMovieInstance * _instance, aeMovieStr
     ae_vector2_t * points = NEWN( _instance, ae_vector2_t, point_count );
 	READN( _stream, points, point_count );
 
-    _polygon->points = points;
+	_polygon->points = (const ae_vector2_t *)points;
 }
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_viewport( aeMovieStream * _stream, aeMovieViewport * _viewport )
@@ -187,11 +187,11 @@ static void ae_magic_read_mesh( const aeMovieInstance * _instance, aeMovieStream
 
     ae_vector2_t * positions = NEWN( _instance, ae_vector2_t, vertex_count );
 	READN( _stream, positions, vertex_count );
-    _mesh->positions = positions;
+	_mesh->positions = (const ae_vector2_t *)positions;
 
     ae_vector2_t * uvs = NEWN(_instance, ae_vector2_t, vertex_count);
     READN(_stream, uvs, vertex_count);
-    _mesh->uvs = uvs;
+	_mesh->uvs = (const ae_vector2_t *)uvs;
 	
     uint16_t * indices = NEWN( _instance, uint16_t, indices_count );
 	READN( _stream, indices, indices_count );

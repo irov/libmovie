@@ -658,7 +658,7 @@ aeMovieResult ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _str
 	uint32_t resource_count = READZ( _stream );
 
 	_movieData->resource_count = resource_count;
-	_movieData->resources = NEWN( _movieData->instance, aeMovieResource *, resource_count );
+	_movieData->resources = NEWN( _movieData->instance, const aeMovieResource *, resource_count );
 
 	const aeMovieResource ** it_resource = _movieData->resources;
 	const aeMovieResource ** it_resource_end = _movieData->resources + resource_count;
