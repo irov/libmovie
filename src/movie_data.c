@@ -53,8 +53,6 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 {
 	const aeMovieInstance * instance = _movieData->instance;
 
-	uint32_t resource_count = _movieData->resource_count;
-
 	const aeMovieResource * const * it_resource = _movieData->resources;
 	const aeMovieResource * const * it_resource_end = _movieData->resources + _movieData->resource_count;
 	for( ; it_resource != it_resource_end; ++it_resource )
@@ -623,6 +621,8 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 //////////////////////////////////////////////////////////////////////////
 static void __initialize_stream( aeMovieStream * _stream )
 {
+	(void)_stream;
+
 #	ifdef AE_MOVIE_STREAM_CACHE
 	_stream->carriage = 0;
 	_stream->capacity = 0;

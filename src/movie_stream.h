@@ -184,7 +184,7 @@ static void ae_magic_read_viewport( aeMovieStream * _stream, aeMovieViewport * _
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_mesh( const aeMovieInstance * _instance, aeMovieStream * _stream, aeMovieMesh * _mesh )
 {
-	uint16_t vertex_count = READZ( _stream );
+	uint32_t vertex_count = READZ( _stream );
 
 	if( vertex_count == 0 || vertex_count > AE_MOVIE_MAX_VERTICES )
 	{
@@ -198,7 +198,7 @@ static void ae_magic_read_mesh( const aeMovieInstance * _instance, aeMovieStream
 		return;	
 	}
 
-	uint16_t indices_count = READZ( _stream );
+	uint32_t indices_count = READZ( _stream );
 
 	_mesh->vertex_count = vertex_count;
 	_mesh->indices_count = indices_count;

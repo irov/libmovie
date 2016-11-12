@@ -506,6 +506,8 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent, aeMovieBlendMode _blendMode )
 {	
+	(void)_parent; //TODO
+
 	const aeMovieLayerData *it_layer = _compositionData->layers;
 	const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
 	for( ; it_layer != it_layer_end; ++it_layer )
@@ -546,6 +548,8 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent, const void * _cameraData )
 {	
+	(void)_parent; //TODO
+
 	const aeMovieLayerData *it_layer = _compositionData->layers;
 	const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
 	for( ; it_layer != it_layer_end; ++it_layer )
@@ -610,15 +614,11 @@ static void __setup_movie_node_matrix( aeMovieComposition * _composition )
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_composition_element( aeMovieComposition * _composition )
 {
-	const aeMovieCompositionData * compositionData = _composition->composition_data;
-	
 	aeMovieNode* it_node = _composition->nodes;
 	aeMovieNode* it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
 	{
 		aeMovieNode * node = it_node;
-
-		uint8_t type = node->layer->type;
 
 		void * element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
 
@@ -627,10 +627,7 @@ static void __setup_movie_composition_element( aeMovieComposition * _composition
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_composition_active( aeMovieComposition * _composition )
-{
-	const aeMovieCompositionData * compositionData = _composition->composition_data;
-
-	
+{	
 	aeMovieNode *it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -711,6 +708,7 @@ static void __dummy_ae_movie_node_event( const void * _element, const ae_char_t 
 	(void)_name;
 	(void)_matrix;
 	(void)_opacity;
+	(void)_begin;
 	(void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1135,10 +1133,10 @@ static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, cons
 		uint32_t u = 0;
 		for( ; u != AE_MOVIE_BEZIER_WARP_GRID; ++u )
 		{
-			float x = __bezier_warp_x( _bezierWarp, du, dv );
-			float y = __bezier_warp_y( _bezierWarp, du, dv );
+			const float x = __bezier_warp_x( _bezierWarp, du, dv );
+			const float y = __bezier_warp_y( _bezierWarp, du, dv );
 
-			float position[2] = {x, y};
+			const float position[2] = {x, y};
 
 			mul_v3_v2_m4( *positions++, position, _matrix );
 
@@ -1622,15 +1620,6 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 //////////////////////////////////////////////////////////////////////////
 static void __skip_movie_composition_node( aeMovieComposition * _composition, uint32_t _revision, float _beginTime, float _endTime )
 {
-	ae_bool_t interrupt = _composition->interrupt;
-	ae_bool_t loop = _composition->loop;
-	float duration = _composition->composition_data->duration;
-	float composition_time = _composition->time;
-
-	float loopBegin = 0.f;
-	float loopEnd = duration;
-
-	
 	aeMovieNode	*it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -1971,8 +1960,6 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 {
 	uint32_t render_node_index = *_iterator;
 	uint32_t render_node_max_count = _composition->node_count;
-
-	const aeMovieInstance * instance = _composition->movie_data->instance;
 
 	uint32_t iterator = render_node_index;
 	for( ; iterator != render_node_max_count; ++iterator )

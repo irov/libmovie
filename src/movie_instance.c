@@ -25,6 +25,9 @@ static int32_t __ae_strncmp( void * _data, const ae_char_t * _src, const ae_char
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_logerror( void * _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )
 {
+	(void)_data;
+	(void)_code;
+	(void)_message;
 	//SILENT
 }
 //////////////////////////////////////////////////////////////////////////
@@ -48,12 +51,10 @@ static void __ae_movie_instance_setup_bezier_warp_indices( aeMovieInstance * ins
 {
 	uint16_t * bezier_warp_indices = instance->bezier_warp_indices;
 
-	uint32_t bezier_warp_quad_count = (AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1);
-
-	uint32_t v = 0;
+	uint16_t v = 0;
 	for( ; v != AE_MOVIE_BEZIER_WARP_GRID - 1; ++v )
 	{
-		uint32_t u = 0;
+		uint16_t u = 0;
 		for( ; u != AE_MOVIE_BEZIER_WARP_GRID - 1; ++u )
 		{
 			*bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 0;
