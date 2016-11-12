@@ -21,7 +21,7 @@ typedef enum
 	AE_ERROR_CRITICAL
 } aeMovieErrorCode;
 
-typedef void( *ae_movie_logerror_t )(void * _data, aeMovieErrorCode _code, const ae_char_t * _message, ...);
+typedef void( *ae_movie_logger_t )(void * _data, aeMovieErrorCode _code, const ae_char_t * _message, ...);
 
 typedef struct aeMovieInstance aeMovieInstance;
 
@@ -31,7 +31,7 @@ aeMovieInstance * ae_create_movie_instance(
 	ae_movie_free_t _free,
 	ae_movie_free_n_t _free_n,
 	ae_movie_strncmp_t _strncmp,
-	ae_movie_logerror_t _error,
+	ae_movie_logger_t _logger,
 	void * _data );
 
 void ae_delete_movie_instance( aeMovieInstance * _instance );

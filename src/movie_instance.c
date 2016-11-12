@@ -67,7 +67,7 @@ static void __ae_movie_instance_setup_bezier_warp_indices( aeMovieInstance * ins
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logerror_t _error, void * _data )
+aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logger_t _logger, void * _data )
 {
 	aeMovieInstance * instance = (*_alloc)(_data, sizeof( aeMovieInstance ));
 
@@ -76,7 +76,7 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 	instance->memory_free = _free;
 	instance->memory_free_n = _free_n;
 	instance->strncmp = _strncmp;
-	instance->logerror = _error;
+	instance->logger = _logger;
 	instance->instance_data = _data;
 
 	if( instance->strncmp == AE_NULL )
@@ -84,9 +84,9 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 		instance->strncmp = &__ae_strncmp;
 	}
 
-	if( instance->logerror == AE_NULL )
+	if( instance->logger == AE_NULL )
 	{
-		instance->logerror = &__ae_movie_logerror;
+		instance->logger = &__ae_movie_logerror;
 	}
 
 	float * sprite_uv = &instance->sprite_uv[0][0];
