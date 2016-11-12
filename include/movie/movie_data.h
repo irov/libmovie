@@ -1,9 +1,9 @@
 #ifndef MOVIE_MOVIE_DATA_H_
 #define MOVIE_MOVIE_DATA_H_
 
-#	include "movie/movie_type.h"
-#	include "movie/movie_instance.h"
-#	include "movie/movie_resource.h"
+#	include "movie_type.h"
+#	include "movie_instance.h"
+#	include "movie_resource.h"
 
 typedef struct
 {

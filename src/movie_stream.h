@@ -8,8 +8,14 @@
 
 #	include <stddef.h>
 //////////////////////////////////////////////////////////////////////////
+#	ifdef AE_MOVIE_STREAM_INFO
+#	define READ(stream, value) ae_magic_read_value_info(stream, #value, &(value), sizeof(value))
+#	define READN(stream, ptr, n) ae_magic_read_value_info(stream, #ptr, ptr, sizeof(*ptr) * n)
+#	else
 #	define READ(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
 #	define READN(stream, ptr, n) ae_magic_read_value(stream, ptr, sizeof(*ptr) * n)
+#	endif
+//////////////////////////////////////////////////////////////////////////
 #	define READB(stream) ae_magic_read_bool(stream)
 #	define READZ(stream) ae_magic_read_size(stream)
 //////////////////////////////////////////////////////////////////////////
@@ -17,6 +23,19 @@
 #	define READ_POLYGON(instance, stream, ptr) (ae_magic_read_polygon(instance, stream, ptr))
 #	define READ_VIEWPORT(stream, ptr) (ae_magic_read_viewport(stream, ptr))
 #	define READ_MESH(instance, stream, ptr) (ae_magic_read_mesh(instance, stream, ptr))
+//////////////////////////////////////////////////////////////////////////
+#	ifdef AE_MOVIE_STREAM_INFO
+//////////////////////////////////////////////////////////////////////////
+static void ae_magic_read_value_info( aeMovieStream * _stream, const char * _info, void * _ptr, size_t _size )
+{
+	_stream->memory_info( _stream->data, _info, _size );
+
+	size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
+
+	(void)bytesRead;
+}
+#	endif
+//////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_CACHE
 static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _size )

@@ -1,7 +1,7 @@
 #ifndef MOVIE_MOVIE_RESOURCE_H_
 #define MOVIE_MOVIE_RESOURCE_H_
 
-#	include "movie/movie_type.h"
+#	include "movie_type.h"
 
 typedef enum aeMovieResourceTypeEnum
 {

@@ -55,7 +55,7 @@ static void * resource_provider( const aeMovieResource * _resource, void * _data
 
 int main( int argc, char *argv[] )
 {
-	aeMovieInstance * instance = ae_create_movie_instance( &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL, AE_NULL, AE_NULL );
+	aeMovieInstance * instance = ae_create_movie_instance( &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL, AE_NULL, AE_NULL, AE_NULL );
 
 	aeMovieData * movieData = ae_create_movie_data( instance );
 

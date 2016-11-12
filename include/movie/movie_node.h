@@ -1,10 +1,10 @@
 #ifndef MOVIE_MOVIE_NODE_H_
 #define MOVIE_MOVIE_NODE_H_
 
-#	include "movie/movie_type.h"
-#	include "movie/movie_instance.h"
-#	include "movie/movie_resource.h"
-#	include "movie/movie_data.h"
+#	include "movie_type.h"
+#	include "movie_instance.h"
+#	include "movie_resource.h"
+#	include "movie_data.h"
 
 typedef struct aeMovieRenderMesh
 {

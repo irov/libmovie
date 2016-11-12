@@ -66,7 +66,7 @@ static void __ae_movie_instance_setup_bezier_warp_indices( aeMovieInstance * ins
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logerror_t _error, void * _data )
+aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logerror_t _error, ae_movie_memory_info_t _info, void * _data )
 {
 	aeMovieInstance * instance = (*_alloc)(_data, sizeof( aeMovieInstance ));
 
@@ -76,6 +76,7 @@ aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_al
 	instance->memory_free_n = _free_n;
 	instance->strncmp = _strncmp;
 	instance->logerror = _error;
+	instance->memory_info = _info;
 	instance->instance_data = _data;
 
 	if( instance->strncmp == AE_NULL )
