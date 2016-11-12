@@ -2,6 +2,7 @@
 
 #	include <malloc.h>
 #	include <stdio.h>
+#	include <stdarg.h>
 
 //////////////////////////////////////////////////////////////////////////
 static void * stdlib_movie_alloc( void * _data, uint32_t _size )
@@ -34,34 +35,13 @@ static void stdlib_movie_free_n( void * _data, const void * _ptr )
 	free( (void *)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_logerror( void * _data, aeMovieErrorCode _code, const char * _compositionName, const char * _layerName, const char * _message )
+static void stdlib_movie_logerror( void * _data, aeMovieErrorCode _code, const char * _format, ... )
 {
-	printf( _message );
-}
-//////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_info( void * _data, const char * _type, ae_bool_t _alloc, uint32_t _size )
-{
-	if( _alloc == AE_TRUE )
-	{
-		printf( "alloc %s - %d\n"
-			, _type
-			, _size
-			);
-	}
-	else
-	{
-		printf( "free %s\n"
-			, _type
-			);
-	}
-}
-//////////////////////////////////////////////////////////////////////////
-static void info_file( void * _data, const char * _buff, size_t _size )
-{
-	printf( "read %s - %d\n"
-		, _buff
-		, _size
-		);
+	va_list argList;
+
+	va_start( argList, _format );
+	vprintf( _format, argList );
+	va_end( argList );
 }
 //////////////////////////////////////////////////////////////////////////
 static size_t read_file( void * _data, void * _buff, uint32_t _size )
@@ -85,7 +65,7 @@ static void * resource_provider( const aeMovieResource * _resource, void * _data
 
 int main( int argc, char *argv[] )
 {
-	aeMovieInstance * instance = ae_create_movie_instance( &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL, &stdlib_movie_logerror, &stdlib_movie_info, AE_NULL );
+	aeMovieInstance * instance = ae_create_movie_instance( &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL, &stdlib_movie_logerror, AE_NULL );
 
 	aeMovieData * movieData = ae_create_movie_data( instance );
 
@@ -97,7 +77,7 @@ int main( int argc, char *argv[] )
 	}
 
 	aeMovieStream stream;
-	stream.memory_info = &info_file;
+	stream.instance = instance;
 	stream.memory_read = &read_file;
 	stream.memory_copy = &memory_copy;
 	stream.data = f;

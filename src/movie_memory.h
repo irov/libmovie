@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 static void * ae_magic_memory_alloc_info( const aeMovieInstance * _instance, const char * _type, size_t _size )
 {
-	_instance->memory_info( _instance->instance_data, _type, AE_TRUE, _size );
+	_instance->logerror( _instance->instance_data, AE_ERROR_MEMORY, "alloc type '%s' size '%d'", _type, (uint32_t)_size );
 
 	void * ptr = _instance->memory_alloc( _instance->instance_data, _size );
 
@@ -36,8 +36,8 @@ static void * ae_magic_memory_alloc_info( const aeMovieInstance * _instance, con
 }
 //////////////////////////////////////////////////////////////////////////
 static void * ae_magic_memory_alloc_n_info( const aeMovieInstance * _instance, const char * _type, size_t _size, size_t _count )
-{
-	_instance->memory_info( _instance->instance_data, _type, AE_TRUE, _size * _count );
+{	
+	_instance->logerror( _instance->instance_data, AE_ERROR_MEMORY, "alloc n type '%s' size '%d' count '%d'", _type, (uint32_t)_size, (uint32_t)_count );
 
 	void * ptr = _instance->memory_alloc_n( _instance->instance_data, _size, _count );
 
@@ -46,14 +46,14 @@ static void * ae_magic_memory_alloc_n_info( const aeMovieInstance * _instance, c
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_memory_free_info( const aeMovieInstance * _instance, const char * _type, const void * _ptr )
 {
-	_instance->memory_info( _instance->instance_data, _type, AE_FALSE, 0 );
+	_instance->logerror( _instance->instance_data, AE_ERROR_MEMORY, "free type '%s' ptr '%p'", _type, _ptr );
 
 	_instance->memory_free( _instance->instance_data, _ptr );
 }
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_memory_free_n_info( const aeMovieInstance * _instance, const char * _type, const void * _ptr )
 {
-	_instance->memory_info( _instance->instance_data, _type, AE_FALSE, 0 );
+	_instance->logerror( _instance->instance_data, AE_ERROR_MEMORY, "free n type '%s' ptr '%p'", _type, _ptr );
 
 	_instance->memory_free_n( _instance->instance_data, _ptr );
 }

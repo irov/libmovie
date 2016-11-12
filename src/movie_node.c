@@ -141,6 +141,7 @@ static ae_bool_t __test_error_composition_layer_frame( const aeMovieInstance * _
 	{
 		_instance->logerror( _instance->instance_data
 			, AE_ERROR_INTERNAL
+			, "composition '%s' layer '%s' - %s"
 			, _compositionData->name
 			, _layerData->name
 			, _msg

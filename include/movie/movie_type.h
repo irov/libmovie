@@ -133,7 +133,8 @@ typedef void( *ae_movie_stream_memory_copy_t )(void * _data, const void * _src, 
 
 typedef struct
 {
-	ae_movie_stream_memory_info_t memory_info;
+	struct aeMovieInstance * instance;
+
 	ae_movie_stream_memory_read_t memory_read;
 	ae_movie_stream_memory_copy_t memory_copy;
 	void * data;
