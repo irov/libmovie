@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_value_info( aeMovieStream * _stream, const char * _info, void * _ptr, size_t _size )
 {
-	_stream->instance->logger( _stream->instance->instance_data, AE_ERROR_STREAM, "read stream '%s' size '%d'", _info, (uint32_t)_size );
+	_stream->instance->logger( _stream->instance->instance_data, AE_ERROR_STREAM, "read stream '%s' size '%d'\n", _info, (uint32_t)_size );
 
 	size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
 

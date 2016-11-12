@@ -41,7 +41,6 @@ static void stdlib_movie_logerror( void * _data, aeMovieErrorCode _code, const c
 
 	va_start( argList, _format );
 	vprintf( _format, argList );
-	printf( "\n" );
 	va_end( argList );
 }
 //////////////////////////////////////////////////////////////////////////
