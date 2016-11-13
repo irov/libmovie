@@ -619,20 +619,32 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __initialize_stream( aeMovieStream * _stream )
+aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_movie_stream_memory_read_t _read, ae_movie_stream_memory_copy_t _copy, void * _data )
 {
-	(void)_stream;
+	aeMovieStream * stream = NEW( _instance, aeMovieStream );
+
+	stream->instance = _instance;
+	stream->memory_read = _read;
+	stream->memory_copy = _copy;
+	stream->data = _data;
 
 #	ifdef AE_MOVIE_STREAM_CACHE
-	_stream->carriage = 0;
-	_stream->capacity = 0;
-	_stream->reading = 0;
+	stream->carriage = 0;
+	stream->capacity = 0;
+	stream->reading = 0;
 #	endif
+
+	return stream;
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_delete_movie_stream( aeMovieStream * _stream )
+{
+	DELETE( _stream->instance, _stream );
 }
 //////////////////////////////////////////////////////////////////////////
 aeMovieResult ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
 {
-	__initialize_stream( _stream );
+	
 
 	uint8_t magic[4];
 	READN( _stream, magic, 4 );

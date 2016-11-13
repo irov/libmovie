@@ -76,16 +76,18 @@ int main( int argc, char *argv[] )
 		return 0;
 	}
 
-	aeMovieStream stream;
-	stream.instance = instance;
-	stream.memory_read = &read_file;
-	stream.memory_copy = &memory_copy;
-	stream.data = f;
+	aeMovieStream * stream = ae_create_movie_stream( instance, &read_file, &memory_copy, f );
+	//stream.instance = instance;
+	//stream.memory_read = &read_file;
+	//stream.memory_copy = &memory_copy;
+	//stream.data = f;
 
-	if( ae_load_movie_data( movieData, &stream, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
+	if( ae_load_movie_data( movieData, stream, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
 	{
 		return 0;
 	}
+
+	ae_delete_movie_stream( stream );
 
 	fclose( f );
 

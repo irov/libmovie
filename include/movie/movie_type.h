@@ -46,6 +46,8 @@ typedef struct
 
 } aeMovieMesh;
 
+typedef struct aeMovieStream aeMovieStream;
+
 #	ifndef AE_MOVIE_MAX_LAYER_NAME
 #	define AE_MOVIE_MAX_LAYER_NAME 128
 #	endif
@@ -131,21 +133,6 @@ typedef void( *ae_movie_stream_memory_copy_t )(void * _data, const void * _src, 
 #	define AE_MOVIE_STREAM_CACHE_BUFFER_SIZE 32768
 #	endif
 
-typedef struct
-{
-	struct aeMovieInstance * instance;
 
-	ae_movie_stream_memory_read_t memory_read;
-	ae_movie_stream_memory_copy_t memory_copy;
-	void * data;
-
-#	ifdef AE_MOVIE_STREAM_CACHE
-	size_t carriage;
-	size_t capacity;
-	size_t reading;
-
-	uint8_t buff[AE_MOVIE_STREAM_CACHE_BUFFER_SIZE];
-#	endif
-} aeMovieStream;
 
 #endif
