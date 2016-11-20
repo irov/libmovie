@@ -1135,8 +1135,10 @@ static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, cons
 		{
 			const float x = __bezier_warp_x( _bezierWarp, du, dv );
 			const float y = __bezier_warp_y( _bezierWarp, du, dv );
-
-			const float position[2] = {x, y};
+			
+			ae_vector2_t position;
+			position[0] = x;
+			position[1] = y;
 
 			mul_v3_v2_m4( *positions++, position, _matrix );
 

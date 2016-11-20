@@ -10,19 +10,21 @@
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_INFO
 #	define READ(stream, value) ae_magic_read_value_info(stream, #value, &(value), sizeof(value))
+#	define READV(stream, value, size) ae_magic_read_value_info(stream, #value, value, size)
 #	define READN(stream, ptr, n) ae_magic_read_value_info(stream, #ptr, ptr, sizeof(*ptr) * n)
 #	else
 #	define READ(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#	define READV(stream, value, size) ae_magic_read_value(stream, value, size)
 #	define READN(stream, ptr, n) ae_magic_read_value(stream, ptr, sizeof(*ptr) * n)
 #	endif
 //////////////////////////////////////////////////////////////////////////
 #	define READB(stream) ae_magic_read_bool(stream)
 #	define READZ(stream) ae_magic_read_size(stream)
 //////////////////////////////////////////////////////////////////////////
-#	define READ_STRING(instance, stream, ptr) (ae_magic_read_string(instance, stream, &ptr))
-#	define READ_POLYGON(instance, stream, ptr) (ae_magic_read_polygon(instance, stream, ptr))
+#	define READ_STRING(stream, ptr) (ae_magic_read_string(stream, &ptr))
+#	define READ_POLYGON(stream, ptr) (ae_magic_read_polygon(stream, ptr))
 #	define READ_VIEWPORT(stream, ptr) (ae_magic_read_viewport(stream, ptr))
-#	define READ_MESH(instance, stream, ptr) (ae_magic_read_mesh(instance, stream, ptr))
+#	define READ_MESH(stream, ptr) (ae_magic_read_mesh(stream, ptr))
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_INFO
 //////////////////////////////////////////////////////////////////////////
@@ -143,11 +145,11 @@ static uint32_t ae_magic_read_size( aeMovieStream * _stream )
 	return size;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_string( const aeMovieInstance * _instance, aeMovieStream * _stream, ae_string_t * _str )
+static void ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )
 {
 	uint32_t size = READZ( _stream );
 
-	ae_string_t str = NEWN( _instance, ae_char_t, size + 1 );
+	ae_string_t str = NEWN( _stream->instance, ae_char_t, size + 1 );
 	READN( _stream, str, size );
 
 	str[size] = '\0';
@@ -155,7 +157,7 @@ static void ae_magic_read_string( const aeMovieInstance * _instance, aeMovieStre
 	*_str = str;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_polygon( const aeMovieInstance * _instance, aeMovieStream * _stream, aeMoviePolygon * _polygon )
+static void ae_magic_read_polygon( aeMovieStream * _stream, aeMoviePolygon * _polygon )
 {
 	uint32_t point_count = READZ( _stream );
 	
@@ -168,7 +170,7 @@ static void ae_magic_read_polygon( const aeMovieInstance * _instance, aeMovieStr
 		return;
 	}
 
-    ae_vector2_t * points = NEWN( _instance, ae_vector2_t, point_count );
+	ae_vector2_t * points = NEWN( _stream->instance, ae_vector2_t, point_count );
 	READN( _stream, points, point_count );
 
 	_polygon->points = (const ae_vector2_t *)points;
@@ -182,7 +184,7 @@ static void ae_magic_read_viewport( aeMovieStream * _stream, aeMovieViewport * _
 	READ( _stream, _viewport->end_y );
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_mesh( const aeMovieInstance * _instance, aeMovieStream * _stream, aeMovieMesh * _mesh )
+static void ae_magic_read_mesh( aeMovieStream * _stream, aeMovieMesh * _mesh )
 {
 	uint32_t vertex_count = READZ( _stream );
 
@@ -203,15 +205,15 @@ static void ae_magic_read_mesh( const aeMovieInstance * _instance, aeMovieStream
 	_mesh->vertex_count = vertex_count;
 	_mesh->indices_count = indices_count;
 
-    ae_vector2_t * positions = NEWN( _instance, ae_vector2_t, vertex_count );
+	ae_vector2_t * positions = NEWN( _stream->instance, ae_vector2_t, vertex_count );
 	READN( _stream, positions, vertex_count );
 	_mesh->positions = (const ae_vector2_t *)positions;
 
-    ae_vector2_t * uvs = NEWN(_instance, ae_vector2_t, vertex_count);
+	ae_vector2_t * uvs = NEWN( _stream->instance, ae_vector2_t, vertex_count );
     READN(_stream, uvs, vertex_count);
 	_mesh->uvs = (const ae_vector2_t *)uvs;
 	
-    uint16_t * indices = NEWN( _instance, uint16_t, indices_count );
+	uint16_t * indices = NEWN( _stream->instance, uint16_t, indices_count );
 	READN( _stream, indices, indices_count );
     _mesh->indices = indices;
 }

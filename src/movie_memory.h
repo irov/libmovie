@@ -9,6 +9,7 @@
 #	ifdef AE_MOVIE_MEMORY_INFO
 //////////////////////////////////////////////////////////////////////////
 #	define NEW(instance, type) ((type *)ae_magic_memory_alloc_info( instance, #type, sizeof(type)))
+#	define NEWV(instance, doc, size) ((void *)ae_magic_memory_alloc_info( instance, doc, size))
 #	define NEWN(instance, type, n) (n == 0 ? (type *)AE_NULL : (type *)ae_magic_memory_alloc_n_info(instance, #type, sizeof(type), n))
 #	define DELETE(instance, ptr) (ae_magic_memory_free_info(instance, #ptr, ptr))
 #	define DELETEN(instance, ptr) (ae_magic_memory_free_n_info(instance, #ptr, ptr))
@@ -16,6 +17,7 @@
 #	else
 //////////////////////////////////////////////////////////////////////////
 #	define NEW(instance, type) ((type *)ae_magic_memory_alloc( instance, sizeof(type)))
+#	define NEWV(instance, doc, size) ((void *)ae_magic_memory_alloc( instance, size))
 #	define NEWN(instance, type, n) (n == 0 ? (type *)AE_NULL : (type *)ae_magic_memory_alloc_n(instance, sizeof(type), n))
 #	define DELETE(instance, ptr) (ae_magic_memory_free(instance, ptr))
 #	define DELETEN(instance, ptr) (ae_magic_memory_free_n(instance, ptr))
