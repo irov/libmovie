@@ -111,7 +111,8 @@ static float get_movie_layer_transformation_property( float _immutable, void * _
 	
 	uint32_t zp_count = *(property_uint32_t++);
 
-	for( uint32_t i = 0; i != zp_count; ++i )
+	uint32_t i = 0;
+	for( ; i != zp_count; ++i )
 	{
 		uint32_t zp_block_type_count_data = *(property_uint32_t++);
 		
