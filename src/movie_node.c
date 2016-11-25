@@ -237,6 +237,13 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 
 		float t_relative = frame_time - (float)frame_relative;
 
+		if( frame_relative >= node_relative->layer->frame_count )
+		{
+			frame_relative = node_relative->layer->frame_count - 1;
+
+			t_relative = 0.f;
+		}
+
 		__update_movie_composition_node_matrix( _composition, node_relative, _revision, frame_relative, _interpolate, t_relative );
 	}
 
