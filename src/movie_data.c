@@ -8,7 +8,7 @@
 #	define AE_MOVIE_MAX_COMPOSITION_NAME 128
 #	endif
 //////////////////////////////////////////////////////////////////////////
-static const uint32_t ae_movie_version = 8;
+static const uint32_t ae_movie_version = 9;
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance )
 {
@@ -175,7 +175,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 				DELETEN( instance, layer->polygon );
 			}
 
-			delete_movie_layer_transformation( instance, layer->transformation );
+			ae_movie_delete_layer_transformation( instance, layer->transformation, layer->threeD );
 
 			DELETE( instance, layer->transformation );
 
@@ -445,9 +445,16 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 	READ( _stream, _layer->stretch );
 
-	_layer->transformation = NEW( instance, aeMovieLayerTransformation );
+	if( _layer->threeD == AE_FALSE )
+	{
+		_layer->transformation = (aeMovieLayerTransformation *)NEW( instance, aeMovieLayerTransformation2D );
+	}
+	else
+	{
+		_layer->transformation = (aeMovieLayerTransformation *)NEW( instance, aeMovieLayerTransformation3D );
+	}
 
-	if( load_movie_layer_transformation( _stream, _layer->transformation ) == AE_MOVIE_FAILED )
+	if( ae_movie_load_layer_transformation( _stream, _layer->transformation, _layer->threeD ) == AE_MOVIE_FAILED )
 	{
 		return AE_MOVIE_FAILED;
 	}

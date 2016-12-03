@@ -161,10 +161,12 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 		return;
 	}
 
+	const aeMovieLayerData * layer = _node->layer;
+
 #	ifdef AE_MOVIE_DEBUG
 	if( __test_error_composition_layer_frame( _composition->movie_data->instance
 		, _composition->composition_data
-		, _node->layer
+		, layer
 		, _frameId
 		, "__update_movie_composition_node_matrix frame id out count"
 		) == AE_FALSE )
@@ -179,18 +181,20 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
     float local_g = 1.f;
     float local_b = 1.f;
 
-    if( _node->layer->color_vertex != AE_NULL )
+	if( layer->color_vertex != AE_NULL )
     {
-        local_r = __compute_movie_color_r(_node->layer->color_vertex, _frameId, _interpolate, _t);
-        local_g = __compute_movie_color_g(_node->layer->color_vertex, _frameId, _interpolate, _t);
-        local_b = __compute_movie_color_b(_node->layer->color_vertex, _frameId, _interpolate, _t);
+		local_r = __compute_movie_color_r( layer->color_vertex, _frameId, _interpolate, _t );
+		local_g = __compute_movie_color_g( layer->color_vertex, _frameId, _interpolate, _t );
+		local_b = __compute_movie_color_b( layer->color_vertex, _frameId, _interpolate, _t );
     }
 
 	if( _node->relative == AE_NULL )
 	{
-		float local_opacity = make_movie_layer_transformation( _node->matrix, _node->layer->transformation, _frameId, _interpolate, _t );
+		float local_opacity = ae_movie_make_layer_opacity( layer->transformation, layer->threeD, _frameId, _interpolate, _t );
 
-		if( _node->layer->sub_composition != AE_NULL )
+		ae_movie_make_layer_transformation( _node->matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
+		
+		if( layer->sub_composition != AE_NULL )
 		{
 			_node->composition_opactity = local_opacity;
             
@@ -246,13 +250,15 @@ static void __update_movie_composition_node_matrix( aeMovieComposition * _compos
 
 		__update_movie_composition_node_matrix( _composition, node_relative, _revision, frame_relative, _interpolate, t_relative );
 	}
-
+		
+	float local_opacity = ae_movie_make_layer_opacity( layer->transformation, layer->threeD, _frameId, _interpolate, _t );
+	
 	ae_matrix4_t local_matrix;
-	float local_opacity = make_movie_layer_transformation( local_matrix, _node->layer->transformation, _frameId, _interpolate, _t );
+	ae_movie_make_layer_transformation( local_matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
 
 	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
-	if( _node->layer->sub_composition != AE_NULL )
+	if( layer->sub_composition != AE_NULL )
 	{
 		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
         

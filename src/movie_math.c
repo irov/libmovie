@@ -191,7 +191,34 @@ void make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
 	_m[3 * 4 + 3] = 1.0f;
 }
 //////////////////////////////////////////////////////////////////////////
-void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale, const ae_quaternion_t _quaternion )
+void make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
+{
+	float z = _quaternion[2];
+	float w = _quaternion[3];
+
+	float z2 = z + z;
+	float zz = z * z2;
+	float wz = w * z2;
+
+	_m[0 * 4 + 0] = 1.f - (zz);
+	_m[0 * 4 + 1] = - wz;
+	_m[0 * 4 + 2] = 0.f;
+	_m[0 * 4 + 3] = 0.f;
+	_m[1 * 4 + 0] = + wz;
+	_m[1 * 4 + 1] = 1.f - (zz);
+	_m[1 * 4 + 2] = 0.f;
+	_m[1 * 4 + 3] = 0.f;
+	_m[2 * 4 + 0] = 0.f;
+	_m[2 * 4 + 1] = 0.f;
+	_m[2 * 4 + 2] = 1.f;
+	_m[2 * 4 + 3] = 0.f;
+	_m[3 * 4 + 0] = 0.f;
+	_m[3 * 4 + 1] = 0.f;
+	_m[3 * 4 + 2] = 0.f;
+	_m[3 * 4 + 3] = 1.0f;
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_movie_make_transformation3d_m4( ae_matrix4_t _lm, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale, const ae_quaternion_t _quaternion )
 {
 	if( EQUAL_F_Z( _quaternion[0] ) && 
 		EQUAL_F_Z( _quaternion[1] ) &&
@@ -248,6 +275,63 @@ void make_transformation_m4( ae_matrix4_t _lm, const ae_vector3_t _position, con
 		_lm[3 * 4 + 0] += _position[0];
 		_lm[3 * 4 + 1] += _position[1];
 		_lm[3 * 4 + 2] += _position[2];
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_movie_make_transformation2d_m4( ae_matrix4_t _lm, const ae_vector2_t _position, const ae_vector2_t _origin, const ae_vector2_t _scale, const ae_quaternion_t _quaternion )
+{
+	if(	EQUAL_F_Z( _quaternion[2] ) &&
+		EQUAL_F_1( _quaternion[3] ) )
+	{
+		_lm[0 * 4 + 1] = 0.f;
+		_lm[0 * 4 + 2] = 0.f;
+		_lm[0 * 4 + 3] = 0.f;
+		_lm[1 * 4 + 0] = 0.f;
+		_lm[1 * 4 + 2] = 0.f;
+		_lm[1 * 4 + 3] = 0.f;
+		_lm[2 * 4 + 0] = 0.f;
+		_lm[2 * 4 + 1] = 0.f;
+		_lm[2 * 4 + 3] = 0.f;
+		_lm[3 * 4 + 3] = 1.f;
+
+		_lm[0 * 4 + 0] = _scale[0];
+		_lm[1 * 4 + 1] = _scale[1];
+		_lm[2 * 4 + 2] = 1.f;
+
+		_lm[3 * 4 + 0] = _position[0] - _origin[0] * _scale[0];
+		_lm[3 * 4 + 1] = _position[1] - _origin[1] * _scale[1];
+		_lm[3 * 4 + 2] = 0.f;
+	}
+	else
+	{
+		ae_matrix4_t mat_scale;
+
+		mat_scale[0 * 4 + 1] = 0.f;
+		mat_scale[0 * 4 + 2] = 0.f;
+		mat_scale[0 * 4 + 3] = 0.f;
+		mat_scale[1 * 4 + 0] = 0.f;
+		mat_scale[1 * 4 + 2] = 0.f;
+		mat_scale[1 * 4 + 3] = 0.f;
+		mat_scale[2 * 4 + 0] = 0.f;
+		mat_scale[2 * 4 + 1] = 0.f;
+		mat_scale[2 * 4 + 3] = 0.f;
+		mat_scale[3 * 4 + 3] = 1.f;
+
+		mat_scale[0 * 4 + 0] = _scale[0];
+		mat_scale[1 * 4 + 1] = _scale[1];
+		mat_scale[2 * 4 + 2] = 1.f;
+
+		mat_scale[3 * 4 + 0] = -_origin[0] * _scale[0];
+		mat_scale[3 * 4 + 1] = -_origin[1] * _scale[1];
+		mat_scale[3 * 4 + 2] = 0.f;
+
+		ae_matrix4_t mat_rotate;
+		make_quaternion_m4( mat_rotate, _quaternion );
+
+		mul_m4_m4( _lm, mat_scale, mat_rotate );
+
+		_lm[3 * 4 + 0] += _position[0];
+		_lm[3 * 4 + 1] += _position[1];
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -400,18 +484,34 @@ void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternio
 {
 	float inv_t = 1.f - _t;
 
-	_q[0] = _q1[0] * inv_t + _q2[0] * _t;
-	_q[1] = _q1[1] * inv_t + _q2[1] * _t;
-	_q[2] = _q1[2] * inv_t + _q2[2] * _t;
-	_q[3] = _q1[3] * inv_t + _q2[3] * _t;
+	float x = _q1[0] * inv_t + _q2[0] * _t;
+	float y = _q1[1] * inv_t + _q2[1] * _t;
+	float z = _q1[2] * inv_t + _q2[2] * _t;
+	float w = _q1[3] * inv_t + _q2[3] * _t;
 		
-	float q_dot = _q[0] * _q[0] + _q[1] * _q[1] + _q[2] * _q[2] + _q[3] * _q[3];
+	float q_dot = x * x + y * y + z * z + w * w;
 	float inv_length = 1.f / sqrtf( q_dot );
 
-	_q[0] *= inv_length;
-	_q[1] *= inv_length;
-	_q[2] *= inv_length;
-	_q[3] *= inv_length;
+	_q[0] = x * inv_length;
+	_q[1] = y * inv_length;
+	_q[2] = z * inv_length;
+	_q[3] = w * inv_length;
+}
+//////////////////////////////////////////////////////////////////////////
+void linerp_qzw( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, float _t )
+{
+	float inv_t = 1.f - _t;
+
+	float z = _q1[2] * inv_t + _q2[2] * _t;
+	float w = _q1[3] * inv_t + _q2[3] * _t;
+
+	float q_dot = z * z + w * w;
+	float inv_length = 1.f / sqrtf( q_dot );
+
+	_q[0] = 0.f;
+	_q[1] = 0.f;
+	_q[2] = z * inv_length;
+	_q[3] = w * inv_length;
 }
 //////////////////////////////////////////////////////////////////////////
 float make_camera_fov( float _height, float _zoom )

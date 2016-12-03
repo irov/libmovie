@@ -4,7 +4,7 @@
 #	include "movie_math.h"
 
 //////////////////////////////////////////////////////////////////////////
-void * load_movie_layer_transformation_timeline( aeMovieStream * _stream, const char * _doc )
+static void * __load_movie_layer_transformation_timeline( aeMovieStream * _stream, const char * _doc )
 {
 	(void)_doc;
 
@@ -16,39 +16,37 @@ void * load_movie_layer_transformation_timeline( aeMovieStream * _stream, const 
 	return timeline;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult load_movie_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation )
-{
-	uint32_t immutable_property_mask;
-	READ( _stream, immutable_property_mask );
-		
-	_transformation->immutable_property_mask = immutable_property_mask;
-
-	if( immutable_property_mask != __AE_MOVIE_IMMUTABLE_ALL__ )
-	{
-		aeMovieLayerTransformationTimeline * timeline = NEW( _stream->instance, aeMovieLayerTransformationTimeline );
-
-		_transformation->timeline = timeline;
-	}
-	else
-	{
-		_transformation->timeline = AE_NULL;
-	}
-
 #	define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
-	if( immutable_property_mask & Mask )\
+	if( _mask & Mask )\
 	{\
-		READ( _stream, _transformation->immuttable.Name );\
-		if( _transformation->timeline != AE_NULL )\
-		{\
-			_transformation->timeline->Name = AE_NULL;\
-		}\
+		READ( _stream, _transformation->immutable.Name );\
+		_transformation->timeline.Name = AE_NULL;\
 	}\
 	else\
 	{\
-		_transformation->immuttable.Name = 0.f;\
-		_transformation->timeline->Name = load_movie_layer_transformation_timeline(_stream, #Name);\
+		_transformation->immutable.Name = 0.f;\
+		_transformation->timeline.Name = __load_movie_layer_transformation_timeline(_stream, #Name);\
 	}
+//////////////////////////////////////////////////////////////////////////
+static aeMovieResult __ae_movie_load_layer_transformation2d( aeMovieStream * _stream, uint32_t _mask, aeMovieLayerTransformation2D * _transformation )
+{
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
 
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y );
+
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
+	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+	
+	return AE_MOVIE_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+static aeMovieResult __ae_movie_load_layer_transformation3d( aeMovieStream * _stream, uint32_t _mask, aeMovieLayerTransformation3D * _transformation )
+{
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, anchor_point_z );
@@ -66,39 +64,89 @@ aeMovieResult load_movie_layer_transformation( aeMovieStream * _stream, aeMovieL
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
 
-	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_OPACITY, opacity );
-
+	return AE_MOVIE_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
 #	undef AE_MOVIE_STREAM_PROPERTY
+//////////////////////////////////////////////////////////////////////////
+aeMovieResult ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
+{
+	uint32_t immutable_property_mask;
+	READ( _stream, immutable_property_mask );
+
+	_transformation->immutable_property_mask = immutable_property_mask;
+
+	if( immutable_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
+	{
+		READ( _stream, _transformation->immutable_opacity );
+		_transformation->timeline_opacity = AE_NULL;
+	}
+	else
+	{
+		_transformation->immutable_opacity = 0.f;
+		_transformation->timeline_opacity = __load_movie_layer_transformation_timeline( _stream, "immutable_opacity" );
+	}
+
+	if( _threeD == AE_FALSE )
+	{
+		aeMovieResult result = __ae_movie_load_layer_transformation2d( _stream, immutable_property_mask, ( aeMovieLayerTransformation2D * )_transformation );
+
+		return result;
+	}
+	else
+	{
+		aeMovieResult result = __ae_movie_load_layer_transformation3d( _stream, immutable_property_mask, (aeMovieLayerTransformation3D *)_transformation );
+
+		return result;
+	}
 
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-void delete_movie_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation )
+void ae_movie_delete_layer_transformation2d( const aeMovieInstance * _instance, const aeMovieLayerTransformation2D * _transformation )
 {
-	if( _transformation->timeline != AE_NULL )
+	DELETEN( _instance, _transformation->timeline.anchor_point_x );
+	DELETEN( _instance, _transformation->timeline.anchor_point_y );
+	DELETEN( _instance, _transformation->timeline.position_x );
+	DELETEN( _instance, _transformation->timeline.position_y );
+	DELETEN( _instance, _transformation->timeline.quaternion_z );
+	DELETEN( _instance, _transformation->timeline.quaternion_w );
+	DELETEN( _instance, _transformation->timeline.scale_x );
+	DELETEN( _instance, _transformation->timeline.scale_y );
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_movie_delete_layer_transformation3d( const aeMovieInstance * _instance, const aeMovieLayerTransformation3D * _transformation )
+{
+	DELETEN( _instance, _transformation->timeline.anchor_point_x );
+	DELETEN( _instance, _transformation->timeline.anchor_point_y );
+	DELETEN( _instance, _transformation->timeline.anchor_point_z );
+	DELETEN( _instance, _transformation->timeline.position_x );
+	DELETEN( _instance, _transformation->timeline.position_y );
+	DELETEN( _instance, _transformation->timeline.position_z );
+	DELETEN( _instance, _transformation->timeline.quaternion_x );
+	DELETEN( _instance, _transformation->timeline.quaternion_y );
+	DELETEN( _instance, _transformation->timeline.quaternion_z );
+	DELETEN( _instance, _transformation->timeline.quaternion_w );
+	DELETEN( _instance, _transformation->timeline.scale_x );
+	DELETEN( _instance, _transformation->timeline.scale_y );
+	DELETEN( _instance, _transformation->timeline.scale_z );
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
+{
+	DELETEN( _instance, _transformation->timeline_opacity );
+
+	if( _threeD == AE_FALSE )
 	{
-		aeMovieLayerTransformationTimeline * timeline = _transformation->timeline;
-
-		DELETEN( _instance, timeline->anchor_point_x );
-		DELETEN( _instance, timeline->anchor_point_y );
-		DELETEN( _instance, timeline->anchor_point_z );
-		DELETEN( _instance, timeline->position_x );
-		DELETEN( _instance, timeline->position_y );
-		DELETEN( _instance, timeline->position_z );
-		DELETEN( _instance, timeline->quaternion_x );
-		DELETEN( _instance, timeline->quaternion_y );
-		DELETEN( _instance, timeline->quaternion_z );
-		DELETEN( _instance, timeline->quaternion_w );
-		DELETEN( _instance, timeline->scale_x );
-		DELETEN( _instance, timeline->scale_y );
-		DELETEN( _instance, timeline->scale_z );
-		DELETEN( _instance, timeline->opacity );
-
-		DELETE( _instance, _transformation->timeline );
+		ae_movie_delete_layer_transformation2d( _instance, (const aeMovieLayerTransformation2D *)_transformation );
+	}
+	else
+	{
+		ae_movie_delete_layer_transformation3d( _instance, (const aeMovieLayerTransformation3D *)_transformation );
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static float get_movie_layer_transformation_property( float _immutable, void * _property, uint32_t _index )
+static float __get_movie_layer_transformation_property( float _immutable, void * _property, uint32_t _index )
 {
 	if( _property == AE_NULL )
 	{
@@ -177,92 +225,166 @@ static float get_movie_layer_transformation_property( float _immutable, void * _
 	return 0.f;
 }
 //////////////////////////////////////////////////////////////////////////
-static float get_movie_layer_transformation_property_interpolate( float _immutable, void * _property, uint32_t _index, float _t )
+static float __get_movie_layer_transformation_property_interpolate( float _immutable, void * _property, uint32_t _index, float _t )
 {
-	float data_0 = get_movie_layer_transformation_property( _immutable, _property, _index + 0 );
-	float data_1 = get_movie_layer_transformation_property( _immutable, _property, _index + 1 );
+	float data_0 = __get_movie_layer_transformation_property( _immutable, _property, _index + 0 );
+	float data_1 = __get_movie_layer_transformation_property( _immutable, _property, _index + 1 );
 
 	float data = linerp_f1( data_0, data_1, _t );
 
 	return data;
 }
 //////////////////////////////////////////////////////////////////////////
-float make_movie_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t )
+#	define AE_INTERPOLATE_PROPERTY( Name, OutName )\
+	OutName = __get_movie_layer_transformation_property_interpolate(\
+		_transformation->immutable.Name,\
+		_transformation->timeline.Name,\
+		_index, _t )
+//////////////////////////////////////////////////////////////////////////
+#	define AE_FIXED_PROPERTY( Name, Index, OutName)\
+	OutName = __get_movie_layer_transformation_property(\
+		_transformation->immutable.Name,\
+		_transformation->timeline.Name,\
+		_index + Index )
+//////////////////////////////////////////////////////////////////////////
+static void __ae_movie_make_layer_transformation2d( ae_matrix4_t _out, const aeMovieLayerTransformation2D * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t )
 {
-	float anchor_point[3];
-	float position[3];
-	float scale[3];
-	float quaternion[4];
+	ae_vector2_t anchor_point;
+	ae_vector2_t position;
+	ae_vector2_t scale;
+	ae_quaternion_t quaternion;
+
+	if( _interpolate == AE_TRUE )
+	{
+		AE_INTERPOLATE_PROPERTY( anchor_point_x, anchor_point[0] );
+		AE_INTERPOLATE_PROPERTY( anchor_point_y, anchor_point[1] );
+
+		AE_INTERPOLATE_PROPERTY( position_x, position[0] );
+		AE_INTERPOLATE_PROPERTY( position_y, position[1] );
+
+		AE_INTERPOLATE_PROPERTY( scale_x, scale[0] );
+		AE_INTERPOLATE_PROPERTY( scale_y, scale[1] );
+
+		ae_quaternion_t q1;
+		q1[0] = 0.f;
+		q1[1] = 0.f;
+		AE_FIXED_PROPERTY( quaternion_z, 0, q1[2] );
+		AE_FIXED_PROPERTY( quaternion_w, 0, q1[3] );
+
+		ae_quaternion_t q2;
+		q2[0] = 0.f;
+		q2[1] = 0.f;
+		AE_FIXED_PROPERTY( quaternion_z, 1, q2[2] );
+		AE_FIXED_PROPERTY( quaternion_w, 1, q2[3] );
+
+		linerp_qzw( quaternion, q1, q2, _t );
+	}
+	else
+	{
+		AE_FIXED_PROPERTY( anchor_point_x, 0, anchor_point[0] );
+		AE_FIXED_PROPERTY( anchor_point_y, 0, anchor_point[1] );
+
+		AE_FIXED_PROPERTY( position_x, 0, position[0] );
+		AE_FIXED_PROPERTY( position_y, 0, position[1] );
+
+		AE_FIXED_PROPERTY( scale_x, 0, scale[0] );
+		AE_FIXED_PROPERTY( scale_y, 0, scale[1] );
+
+		quaternion[0] = 0.f;
+		quaternion[1] = 0.f;
+
+		AE_FIXED_PROPERTY( quaternion_z, 0, quaternion[2] );
+		AE_FIXED_PROPERTY( quaternion_w, 0, quaternion[3] );
+	}
+
+	ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
+}
+//////////////////////////////////////////////////////////////////////////
+static void __ae_movie_make_layer_transformation3d( ae_matrix4_t _out, const aeMovieLayerTransformation3D * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t )
+{
+	ae_vector3_t anchor_point;
+	ae_vector3_t position;
+	ae_vector3_t scale;
+	ae_quaternion_t quaternion;
+
+	if( _interpolate == AE_TRUE )
+	{
+		AE_INTERPOLATE_PROPERTY( anchor_point_x, anchor_point[0] );
+		AE_INTERPOLATE_PROPERTY( anchor_point_y, anchor_point[1] );
+		AE_INTERPOLATE_PROPERTY( anchor_point_z, anchor_point[2] );
+
+		AE_INTERPOLATE_PROPERTY( position_x, position[0] );
+		AE_INTERPOLATE_PROPERTY( position_y, position[1] );
+		AE_INTERPOLATE_PROPERTY( position_z, position[2] );
+
+		AE_INTERPOLATE_PROPERTY( scale_x, scale[0] );
+		AE_INTERPOLATE_PROPERTY( scale_y, scale[1] );
+		AE_INTERPOLATE_PROPERTY( scale_z, scale[2] );
+
+		ae_quaternion_t q1;
+		AE_FIXED_PROPERTY( quaternion_x, 0, q1[0] );
+		AE_FIXED_PROPERTY( quaternion_y, 0, q1[1] );
+		AE_FIXED_PROPERTY( quaternion_z, 0, q1[2] );
+		AE_FIXED_PROPERTY( quaternion_w, 0, q1[3] );
+
+		ae_quaternion_t q2;
+		AE_FIXED_PROPERTY( quaternion_x, 1, q2[0] );
+		AE_FIXED_PROPERTY( quaternion_y, 1, q2[1] );
+		AE_FIXED_PROPERTY( quaternion_z, 1, q2[2] );
+		AE_FIXED_PROPERTY( quaternion_w, 1, q2[3] );
+
+		linerp_q( quaternion, q1, q2, _t );
+	}
+	else
+	{
+		AE_FIXED_PROPERTY( anchor_point_x, 0, anchor_point[0] );
+		AE_FIXED_PROPERTY( anchor_point_y, 0, anchor_point[1] );
+		AE_FIXED_PROPERTY( anchor_point_z, 0, anchor_point[2] );
+
+		AE_FIXED_PROPERTY( position_x, 0, position[0] );
+		AE_FIXED_PROPERTY( position_y, 0, position[1] );
+		AE_FIXED_PROPERTY( position_z, 0, position[2] );
+
+		AE_FIXED_PROPERTY( scale_x, 0, scale[0] );
+		AE_FIXED_PROPERTY( scale_y, 0, scale[1] );
+		AE_FIXED_PROPERTY( scale_z, 0, scale[2] );
+
+		AE_FIXED_PROPERTY( quaternion_x, 0, quaternion[0] );
+		AE_FIXED_PROPERTY( quaternion_y, 0, quaternion[1] );
+		AE_FIXED_PROPERTY( quaternion_z, 0, quaternion[2] );
+		AE_FIXED_PROPERTY( quaternion_w, 0, quaternion[3] );
+	}
+
+	ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
+}
+//////////////////////////////////////////////////////////////////////////
+#	undef AE_INTERPOLATE_PROPERTY
+#	undef AE_FIXED_PROPERTY
+//////////////////////////////////////////////////////////////////////////
+void ae_movie_make_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD, uint32_t _index, ae_bool_t _interpolate, float _t )
+{
+	if( _threeD == AE_FALSE )
+	{ 
+		__ae_movie_make_layer_transformation2d( _out, (const aeMovieLayerTransformation2D *)_transformation, _index, _interpolate, _t );
+	}
+	else
+	{
+		__ae_movie_make_layer_transformation3d( _out, (const aeMovieLayerTransformation3D *)_transformation, _index, _interpolate, _t );
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+float ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD, uint32_t _index, ae_bool_t _interpolate, float _t )
+{
 	float opacity;
 
 	if( _interpolate == AE_TRUE )
 	{
-#	define AE_LINERP_PROPERTY( Name, OutName )\
-	OutName = get_movie_layer_transformation_property_interpolate( _transformation->immuttable.Name, (_transformation->timeline == AE_NULL ? AE_NULL : _transformation->timeline->Name), _index, _t );
-
-		AE_LINERP_PROPERTY( anchor_point_x, anchor_point[0] );
-		AE_LINERP_PROPERTY( anchor_point_y, anchor_point[1] );
-		AE_LINERP_PROPERTY( anchor_point_z, anchor_point[2] );
-
-		AE_LINERP_PROPERTY( position_x, position[0] );
-		AE_LINERP_PROPERTY( position_y, position[1] );
-		AE_LINERP_PROPERTY( position_z, position[2] );
-
-		AE_LINERP_PROPERTY( scale_x, scale[0] );
-		AE_LINERP_PROPERTY( scale_y, scale[1] );
-		AE_LINERP_PROPERTY( scale_z, scale[2] );
-
-		AE_LINERP_PROPERTY( opacity, opacity );
-
-#	undef AE_LINERP_PROPERTY
-
-#	define AE_GET_PROPERTY_QUATERNION( Name, Index, OutName)\
-		OutName = get_movie_layer_transformation_property( _transformation->immuttable.Name, (_transformation->timeline == AE_NULL ? AE_NULL : _transformation->timeline->Name), _index + Index );
-
-		ae_quaternion_t q1;
-		AE_GET_PROPERTY_QUATERNION( quaternion_x, 0, q1[0] );
-		AE_GET_PROPERTY_QUATERNION( quaternion_y, 0, q1[1] );
-		AE_GET_PROPERTY_QUATERNION( quaternion_z, 0, q1[2] );
-		AE_GET_PROPERTY_QUATERNION( quaternion_w, 0, q1[3] );
-
-		ae_quaternion_t q2;
-		AE_GET_PROPERTY_QUATERNION( quaternion_x, 1, q2[0] );
-		AE_GET_PROPERTY_QUATERNION( quaternion_y, 1, q2[1] );
-		AE_GET_PROPERTY_QUATERNION( quaternion_z, 1, q2[2] );
-		AE_GET_PROPERTY_QUATERNION( quaternion_w, 1, q2[3] );
-
-		linerp_q( quaternion, q1, q2, _t );
-
-#	undef AE_GET_PROPERTY_QUATERNION
+		opacity = __get_movie_layer_transformation_property_interpolate( _transformation->immutable_opacity, _transformation->timeline_opacity, _index, _t );
 	}
 	else
 	{
-#	define AE_FIXED_PROPERTY( Name, OutName )\
-	OutName = get_movie_layer_transformation_property( _transformation->immuttable.Name, (_transformation->timeline == AE_NULL ? AE_NULL : _transformation->timeline->Name), _index );
-
-		AE_FIXED_PROPERTY( anchor_point_x, anchor_point[0] );
-		AE_FIXED_PROPERTY( anchor_point_y, anchor_point[1] );
-		AE_FIXED_PROPERTY( anchor_point_z, anchor_point[2] );
-
-		AE_FIXED_PROPERTY( position_x, position[0] );
-		AE_FIXED_PROPERTY( position_y, position[1] );
-		AE_FIXED_PROPERTY( position_z, position[2] );
-
-		AE_FIXED_PROPERTY( scale_x, scale[0] );
-		AE_FIXED_PROPERTY( scale_y, scale[1] );
-		AE_FIXED_PROPERTY( scale_z, scale[2] );
-
-		AE_FIXED_PROPERTY( quaternion_x, quaternion[0] );
-		AE_FIXED_PROPERTY( quaternion_y, quaternion[1] );
-		AE_FIXED_PROPERTY( quaternion_z, quaternion[2] );
-		AE_FIXED_PROPERTY( quaternion_w, quaternion[3] );
-
-		AE_FIXED_PROPERTY( opacity, opacity );
-
-#	undef AE_FIXED_PROPERTY
+		opacity = __get_movie_layer_transformation_property( _transformation->immutable_opacity, _transformation->timeline_opacity, _index );
 	}
 
-	make_transformation_m4( _out, position, anchor_point, scale, quaternion );
-
-	return opacity;
+	return opacity;	
 }
