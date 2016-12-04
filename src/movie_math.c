@@ -326,7 +326,7 @@ void ae_movie_make_transformation2d_m4( ae_matrix4_t _lm, const ae_vector2_t _po
 		mat_scale[3 * 4 + 2] = 0.f;
 
 		ae_matrix4_t mat_rotate;
-		make_quaternion_m4( mat_rotate, _quaternion );
+		make_quaternionzw_m4( mat_rotate, _quaternion );
 
 		mul_m4_m4( _lm, mat_scale, mat_rotate );
 
