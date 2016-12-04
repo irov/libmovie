@@ -45,12 +45,12 @@ static const float table_inv_255[] = {
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t equal_f_z( float _a )
 {
-	return (_a >= 0.f + f_neps) && (_a <= 0.f + f_eps) ? AE_TRUE : AE_FALSE;
+	return ((_a >= 0.f + f_neps) && (_a <= 0.f + f_eps)) ? AE_TRUE : AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t equal_f_f( float _a, float _b )
 {
-	return (_a >= _b + f_neps) && (_a <= _b + f_eps) ? AE_TRUE : AE_FALSE;
+	return ((_a >= _b + f_neps) && (_a <= _b + f_eps)) ? AE_TRUE : AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
 float min_f_f( float _a, float _b )

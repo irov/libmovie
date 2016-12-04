@@ -52,6 +52,10 @@ typedef struct aeMovieStream aeMovieStream;
 #	define AE_MOVIE_MAX_LAYER_NAME 128
 #	endif
 
+#	ifndef AE_MOVIE_MAX_COMPOSITION_NAME
+#	define AE_MOVIE_MAX_COMPOSITION_NAME 128
+#	endif
+
 #	ifndef AE_MOVIE_BEZIER_WARP_GRID
 #	define AE_MOVIE_BEZIER_WARP_GRID 9
 #	endif
