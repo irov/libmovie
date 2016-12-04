@@ -20,12 +20,12 @@ static void * __load_movie_layer_transformation_timeline( aeMovieStream * _strea
 	if( _mask & Mask )\
 	{\
 		READ( _stream, _transformation->immutable.Name );\
-		_transformation->timeline.Name = AE_NULL;\
+		if( _transformation->timeline != AE_NULL ) {_transformation->timeline->Name = AE_NULL;}\
 	}\
 	else\
 	{\
 		_transformation->immutable.Name = 0.f;\
-		_transformation->timeline.Name = __load_movie_layer_transformation_timeline(_stream, #Name);\
+		_transformation->timeline->Name = __load_movie_layer_transformation_timeline(_stream, #Name);\
 	}
 //////////////////////////////////////////////////////////////////////////
 static aeMovieResult __ae_movie_load_layer_transformation2d( aeMovieStream * _stream, uint32_t _mask, aeMovieLayerTransformation2D * _transformation )
@@ -73,8 +73,31 @@ aeMovieResult ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMov
 {
 	uint32_t immutable_property_mask;
 	READ( _stream, immutable_property_mask );
-
+	
 	_transformation->immutable_property_mask = immutable_property_mask;
+
+	if( _threeD == AE_FALSE )
+	{
+		if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+		{
+			((aeMovieLayerTransformation2D *)_transformation)->timeline = AE_NULL;
+		}
+		else
+		{
+			((aeMovieLayerTransformation2D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
+		}
+	}
+	else
+	{
+		if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
+		{
+			((aeMovieLayerTransformation3D *)_transformation)->timeline = AE_NULL;
+		}
+		else
+		{
+			((aeMovieLayerTransformation3D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
+		}
+	}
 
 	if( immutable_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
 	{
@@ -105,31 +128,45 @@ aeMovieResult ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMov
 //////////////////////////////////////////////////////////////////////////
 void ae_movie_delete_layer_transformation2d( const aeMovieInstance * _instance, const aeMovieLayerTransformation2D * _transformation )
 {
-	DELETEN( _instance, _transformation->timeline.anchor_point_x );
-	DELETEN( _instance, _transformation->timeline.anchor_point_y );
-	DELETEN( _instance, _transformation->timeline.position_x );
-	DELETEN( _instance, _transformation->timeline.position_y );
-	DELETEN( _instance, _transformation->timeline.quaternion_z );
-	DELETEN( _instance, _transformation->timeline.quaternion_w );
-	DELETEN( _instance, _transformation->timeline.scale_x );
-	DELETEN( _instance, _transformation->timeline.scale_y );
+	if( _transformation->timeline != AE_NULL )
+	{
+		aeMovieLayerTransformation2DTimeline * timeline = _transformation->timeline;
+
+		DELETEN( _instance, timeline->anchor_point_x );
+		DELETEN( _instance, timeline->anchor_point_y );
+		DELETEN( _instance, timeline->position_x );
+		DELETEN( _instance, timeline->position_y );
+		DELETEN( _instance, timeline->quaternion_z );
+		DELETEN( _instance, timeline->quaternion_w );
+		DELETEN( _instance, timeline->scale_x );
+		DELETEN( _instance, timeline->scale_y );
+
+		DELETE( _instance, _transformation->timeline );
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_movie_delete_layer_transformation3d( const aeMovieInstance * _instance, const aeMovieLayerTransformation3D * _transformation )
 {
-	DELETEN( _instance, _transformation->timeline.anchor_point_x );
-	DELETEN( _instance, _transformation->timeline.anchor_point_y );
-	DELETEN( _instance, _transformation->timeline.anchor_point_z );
-	DELETEN( _instance, _transformation->timeline.position_x );
-	DELETEN( _instance, _transformation->timeline.position_y );
-	DELETEN( _instance, _transformation->timeline.position_z );
-	DELETEN( _instance, _transformation->timeline.quaternion_x );
-	DELETEN( _instance, _transformation->timeline.quaternion_y );
-	DELETEN( _instance, _transformation->timeline.quaternion_z );
-	DELETEN( _instance, _transformation->timeline.quaternion_w );
-	DELETEN( _instance, _transformation->timeline.scale_x );
-	DELETEN( _instance, _transformation->timeline.scale_y );
-	DELETEN( _instance, _transformation->timeline.scale_z );
+	if( _transformation->timeline != AE_NULL )
+	{
+		aeMovieLayerTransformation3DTimeline * timeline = _transformation->timeline;
+
+		DELETEN( _instance, timeline->anchor_point_x );
+		DELETEN( _instance, timeline->anchor_point_y );
+		DELETEN( _instance, timeline->anchor_point_z );
+		DELETEN( _instance, timeline->position_x );
+		DELETEN( _instance, timeline->position_y );
+		DELETEN( _instance, timeline->position_z );
+		DELETEN( _instance, timeline->quaternion_x );
+		DELETEN( _instance, timeline->quaternion_y );
+		DELETEN( _instance, timeline->quaternion_z );
+		DELETEN( _instance, timeline->quaternion_w );
+		DELETEN( _instance, timeline->scale_x );
+		DELETEN( _instance, timeline->scale_y );
+		DELETEN( _instance, timeline->scale_z );
+
+		DELETE( _instance, _transformation->timeline );
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
@@ -238,13 +275,13 @@ static float __get_movie_layer_transformation_property_interpolate( float _immut
 #	define AE_INTERPOLATE_PROPERTY( Name, OutName )\
 	OutName = __get_movie_layer_transformation_property_interpolate(\
 		_transformation->immutable.Name,\
-		_transformation->timeline.Name,\
+		(_transformation->timeline == AE_NULL ? AE_NULL : _transformation->timeline->Name),\
 		_index, _t )
 //////////////////////////////////////////////////////////////////////////
 #	define AE_FIXED_PROPERTY( Name, Index, OutName)\
 	OutName = __get_movie_layer_transformation_property(\
 		_transformation->immutable.Name,\
-		_transformation->timeline.Name,\
+		(_transformation->timeline == AE_NULL ? AE_NULL : _transformation->timeline->Name),\
 		_index + Index )
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_make_layer_transformation2d( ae_matrix4_t _out, const aeMovieLayerTransformation2D * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t )

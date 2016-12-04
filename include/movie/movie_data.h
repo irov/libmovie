@@ -32,12 +32,11 @@ typedef struct
 typedef struct
 {
 	ae_bool_t immutable_r;
-	float immutable_color_vertex_r;
-
 	ae_bool_t immutable_g;
-	float immutable_color_vertex_g;
-
 	ae_bool_t immutable_b;
+
+	float immutable_color_vertex_r;
+	float immutable_color_vertex_g;
 	float immutable_color_vertex_b;
 
 	ae_color_t * color_vertites_r;
