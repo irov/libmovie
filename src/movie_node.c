@@ -877,7 +877,10 @@ ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition,
 	_composition->work_area_begin = _begin;
 	_composition->work_area_end = _end;
 
-	ae_set_movie_composition_time( _composition, _begin );
+	if( _composition->time < _begin || _composition->time >= _end )
+	{
+		ae_set_movie_composition_time( _composition, _begin );
+	}
 
 	return AE_TRUE;
 }
@@ -1601,7 +1604,7 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 
 			float t = frame_time - (float)frameId;
 
-			ae_bool_t node_loop = ((composition_loop == AE_TRUE && composition_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
+			ae_bool_t node_loop = ((composition_loop == AE_TRUE && composition_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
 
 			if( beginFrame < indexIn && endFrame >= indexIn && endFrame < indexOut )
 			{
@@ -2020,12 +2023,12 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
 
 		const aeMovieLayerData * layer = node->layer;
 
-		if( STRNCMP( instance, layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		if( _type != AE_MOVIE_LAYER_TYPE_ANY && layer->type != _type )
 		{
 			continue;
 		}
 
-		if( _type != AE_MOVIE_LAYER_TYPE_ANY && layer->type != _type )
+		if( STRNCMP( instance, layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
 		{
 			continue;
 		}
