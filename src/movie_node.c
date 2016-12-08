@@ -2011,6 +2011,40 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
+uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition )
+{
+	uint32_t count = 0;
+
+	uint32_t render_node_max_count = _composition->node_count;
+
+	uint32_t iterator = 0;
+	for( ; iterator != render_node_max_count; ++iterator )
+	{
+		const aeMovieNode * node = _composition->nodes + iterator;
+
+		if( node->active == AE_FALSE )
+		{
+			continue;
+		}
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( layer->renderable == AE_FALSE )
+		{
+			continue;
+		}
+
+		if( node->track_matte != AE_NULL && node->track_matte->active == AE_FALSE )
+		{
+			continue;
+		}
+
+		count += 1;		
+	}
+
+	return count;
+}
+//////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;

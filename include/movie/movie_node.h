@@ -117,6 +117,7 @@ void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, cons
 ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _composition, const ae_char_t * _slotName, const aeMoviePolygon ** _polygon );
 
 ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _vertices );
+uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition );
 
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out );
 
