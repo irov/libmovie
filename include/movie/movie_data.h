@@ -193,6 +193,8 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
 
 float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
 
+ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _compositionData );
+
 uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData );
 const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, uint32_t _index );
 
