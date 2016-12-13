@@ -902,6 +902,11 @@ float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _co
 	return _compositionData->duration;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _compositionData )
+{
+	return _compositionData->master;
+}
+//////////////////////////////////////////////////////////////////////////
 uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData )
 {
 	return _movieData->composition_count;
