@@ -7,10 +7,11 @@
 static ae_bool_t __test_movie_skeleton_base( aeMovieComposition * _base )
 {
 	float duration = _base->composition_data->duration;
+		
+	const aeMovieNode * it = _base->nodes;
+	const aeMovieNode * it_end = _base->nodes + _base->node_count;
 
-	for( const aeMovieNode
-		*it = _base->nodes,
-		*it_end = _base->nodes + _base->node_count;
+	for( ;
 	it != it_end;
 	++it )
 	{
@@ -53,7 +54,8 @@ aeMovieSkeleton * ae_movie_create_skeleton( aeMovieComposition * _base )
 
 	skeleton->base = _base;
 
-	for( uint32_t i = 0; i != 8; ++i )
+	uint32_t i = 0;
+	for( ; i != 8; ++i )
 	{
 		skeleton->animations[i] = AE_NULL;
 	}
@@ -70,11 +72,12 @@ static ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _base, ae
 
 	const aeMovieInstance * instance = _base->movie_data->instance;
 
-	for( const aeMovieNode
-		*it_base = _base->nodes,
-		*it_base_end = _base->nodes + _base->node_count,
-		*it_animation = _animation->nodes,
-		*it_animation_end = _animation->nodes + _animation->node_count;
+	const aeMovieNode * it_base = _base->nodes;
+	const aeMovieNode * it_base_end = _base->nodes + _base->node_count;
+	const aeMovieNode * it_animation = _animation->nodes;
+	const aeMovieNode * it_animation_end = _animation->nodes + _animation->node_count;
+
+	for( ;
 	it_base != it_base_end;
 	++it_base, ++it_animation )
 	{
@@ -97,7 +100,8 @@ static ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _base, ae
 
 static uint32_t __movie_skeleton_find_free_animation_place( aeMovieSkeleton * _skeleton )
 {
-	for( uint32_t i = 0; i != 8; ++i )
+	uint32_t i = 0;
+	for( ; i != 8; ++i )
 	{
 		if( _skeleton->animations[i] != AE_NULL )
 		{

@@ -10,7 +10,7 @@ typedef struct aeMovieRenderMesh
 {
 	uint8_t layer_type;
 
-	uint8_t blend_mode;
+	aeMovieBlendMode blend_mode;
 
 	uint8_t resource_type;
 	void * resource_data;
@@ -36,23 +36,24 @@ typedef struct aeMovieRenderMesh
 
 typedef struct aeMovieNode aeMovieNode;
 
-typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_char_t * _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
-
-typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResource * _resource, const ae_matrix4_t _matrix, void * _data);
-
-
 typedef enum
 {
 	AE_MOVIE_NODE_UPDATE_BEGIN = 0,
 	AE_MOVIE_NODE_UPDATE_UPDATE = 1,
 	AE_MOVIE_NODE_UPDATE_END = 2,
+	AE_MOVIE_NODE_UPDATE_CREATE = 3,
+	AE_MOVIE_NODE_UPDATE_DESTROY = 4,
 	__AE_MOVIE_NODE_UPDATE_STATES__,
 }aeMovieNodeUpdateState;
 
-typedef void( *ae_movie_composition_node_update_t )(const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, float _opacity, void * _data);
-typedef void * (*ae_movie_composition_track_matte_update_t)(const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data);
 
+typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_char_t * _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
+
+typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const aeMovieResource * _resource, const ae_matrix4_t _matrix, void * _data);
 typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
+typedef void( *ae_movie_composition_node_update_t )(const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, float _opacity, void * _data);
+
+typedef void * (*ae_movie_composition_track_matte_update_t)(void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data);
 
 typedef void( *ae_movie_node_event_t )(const void * _element, const ae_char_t * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data);
 

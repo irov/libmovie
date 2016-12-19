@@ -208,6 +208,15 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	_layer->is_track_matte = READB( _stream );
 	_layer->has_track_matte = READB( _stream );
 
+	if( _layer->has_track_matte == AE_TRUE )
+	{
+		_layer->track_matte = _compositions->layers + _layer->index - 1;
+	}
+	else
+	{
+		_layer->track_matte = AE_NULL;
+	}
+
 	READ( _stream, _layer->type );
 
 	_layer->frame_count = READZ( _stream );

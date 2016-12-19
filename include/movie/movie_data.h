@@ -92,6 +92,7 @@ typedef struct aeMovieLayerData
 
 	ae_bool_t is_track_matte;
 	ae_bool_t has_track_matte;
+	struct aeMovieLayerData * track_matte;
 
 	uint32_t frame_count;
 
