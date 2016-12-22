@@ -28,7 +28,7 @@ static void * __load_movie_layer_transformation_timeline( aeMovieStream * _strea
 		_transformation->timeline->Name = __load_movie_layer_transformation_timeline(_stream, #Name);\
 	}
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __ae_movie_load_layer_transformation2d( aeMovieStream * _stream, uint32_t _mask, aeMovieLayerTransformation2D * _transformation )
+static ae_result_t __ae_movie_load_layer_transformation2d( aeMovieStream * _stream, uint32_t _mask, aeMovieLayerTransformation2D * _transformation )
 {
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
@@ -45,7 +45,7 @@ static aeMovieResult __ae_movie_load_layer_transformation2d( aeMovieStream * _st
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __ae_movie_load_layer_transformation3d( aeMovieStream * _stream, uint32_t _mask, aeMovieLayerTransformation3D * _transformation )
+static ae_result_t __ae_movie_load_layer_transformation3d( aeMovieStream * _stream, uint32_t _mask, aeMovieLayerTransformation3D * _transformation )
 {
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
 	AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
@@ -69,7 +69,7 @@ static aeMovieResult __ae_movie_load_layer_transformation3d( aeMovieStream * _st
 //////////////////////////////////////////////////////////////////////////
 #	undef AE_MOVIE_STREAM_PROPERTY
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
+ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
 {
 	uint32_t immutable_property_mask;
 	READ( _stream, immutable_property_mask );
@@ -112,13 +112,13 @@ aeMovieResult ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMov
 
 	if( _threeD == AE_FALSE )
 	{
-		aeMovieResult result = __ae_movie_load_layer_transformation2d( _stream, immutable_property_mask, ( aeMovieLayerTransformation2D * )_transformation );
+		ae_result_t result = __ae_movie_load_layer_transformation2d( _stream, immutable_property_mask, ( aeMovieLayerTransformation2D * )_transformation );
 
 		return result;
 	}
 	else
 	{
-		aeMovieResult result = __ae_movie_load_layer_transformation3d( _stream, immutable_property_mask, (aeMovieLayerTransformation3D *)_transformation );
+		ae_result_t result = __ae_movie_load_layer_transformation3d( _stream, immutable_property_mask, (aeMovieLayerTransformation3D *)_transformation );
 
 		return result;
 	}

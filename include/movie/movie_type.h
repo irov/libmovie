@@ -123,7 +123,7 @@ typedef enum
 	AE_MOVIE_FAILED = -1,
 	AE_MOVIE_INVALID_MAGIC = -2,
 	AE_MOVIE_INVALID_VERSION = -3,
-} aeMovieResult;
+} ae_result_t;
 
 typedef void( *ae_movie_stream_memory_info_t )(void * _data, const char * _buff, size_t _size);
 typedef size_t( *ae_movie_stream_memory_read_t )(void * _data, void * _buff, size_t _size);

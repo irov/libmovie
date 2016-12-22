@@ -719,19 +719,15 @@ static uint32_t __get_movie_composition_data_node_count( const aeMovieCompositio
 	return count;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_bool_t __setup_movie_node_track_matte( aeMovieComposition * _composition, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _trackMatte )
+static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _trackMatte )
 {
-	const aeMovieLayerData * it_layer = _compositionData->layers + _compositionData->layer_count;
-	const aeMovieLayerData * it_layer_end = _compositionData->layers;
-	for( ; it_layer != it_layer_end; --it_layer )
+	const aeMovieLayerData * it_layer = _compositionData->layers;
+	const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	for( ; it_layer != it_layer_end; ++it_layer )
 	{
-		uint32_t current_iterator = ((*_iterator)++);
+		const aeMovieLayerData * layer = it_layer;
 
-		uint32_t node_index = _composition->node_count - current_iterator - 1;
-
-		aeMovieNode * node = _composition->nodes + node_index;
-
-		const aeMovieLayerData * layer = it_layer - 1;
+		aeMovieNode * node = _nodes + ((*_iterator)++);
 
 		uint8_t layer_type = node->layer->type;
 
@@ -746,29 +742,17 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieComposition * _compositi
 					{
 						uint32_t sub_composition_node_count = __get_movie_composition_data_node_count( node->layer->sub_composition );
 
-						aeMovieNode * track_matte_node = _composition->nodes + node_index + 1 - sub_composition_node_count;
+						aeMovieNode * track_matte_node = _nodes + (*_iterator) + sub_composition_node_count;
 
 						node->track_matte = track_matte_node;
 						node->track_matte_data = AE_NULL;
-
-						aeMovieRenderMesh mesh;
-						__compute_movie_node( _composition, track_matte_node, &mesh, AE_TRUE );
-
-						void * track_matte_data = (*_composition->providers.track_matte_update)(track_matte_node->element_data, layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_CREATE, track_matte_node->start_time, track_matte_node->matrix, &mesh, AE_NULL, _composition->provider_data);
-						track_matte_node->track_matte_data = track_matte_data;
 					}break;
 				default:
 					{
-						aeMovieNode * track_matte_node = _composition->nodes + node_index + 1;
+						aeMovieNode * track_matte_node = _nodes + (*_iterator);
 
 						node->track_matte = track_matte_node;
 						node->track_matte_data = AE_NULL;
-
-						aeMovieRenderMesh mesh;
-						__compute_movie_node( _composition, track_matte_node, &mesh, AE_TRUE );
-						
-						void * track_matte_data = (*_composition->providers.track_matte_update)(track_matte_node->element_data, layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_CREATE, track_matte_node->start_time, track_matte_node->matrix, &mesh, AE_NULL, _composition->provider_data);
-						track_matte_node->track_matte_data = track_matte_data;
 					}break;
 				}
 			}
@@ -795,7 +779,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieComposition * _compositi
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				if( __setup_movie_node_track_matte( _composition, _iterator, layer->sub_composition, node->track_matte ) == AE_FALSE )
+				if( __setup_movie_node_track_matte( _nodes, _iterator, layer->sub_composition, node->track_matte ) == AE_FALSE )
 				{
 					return AE_FALSE;
 				}
@@ -804,6 +788,36 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieComposition * _compositi
 			{
 			}break;
 		}
+	}
+
+	return AE_TRUE;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _composition )
+{
+	aeMovieNode * it_node = _composition->nodes;
+	aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
+	for( ; it_node != it_node_end; ++it_node )
+	{
+		aeMovieNode * node = it_node;
+
+		if( node->ignore == AE_TRUE )
+		{
+			continue;
+		}
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( layer->has_track_matte == AE_TRUE )
+		{
+			aeMovieNode * track_matte_node = node->track_matte;
+
+			aeMovieRenderMesh mesh;
+			__compute_movie_node( _composition, track_matte_node, &mesh, AE_TRUE );
+
+			void * track_matte_data = (*_composition->providers.track_matte_update)(track_matte_node->element_data, layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_CREATE, track_matte_node->start_time, track_matte_node->matrix, &mesh, AE_NULL, _composition->provider_data);
+			track_matte_node->track_matte_data = track_matte_data;
+		}		
 	}
 
 	return AE_TRUE;
@@ -1058,7 +1072,9 @@ static void __setup_movie_composition_element( aeMovieComposition * _composition
 	{
 		aeMovieNode * node = it_node;
 
-		void * element_data = (*_composition->providers.node_provider)(node->layer, node->layer->resource, node->matrix, _composition->provider_data);
+		const aeMovieLayerData * track_matte_layer = node->track_matte == AE_NULL ? AE_NULL : node->track_matte->layer;
+
+		void * element_data = (*_composition->providers.node_provider)(node->layer, node->matrix, track_matte_layer, _composition->provider_data);
 
 		node->element_data = element_data;
 	}
@@ -1097,12 +1113,12 @@ static void * __dummy_ae_movie_composition_node_camera( const ae_char_t * _name,
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void * __dummy_ae_movie_composition_node_provider( const aeMovieLayerData * _layerData, const aeMovieResource * _resource, const ae_matrix4_t _matrix, void * _data )
+static void * __dummy_ae_movie_composition_node_provider( const aeMovieLayerData * _layerData, const ae_matrix4_t _matrix, const aeMovieLayerData * _trackmatte, void * _data )
 {
 	(void)_layerData;
-	(void)_resource;
 	(void)_data;
 	(void)_matrix;
+	(void)_trackmatte;
 
 	return AE_NULL;
 }
@@ -1206,13 +1222,19 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 	__setup_movie_node_camera( composition, &node_camera_iterator, composition->composition_data, AE_NULL, AE_NULL );
 
 	__setup_movie_node_matrix( composition );
-
-	__setup_movie_composition_element( composition );
+		
 	__setup_movie_composition_active( composition );
 
 	uint32_t node_track_matte_iterator = 0;
 
-	if( __setup_movie_node_track_matte( composition, &node_track_matte_iterator, _compositionData, AE_NULL ) == AE_FALSE )
+	if( __setup_movie_node_track_matte( composition->nodes, &node_track_matte_iterator, _compositionData, AE_NULL ) == AE_FALSE )
+	{
+		return AE_NULL;
+	}
+
+	__setup_movie_composition_element( composition );
+
+	if( __setup_movie_node_track_matte2( composition ) == AE_FALSE )
 	{
 		return AE_NULL;
 	}

@@ -197,7 +197,54 @@ static void __load_movie_data_composition_camera( aeMovieStream * _stream, aeMov
 	READ( _stream, _compostionData->cameraZoom );
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
+static uint32_t __find_movie_data_composition_layer_position_by_index( const aeMovieCompositionData * _compositionData, uint32_t _index )
+{
+	uint32_t iterator = 0;
+
+	const aeMovieLayerData * it_layer = _compositionData->layers;
+	const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	for( ; it_layer != it_layer_end; ++it_layer )
+	{
+		const aeMovieLayerData * layer = it_layer;
+
+		if( layer->index == _index )
+		{
+			return iterator;
+		}
+
+		++iterator;
+	}
+
+	return (uint32_t)-1;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
+{
+	if( _layer->has_track_matte == AE_TRUE )
+	{
+		uint32_t layer_position = __find_movie_data_composition_layer_position_by_index( _compositionData, _layer->index );
+
+		if( layer_position == (uint32_t)-1 )
+		{
+			return AE_MOVIE_FAILED;
+		}
+
+		if( layer_position + 1 >= _compositionData->layer_count )
+		{
+			return AE_MOVIE_FAILED;
+		}
+
+		_layer->track_matte = _compositionData->layers + layer_position + 1;
+	}
+	else
+	{
+		_layer->track_matte = AE_NULL;
+	}
+
+	return AE_MOVIE_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
 {
 	const aeMovieInstance * instance = _movieData->instance;
 
@@ -207,16 +254,7 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 
 	_layer->is_track_matte = READB( _stream );
 	_layer->has_track_matte = READB( _stream );
-
-	if( _layer->has_track_matte == AE_TRUE )
-	{
-		_layer->track_matte = _compositions->layers + _layer->index - 1;
-	}
-	else
-	{
-		_layer->track_matte = AE_NULL;
-	}
-
+	
 	READ( _stream, _layer->type );
 
 	_layer->frame_count = READZ( _stream );
@@ -537,7 +575,43 @@ static aeMovieResult __load_movie_data_layer( const aeMovieData * _movieData, co
 	return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
+static ae_result_t __load_movie_data_composition_layers( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
+{
+	aeMovieLayerData * it_layer = _compositionData->layers;
+	aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	for( ; it_layer != it_layer_end; ++it_layer )
+	{
+		aeMovieLayerData * layer = it_layer;
+
+		layer->composition = _compositionData;
+
+		if( __load_movie_data_layer( _movieData, _compositions, _stream, _compositionData, layer ) == AE_MOVIE_FAILED )
+		{
+			return AE_MOVIE_FAILED;
+		}
+	}
+
+	return AE_MOVIE_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_result_t __setup_movie_data_composition_layers( aeMovieCompositionData * _compositionData )
+{
+	aeMovieLayerData * it_layer = _compositionData->layers;
+	aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	for( ; it_layer != it_layer_end; ++it_layer )
+	{
+		aeMovieLayerData * layer = it_layer;
+				
+		if( __setup_movie_data_layer_track_matte( _compositionData, layer ) == AE_MOVIE_FAILED )
+		{
+			return AE_MOVIE_FAILED;
+		}
+	}
+
+	return AE_MOVIE_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_result_t __load_movie_data_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
 {
 	READ_STRING( _stream, _compositionData->name );
 
@@ -615,18 +689,14 @@ static aeMovieResult __load_movie_data_composition( const aeMovieData * _movieDa
 	_compositionData->layer_count = layer_count;
 	_compositionData->layers = NEWN( _movieData->instance, aeMovieLayerData, layer_count );
 
-	aeMovieLayerData * it_layer = _compositionData->layers;
-	aeMovieLayerData * it_layer_end = _compositionData->layers + layer_count;
-	for( ; it_layer != it_layer_end; ++it_layer )
+	if( __load_movie_data_composition_layers( _movieData, _compositions, _stream, _compositionData ) == AE_MOVIE_FAILED )
 	{
-		aeMovieLayerData * layer = it_layer;
+		return AE_MOVIE_FAILED;
+	}
 
-		layer->composition = _compositionData;
-
-		if( __load_movie_data_layer( _movieData, _compositions, _stream, _compositionData, layer ) == AE_MOVIE_FAILED )
-		{
-			return AE_MOVIE_FAILED;
-		}
+	if( __setup_movie_data_composition_layers( _compositionData ) == AE_MOVIE_FAILED )
+	{
+		return AE_MOVIE_FAILED;
 	}
 
 	return AE_MOVIE_SUCCESSFUL;
@@ -655,7 +725,7 @@ void ae_delete_movie_stream( aeMovieStream * _stream )
 	DELETE( _stream->instance, _stream );
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieResult ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data )
 {
 	uint8_t magic[4];
 	READN( _stream, magic, 4 );
