@@ -1142,7 +1142,7 @@ static void __dummy_ae_movie_composition_node_update( const void * _element, uin
 	(void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
-static void * __dummy_ae_movie_composition_track_matte_update( const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data )
+static void * __dummy_ae_movie_composition_track_matte_update( void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data )
 {
 	(void)_element;
 	(void)_type;
