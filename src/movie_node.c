@@ -226,14 +226,12 @@ static uint32_t __compute_movie_node_frame( const aeMovieNode * _node, ae_bool_t
 	return frame;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __compute_movie_node( const aeMovieComposition * _composition, const aeMovieNode * _node, aeMovieRenderMesh * _render, ae_bool_t _trackmatte )
+static void __compute_movie_node( const aeMovieComposition * _composition, const aeMovieNode * _node, aeMovieRenderMesh * _render, ae_bool_t _interpolate, ae_bool_t _trackmatte )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 	const aeMovieLayerData * layer = _node->layer;
 	const aeMovieResource * resource = layer->resource;
-
-	ae_bool_t interpolate = _composition->interpolate;
-
+	
 	uint8_t layer_type = layer->type;
 
 	_render->layer_type = layer_type;
@@ -264,7 +262,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 	}
 
 	float t_frame = 0.f;
-	uint32_t frame = __compute_movie_node_frame( _node, interpolate, &t_frame );
+	uint32_t frame = __compute_movie_node_frame( _node, _interpolate, &t_frame );
 
 	switch( layer_type )
 	{
@@ -813,7 +811,7 @@ static ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _composit
 			aeMovieNode * track_matte_node = node->track_matte;
 
 			aeMovieRenderMesh mesh;
-			__compute_movie_node( _composition, track_matte_node, &mesh, AE_TRUE );
+			__compute_movie_node( _composition, track_matte_node, &mesh, AE_FALSE, AE_TRUE );
 
 			void * track_matte_data = (*_composition->providers.track_matte_update)(track_matte_node->element_data, layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_CREATE, track_matte_node->start_time, track_matte_node->matrix, &mesh, AE_NULL, _composition->provider_data);
 			track_matte_node->track_matte_data = track_matte_data;
@@ -1486,7 +1484,7 @@ static void __update_movie_composition_node_state( aeMovieComposition * _composi
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __update_movie_composition_track_matte_state( aeMovieComposition * _composition, aeMovieNode * _node, ae_bool_t _loop, ae_bool_t _begin, float _time )
+static void __update_movie_composition_track_matte_state( aeMovieComposition * _composition, aeMovieNode * _node, ae_bool_t _loop, ae_bool_t _begin, float _time, ae_bool_t _interpolate )
 {
 	uint8_t layer_type = _node->layer->type;
 
@@ -1502,7 +1500,7 @@ static void __update_movie_composition_track_matte_state( aeMovieComposition * _
 	}
 
 	aeMovieRenderMesh mesh;
-	__compute_movie_node( _composition, _node, &mesh, AE_TRUE );
+	__compute_movie_node( _composition, _node, &mesh, _interpolate, AE_TRUE );
 
 	if( _begin == AE_TRUE )
 	{
@@ -1557,7 +1555,7 @@ static void __update_node( aeMovieComposition * _composition, aeMovieNode * _nod
 
 	if( _node->layer->is_track_matte == AE_TRUE )
 	{
-		__update_movie_composition_track_matte_state( _composition, _node, _loop, _begin, _time );
+		__update_movie_composition_track_matte_state( _composition, _node, _loop, _begin, _time, _interpolate );
 	}
 	else
 	{
@@ -1595,10 +1593,10 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && composition_interrupt == AE_FALSE && composition_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
 		float out_time = (node->out_time >= loopEnd && composition_interrupt == AE_FALSE && composition_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
 
-		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv + 0.001f);
-		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv + 0.001f);
-		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.001f);
-		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.001f);
+		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv + 0.0001f);
+		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv + 0.0001f);
+		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.0001f);
+		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.0001f);
 
 		if( indexIn > endFrame || indexOut < beginFrame )
 		{
@@ -1639,15 +1637,14 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 
 			node->current_time = current_time;
 
-			float t = frame_time - (float)frameId;
-
 			ae_bool_t node_loop = ((composition_loop == AE_TRUE && composition_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
 
-			if( beginFrame < indexIn && endFrame >= indexIn && endFrame < indexOut )
+			if( ((beginFrame < indexIn) || (beginFrame == 0 && beginFrame == indexIn)) && endFrame >= indexIn && endFrame < indexOut )
 			{
 				node->active = AE_TRUE;
 
-				ae_bool_t node_interpolate = (node_loop == AE_TRUE) ? composition_interpolate : ((endFrame + 1) < indexOut);
+				ae_bool_t node_interpolate = composition_interpolate ? ( node_loop == AE_TRUE ? (endFrame + 1) < indexOut : AE_FALSE) : AE_FALSE;
+				float t = node_interpolate == AE_TRUE ? frame_time - (float)frameId : 0.f;
 
 				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_TRUE );
 			}
@@ -1665,7 +1662,8 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 			{
 				node->active = AE_TRUE;
 
-				ae_bool_t node_interpolate = composition_interpolate ? ((frameId + 1) < indexOut) : AE_FALSE;
+				ae_bool_t node_interpolate = composition_interpolate ? (node_loop == AE_TRUE ? (endFrame + 1) < indexOut : AE_FALSE) : AE_FALSE;
+				float t = node_interpolate == AE_TRUE ? frame_time - (float)frameId : 0.f;
 
 				__update_node( _composition, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_TRUE );
 			}
@@ -2013,6 +2011,8 @@ ae_bool_t ae_get_movie_composition_socket(const aeMovieComposition * _compositio
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32_t * _iterator, aeMovieRenderMesh * _render )
 {
+	ae_bool_t composition_interpolate = _composition->interpolate;
+
 	uint32_t render_node_index = *_iterator;
 	uint32_t render_node_max_count = _composition->node_count;
 
@@ -2040,7 +2040,7 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 
 		*_iterator = iterator + 1;
 
-		__compute_movie_node( _composition, node, _render, AE_FALSE );
+		__compute_movie_node( _composition, node, _render, composition_interpolate, AE_FALSE );
 
 		return AE_TRUE;
 	}
