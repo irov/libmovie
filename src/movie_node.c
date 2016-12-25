@@ -769,6 +769,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t 
 			else
 			{
 				node->track_matte = _trackMatte;
+                node->track_matte_data = AE_NULL;
 			}
 		}
 
@@ -806,16 +807,14 @@ static ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _composit
 
 		const aeMovieLayerData * layer = node->layer;
 
-		if( layer->has_track_matte == AE_TRUE )
-		{
-			aeMovieNode * track_matte_node = node->track_matte;
+        if( layer->is_track_matte == AE_TRUE )
+        {
+            aeMovieRenderMesh mesh;
+            __compute_movie_node( _composition, node, &mesh, AE_FALSE, AE_TRUE );
 
-			aeMovieRenderMesh mesh;
-			__compute_movie_node( _composition, track_matte_node, &mesh, AE_FALSE, AE_TRUE );
-
-			void * track_matte_data = (*_composition->providers.track_matte_update)(track_matte_node->element_data, layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_CREATE, track_matte_node->start_time, track_matte_node->matrix, &mesh, AE_NULL, _composition->provider_data);
-			track_matte_node->track_matte_data = track_matte_data;
-		}		
+            void * track_matte_data = (*_composition->providers.track_matte_update)(node->element_data, layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_CREATE, node->start_time, node->matrix, &mesh, AE_NULL, _composition->provider_data);
+            node->track_matte_data = track_matte_data;
+        }
 	}
 
 	return AE_TRUE;
@@ -1248,11 +1247,7 @@ void ae_destroy_movie_composition( const aeMovieComposition * _composition )
 	{
 		const aeMovieNode * node = it_node;
 
-		if( node->animate != AE_MOVIE_NODE_ANIMATE_STATIC && node->animate != AE_MOVIE_NODE_ANIMATE_END )
-		{
-			(*_composition->providers.track_matte_update)(node->element_data, node->layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_DESTROY, 0.f, AE_NULL, AE_NULL, node->track_matte_data, _composition->provider_data);
-		}
-
+		(*_composition->providers.track_matte_update)(node->element_data, node->layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_DESTROY, 0.f, AE_NULL, AE_NULL, node->track_matte_data, _composition->provider_data);
 		(*_composition->providers.node_destroyer)(node->element_data, node->layer->type, _composition->provider_data);
 	}
 
@@ -1265,11 +1260,13 @@ void ae_destroy_movie_composition( const aeMovieComposition * _composition )
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _composition, ae_vector3_t _point )
 {
-	if( _composition->composition_data->flags & AE_MOVIE_COMPOSITION_ANCHOR_POINT )
+    const aeMovieCompositionData * composition_data = _composition->composition_data;
+
+	if( composition_data->flags & AE_MOVIE_COMPOSITION_ANCHOR_POINT )
 	{
-		_point[0] = _composition->composition_data->anchor_point[0];
-		_point[1] = _composition->composition_data->anchor_point[1];
-		_point[2] = _composition->composition_data->anchor_point[2];
+		_point[0] = composition_data->anchor_point[0];
+		_point[1] = composition_data->anchor_point[1];
+		_point[2] = composition_data->anchor_point[2];
 
 		return AE_TRUE;
 	}
@@ -1376,8 +1373,7 @@ void ae_stop_movie_composition( aeMovieComposition * _composition )
 		{
 			(*_composition->providers.track_matte_update)(node->element_data, node->layer->type, AE_FALSE, AE_MOVIE_NODE_UPDATE_END, 0.f, AE_NULL, AE_NULL, node->track_matte_data, _composition->provider_data);
 
-			node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;
-			node->track_matte_data = AE_NULL;
+			node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;			
 		}
 	}
 
@@ -1593,10 +1589,10 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && composition_interrupt == AE_FALSE && composition_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
 		float out_time = (node->out_time >= loopEnd && composition_interrupt == AE_FALSE && composition_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
 
-		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv + 0.0001f);
-		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv + 0.0001f);
-		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.0001f);
-		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.0001f);
+		uint32_t beginFrame = (uint32_t)(_beginTime * frameDurationInv + 0.001f);
+		uint32_t endFrame = (uint32_t)(_endTime * frameDurationInv + 0.001f);
+		uint32_t indexIn = (uint32_t)(in_time * frameDurationInv + 0.001f);
+		uint32_t indexOut = (uint32_t)(out_time * frameDurationInv + 0.001f);
 
 		if( indexIn > endFrame || indexOut < beginFrame )
 		{
@@ -1639,7 +1635,7 @@ static void __update_movie_composition_node( aeMovieComposition * _composition, 
 
 			ae_bool_t node_loop = ((composition_loop == AE_TRUE && composition_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || (layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
 
-			if( ((beginFrame < indexIn) || (beginFrame == 0 && beginFrame == indexIn)) && endFrame >= indexIn && endFrame < indexOut )
+			if( beginFrame < indexIn && endFrame >= indexIn && endFrame < indexOut )
 			{
 				node->active = AE_TRUE;
 
