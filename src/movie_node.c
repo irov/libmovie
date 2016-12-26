@@ -1071,7 +1071,7 @@ static void __setup_movie_composition_element( aeMovieComposition * _composition
 
 		const aeMovieLayerData * track_matte_layer = node->track_matte == AE_NULL ? AE_NULL : node->track_matte->layer;
 
-		void * element_data = (*_composition->providers.node_provider)(node->layer, node->matrix, track_matte_layer, _composition->provider_data);
+		void * element_data = (*_composition->providers.node_provider)(node->layer, node->matrix, node->opacity, track_matte_layer, _composition->provider_data);
 
 		node->element_data = element_data;
 	}
@@ -1110,11 +1110,12 @@ static void * __dummy_ae_movie_composition_node_camera( const ae_char_t * _name,
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void * __dummy_ae_movie_composition_node_provider( const aeMovieLayerData * _layerData, const ae_matrix4_t _matrix, const aeMovieLayerData * _trackmatte, void * _data )
+static void * __dummy_ae_movie_composition_node_provider( const aeMovieLayerData * _layerData, const ae_matrix4_t _matrix, float _opacity, const aeMovieLayerData * _trackmatte, void * _data )
 {
 	(void)_layerData;
 	(void)_data;
 	(void)_matrix;
+	(void)_opacity;
 	(void)_trackmatte;
 
 	return AE_NULL;

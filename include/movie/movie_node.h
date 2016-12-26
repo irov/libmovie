@@ -49,7 +49,7 @@ typedef enum
 
 typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_char_t * _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
 
-typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const ae_matrix4_t _matrix, const aeMovieLayerData * _trackmatte, void * _data);
+typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const ae_matrix4_t _matrix, float _opacity, const aeMovieLayerData * _trackmatte, void * _data);
 typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
 typedef void( *ae_movie_composition_node_update_t )(const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, float _opacity, void * _data);
 
