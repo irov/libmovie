@@ -1435,7 +1435,7 @@ void ae_interrupt_movie_composition( aeMovieComposition * _composition, ae_bool_
 
 	if( _skip == AE_TRUE )
 	{
-		float work_end = __get_movie_loop_work_end( _composition );
+		float work_end = min_f_f( _composition->composition_data->loop_segment[1], _composition->work_area_end );
 
 		ae_set_movie_composition_time( _composition, work_end );
 	}
