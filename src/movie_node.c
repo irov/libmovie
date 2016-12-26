@@ -1419,25 +1419,39 @@ static float __get_movie_loop_work_end( const aeMovieComposition * _composition 
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_interrupt_movie_composition( aeMovieComposition * _composition, ae_bool_t _skip )
+void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop )
 {
 	if( _composition->play == AE_FALSE )
 	{
 		return;
 	}
 
-	if( _composition->loop == AE_FALSE )
+	if(_loop == AE_FALSE)
 	{
-		return;
+		if(_composition->loop == AE_FALSE)
+		{
+			return;
+		}
+
+		_composition->interrupt = AE_TRUE;
+
+		if(_skip == AE_TRUE)
+		{
+			float work_end = __get_movie_loop_work_end(_composition);
+
+			ae_set_movie_composition_time(_composition, work_end);
+		}		
 	}
-
-	_composition->interrupt = AE_TRUE;
-
-	if( _skip == AE_TRUE )
+	else
 	{
-		float work_end = min_f_f( _composition->composition_data->loop_segment[1], _composition->work_area_end );
+		_composition->interrupt = AE_TRUE;
 
-		ae_set_movie_composition_time( _composition, work_end );
+		if(_skip == AE_TRUE)
+		{
+			float work_end = _composition->composition_data->loop_segment[1];
+
+			ae_set_movie_composition_time(_composition, work_end);
+		}
 	}
 
 	(_composition->providers.composition_state)(AE_MOVIE_COMPOSITION_INTERRUPT, _composition->provider_data);

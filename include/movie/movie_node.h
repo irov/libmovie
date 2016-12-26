@@ -101,7 +101,7 @@ void ae_remove_movie_composition_work_area( aeMovieComposition * _composition );
 
 void ae_play_movie_composition( aeMovieComposition * _composition, float _time );
 void ae_stop_movie_composition( aeMovieComposition * _composition );
-void ae_interrupt_movie_composition( aeMovieComposition * _composition, ae_bool_t _skip );
+void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop);
 
 void ae_set_movie_composition_time( aeMovieComposition * _composition, float _timing );
 float ae_get_movie_composition_time( const aeMovieComposition * _composition );
