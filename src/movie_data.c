@@ -38,8 +38,6 @@ static void __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const a
 			const aeMovieMesh * mesh = it_mesh;
 
 			__ae_delete_mesh_t( _instance, mesh );
-
-			DELETE( _instance, mesh );
 		}
 
 		DELETEN( _instance, _layerMesh->meshes );
