@@ -122,4 +122,7 @@ uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition
 
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out );
 
+void ae_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _time );
+void ae_stop_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName );
+
 #endif

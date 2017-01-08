@@ -41,12 +41,35 @@ typedef struct aeMovieStream
 #	endif
 } aeMovieStream;
 //////////////////////////////////////////////////////////////////////////
+typedef struct aeMovieCompositionAnimation
+{
+	ae_bool_t play;
+	ae_bool_t interrupt;
+
+	ae_bool_t loop;
+	ae_bool_t interpolate;
+		
+	float time;
+
+	float work_area_begin;
+	float work_area_end;
+} aeMovieCompositionAnimation;
+//////////////////////////////////////////////////////////////////////////
+typedef struct aeMovieSubMovie
+{
+	const aeMovieLayerData * layer;
+
+	aeMovieCompositionAnimation * animation;
+} aeMovieSubMovie;
+//////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieNode
 {
 	const aeMovieLayerData * layer;
 
 	struct aeMovieNode * relative;
 	struct aeMovieNode * track_matte;
+
+	const aeMovieSubMovie * submovie;
 
 	float start_time;
 	float in_time;
@@ -58,7 +81,7 @@ typedef struct aeMovieNode
 	ae_bool_t active;
 	ae_bool_t ignore;
 
-	uint32_t animate;
+	uint8_t animate;
 
 	uint32_t matrix_revision;
 	ae_matrix4_t matrix;
@@ -85,20 +108,15 @@ typedef struct aeMovieComposition
 	const aeMovieData * movie_data;
 	const aeMovieCompositionData * composition_data;
 
-	ae_bool_t play;
-	ae_bool_t interrupt;
-
-	ae_bool_t loop;
-	ae_bool_t interpolate;
+	aeMovieCompositionAnimation * animation;
 
 	uint32_t update_revision;
-	float time;
-
-	float work_area_begin;
-	float work_area_end;
 
 	uint32_t node_count;
 	aeMovieNode * nodes;
+
+	uint32_t submovie_count;
+	aeMovieSubMovie * submovies;
 
 	aeMovieCompositionProviders providers;
 	void * provider_data;
