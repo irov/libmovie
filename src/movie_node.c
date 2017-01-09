@@ -559,7 +559,7 @@ static ae_bool_t __test_error_composition_layer_frame( const aeMovieInstance * _
 }
 #	endif
 //////////////////////////////////////////////////////////////////////////
-static uint32_t __get_movie_frame_time( const aeMovieCompositionAnimation * _animation, aeMovieNode * _node, float * _t )
+static uint32_t __get_movie_frame_time( const aeMovieCompositionAnimation * _animation, aeMovieNode * _node, ae_bool_t _interpolate, float * _t )
 {
 	float animation_time = _animation->time;
 
@@ -578,16 +578,26 @@ static uint32_t __get_movie_frame_time( const aeMovieCompositionAnimation * _ani
 
 	uint32_t frame_relative = (uint32_t)frame_time;
 
-	float t_relative = frame_time - (float)frame_relative;
-
-	if( frame_relative >= layer->frame_count )
+	if( _interpolate == AE_TRUE )
 	{
-		frame_relative = layer->frame_count - 1;
+		float t_relative = frame_time - (float)frame_relative;
 
-		t_relative = 0.f;
+		if( frame_relative >= layer->frame_count )
+		{
+			frame_relative = layer->frame_count - 1;
+
+			t_relative = 0.f;
+		}
+
+		*_t = t_relative;
 	}
-
-	*_t = t_relative;
+	else
+	{
+		if( frame_relative >= layer->frame_count )
+		{
+			frame_relative = layer->frame_count - 1;
+		}
+	}
 
 	return frame_relative;
 }
@@ -663,7 +673,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 	if( node_relative->matrix_revision != _revision )
 	{
 		float t_relative = 0.f;
-		uint32_t frame_relative = __get_movie_frame_time( _animation, node_relative, &t_relative );
+		uint32_t frame_relative = __get_movie_frame_time( _animation, node_relative, _composition->interpolate, &t_relative );
 
 		__update_movie_composition_node_matrix( _composition, _animation, node_relative, _revision, frame_relative, _interpolate, t_relative );
 	}
@@ -1178,8 +1188,8 @@ static void __setup_movie_node_matrix2( const aeMovieComposition * _composition,
 			continue;
 		}
 
-		float t;
-		uint32_t frameId = __get_movie_frame_time( _animation, node, &t );
+		float t = 0.f;
+		uint32_t frameId = __get_movie_frame_time( _animation, node, _composition->interpolate, &t );
 
 		__update_movie_composition_node_matrix( _composition, _animation, node, update_revision, frameId, _composition->interpolate, t );
 	}
