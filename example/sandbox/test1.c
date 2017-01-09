@@ -111,7 +111,7 @@ int main( int argc, char *argv[] )
 
 	providers.composition_state = AE_NULL;
 
-	aeMovieComposition * composition = ae_create_movie_composition( movieData, compositionData, &providers, AE_NULL );
+	aeMovieComposition * composition = ae_create_movie_composition( movieData, compositionData, AE_TRUE, &providers, AE_NULL );
 
 
 	//while( 1 )

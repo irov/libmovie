@@ -47,8 +47,7 @@ typedef struct aeMovieCompositionAnimation
 	ae_bool_t interrupt;
 
 	ae_bool_t loop;
-	ae_bool_t interpolate;
-		
+			
 	float time;
 
 	float work_area_begin;
@@ -111,6 +110,8 @@ typedef struct aeMovieComposition
 	aeMovieCompositionAnimation * animation;
 
 	uint32_t update_revision;
+
+	ae_bool_t interpolate;
 
 	uint32_t node_count;
 	aeMovieNode * nodes;
