@@ -239,11 +239,11 @@ static ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositio
 			return AE_MOVIE_FAILED;
 		}
 
-		_layer->track_matte = _compositionData->layers + layer_position + 1;
+		_layer->track_matte_layer = _compositionData->layers + layer_position + 1;
 	}
 	else
 	{
-		_layer->track_matte = AE_NULL;
+		_layer->track_matte_layer = AE_NULL;
 	}
 
 	return AE_MOVIE_SUCCESSFUL;
@@ -455,12 +455,12 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 			_layer->resource = _movieData->resources[resource_index - 1];
 		}
 
-		_layer->sub_composition = AE_NULL;
+		_layer->sub_compositionData = AE_NULL;
 	}
 	else
 	{
 		uint32_t composition_index = READZ( _stream );
-		_layer->sub_composition = _compositions + composition_index;
+		_layer->sub_compositionData = _compositions + composition_index;
 
 		_layer->resource = AE_NULL;
 	}
@@ -588,7 +588,7 @@ static ae_result_t __load_movie_data_composition_layers( const aeMovieData * _mo
 	{
 		aeMovieLayerData * layer = it_layer;
 
-		layer->composition = _compositionData;
+		layer->compositionData = _compositionData;
 
 		if( __load_movie_data_layer( _movieData, _compositions, _stream, _compositionData, layer ) == AE_MOVIE_FAILED )
 		{
@@ -1029,7 +1029,7 @@ uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _co
 		}
 		else if( type == AE_MOVIE_LAYER_TYPE_MOVIE )
 		{
-			count += ae_get_composition_data_event_count( it_layer->sub_composition );
+			count += ae_get_composition_data_event_count( it_layer->sub_compositionData );
 		}
 	}
 
@@ -1055,7 +1055,7 @@ static ae_bool_t __ae_get_composition_data_event_name( const aeMovieCompositionD
 		}
 		else if( type == AE_MOVIE_LAYER_TYPE_MOVIE )
 		{
-			if( __ae_get_composition_data_event_name( it_layer->sub_composition, _iterator, _index, _name ) == AE_TRUE )
+			if( __ae_get_composition_data_event_name( it_layer->sub_compositionData, _iterator, _index, _name ) == AE_TRUE )
 			{
 				return AE_TRUE;
 			}

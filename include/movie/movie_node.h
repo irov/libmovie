@@ -64,10 +64,15 @@ typedef enum
 	AE_MOVIE_COMPOSITION_INTERRUPT,
 	AE_MOVIE_COMPOSITION_END,
 	AE_MOVIE_COMPOSITION_LOOP_END,
+	AE_MOVIE_SUB_COMPOSITION_PLAY,
+	AE_MOVIE_SUB_COMPOSITION_STOP,
+	AE_MOVIE_SUB_COMPOSITION_INTERRUPT,
+	AE_MOVIE_SUB_COMPOSITION_END,
+	AE_MOVIE_SUB_COMPOSITION_LOOP_END,
 	__AE_MOVIE_COMPOSITION_STATES__
 } aeMovieCompositionStateFlag;
 
-typedef void( *ae_movie_composition_state_t )(aeMovieCompositionStateFlag _state, void * _data);
+typedef void( *ae_movie_composition_state_t )(aeMovieCompositionStateFlag _state, const ae_char_t * _subcomposition, void * _data);
 
 typedef struct aeMovieCompositionProviders
 {
