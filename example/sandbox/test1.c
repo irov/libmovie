@@ -107,7 +107,7 @@ int main( int argc, char *argv[] )
 	providers.node_update = AE_NULL;
 	providers.track_matte_update = AE_NULL;
 
-	providers.event = AE_NULL;
+	providers.composition_event = AE_NULL;
 
 	providers.composition_state = AE_NULL;
 

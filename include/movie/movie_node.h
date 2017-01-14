@@ -46,16 +46,61 @@ typedef enum
 	__AE_MOVIE_NODE_UPDATE_STATES__,
 }aeMovieNodeUpdateState;
 
+typedef struct aeMovieCameraProviderCallbackData
+{	
+	const ae_char_t * name;
+	ae_vector3_ptr_t position;
+	ae_vector3_ptr_t direction;
+	float fov;
+	float width;
+	float height;
+} aeMovieCameraProviderCallbackData;
 
-typedef void * (*ae_movie_composition_node_camera_provider_t)(const ae_char_t * _name, const ae_vector3_t _position, const ae_vector3_t _direction, float _fov, float _width, float _height, void * _data);
+typedef struct aeMovieNodeProviderCallbackData
+{
+	const aeMovieLayerData * layer;
+	ae_matrix4_ptr_t matrix; 
+	float opacity;
+	const aeMovieLayerData * trackmatteLayer;
+} aeMovieNodeProviderCallbackData;
 
-typedef void * (*ae_movie_composition_node_provider_t)(const aeMovieLayerData * _layerData, const ae_matrix4_t _matrix, float _opacity, const aeMovieLayerData * _trackmatte, void * _data);
-typedef void( *ae_movie_composition_node_destroyer_t )(const void * _element, uint32_t _type, void * _data);
-typedef void( *ae_movie_composition_node_update_t )(const void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, float _opacity, void * _data);
+typedef struct aeMovieNodeDestroyCallbackData
+{
+	void * element;
+	uint32_t type;
+} aeMovieNodeDestroyCallbackData;
 
-typedef void * (*ae_movie_composition_track_matte_update_t)(void * _element, uint32_t _type, ae_bool_t _loop, aeMovieNodeUpdateState _state, float _offset, const ae_matrix4_t _matrix, const aeMovieRenderMesh * _mesh, void * _track_matte_data, void * _data);
+typedef struct aeMovieNodeUpdateCallbackData
+{
+	void * element;
+	uint32_t type;
+	ae_bool_t loop;
+	aeMovieNodeUpdateState state;
+	float offset;
+	ae_matrix4_ptr_t matrix;
+	float opacity;
+} aeMovieNodeUpdateCallbackData;
 
-typedef void( *ae_movie_node_event_t )(const void * _element, const ae_char_t * _name, const ae_matrix4_t _matrix, float _opacity, ae_bool_t _begin, void * _data);
+typedef struct aeMovieTrackMatteUpdateCallbackData
+{
+	void * element;
+	uint32_t type;
+	ae_bool_t loop;
+	aeMovieNodeUpdateState state;
+	float offset;
+	ae_matrix4_ptr_t matrix;
+	aeMovieRenderMesh * mesh;
+	void * track_matte_data;
+} aeMovieTrackMatteUpdateCallbackData;
+
+typedef struct aeMovieCompositionEventCallbackData
+{
+	void * element;
+	const ae_char_t * name;
+	ae_matrix4_ptr_t matrix;
+	float opacity;
+	ae_bool_t begin;
+} aeMovieCompositionEventCallbackData;
 
 typedef enum
 {
@@ -72,20 +117,32 @@ typedef enum
 	__AE_MOVIE_COMPOSITION_STATES__
 } aeMovieCompositionStateFlag;
 
-typedef void( *ae_movie_composition_state_t )(aeMovieCompositionStateFlag _state, const ae_char_t * _subcomposition, void * _data);
+typedef struct aeMovieCompositionStateCallbackData
+{
+	aeMovieCompositionStateFlag state;
+	const ae_char_t * subcomposition;
+} aeMovieCompositionStateCallbackData;
+
+typedef void * (*ae_movie_callback_camera_provider_t)(const aeMovieCameraProviderCallbackData * _callbackData, void * _data);
+typedef void * (*ae_movie_callback_node_provider_t)(const aeMovieNodeProviderCallbackData * _callbackData, void * _data);
+typedef void (*ae_movie_callback_node_destroy_t)(const aeMovieNodeDestroyCallbackData * _callbackData, void * _data);
+typedef void (*ae_movie_callback_node_update_t)(const aeMovieNodeUpdateCallbackData * _callbackData, void * _data);
+typedef void * (*ae_movie_callback_track_matte_update_t)(const aeMovieTrackMatteUpdateCallbackData * _callbackData, void * _data);
+typedef void (*ae_movie_callback_composition_event_t)(const aeMovieCompositionEventCallbackData * _callbackData, void * _data);
+typedef void (*ae_movie_callback_composition_state_t)(const aeMovieCompositionStateCallbackData * _callbackData, void * _data);
 
 typedef struct aeMovieCompositionProviders
 {
-	ae_movie_composition_node_camera_provider_t camera_provider;
+	ae_movie_callback_camera_provider_t camera_provider;
 
-	ae_movie_composition_node_provider_t node_provider;
-	ae_movie_composition_node_destroyer_t node_destroyer;
-	ae_movie_composition_node_update_t node_update;
-	ae_movie_composition_track_matte_update_t track_matte_update;
-
-	ae_movie_node_event_t event;
-
-	ae_movie_composition_state_t composition_state;
+	ae_movie_callback_node_provider_t node_provider;
+	ae_movie_callback_node_destroy_t node_destroyer;
+	ae_movie_callback_node_update_t node_update;
+	
+	ae_movie_callback_track_matte_update_t track_matte_update;
+		
+	ae_movie_callback_composition_event_t composition_event;
+	ae_movie_callback_composition_state_t composition_state;
 
 } aeMovieCompositionProviders;
 

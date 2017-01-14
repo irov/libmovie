@@ -14,6 +14,9 @@ typedef float ae_vector4_t[4];
 typedef float ae_quaternion_t[4];
 typedef float ae_matrix4_t[16];
 
+typedef const float * ae_vector3_ptr_t;
+typedef const float * ae_matrix4_ptr_t;
+
 static const uint8_t AE_TRUE = 1;
 static const uint8_t AE_FALSE = 0;
 static void * AE_NULL = 0;
