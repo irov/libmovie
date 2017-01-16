@@ -88,7 +88,7 @@ typedef struct aeMovieLayerData
 
 	ae_bool_t renderable;
 
-	struct aeMovieCompositionData * compositionData;
+	struct aeMovieCompositionData * composition_data;
 
 	ae_bool_t is_track_matte;
 	ae_bool_t has_track_matte;
@@ -103,7 +103,7 @@ typedef struct aeMovieLayerData
 	const aeMovieLayerPolygon * polygon;
 
 	const aeMovieResource * resource;
-	const struct aeMovieCompositionData * sub_compositionData;
+	const struct aeMovieCompositionData * sub_composition_data;
 
 	uint32_t parent_index;
 

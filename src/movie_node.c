@@ -196,7 +196,7 @@ static uint32_t __compute_movie_node_frame( const aeMovieNode * _node, ae_bool_t
 {
 	const aeMovieLayerData * layer = _node->layer;
 
-	float frameDurationInv = layer->compositionData->frameDurationInv;
+	float frameDurationInv = layer->composition_data->frameDurationInv;
 
 	uint32_t frame;
 
@@ -565,7 +565,7 @@ static uint32_t __get_movie_frame_time( const aeMovieCompositionAnimation * _ani
 
 	const aeMovieLayerData * layer = _node->layer;
 
-	float frameDurationInv = layer->compositionData->frameDurationInv;
+	float frameDurationInv = layer->composition_data->frameDurationInv;
 
 	float current_time = animation_time - _node->in_time + _node->start_time;
 
@@ -642,7 +642,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 
 		ae_movie_make_layer_transformation( _node->matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
 		
-		if( layer->sub_compositionData != AE_NULL )
+		if( layer->sub_composition_data != AE_NULL )
 		{
 			_node->composition_opactity = local_opacity;
             
@@ -685,7 +685,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 
 	mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
-	if( layer->sub_compositionData != AE_NULL )
+	if( layer->sub_composition_data != AE_NULL )
 	{
 		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
         
@@ -726,7 +726,7 @@ static uint32_t __get_movie_composition_data_node_count( const aeMovieCompositio
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				uint32_t movie_layer_count = __get_movie_composition_data_node_count( layer->sub_compositionData );
+				uint32_t movie_layer_count = __get_movie_composition_data_node_count( layer->sub_composition_data );
 
 				count += movie_layer_count;
 			}break;
@@ -760,7 +760,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t 
 				case AE_MOVIE_LAYER_TYPE_MOVIE:
 				case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 					{
-						uint32_t sub_composition_node_count = __get_movie_composition_data_node_count( node->layer->sub_compositionData );
+						uint32_t sub_composition_node_count = __get_movie_composition_data_node_count( node->layer->sub_composition_data );
 
 						aeMovieNode * track_matte_node = _nodes + (*_iterator) + sub_composition_node_count;
 
@@ -800,7 +800,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, uint32_t 
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				if( __setup_movie_node_track_matte( _nodes, _iterator, layer->sub_compositionData, node->track_matte ) == AE_FALSE )
+				if( __setup_movie_node_track_matte( _nodes, _iterator, layer->sub_composition_data, node->track_matte ) == AE_FALSE )
 				{
 					return AE_FALSE;
 				}
@@ -898,7 +898,7 @@ static ae_bool_t __setup_movie_submovie2( aeMovieComposition * _composition, uin
 		{
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 			{
-				if( __setup_movie_submovie2( _composition, _node_iterator, _submovies, _submovie_iterator, layer->sub_compositionData, _submovie ) == AE_FALSE )
+				if( __setup_movie_submovie2( _composition, _node_iterator, _submovies, _submovie_iterator, layer->sub_composition_data, _submovie ) == AE_FALSE )
 				{
 					return AE_FALSE;
 				}
@@ -919,11 +919,11 @@ static ae_bool_t __setup_movie_submovie2( aeMovieComposition * _composition, uin
 				animation->time = 0.f;
 
 				animation->work_area_begin = 0.f;
-				animation->work_area_end = _compositionData->duration;
+				animation->work_area_end = layer->sub_composition_data->duration;
 
 				submovie->animation = animation;
 
-				if( __setup_movie_submovie2( _composition, _node_iterator, _submovies, _submovie_iterator, layer->sub_compositionData, submovie ) == AE_FALSE )
+				if( __setup_movie_submovie2( _composition, _node_iterator, _submovies, _submovie_iterator, layer->sub_composition_data, submovie ) == AE_FALSE )
 				{
 					return AE_FALSE;
 				}
@@ -988,7 +988,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				__setup_movie_node_relative( _nodes, _iterator, layer->sub_compositionData, node );
+				__setup_movie_node_relative( _nodes, _iterator, layer->sub_composition_data, node );
 			}break;
 		default:
 			{
@@ -1087,7 +1087,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 				float to_stretch = _stretch * layer->stretch;
 				float to_startTime = _startTime + layer->start_time;
 
-				__setup_movie_node_time( _nodes, _iterator, layer->sub_compositionData, node, to_stretch, to_startTime );
+				__setup_movie_node_time( _nodes, _iterator, layer->sub_composition_data, node, to_stretch, to_startTime );
 			}break;
 		default:
 			{
@@ -1119,7 +1119,7 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 
 		aeMovieBlendMode composition_blend_mode = AE_MOVIE_BLEND_NORMAL;
 
-		if( layer->sub_compositionData != AE_NULL )
+		if( layer->sub_composition_data != AE_NULL )
 		{
 			composition_blend_mode = node->blend_mode;
 		}
@@ -1129,7 +1129,7 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				__setup_movie_node_blend_mode( _nodes, _iterator, layer->sub_compositionData, node, composition_blend_mode );
+				__setup_movie_node_blend_mode( _nodes, _iterator, layer->sub_composition_data, node, composition_blend_mode );
 			}break;
 		default:
 			{
@@ -1188,7 +1188,7 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 			{
-				__setup_movie_node_camera( _composition, _iterator, layer->sub_compositionData, node, node->camera_data );
+				__setup_movie_node_camera( _composition, _iterator, layer->sub_composition_data, node, node->camera_data );
 			}break;
 		default:
 			{
@@ -1905,7 +1905,7 @@ static void __update_movie_composition_node( const aeMovieComposition * _composi
 
 		const aeMovieLayerData * layer = node->layer;
 
-		float frameDurationInv = layer->compositionData->frameDurationInv;
+		float frameDurationInv = layer->composition_data->frameDurationInv;
 
 		float in_time = (_beginTime >= loopBegin && node->in_time <= loopBegin && _endTime >= loopBegin && animation_interrupt == AE_FALSE && animation_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopBegin : node->in_time;
 		float out_time = (node->out_time >= loopEnd && animation_interrupt == AE_FALSE && animation_loop == AE_TRUE && layer->type != AE_MOVIE_LAYER_TYPE_EVENT) ? loopEnd : node->out_time;
@@ -2022,7 +2022,7 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, ae
 
 		const aeMovieLayerData * layer = node->layer;
 
-		float frameDurationInv = layer->compositionData->frameDurationInv;
+		float frameDurationInv = layer->composition_data->frameDurationInv;
 
 		float in_time = node->in_time;
 		float out_time = node->out_time;
