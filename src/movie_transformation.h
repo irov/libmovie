@@ -65,31 +65,31 @@ typedef struct aeMovieLayerTransformation3DImuttable
 
 typedef struct aeMovieLayerTransformation2DTimeline
 {	
-	void * anchor_point_x;
-	void * anchor_point_y;
-	void * position_x;
-	void * position_y;
-	void * quaternion_z;
-	void * quaternion_w;
-	void * scale_x;
-	void * scale_y;	
+	const void * anchor_point_x;
+	const void * anchor_point_y;
+	const void * position_x;
+	const void * position_y;
+	const void * quaternion_z;
+	const void * quaternion_w;
+	const void * scale_x;
+	const void * scale_y;	
 }aeMovieLayerTransformation2DTimeline;
 
 typedef struct aeMovieLayerTransformation3DTimeline
 {	
-	void * anchor_point_x;
-	void * anchor_point_y;
-	void * anchor_point_z;
-	void * position_x;
-	void * position_y;
-	void * position_z;
-	void * quaternion_x;
-	void * quaternion_y;
-	void * quaternion_z;
-	void * quaternion_w;
-	void * scale_x;
-	void * scale_y;
-	void * scale_z;
+	const void * anchor_point_x;
+	const void * anchor_point_y;
+	const void * anchor_point_z;
+	const void * position_x;
+	const void * position_y;
+	const void * position_z;
+	const void * quaternion_x;
+	const void * quaternion_y;
+	const void * quaternion_z;
+	const void * quaternion_w;
+	const void * scale_x;
+	const void * scale_y;
+	const void * scale_z;
 }aeMovieLayerTransformation3DTimeline;
 
 typedef struct aeMovieLayerTransformation
@@ -97,7 +97,7 @@ typedef struct aeMovieLayerTransformation
 	uint32_t immutable_property_mask;
 
 	float immutable_opacity;
-	void * timeline_opacity;
+	const void * timeline_opacity;
 }aeMovieLayerTransformation;
 
 typedef struct aeMovieLayerTransformation2D
@@ -105,7 +105,7 @@ typedef struct aeMovieLayerTransformation2D
 	uint32_t immutable_property_mask;
 
 	float immutable_opacity;
-	void * timeline_opacity;
+	const void * timeline_opacity;
 
 	aeMovieLayerTransformation2DImuttable immutable;
 	aeMovieLayerTransformation2DTimeline * timeline;
@@ -116,7 +116,7 @@ typedef struct aeMovieLayerTransformation3D
 	uint32_t immutable_property_mask;
 	
 	float immutable_opacity;
-	void * timeline_opacity;
+	const void * timeline_opacity;
 
 	aeMovieLayerTransformation3DImuttable immutable;
 	aeMovieLayerTransformation3DTimeline * timeline;

@@ -4,7 +4,7 @@
 #	include "movie_math.h"
 
 //////////////////////////////////////////////////////////////////////////
-static void * __load_movie_layer_transformation_timeline( aeMovieStream * _stream, const char * _doc )
+static const void * __load_movie_layer_transformation_timeline( aeMovieStream * _stream, const char * _doc )
 {
 	(void)_doc;
 
