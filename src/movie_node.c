@@ -2027,7 +2027,9 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, co
 			continue;
 		}
 
-		float frameDurationInv = _compositionData->frameDurationInv;
+		const aeMovieLayerData * layer = node->layer;
+
+		float frameDurationInv = layer->composition_data->frameDurationInv;
 
 		float in_time = node->in_time;
 		float out_time = node->out_time;
@@ -2057,8 +2059,6 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, co
 		uint32_t frameId = (uint32_t)frame_time;
 
 		node->current_time = current_time;
-
-		const aeMovieLayerData * layer = node->layer;
 
 		if( layer->type == AE_MOVIE_LAYER_TYPE_EVENT )
 		{
