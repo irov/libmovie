@@ -183,7 +183,7 @@ void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, co
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static float __get_movie_layer_transformation_property( float _immutable, void * _property, uint32_t _index )
+static float __get_movie_layer_transformation_property( float _immutable, const void * _property, uint32_t _index )
 {
 	if( _property == AE_NULL )
 	{
@@ -192,7 +192,7 @@ static float __get_movie_layer_transformation_property( float _immutable, void *
 
 	uint32_t property_index = 0;
 
-	uint32_t * property_uint32_t = (uint32_t *)_property;
+	const uint32_t * property_uint32_t = (const uint32_t *)_property;
 	
 	uint32_t zp_count = *(property_uint32_t++);
 
@@ -210,14 +210,14 @@ static float __get_movie_layer_transformation_property( float _immutable, void *
 			{
 			case 0:
 				{
-					float block_value = *(float *)(property_uint32_t);
+					float block_value = *(const float *)(property_uint32_t);
 
 					return block_value;
 				}break;
 			case 1:
 				{
-					float block_begin = *(float *)(property_uint32_t++);
-					float block_end = *(float *)(property_uint32_t);
+					float block_begin = *(const float *)(property_uint32_t++);
+					float block_end = *(const float *)(property_uint32_t);
 
 					float block_add = (block_end - block_begin) / (float)(zp_block_count - 1);
 
@@ -231,7 +231,7 @@ static float __get_movie_layer_transformation_property( float _immutable, void *
 				{
 					uint32_t block_index = _index - property_index;
 
-					float block_value = ((float *)property_uint32_t)[block_index];
+					float block_value = ((const float *)property_uint32_t)[block_index];
 
 					return block_value;
 				}break;
@@ -262,7 +262,7 @@ static float __get_movie_layer_transformation_property( float _immutable, void *
 	return 0.f;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __get_movie_layer_transformation_property_interpolate( float _immutable, void * _property, uint32_t _index, float _t )
+static float __get_movie_layer_transformation_property_interpolate( float _immutable, const void * _property, uint32_t _index, float _t )
 {
 	float data_0 = __get_movie_layer_transformation_property( _immutable, _property, _index + 0 );
 	float data_1 = __get_movie_layer_transformation_property( _immutable, _property, _index + 1 );
