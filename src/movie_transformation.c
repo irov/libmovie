@@ -176,109 +176,83 @@ void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, co
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-#   pragma pack(push, 1)
-//////////////////////////////////////////////////////////////////////////
-typedef struct zp_block_const
-{
-    float value;
-} zp_block_const;
-//////////////////////////////////////////////////////////////////////////
-typedef struct zp_block_linear
-{
-    float begin;
-    float end;
-} zp_block_linear;
-//////////////////////////////////////////////////////////////////////////
-typedef struct zp_block_array
-{
-    float values[1];
-} zp_block_array;
-//////////////////////////////////////////////////////////////////////////
-#   pragma pack(pop)
-//////////////////////////////////////////////////////////////////////////
 static float __get_movie_layer_transformation_property( float _immutable, const void * _property, uint32_t _index )
 {
-	if( _property == AE_NULL )
-	{
-		return _immutable;
-	}
+    if( _property == AE_NULL )
+    {
+        return _immutable;
+    }
 
-	uint32_t property_index = 0;
+    uint32_t property_index = 0;
 
-	const uint32_t * property_uint32_t = (const uint32_t *)_property;
-	
-	uint32_t zp_count = *(property_uint32_t++);
+    const uint32_t * property_uint32_t = (const uint32_t *)_property;
 
-	uint32_t i = 0;
-	for( ; i != zp_count; ++i )
-	{
-		uint32_t zp_block_type_count_data = *(property_uint32_t++);
-		
-		uint32_t zp_block_type = zp_block_type_count_data >> 24;
-		uint32_t zp_block_count = zp_block_type_count_data & 0x00FFFFFF;
+    uint32_t zp_count = *(property_uint32_t++);
 
-		if( property_index + zp_block_count > _index )
-		{
-			switch( zp_block_type )
-			{
-			case 0:
-				{
-                    const zp_block_const * block = (const zp_block_const *)(const void *)(property_uint32_t);
+    uint32_t i = 0;
+    for( ; i != zp_count; ++i )
+    {
+        uint32_t zp_block_type_count_data = *(property_uint32_t++);
 
-                    float block_value = block->value;
+        uint32_t zp_block_type = zp_block_type_count_data >> 24;
+        uint32_t zp_block_count = zp_block_type_count_data & 0x00FFFFFF;
 
-					return block_value;
-				}break;
-			case 1:
-				{
-                    const zp_block_linear * block = (const zp_block_linear *)(const void *)(property_uint32_t);
+        if( property_index + zp_block_count > _index )
+        {
+            switch( zp_block_type )
+            {
+            case 0:
+                {
+                    float block_value = *(const float *)(const void *)(property_uint32_t);
 
-					float block_begin = block->begin;
-					float block_end = block->end;
+                    return block_value;
+                }break;
+            case 1:
+                {
+                    float block_begin = *(const float *)(const void *)(property_uint32_t++);
+                    float block_end = *(const float *)(const void *)(property_uint32_t);
 
-					float block_add = (block_end - block_begin) / (float)(zp_block_count - 1);
+                    float block_add = (block_end - block_begin) / (float)(zp_block_count - 1);
 
-					uint32_t block_index = _index - property_index;
-
-					float block_value = block_begin + block_add * (float)block_index;
-
-					return block_value;
-				}break;
-			case 3:
-				{
-                    const zp_block_array * block = (const zp_block_array *)(const void *)(property_uint32_t);
-                    
                     uint32_t block_index = _index - property_index;
 
-					float block_value = block->values[block_index];
+                    float block_value = block_begin + block_add * (float)block_index;
 
-					return block_value;
-				}break;
-			}
-		}
-		else
-		{
-			switch( zp_block_type )
-			{
-			case 0:
-				{
-					property_uint32_t += 1;
-				}break;
-			case 1:
-				{
-					property_uint32_t += 2;
-				}break;
-			case 3:
-				{
-					property_uint32_t += zp_block_count;
-				}break;
-			}
-		}
+                    return block_value;
+                }break;
+            case 3:
+                {
+                    uint32_t block_index = _index - property_index;
 
-		property_index += zp_block_count;
-	}
+                    float block_value = ((const float *)(const void *)property_uint32_t)[block_index];
 
-	return 0.f;
+                    return block_value;
+                }break;
+            }
+        }
+        else
+        {
+            switch( zp_block_type )
+            {
+            case 0:
+                {
+                    property_uint32_t += 1;
+                }break;
+            case 1:
+                {
+                    property_uint32_t += 2;
+                }break;
+            case 3:
+                {
+                    property_uint32_t += zp_block_count;
+                }break;
+            }
+        }
+
+        property_index += zp_block_count;
+    }
+
+    return 0.f;
 }
 //////////////////////////////////////////////////////////////////////////
 static float __get_movie_layer_transformation_property_interpolate( float _immutable, const void * _property, uint32_t _index, float _t )
