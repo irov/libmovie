@@ -125,7 +125,7 @@ typedef struct aeMovieLayerTransformation3D
 
 ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
 void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
-float ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD, uint32_t _index, ae_bool_t _interpolate, float _t );
+float ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t );
 void ae_movie_make_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD, uint32_t _index, ae_bool_t _interpolate, float _t );
 
 #	endif

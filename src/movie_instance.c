@@ -3,24 +3,30 @@
 #	include "movie_struct.h"
 
 //////////////////////////////////////////////////////////////////////////
-static int32_t __ae_strncmp( void * _data, const ae_char_t * _src, const ae_char_t * _dst, uint32_t _count )
+static int32_t __ae_strncmp( void * _data, const ae_char_t * _src, const ae_char_t * _dst, size_t _count )
 {
 	(void)_data;
 
-	if( _count == 0 )
-	{
-		return 0;
-	}
+    for( ; _count > 0; _src++, _dst++, --_count )
+    {
+        if( *_src != *_dst )
+        {
+            if( *(unsigned char *)_src < *(unsigned char *)_dst )
+            {
+                return -1;
+            }
+            else
+            {
+                return +1;
+            }
+        }
+        else if( *_src == '\0' )
+        {
+            return 0;
+        }
+    }
 
-	int32_t cmp = 0;
-
-	while( !(cmp = *(uint8_t *)_src - *(uint8_t *)_dst) && *_dst && _count-- )
-	{
-		++_src;
-		++_dst;
-	}
-
-	return cmp;
+    return 0;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_logerror( void * _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )

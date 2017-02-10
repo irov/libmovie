@@ -4,7 +4,7 @@
 #	include <stdint.h>
 #	include <stddef.h>
 
-typedef uint8_t ae_bool_t;
+typedef uint32_t ae_bool_t;
 typedef char ae_char_t;
 typedef ae_char_t * ae_string_t;
 

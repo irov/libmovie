@@ -75,7 +75,7 @@ static ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _base, ae
 	const aeMovieNode * it_base = _base->nodes;
 	const aeMovieNode * it_base_end = _base->nodes + _base->node_count;
 	const aeMovieNode * it_animation = _animation->nodes;
-	const aeMovieNode * it_animation_end = _animation->nodes + _animation->node_count;
+	//const aeMovieNode * it_animation_end = _animation->nodes + _animation->node_count;
 
 	for( ;
 	it_base != it_base_end;

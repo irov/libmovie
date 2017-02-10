@@ -3,12 +3,12 @@
 
 #	include "movie_type.h"
 
-typedef void * (*ae_movie_alloc_t)(void * _data, uint32_t _size);
-typedef void * (*ae_movie_alloc_n_t)(void * _data, uint32_t _size, uint32_t _n);
+typedef void * (*ae_movie_alloc_t)(void * _data, size_t _size);
+typedef void * (*ae_movie_alloc_n_t)(void * _data, size_t _size, size_t _n);
 typedef void( *ae_movie_free_t )(void * _data, const void * _ptr);
 typedef void( *ae_movie_free_n_t )(void * _data, const void * _ptr);
 
-typedef int32_t( *ae_movie_strncmp_t )(void * _data, const ae_char_t * _src, const ae_char_t * _dst, uint32_t _count);
+typedef int32_t( *ae_movie_strncmp_t )(void * _data, const ae_char_t * _src, const ae_char_t * _dst, size_t _count);
 
 typedef enum
 {

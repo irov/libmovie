@@ -73,31 +73,8 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 {
 	uint32_t immutable_property_mask;
 	READ( _stream, immutable_property_mask );
-	
-	_transformation->immutable_property_mask = immutable_property_mask;
 
-	if( _threeD == AE_FALSE )
-	{
-		if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
-		{
-			((aeMovieLayerTransformation2D *)_transformation)->timeline = AE_NULL;
-		}
-		else
-		{
-			((aeMovieLayerTransformation2D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
-		}
-	}
-	else
-	{
-		if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
-		{
-			((aeMovieLayerTransformation3D *)_transformation)->timeline = AE_NULL;
-		}
-		else
-		{
-			((aeMovieLayerTransformation3D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
-		}
-	}
+	_transformation->immutable_property_mask = immutable_property_mask;
 
 	if( immutable_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
 	{
@@ -110,23 +87,39 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 		_transformation->timeline_opacity = __load_movie_layer_transformation_timeline( _stream, "immutable_opacity" );
 	}
 
-	if( _threeD == AE_FALSE )
-	{
-		ae_result_t result = __ae_movie_load_layer_transformation2d( _stream, immutable_property_mask, ( aeMovieLayerTransformation2D * )_transformation );
+    if( _threeD == AE_FALSE )
+    {
+        if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+        {
+            ((aeMovieLayerTransformation2D *)_transformation)->timeline = AE_NULL;
+        }
+        else
+        {
+            ((aeMovieLayerTransformation2D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
+        }
 
-		return result;
-	}
-	else
-	{
-		ae_result_t result = __ae_movie_load_layer_transformation3d( _stream, immutable_property_mask, (aeMovieLayerTransformation3D *)_transformation );
+        ae_result_t result = __ae_movie_load_layer_transformation2d( _stream, immutable_property_mask, (aeMovieLayerTransformation2D *)_transformation );
 
-		return result;
-	}
+        return result;
+    }
+    else
+    {
+        if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
+        {
+            ((aeMovieLayerTransformation3D *)_transformation)->timeline = AE_NULL;
+        }
+        else
+        {
+            ((aeMovieLayerTransformation3D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
+        }
 
-	return AE_MOVIE_SUCCESSFUL;
+        ae_result_t result = __ae_movie_load_layer_transformation3d( _stream, immutable_property_mask, (aeMovieLayerTransformation3D *)_transformation );
+
+        return result;
+    }
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_delete_layer_transformation2d( const aeMovieInstance * _instance, const aeMovieLayerTransformation2D * _transformation )
+static void __ae_movie_delete_layer_transformation2d( const aeMovieInstance * _instance, const aeMovieLayerTransformation2D * _transformation )
 {
 	if( _transformation->timeline != AE_NULL )
 	{
@@ -145,7 +138,7 @@ void ae_movie_delete_layer_transformation2d( const aeMovieInstance * _instance, 
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_delete_layer_transformation3d( const aeMovieInstance * _instance, const aeMovieLayerTransformation3D * _transformation )
+static void __ae_movie_delete_layer_transformation3d( const aeMovieInstance * _instance, const aeMovieLayerTransformation3D * _transformation )
 {
 	if( _transformation->timeline != AE_NULL )
 	{
@@ -175,13 +168,33 @@ void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, co
 
 	if( _threeD == AE_FALSE )
 	{
-		ae_movie_delete_layer_transformation2d( _instance, (const aeMovieLayerTransformation2D *)_transformation );
+		__ae_movie_delete_layer_transformation2d( _instance, (const aeMovieLayerTransformation2D *)_transformation );
 	}
 	else
 	{
-		ae_movie_delete_layer_transformation3d( _instance, (const aeMovieLayerTransformation3D *)_transformation );
+        __ae_movie_delete_layer_transformation3d( _instance, (const aeMovieLayerTransformation3D *)_transformation );
 	}
 }
+//////////////////////////////////////////////////////////////////////////
+#   pragma pack(push, 1)
+//////////////////////////////////////////////////////////////////////////
+typedef struct zp_block_const
+{
+    float value;
+} zp_block_const;
+//////////////////////////////////////////////////////////////////////////
+typedef struct zp_block_linear
+{
+    float begin;
+    float end;
+} zp_block_linear;
+//////////////////////////////////////////////////////////////////////////
+typedef struct zp_block_array
+{
+    float values[1];
+} zp_block_array;
+//////////////////////////////////////////////////////////////////////////
+#   pragma pack(pop)
 //////////////////////////////////////////////////////////////////////////
 static float __get_movie_layer_transformation_property( float _immutable, const void * _property, uint32_t _index )
 {
@@ -210,14 +223,18 @@ static float __get_movie_layer_transformation_property( float _immutable, const 
 			{
 			case 0:
 				{
-					float block_value = *(const float *)(property_uint32_t);
+                    const zp_block_const * block = (const zp_block_const *)(const void *)(property_uint32_t);
+
+                    float block_value = block->value;
 
 					return block_value;
 				}break;
 			case 1:
 				{
-					float block_begin = *(const float *)(property_uint32_t++);
-					float block_end = *(const float *)(property_uint32_t);
+                    const zp_block_linear * block = (const zp_block_linear *)(const void *)(property_uint32_t);
+
+					float block_begin = block->begin;
+					float block_end = block->end;
 
 					float block_add = (block_end - block_begin) / (float)(zp_block_count - 1);
 
@@ -229,9 +246,11 @@ static float __get_movie_layer_transformation_property( float _immutable, const 
 				}break;
 			case 3:
 				{
-					uint32_t block_index = _index - property_index;
+                    const zp_block_array * block = (const zp_block_array *)(const void *)(property_uint32_t);
+                    
+                    uint32_t block_index = _index - property_index;
 
-					float block_value = ((const float *)property_uint32_t)[block_index];
+					float block_value = block->values[block_index];
 
 					return block_value;
 				}break;
@@ -410,7 +429,7 @@ void ae_movie_make_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTr
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-float ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD, uint32_t _index, ae_bool_t _interpolate, float _t )
+float ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t )
 {
 	float opacity;
 

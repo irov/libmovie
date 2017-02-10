@@ -28,22 +28,21 @@
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_INFO
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_value_info( aeMovieStream * _stream, const char * _info, void * _ptr, size_t _size )
+static size_t ae_magic_read_value_info( aeMovieStream * _stream, const char * _info, void * _ptr, size_t _size )
 {
 	_stream->instance->logger( _stream->instance->instance_data, AE_ERROR_STREAM, "read stream '%s' size '%d'\n", _info, (uint32_t)_size );
 
 	size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
 
-	(void)bytesRead;
+	return bytesRead;
 }
 #	endif
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_CACHE
-static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _size )
+static size_t ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _size )
 {
 	size_t carriage = _stream->carriage;
 	size_t capacity = _stream->capacity;
-	size_t reading = _stream->reading;
 
 	if( _size > AE_MOVIE_STREAM_CACHE_BUFFER_SIZE )
 	{
@@ -65,7 +64,7 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 
 		_stream->reading += bytesRead;
 
-		return;
+		return bytesRead + tail;
 	}
 
 	if( carriage + _size <= capacity )
@@ -76,7 +75,7 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 
 		_stream->carriage += _size;
 
-		return;
+		return _size;
 	}
 
 	size_t tail = capacity - carriage;
@@ -103,19 +102,21 @@ static void ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _s
 	_stream->capacity = bytesRead;
 
 	_stream->reading += AE_MOVIE_STREAM_CACHE_BUFFER_SIZE;
+
+    return bytesRead + tail;
 }
 #else
-static void ae_magic_read_value(aeMovieStream * _stream, void * _ptr, size_t _size)
+static size_t ae_magic_read_value(aeMovieStream * _stream, void * _ptr, size_t _size)
 {
 	size_t bytesRead = _stream->memory_read(_stream->data, _ptr, _size);
 	
-	(void)bytesRead;
+	return bytesRead;
 }
 #endif
 //////////////////////////////////////////////////////////////////////////
 static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
 {
-	ae_bool_t value;
+	uint8_t value;
 	READ( _stream, value );
 
 	return value;
@@ -149,7 +150,7 @@ static void ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )
 {
 	uint32_t size = READZ( _stream );
 
-	ae_string_t str = NEWN( _stream->instance, ae_char_t, size + 1 );
+	ae_string_t str = NEWN( _stream->instance, ae_char_t, size + 1U );
 	READN( _stream, str, size );
 
 	str[size] = '\0';

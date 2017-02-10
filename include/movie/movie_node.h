@@ -8,11 +8,11 @@
 
 typedef struct aeMovieRenderMesh
 {
-	uint8_t layer_type;
+	uint32_t layer_type;
 
 	aeMovieBlendMode blend_mode;
 
-	uint8_t resource_type;
+    aeMovieResourceTypeEnum resource_type;
 	void * resource_data;
 
 	uint32_t vertexCount;
@@ -28,8 +28,8 @@ typedef struct aeMovieRenderMesh
 	float b;
 	float a;
 
-	const void * camera_data;
-	const void * track_matte_data;
+	void * camera_data;
+	void * track_matte_data;
 
 	void * element_data;
 } aeMovieRenderMesh;
@@ -67,13 +67,13 @@ typedef struct aeMovieNodeProviderCallbackData
 typedef struct aeMovieNodeDestroyCallbackData
 {
 	void * element;
-	uint32_t type;
+    aeMovieLayerTypeEnum type;
 } aeMovieNodeDestroyCallbackData;
 
 typedef struct aeMovieNodeUpdateCallbackData
 {
 	void * element;
-	uint32_t type;
+    aeMovieLayerTypeEnum type;
 	ae_bool_t loop;
 	aeMovieNodeUpdateState state;
 	float offset;
@@ -84,7 +84,7 @@ typedef struct aeMovieNodeUpdateCallbackData
 typedef struct aeMovieTrackMatteUpdateCallbackData
 {
 	void * element;
-	uint32_t type;
+    aeMovieLayerTypeEnum type;
 	ae_bool_t loop;
 	aeMovieNodeUpdateState state;
 	float offset;

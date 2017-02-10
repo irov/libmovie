@@ -17,7 +17,7 @@ typedef enum aeMovieResourceTypeEnum
 } aeMovieResourceTypeEnum;
 
 #	define AE_MOVIE_RESOURCE_BASE()\
-	uint8_t type;\
+	aeMovieResourceTypeEnum type;\
 	void * data
 
 typedef struct aeMovieResource
@@ -47,7 +47,7 @@ typedef struct
 	float width;
 	float height;
 
-	uint8_t alpha;
+	uint32_t alpha;
 	float frameRate;
 	float duration;
 
@@ -78,7 +78,7 @@ typedef struct
 	float offset_x;
 	float offset_y;
 
-	aeMovieMesh * mesh;
+	const aeMovieMesh * mesh;
 
 } aeMovieResourceImage;
 
@@ -89,7 +89,7 @@ typedef struct
 	float frameDurationInv;
 
 	uint32_t image_count;
-	aeMovieResourceImage ** images;
+	const aeMovieResourceImage ** images;
 
 } aeMovieResourceSequence;
 

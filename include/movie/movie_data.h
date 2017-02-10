@@ -7,29 +7,29 @@
 
 typedef struct
 {
-	float * times;
+	const float * times;
 
 } aeMovieLayerTimeremap;
 
-typedef struct
+typedef struct aeMovieLayerMesh
 {
 	ae_bool_t immutable;
 	aeMovieMesh immutable_mesh;
 
-	aeMovieMesh * meshes;
+	const aeMovieMesh * meshes;
 
 } aeMovieLayerMesh;
 
-typedef struct
+typedef struct aeMovieLayerBezierWarp
 {
 	ae_bool_t immutable;
 	aeMovieBezierWarp immutable_bezier_warp;
 
-	aeMovieBezierWarp * bezier_warps;
+    const aeMovieBezierWarp * bezier_warps;
 
 } aeMovieLayerBezierWarp;
 
-typedef struct
+typedef struct aeMovieLayerColorVertex
 {
 	ae_bool_t immutable_r;
 	ae_bool_t immutable_g;
@@ -39,18 +39,18 @@ typedef struct
 	float immutable_color_vertex_g;
 	float immutable_color_vertex_b;
 
-	ae_color_t * color_vertites_r;
-	ae_color_t * color_vertites_g;
-	ae_color_t * color_vertites_b;
+    const ae_color_t * color_vertites_r;
+    const ae_color_t * color_vertites_g;
+    const ae_color_t * color_vertites_b;
 
 } aeMovieLayerColorVertex;
 
-typedef struct
+typedef struct aeMovieLayerPolygon
 {
 	ae_bool_t immutable;
 	aeMoviePolygon immutable_polygon;
 
-	aeMoviePolygon * polygons;
+	const aeMoviePolygon * polygons;
 
 } aeMovieLayerPolygon;
 
@@ -84,15 +84,15 @@ typedef struct aeMovieLayerData
 	ae_string_t name;
 
 	uint32_t index;
-	uint8_t type;
+    aeMovieLayerTypeEnum type;
 
 	ae_bool_t renderable;
 
-	struct aeMovieCompositionData * composition_data;
+	const struct aeMovieCompositionData * composition_data;
 
 	ae_bool_t is_track_matte;
 	ae_bool_t has_track_matte;
-	struct aeMovieLayerData * track_matte_layer;
+	const struct aeMovieLayerData * track_matte_layer;
 
 	uint32_t frame_count;
 
@@ -112,7 +112,7 @@ typedef struct aeMovieLayerData
 	float in_time;
 	float out_time;
 
-	uint8_t blend_mode;
+	uint32_t blend_mode;
 	ae_bool_t threeD;
 	uint32_t params;
 
@@ -120,10 +120,10 @@ typedef struct aeMovieLayerData
 
 	float stretch;
 
-	struct aeMovieLayerTransformation * transformation;
+	const struct aeMovieLayerTransformation * transformation;
 } aeMovieLayerData;
 
-typedef enum
+typedef enum aeMovieCompositionFlag
 {
 	AE_MOVIE_COMPOSITION_LOOP_SEGMENT = 0x00000001,
 	AE_MOVIE_COMPOSITION_ANCHOR_POINT = 0x00000002,
@@ -160,7 +160,7 @@ typedef struct aeMovieCompositionData
 	float cameraZoom;
 
 	uint32_t layer_count;
-	aeMovieLayerData * layers;
+	const aeMovieLayerData * layers;
 } aeMovieCompositionData;
 
 typedef struct aeMovieData

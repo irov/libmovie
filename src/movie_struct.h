@@ -15,7 +15,6 @@ typedef struct aeMovieInstance
 	ae_movie_strncmp_t strncmp;
 	ae_movie_logger_t logger;
 	void * instance_data;
-	
 
     ae_vector2_t sprite_uv[4];
 	uint16_t sprite_indices[6];	
@@ -66,7 +65,7 @@ typedef struct aeMovieNode
 	const aeMovieLayerData * layer;
 
 	struct aeMovieNode * relative;
-	struct aeMovieNode * track_matte;
+    struct aeMovieNode * track_matte;
 
 	const aeMovieSubMovie * submovie;
 
@@ -80,7 +79,7 @@ typedef struct aeMovieNode
 	ae_bool_t active;
 	ae_bool_t ignore;
 
-	uint8_t animate;
+	uint32_t animate;
 
 	uint32_t matrix_revision;
 	ae_matrix4_t matrix;
@@ -97,7 +96,7 @@ typedef struct aeMovieNode
 
 	aeMovieBlendMode blend_mode;
 
-	const void * camera_data;
+	void * camera_data;
 	void * element_data;
 	void * track_matte_data;
 } aeMovieNode;
