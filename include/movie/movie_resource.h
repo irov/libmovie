@@ -89,7 +89,7 @@ typedef struct
 	float frameDurationInv;
 
 	uint32_t image_count;
-	const aeMovieResourceImage ** images;
+	const aeMovieResourceImage * const * images;
 
 } aeMovieResourceSequence;
 

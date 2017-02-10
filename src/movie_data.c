@@ -202,12 +202,12 @@ static void __load_movie_data_composition_camera( aeMovieStream * _stream, aeMov
 	READ( _stream, _compostionData->cameraZoom );
 }
 //////////////////////////////////////////////////////////////////////////
-static uint32_t __find_movie_data_composition_layer_position_by_index( const aeMovieCompositionData * _compositionData, uint32_t _index )
+static uint32_t __find_movie_data_composition_layer_position_by_index( const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layers, uint32_t _index )
 {
 	uint32_t iterator = 0;
 
-	const aeMovieLayerData * it_layer = _compositionData->layers;
-	const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
+	const aeMovieLayerData * it_layer = _layers;
+	const aeMovieLayerData * it_layer_end = _layers + _compositionData->layer_count;
 	for( ; it_layer != it_layer_end; ++it_layer )
 	{
 		const aeMovieLayerData * layer = it_layer;
@@ -223,11 +223,11 @@ static uint32_t __find_movie_data_composition_layer_position_by_index( const aeM
 	return (uint32_t)-1;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
+static ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layers, aeMovieLayerData * _layer )
 {
 	if( _layer->has_track_matte == AE_TRUE )
 	{
-		uint32_t layer_position = __find_movie_data_composition_layer_position_by_index( _compositionData, _layer->index );
+		uint32_t layer_position = __find_movie_data_composition_layer_position_by_index( _compositionData, _layers, _layer->index );
 
 		if( layer_position == (uint32_t)-1 )
 		{
@@ -626,7 +626,7 @@ static ae_result_t __setup_movie_data_composition_layers( const aeMovieCompositi
 	{
 		aeMovieLayerData * layer = it_layer;
 				
-		if( __setup_movie_data_layer_track_matte( _compositionData, layer ) == AE_MOVIE_FAILED )
+		if( __setup_movie_data_layer_track_matte( _compositionData, _layers, layer ) == AE_MOVIE_FAILED )
 		{
 			return AE_MOVIE_FAILED;
 		}
@@ -777,10 +777,10 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 	uint32_t resource_count = READZ( _stream );
 
 	_movieData->resource_count = resource_count;
-	_movieData->resources = NEWN( _movieData->instance, const aeMovieResource *, resource_count );
+	const aeMovieResource ** resources = NEWN( _movieData->instance, const aeMovieResource *, resource_count );
 
-	const aeMovieResource ** it_resource = _movieData->resources;
-	const aeMovieResource ** it_resource_end = _movieData->resources + resource_count;
+	const aeMovieResource ** it_resource = resources;
+	const aeMovieResource ** it_resource_end = resources + resource_count;
 	for( ; it_resource != it_resource_end; ++it_resource )
 	{
 		uint8_t type;
@@ -893,15 +893,15 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 				uint32_t image_count = READZ( _stream );
 
 				resource->image_count = image_count;
-                aeMovieResourceImage ** images = NEWN( _movieData->instance, aeMovieResourceImage *, image_count );
+				const aeMovieResourceImage ** images = NEWN( _movieData->instance, const aeMovieResourceImage *, image_count );
 
-				aeMovieResourceImage ** it_image = images;
-				aeMovieResourceImage ** it_image_end = images + image_count;
+				const aeMovieResourceImage ** it_image = images;
+				const aeMovieResourceImage ** it_image_end = images + image_count;
 				for( ; it_image != it_image_end; ++it_image )
 				{
 					uint32_t resource_id = READZ( _stream );
 
-					*it_image = (aeMovieResourceImage *)_movieData->resources[resource_id];
+					*it_image = (const aeMovieResourceImage *)resources[resource_id];
 				}
 
                 resource->images = images;
@@ -941,6 +941,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 		}
 	}
 
+	_movieData->resources = resources;
+
 	uint32_t composition_count = READZ( _stream );
 
 	_movieData->composition_count = composition_count;
@@ -964,8 +966,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 //////////////////////////////////////////////////////////////////////////
 void ae_trim_image_resources( aeMovieData * _movieData, ae_movie_data_tream_image_resource_t _provider, void * _data )
 {
-	const aeMovieResource ** it_resource = _movieData->resources;
-	const aeMovieResource ** it_resource_end = _movieData->resources + _movieData->resource_count;
+	const aeMovieResource * const * it_resource = _movieData->resources;
+	const aeMovieResource * const * it_resource_end = _movieData->resources + _movieData->resource_count;
 	for( ; it_resource != it_resource_end; ++it_resource )
 	{
 		const aeMovieResource * resource = *it_resource;

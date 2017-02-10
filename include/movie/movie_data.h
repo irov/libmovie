@@ -170,7 +170,7 @@ typedef struct aeMovieData
 	ae_string_t name;
 
 	uint32_t resource_count;
-	const aeMovieResource ** resources;
+	const aeMovieResource * const * resources;
 
 	uint32_t composition_count;
 	const aeMovieCompositionData * compositions;
