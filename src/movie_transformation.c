@@ -89,14 +89,14 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
     if( _threeD == AE_FALSE )
     {
-        if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+		aeMovieLayerTransformation2DTimeline * timeline = AE_NULL;
+
+		if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_ALL__) != __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
         {
-            ((aeMovieLayerTransformation2D *)_transformation)->timeline = AE_NULL;
+            timeline = NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
         }
-        else
-        {
-            ((aeMovieLayerTransformation2D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
-        }
+
+		((aeMovieLayerTransformation2D *)_transformation)->timeline = timeline;
 
         ae_result_t result = __ae_movie_load_layer_transformation2d( _stream, immutable_property_mask, (aeMovieLayerTransformation2D *)_transformation );
 
@@ -104,14 +104,14 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
     }
     else
     {
-        if( immutable_property_mask == __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
+		aeMovieLayerTransformation3DTimeline * timeline = AE_NULL;
+
+		if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_THREE_D_ALL__) != __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
         {
-            ((aeMovieLayerTransformation3D *)_transformation)->timeline = AE_NULL;
+            timeline = NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
         }
-        else
-        {
-            ((aeMovieLayerTransformation3D *)_transformation)->timeline = NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
-        }
+
+		((aeMovieLayerTransformation3D *)_transformation)->timeline = timeline;
 
         ae_result_t result = __ae_movie_load_layer_transformation3d( _stream, immutable_property_mask, (aeMovieLayerTransformation3D *)_transformation );
 
@@ -176,13 +176,8 @@ void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, co
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static float __get_movie_layer_transformation_property( float _immutable, const void * _property, uint32_t _index )
+static float __get_movie_layer_transformation_property( const void * _property, uint32_t _index )
 {
-    if( _property == AE_NULL )
-    {
-        return _immutable;
-    }
-
     uint32_t property_index = 0;
 
     const uint32_t * property_uint32_t = (const uint32_t *)_property;
@@ -255,10 +250,10 @@ static float __get_movie_layer_transformation_property( float _immutable, const 
     return 0.f;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __get_movie_layer_transformation_property_interpolate( float _immutable, const void * _property, uint32_t _index, float _t )
+static float __get_movie_layer_transformation_property_interpolate( const void * _property, uint32_t _index, float _t )
 {
-	float data_0 = __get_movie_layer_transformation_property( _immutable, _property, _index + 0 );
-	float data_1 = __get_movie_layer_transformation_property( _immutable, _property, _index + 1 );
+	float data_0 = __get_movie_layer_transformation_property( _property, _index + 0 );
+	float data_1 = __get_movie_layer_transformation_property( _property, _index + 1 );
 
 	float data = linerp_f1( data_0, data_1, _t );
 
@@ -266,15 +261,13 @@ static float __get_movie_layer_transformation_property_interpolate( float _immut
 }
 //////////////////////////////////////////////////////////////////////////
 #	define AE_INTERPOLATE_PROPERTY( Name, OutName )\
-	OutName = __get_movie_layer_transformation_property_interpolate(\
-		_transformation->immutable.Name,\
-		(_transformation->timeline == AE_NULL ? AE_NULL : _transformation->timeline->Name),\
+	OutName = (_transformation->timeline == AE_NULL || _transformation->timeline->Name == AE_NULL) ? _transformation->immutable.Name : __get_movie_layer_transformation_property_interpolate(\
+		_transformation->timeline->Name,\
 		_index, _t )
 //////////////////////////////////////////////////////////////////////////
 #	define AE_FIXED_PROPERTY( Name, Index, OutName)\
-	OutName = __get_movie_layer_transformation_property(\
-		_transformation->immutable.Name,\
-		(_transformation->timeline == AE_NULL ? AE_NULL : _transformation->timeline->Name),\
+	OutName = (_transformation->timeline == AE_NULL || _transformation->timeline->Name == AE_NULL) ? _transformation->immutable.Name : __get_movie_layer_transformation_property(\
+		_transformation->timeline->Name,\
 		_index + Index )
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_make_layer_transformation2d( ae_matrix4_t _out, const aeMovieLayerTransformation2D * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t )
@@ -405,15 +398,20 @@ void ae_movie_make_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTr
 //////////////////////////////////////////////////////////////////////////
 float ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, uint32_t _index, ae_bool_t _interpolate, float _t )
 {
-	float opacity;
+	if( _transformation->timeline_opacity == AE_NULL )
+	{
+		return _transformation->immutable_opacity;
+	}
 
+	float opacity;
+		
 	if( _interpolate == AE_TRUE )
 	{
-		opacity = __get_movie_layer_transformation_property_interpolate( _transformation->immutable_opacity, _transformation->timeline_opacity, _index, _t );
+		opacity = __get_movie_layer_transformation_property_interpolate( _transformation->timeline_opacity, _index, _t );
 	}
 	else
 	{
-		opacity = __get_movie_layer_transformation_property( _transformation->immutable_opacity, _transformation->timeline_opacity, _index );
+		opacity = __get_movie_layer_transformation_property( _transformation->timeline_opacity, _index );
 	}
 
 	return opacity;	
