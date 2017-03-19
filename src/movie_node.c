@@ -2095,8 +2095,6 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
 
 	float prev_time = _animation->time;
 
-	_animation->time += _timing;
-
 	float frameDuration = _composition->composition_data->frameDuration;
 
 	float begin_time = prev_time;
@@ -2107,14 +2105,15 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
 	{
 		float last_time = duration - frameDuration;
 
-		if( _animation->time >= last_time )
+		if( _animation->time + _timing >= last_time )
 		{
 			__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time );
 
 			_composition->update_revision++;
 			update_revision = _composition->update_revision;
 
-			_animation->play = AE_FALSE;
+            _animation->time = last_time;
+            _animation->play = AE_FALSE;
 			_animation->interrupt = AE_FALSE;
 
 			if( _submovie == AE_NULL )
@@ -2136,6 +2135,10 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
 
 			return;
 		}
+        else
+        {
+            _animation->time += _timing;
+        }
 	}
 	else
 	{
@@ -2144,9 +2147,15 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
 
 		float last_time = loopEnd - frameDuration;
 
-		while( _animation->time >= last_time )
+		if( _animation->time + _timing >= last_time )
 		{
-			float new_composition_time = _animation->time - last_time + loopBegin;
+			float new_composition_time = _animation->time + _timing - last_time + loopBegin;
+
+            while( new_composition_time >= last_time )
+            {
+                new_composition_time -= last_time;
+                new_composition_time += loopBegin;
+            }
 
 			__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time );
 
@@ -2174,6 +2183,10 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
 				(*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
 			}
 		}
+        else
+        {
+            _animation->time += _timing;
+        }
 	}
 
 	__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, begin_time, _animation->time );
