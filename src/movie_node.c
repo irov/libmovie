@@ -1043,7 +1043,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 		{
 			//node->start_time = _startTime;
 
-			float layer_in = _parent->in_time + layer->in_time * _stretch - _startTime;
+			float layer_in = layer->in_time * _stretch - _startTime;
 			float parent_in = _parent->in_time;
 
 			if( parent_in > layer_in )
@@ -1059,7 +1059,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 
 			//node->in_time = max_f_f( layer_in, parent_in );
 
-			float layer_out = _parent->in_time + layer->out_time * _stretch - _startTime;
+			float layer_out = layer->out_time * _stretch - _startTime;
 			float parent_out = _parent->out_time;
 
 			if( node->submovie == _parent->submovie )
@@ -1087,7 +1087,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
 				float to_stretch = _stretch * layer->stretch;
-				float to_startTime = _startTime + layer->start_time;
+				float to_startTime = _startTime + layer->start_time - layer->in_time;
 
 				__setup_movie_node_time( _nodes, _iterator, layer->sub_composition_data, node, to_stretch, to_startTime );
 			}break;
