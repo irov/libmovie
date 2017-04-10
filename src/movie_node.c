@@ -1523,9 +1523,25 @@ void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t
 	_composition->animation->loop = _loop;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_composition_loop( aeMovieComposition * _composition )
+{
+	aeMovieCompositionAnimation * animation = _composition->animation;
+
+	ae_bool_t loop = animation->loop;
+
+	return loop;
+}
+//////////////////////////////////////////////////////////////////////////
 void ae_set_movie_composition_interpolate( aeMovieComposition * _composition, ae_bool_t _interpolate )
 {
 	_composition->interpolate = _interpolate;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_composition_interpolate( aeMovieComposition * _composition )
+{
+	ae_bool_t interpolate = _composition->interpolate;
+
+	return interpolate;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition, float _begin, float _end )
@@ -1584,6 +1600,24 @@ void ae_play_movie_composition( aeMovieComposition * _composition, float _time )
 	callbackData.subcomposition = AE_NULL;
 
 	(_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_is_play_movie_composition( aeMovieComposition * _composition )
+{
+	aeMovieCompositionAnimation * animation = _composition->animation;
+
+	ae_bool_t play = animation->play;
+
+	return play;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_is_interrupt_movie_composition( aeMovieComposition * _composition )
+{
+	aeMovieCompositionAnimation * animation = _composition->animation;
+
+	ae_bool_t interrupt = animation->interrupt;
+
+	return interrupt;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __notify_stop_nodies( aeMovieComposition * _composition, aeMovieCompositionAnimation * animation, const aeMovieSubMovie * _submovie )
@@ -1651,7 +1685,7 @@ void ae_stop_movie_composition( aeMovieComposition * _composition )
 	(_composition->providers.composition_state)(&callbackData, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
-static float __get_movie_loop_work_begin( const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation )
+static float __get_animation_loop_work_begin( const aeMovieCompositionAnimation * _animation )
 {
 	ae_bool_t loop = _animation->loop;
 
@@ -1669,7 +1703,7 @@ static float __get_movie_loop_work_begin( const aeMovieCompositionData * _compos
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static float __get_movie_loop_work_end( const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation )
+static float __get_animation_loop_work_end( const aeMovieCompositionAnimation * _animation )
 {
 	ae_bool_t loop = _animation->loop;
 
@@ -1689,7 +1723,6 @@ static float __get_movie_loop_work_end( const aeMovieCompositionData * _composit
 //////////////////////////////////////////////////////////////////////////
 void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop )
 {
-	const aeMovieCompositionData * composition_data = _composition->composition_data;
 	aeMovieCompositionAnimation * animation = _composition->animation;
 	
 	if( animation->play == AE_FALSE )
@@ -1706,9 +1739,9 @@ void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t
 
 		animation->interrupt = AE_TRUE;
 
-		if(_skip == AE_TRUE)
+		if( _skip == AE_TRUE )
 		{
-			float work_end = __get_movie_loop_work_end( composition_data, animation );
+			float work_end = __get_animation_loop_work_end( animation );
 
 			ae_set_movie_composition_time( _composition, work_end );
 		}		
@@ -1717,7 +1750,7 @@ void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t
 	{
 		animation->interrupt = AE_TRUE;
 
-		if(_skip == AE_TRUE)
+		if( _skip == AE_TRUE )
 		{
 			float work_end = animation->loop_segment_end;
 
@@ -1899,8 +1932,8 @@ static void __update_movie_composition_node( const aeMovieComposition * _composi
 	
 	_animation->time = _endTime;
 
-	float loopBegin = __get_movie_loop_work_begin( _compositionData, _animation );
-	float loopEnd = __get_movie_loop_work_end( _compositionData, _animation );
+	float loopBegin = __get_animation_loop_work_begin( _animation );
+	float loopEnd = __get_animation_loop_work_end( _animation );
 
 	
 	aeMovieNode *it_node = _composition->nodes;
@@ -2567,13 +2600,13 @@ const aeMovieSubMovie * __get_movie_sub_composition( const aeMovieComposition * 
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _time )
+ae_bool_t ae_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _time )
 {
 	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
 
 	if( submovie == AE_NULL )
 	{
-		return;
+		return AE_FALSE;
 	}
 
 	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
@@ -2581,7 +2614,7 @@ void ae_play_movie_sub_composition( aeMovieComposition * _composition, const ae_
 
 	if( animation->play == AE_TRUE )
 	{
-		return;
+		return AE_TRUE;
 	}
 
 	if( _time >= 0.f )
@@ -2593,22 +2626,24 @@ void ae_play_movie_sub_composition( aeMovieComposition * _composition, const ae_
 
 	animation->play = AE_TRUE;
 	animation->interrupt = AE_FALSE;
+
+	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_stop_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+ae_bool_t ae_stop_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName )
 {
 	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
 
 	if( submovie == AE_NULL )
 	{
-		return;
+		return AE_FALSE;
 	}
 
 	aeMovieCompositionAnimation * animation = submovie->animation;
 
 	if( animation->play == AE_FALSE )
 	{
-		return;
+		return AE_TRUE;
 	}
 
 	aeMovieNode *it_node = _composition->nodes;
@@ -2644,15 +2679,17 @@ void ae_stop_movie_sub_composition( aeMovieComposition * _composition, const ae_
 
 	animation->play = AE_FALSE;
 	animation->interrupt = AE_FALSE;
+
+	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_interrupt_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, ae_bool_t _skip, ae_bool_t _loop )
+ae_bool_t ae_interrupt_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, ae_bool_t _skip, ae_bool_t _loop )
 {
 	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
 
 	if( submovie == AE_NULL )
 	{
-		return;
+		return AE_FALSE;
 	}
 	
 	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
@@ -2660,21 +2697,21 @@ void ae_interrupt_movie_sub_composition( aeMovieComposition * _composition, cons
 
 	if( animation->play == AE_FALSE )
 	{
-		return;
+		return AE_TRUE;
 	}
 
 	if( _loop == AE_FALSE )
 	{
 		if( animation->loop == AE_FALSE )
 		{
-			return;
+			return AE_TRUE;
 		}
 
 		animation->interrupt = AE_TRUE;
 
 		if( _skip == AE_TRUE )
 		{
-			float work_end = __get_movie_loop_work_end( composition_data, animation );
+			float work_end = __get_animation_loop_work_end( animation );
 
 			__set_movie_composition_time( _composition, composition_data, animation, work_end, submovie );
 		}
@@ -2690,6 +2727,40 @@ void ae_interrupt_movie_sub_composition( aeMovieComposition * _composition, cons
 			__set_movie_composition_time( _composition, composition_data, animation, work_end, submovie );
 		}
 	}
+
+	return AE_TRUE;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_is_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+{
+	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
+
+	if( submovie == AE_NULL )
+	{
+		return AE_FALSE;
+	}
+
+	aeMovieCompositionAnimation * animation = submovie->animation;
+
+	ae_bool_t play = animation->play;
+
+	return play;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_is_interrupt_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+{
+	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
+
+	if( submovie == AE_NULL )
+	{
+		return AE_FALSE;
+	}
+
+	aeMovieCompositionAnimation * animation = submovie->animation;
+
+	ae_bool_t interrupt = animation->interrupt;
+
+	return interrupt;
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_set_movie_sub_composition_time( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _time )
@@ -2733,6 +2804,22 @@ void ae_set_movie_sub_composition_loop( aeMovieComposition * _composition, const
 	aeMovieCompositionAnimation * animation = submovie->animation;
 
 	animation->loop = _loop;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_sub_composition_loop( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+{
+	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
+
+	if( submovie == AE_NULL )
+	{
+		return AE_FALSE;
+	}
+	
+	aeMovieCompositionAnimation * animation = submovie->animation;
+
+	ae_bool_t loop = animation->loop;
+
+	return loop;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_sub_composition_work_area( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _begin, float _end )

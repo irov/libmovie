@@ -3,6 +3,7 @@
 #	include <malloc.h>
 #	include <stdio.h>
 #	include <stdarg.h>
+#	include <memory.h>
 
 //////////////////////////////////////////////////////////////////////////
 static void * stdlib_movie_alloc( void * _data, size_t _size )
@@ -37,6 +38,9 @@ static void stdlib_movie_free_n( void * _data, const void * _ptr )
 //////////////////////////////////////////////////////////////////////////
 static void stdlib_movie_logerror( void * _data, aeMovieErrorCode _code, const char * _format, ... )
 {
+	(void)_data;
+	(void)_code;
+
 	va_list argList;
 
 	va_start( argList, _format );
@@ -55,17 +59,25 @@ static size_t read_file( void * _data, void * _buff, uint32_t _size )
 
 static void memory_copy( void * _data, const void * _src, void * _dst, size_t _size )
 {
+	(void)_data;
+
 	memcpy( _dst, _src, _size );
 }
 
 static void * resource_provider( const aeMovieResource * _resource, void * _data )
 {
+	(void)_resource;
+	(void)_data;
+
 	return AE_NULL;
 }
 
 int main( int argc, char *argv[] )
 {
-	aeMovieInstance * instance = ae_create_movie_instance( &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, AE_NULL, &stdlib_movie_logerror, AE_NULL );
+	(void)argc;
+	(void)argv;
+
+	aeMovieInstance * instance = ae_create_movie_instance( &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, (ae_movie_strncmp_t)AE_NULL, &stdlib_movie_logerror, AE_NULL );
 
 	aeMovieData * movieData = ae_create_movie_data( instance );
 
@@ -100,16 +112,16 @@ int main( int argc, char *argv[] )
 
 	aeMovieCompositionProviders providers;
 
-	providers.camera_provider = AE_NULL;
+	providers.camera_provider = (ae_movie_callback_camera_provider_t)AE_NULL;
 
-	providers.node_provider = AE_NULL;
-	providers.node_destroyer = AE_NULL;
-	providers.node_update = AE_NULL;
-	providers.track_matte_update = AE_NULL;
+	providers.node_provider = (ae_movie_callback_node_provider_t)AE_NULL;
+	providers.node_destroyer = (ae_movie_callback_node_destroy_t)AE_NULL;
+	providers.node_update = (ae_movie_callback_node_update_t)AE_NULL;
+	providers.track_matte_update = (ae_movie_callback_track_matte_update_t)AE_NULL;
 
-	providers.composition_event = AE_NULL;
+	providers.composition_event = (ae_movie_callback_composition_event_t)AE_NULL;
 
-	providers.composition_state = AE_NULL;
+	providers.composition_state = (ae_movie_callback_composition_state_t)AE_NULL;
 
 	aeMovieComposition * composition = ae_create_movie_composition( movieData, compositionData, AE_TRUE, &providers, AE_NULL );
 
