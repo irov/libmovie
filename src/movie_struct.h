@@ -49,6 +49,9 @@ typedef struct aeMovieCompositionAnimation
 			
 	float time;
 
+	float loop_segment_begin;
+	float loop_segment_end;
+
 	float work_area_begin;
 	float work_area_end;
 } aeMovieCompositionAnimation;
