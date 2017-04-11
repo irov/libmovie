@@ -231,7 +231,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 	const aeMovieLayerData * layer = _node->layer;
 	const aeMovieResource * resource = layer->resource;
-	
+
     aeMovieLayerTypeEnum layer_type = layer->type;
 
 	_render->layer_type = layer_type;
@@ -641,11 +641,11 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 		float local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
 
 		ae_movie_make_layer_transformation( _node->matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
-		
+
 		if( layer->sub_composition_data != AE_NULL )
 		{
 			_node->composition_opactity = local_opacity;
-            
+
             _node->composition_r = local_r;
             _node->composition_g = local_g;
             _node->composition_b = local_b;
@@ -677,9 +677,9 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 
 		__update_movie_composition_node_matrix( _composition, _compositionData, _animation, node_relative, _revision, frame_relative, _interpolate, t_relative );
 	}
-		
+
 	float local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
-	
+
 	ae_matrix4_t local_matrix;
 	ae_movie_make_layer_transformation( local_matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
 
@@ -688,7 +688,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 	if( layer->sub_composition_data != AE_NULL )
 	{
 		_node->composition_opactity = node_relative->composition_opactity * local_opacity;
-        
+
         _node->composition_r = node_relative->composition_r * local_r;
         _node->composition_g = node_relative->composition_g * local_g;
         _node->composition_b = node_relative->composition_b * local_b;
@@ -696,14 +696,14 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 	else
 	{
 		_node->composition_opactity = node_relative->composition_opactity;
-        
+
         _node->composition_r = node_relative->composition_r;
         _node->composition_g = node_relative->composition_g;
         _node->composition_b = node_relative->composition_b;
 	}
 
 	_node->opacity = node_relative->composition_opactity * local_opacity;
-    
+
     _node->r = node_relative->composition_r * local_r;
     _node->g = node_relative->composition_g * local_g;
     _node->b = node_relative->composition_b * local_b;
@@ -712,7 +712,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 static uint32_t __get_movie_composition_data_node_count( const aeMovieCompositionData * _compositionData )
 {
 	uint32_t count = _compositionData->layer_count;
-		
+
 	const aeMovieLayerData * it_layer = _compositionData->layers;
 	const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
 	for( ; it_layer != it_layer_end; ++it_layer )
@@ -1002,7 +1002,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 	}
 
 	uint32_t end_index = *_iterator;
-    	
+
 	const aeMovieLayerData *it_layer2 = _compositionData->layers;
 	const aeMovieLayerData *it_layer2_end = _compositionData->layers + _compositionData->layer_count;
 	for( ; it_layer2 != it_layer2_end; ++it_layer2 )
@@ -1027,7 +1027,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, const aeMovieNode * _parent, float _stretch, float _startTime )
-{	
+{
 	const aeMovieLayerData *it_layer = _compositionData->layers;
 	const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
 	for( ; it_layer != it_layer_end; ++it_layer )
@@ -1073,7 +1073,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			{
 				node->out_time = layer->out_time;
 			}
-            
+
             if( node->out_time <= 0.f || node->out_time < node->in_time )
             {
                 node->in_time = 0.f;
@@ -1102,7 +1102,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, const aeMovieNode * _parent, aeMovieBlendMode _blendMode )
-{	
+{
 	(void)_parent; //TODO
 
 	const aeMovieLayerData *it_layer = _compositionData->layers;
@@ -1144,7 +1144,7 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, uint32_t * _ite
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, const aeMovieNode * _parent, void * _cameraData )
-{	
+{
 	(void)_parent; //TODO
 
 	const aeMovieLayerData *it_layer = _compositionData->layers;
@@ -1225,7 +1225,7 @@ static void __setup_movie_node_matrix2( const aeMovieComposition * _composition,
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_matrix( const aeMovieComposition * _composition )
-{		
+{
 	const aeMovieCompositionData * composition_data = _composition->composition_data;
 	aeMovieCompositionAnimation * animation = _composition->animation;
 
@@ -1268,7 +1268,7 @@ static void __setup_movie_composition_element( aeMovieComposition * _composition
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_composition_active( aeMovieComposition * _composition )
-{	
+{
 	aeMovieNode *it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -1346,14 +1346,14 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 
 	animation->play = AE_FALSE;
 	animation->interrupt = AE_FALSE;
-	
+
 	animation->time = 0.f;
 	animation->loop_segment_begin = _compositionData->loop_segment[0];
 	animation->loop_segment_end = _compositionData->loop_segment[1];
 	animation->work_area_begin = 0.f;
 	animation->work_area_end = _compositionData->duration;
 	animation->loop = AE_FALSE;
-	
+
 	composition->animation = animation;
 
 	composition->update_revision = 0;
@@ -1394,7 +1394,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 	composition->update_revision++;
 
 	__setup_movie_node_matrix( composition );
-		
+
 	__setup_movie_composition_active( composition );
 
 	uint32_t node_track_matte_iterator = 0;
@@ -1456,7 +1456,7 @@ static void __notify_delete_nodes( const aeMovieComposition * _composition )
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_destroy_movie_composition( const aeMovieComposition * _composition )
-{	
+{
 	__notify_delete_track_mattes( _composition );
 	__notify_delete_nodes( _composition );
 
@@ -1724,7 +1724,7 @@ static float __get_animation_loop_work_end( const aeMovieCompositionAnimation * 
 void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop )
 {
 	aeMovieCompositionAnimation * animation = _composition->animation;
-	
+
 	if( animation->play == AE_FALSE )
 	{
 		return;
@@ -1744,7 +1744,7 @@ void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t
 			float work_end = __get_animation_loop_work_end( animation );
 
 			ae_set_movie_composition_time( _composition, work_end );
-		}		
+		}
 	}
 	else
 	{
@@ -1789,7 +1789,7 @@ static void __update_movie_composition_node_state( const aeMovieComposition * _c
 			callbackData.offset = _node->start_time + _time - _node->in_time;
 			callbackData.matrix = _node->matrix;
 			callbackData.opacity = _node->opacity;
-			
+
 			(*_composition->providers.node_update)(&callbackData, _composition->provider_data);
 		}
 		else
@@ -1855,7 +1855,7 @@ static void __update_movie_composition_track_matte_state( const aeMovieCompositi
 	aeMovieTrackMatteUpdateCallbackData callbackData;
 	callbackData.element = _node->element_data;
 	callbackData.type = layer_type;
-	callbackData.loop = _loop;	
+	callbackData.loop = _loop;
 	callbackData.offset = _node->start_time + _time - _node->in_time;
 	callbackData.matrix = _node->matrix;
 	callbackData.mesh = &mesh;
@@ -1868,13 +1868,13 @@ static void __update_movie_composition_track_matte_state( const aeMovieCompositi
 			_node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
 
 			callbackData.state = AE_MOVIE_NODE_UPDATE_BEGIN;
-			
+
 			(*_composition->providers.track_matte_update)(&callbackData, _composition->provider_data);
 		}
 		else
 		{
 			_node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
-			
+
 			callbackData.state = AE_MOVIE_NODE_UPDATE_UPDATE;
 
 			(*_composition->providers.track_matte_update)(&callbackData, _composition->provider_data);
@@ -1929,13 +1929,13 @@ static void __update_movie_composition_node( const aeMovieComposition * _composi
 
 	ae_bool_t animation_interrupt = _animation->interrupt;
 	ae_bool_t animation_loop = _animation->loop;
-	
+
 	_animation->time = _endTime;
 
 	float loopBegin = __get_animation_loop_work_begin( _animation );
 	float loopEnd = __get_animation_loop_work_end( _animation );
 
-	
+
 	aeMovieNode *it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -2052,7 +2052,7 @@ static void __update_movie_composition_node( const aeMovieComposition * _composi
 }
 //////////////////////////////////////////////////////////////////////////
 static void __skip_movie_composition_node( aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, const aeMovieSubMovie * _submovie, uint32_t _revision, float _beginTime, float _endTime )
-{	
+{
 	aeMovieNode	*it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -2133,99 +2133,102 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
 
 	float prev_time = _animation->time;
 
-	float frameDuration = _composition->composition_data->frameDuration;
-
 	float begin_time = prev_time;
 
-	float duration = _animation->work_area_end - _animation->work_area_begin;
+	if(_animation->play == AE_TRUE)
+    {
+        float duration = _animation->work_area_end - _animation->work_area_begin;
 
-	if( _animation->loop == AE_FALSE || _animation->interrupt == AE_TRUE )
-	{
-		float last_time = duration - frameDuration;
+        float frameDuration = _composition->composition_data->frameDuration;
 
-		if( _animation->time + _timing >= last_time )
-		{
-			__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time );
-
-			_composition->update_revision++;
-			update_revision = _composition->update_revision;
-
-            _animation->time = last_time;
-            _animation->play = AE_FALSE;
-			_animation->interrupt = AE_FALSE;
-
-			if( _submovie == AE_NULL )
-			{
-				aeMovieCompositionStateCallbackData callbackData;
-				callbackData.state = AE_MOVIE_COMPOSITION_END;
-				callbackData.subcomposition = AE_NULL;
-
-				(*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
-			}
-			else
-			{
-				aeMovieCompositionStateCallbackData callbackData;
-				callbackData.state = AE_MOVIE_SUB_COMPOSITION_END;
-				callbackData.subcomposition = _submovie->layer->name;
-
-				(*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
-			}
-
-			return;
-		}
-        else
+        if(_animation->loop == AE_FALSE || _animation->interrupt == AE_TRUE)
         {
-            _animation->time += _timing;
-        }
-	}
-	else
-	{
-		float loopBegin = max_f_f( _animation->loop_segment_begin, _animation->work_area_begin );
-		float loopEnd = min_f_f( _animation->loop_segment_end, _animation->work_area_end );
+            float last_time = duration - frameDuration;
 
-		float last_time = loopEnd - frameDuration;
-
-		if( _animation->time + _timing >= last_time )
-		{
-			float new_composition_time = _animation->time + _timing - last_time + loopBegin;
-
-            while( new_composition_time >= last_time )
+            if(_animation->time + _timing >= last_time)
             {
-                new_composition_time -= last_time;
-                new_composition_time += loopBegin;
+                __update_movie_composition_node(_composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time);
+
+                _composition->update_revision++;
+                update_revision = _composition->update_revision;
+
+                _animation->time = last_time;
+                _animation->play = AE_FALSE;
+                _animation->interrupt = AE_FALSE;
+
+                if(_submovie == AE_NULL)
+                {
+                    aeMovieCompositionStateCallbackData callbackData;
+                    callbackData.state = AE_MOVIE_COMPOSITION_END;
+                    callbackData.subcomposition = AE_NULL;
+
+                    (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                }
+                else
+                {
+                    aeMovieCompositionStateCallbackData callbackData;
+                    callbackData.state = AE_MOVIE_SUB_COMPOSITION_END;
+                    callbackData.subcomposition = _submovie->layer->name;
+
+                    (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                }
+
+                return;
             }
-
-			__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time );
-
-			_composition->update_revision++;
-			update_revision = _composition->update_revision;
-
-			begin_time = loopBegin;
-
-			_animation->time = new_composition_time;
-
-			if( _submovie == AE_NULL )
-			{
-				aeMovieCompositionStateCallbackData callbackData;
-				callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
-				callbackData.subcomposition = AE_NULL;
-
-				(*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
-			}
-			else
-			{
-				aeMovieCompositionStateCallbackData callbackData;
-				callbackData.state = AE_MOVIE_SUB_COMPOSITION_LOOP_END;
-				callbackData.subcomposition = _submovie->layer->name;
-
-				(*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
-			}
-		}
+            else
+            {
+                _animation->time += _timing;
+            }
+        }
         else
         {
-            _animation->time += _timing;
+            float loopBegin = max_f_f(_animation->loop_segment_begin, _animation->work_area_begin);
+            float loopEnd = min_f_f(_animation->loop_segment_end, _animation->work_area_end);
+
+            float last_time = loopEnd - frameDuration;
+
+            if(_animation->time + _timing >= last_time)
+            {
+                float new_composition_time = _animation->time + _timing - last_time + loopBegin;
+
+                while(new_composition_time >= last_time)
+                {
+                    new_composition_time -= last_time;
+                    new_composition_time += loopBegin;
+                }
+
+                __update_movie_composition_node(_composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time);
+
+                _composition->update_revision++;
+                update_revision = _composition->update_revision;
+
+                begin_time = loopBegin;
+
+                _animation->time = new_composition_time;
+
+                if(_submovie == AE_NULL)
+                {
+                    aeMovieCompositionStateCallbackData callbackData;
+                    callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
+                    callbackData.subcomposition = AE_NULL;
+
+                    (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                }
+                else
+                {
+                    aeMovieCompositionStateCallbackData callbackData;
+                    callbackData.state = AE_MOVIE_SUB_COMPOSITION_LOOP_END;
+                    callbackData.subcomposition = _submovie->layer->name;
+
+                    (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                }
+            }
+            else
+            {
+                _animation->time += _timing;
+            }
         }
-	}
+    }
 
 	__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, begin_time, _animation->time );
 }
@@ -2236,7 +2239,7 @@ void ae_update_movie_composition( aeMovieComposition * _composition, float _timi
 
 	aeMovieCompositionAnimation * animation = _composition->animation;
 	const aeMovieCompositionData * composition_data = _composition->composition_data;
-	
+
 	if( animation->play == AE_TRUE )
 	{
 		__update_movie_submovie( _composition, _timing, animation, composition_data, AE_NULL );
@@ -2297,7 +2300,7 @@ void ae_set_movie_composition_time( aeMovieComposition * _composition, float _ti
 {
 	const aeMovieCompositionData * composition_data = _composition->composition_data;
 	aeMovieCompositionAnimation * animation = _composition->animation;
-	
+
 	__set_movie_composition_time( _composition, composition_data, animation, _time, AE_NULL );
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2318,7 +2321,7 @@ float ae_get_movie_composition_duration( const aeMovieComposition * _composition
 ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
-	
+
 	aeMovieNode *it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -2348,7 +2351,7 @@ ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, cons
 void * ae_get_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
-	
+
     const aeMovieNode *it_node = _composition->nodes;
     const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -2376,7 +2379,7 @@ void * ae_get_movie_composition_slot( const aeMovieComposition * _composition, c
 ae_bool_t ae_has_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
-		
+
     const aeMovieNode *it_node = _composition->nodes;
     const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -2404,7 +2407,7 @@ ae_bool_t ae_has_movie_composition_slot( const aeMovieComposition * _composition
 void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
-		
+
 	aeMovieNode *it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -2539,7 +2542,7 @@ uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition
 			continue;
 		}
 
-		count += 1;		
+		count += 1;
 	}
 
 	return count;
@@ -2548,7 +2551,7 @@ uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
-    	
+
 	const aeMovieNode *it_node = _composition->nodes;
     const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
 	for( ; it_node != it_node_end; ++it_node )
@@ -2557,7 +2560,7 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
 
 		const aeMovieLayerData * layer = node->layer;
 
-		if( _type != AE_MOVIE_LAYER_TYPE_ANY 
+		if( _type != AE_MOVIE_LAYER_TYPE_ANY
             && layer->type != _type )
 		{
 			continue;
@@ -2691,7 +2694,7 @@ ae_bool_t ae_interrupt_movie_sub_composition( aeMovieComposition * _composition,
 	{
 		return AE_FALSE;
 	}
-	
+
 	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
 	aeMovieCompositionAnimation * animation = submovie->animation;
 
@@ -2788,7 +2791,7 @@ float ae_get_movie_sub_composition_time( const aeMovieComposition * _composition
 	}
 
 	aeMovieCompositionAnimation * animation = submovie->animation;
-	
+
 	return animation->time;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2814,7 +2817,7 @@ ae_bool_t ae_get_movie_sub_composition_loop( aeMovieComposition * _composition, 
 	{
 		return AE_FALSE;
 	}
-	
+
 	aeMovieCompositionAnimation * animation = submovie->animation;
 
 	ae_bool_t loop = animation->loop;
