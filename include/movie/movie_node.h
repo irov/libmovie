@@ -15,7 +15,7 @@ typedef struct aeMovieRenderMesh
 
 	aeMovieBlendMode blend_mode;
 
-    aeMovieResourceTypeEnum resource_type;
+	aeMovieResourceTypeEnum resource_type;
 	void * resource_data;
 
 	uint32_t vertexCount;
@@ -50,7 +50,7 @@ typedef enum
 }aeMovieNodeUpdateState;
 
 typedef struct aeMovieCameraProviderCallbackData
-{	
+{
 	const ae_char_t * name;
 	ae_vector3_ptr_t position;
 	ae_vector3_ptr_t direction;
@@ -62,7 +62,7 @@ typedef struct aeMovieCameraProviderCallbackData
 typedef struct aeMovieNodeProviderCallbackData
 {
 	const aeMovieLayerData * layer;
-	ae_matrix4_ptr_t matrix; 
+	ae_matrix4_ptr_t matrix;
 	float opacity;
 	const aeMovieLayerData * trackmatteLayer;
 } aeMovieNodeProviderCallbackData;
@@ -70,13 +70,13 @@ typedef struct aeMovieNodeProviderCallbackData
 typedef struct aeMovieNodeDestroyCallbackData
 {
 	void * element;
-    aeMovieLayerTypeEnum type;
+	aeMovieLayerTypeEnum type;
 } aeMovieNodeDestroyCallbackData;
 
 typedef struct aeMovieNodeUpdateCallbackData
 {
 	void * element;
-    aeMovieLayerTypeEnum type;
+	aeMovieLayerTypeEnum type;
 	ae_bool_t loop;
 	aeMovieNodeUpdateState state;
 	float offset;
@@ -87,7 +87,7 @@ typedef struct aeMovieNodeUpdateCallbackData
 typedef struct aeMovieTrackMatteUpdateCallbackData
 {
 	void * element;
-    aeMovieLayerTypeEnum type;
+	aeMovieLayerTypeEnum type;
 	ae_bool_t loop;
 	aeMovieNodeUpdateState state;
 	float offset;
@@ -128,11 +128,11 @@ typedef struct aeMovieCompositionStateCallbackData
 
 typedef void * (*ae_movie_callback_camera_provider_t)(const aeMovieCameraProviderCallbackData * _callbackData, void * _data);
 typedef void * (*ae_movie_callback_node_provider_t)(const aeMovieNodeProviderCallbackData * _callbackData, void * _data);
-typedef void (*ae_movie_callback_node_destroy_t)(const aeMovieNodeDestroyCallbackData * _callbackData, void * _data);
-typedef void (*ae_movie_callback_node_update_t)(const aeMovieNodeUpdateCallbackData * _callbackData, void * _data);
+typedef void( *ae_movie_callback_node_destroy_t )(const aeMovieNodeDestroyCallbackData * _callbackData, void * _data);
+typedef void( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, void * _data);
 typedef void * (*ae_movie_callback_track_matte_update_t)(const aeMovieTrackMatteUpdateCallbackData * _callbackData, void * _data);
-typedef void (*ae_movie_callback_composition_event_t)(const aeMovieCompositionEventCallbackData * _callbackData, void * _data);
-typedef void (*ae_movie_callback_composition_state_t)(const aeMovieCompositionStateCallbackData * _callbackData, void * _data);
+typedef void( *ae_movie_callback_composition_event_t )(const aeMovieCompositionEventCallbackData * _callbackData, void * _data);
+typedef void( *ae_movie_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, void * _data);
 
 typedef struct aeMovieCompositionProviders
 {
@@ -141,9 +141,9 @@ typedef struct aeMovieCompositionProviders
 	ae_movie_callback_node_provider_t node_provider;
 	ae_movie_callback_node_destroy_t node_destroyer;
 	ae_movie_callback_node_update_t node_update;
-	
+
 	ae_movie_callback_track_matte_update_t track_matte_update;
-		
+
 	ae_movie_callback_composition_event_t composition_event;
 	ae_movie_callback_composition_state_t composition_state;
 
@@ -167,7 +167,7 @@ void ae_remove_movie_composition_work_area( const aeMovieComposition * _composit
 
 void ae_play_movie_composition( const aeMovieComposition * _composition, float _time );
 void ae_stop_movie_composition( const aeMovieComposition * _composition );
-void ae_interrupt_movie_composition( const aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop);
+void ae_interrupt_movie_composition( const aeMovieComposition * _composition, ae_bool_t _skip );
 
 ae_bool_t ae_is_play_movie_composition( const aeMovieComposition * _composition );
 ae_bool_t ae_is_interrupt_movie_composition( const aeMovieComposition * _composition );
@@ -196,7 +196,7 @@ const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposi
 const char * ae_get_movie_sub_composition_name( const aeMovieSubComposition * _subcomposition );
 ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time );
 ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
-ae_bool_t ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip, ae_bool_t _loop );
+void ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip );
 
 ae_bool_t ae_is_play_movie_sub_composition( const aeMovieSubComposition * _subcomposition );
 ae_bool_t ae_is_interrupt_movie_sub_composition( const aeMovieSubComposition * _subcomposition );

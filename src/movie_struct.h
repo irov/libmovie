@@ -44,7 +44,6 @@ typedef struct aeMovieCompositionAnimation
 {
 	ae_bool_t play;
 	ae_bool_t interrupt;
-
 	ae_bool_t loop;
 			
 	float time;
