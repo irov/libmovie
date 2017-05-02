@@ -56,12 +56,12 @@ typedef struct aeMovieCompositionAnimation
 	float work_area_end;
 } aeMovieCompositionAnimation;
 //////////////////////////////////////////////////////////////////////////
-typedef struct aeMovieSubMovie
+typedef struct aeMovieSubComposition
 {
 	const aeMovieLayerData * layer;
 
 	aeMovieCompositionAnimation * animation;
-} aeMovieSubMovie;
+} aeMovieSubComposition;
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieNode
 {
@@ -70,7 +70,7 @@ typedef struct aeMovieNode
 	struct aeMovieNode * relative;
     struct aeMovieNode * track_matte;
 
-	const aeMovieSubMovie * submovie;
+	const aeMovieSubComposition * subcomposition;
 
 	float start_time;
 	float in_time;
@@ -111,15 +111,15 @@ typedef struct aeMovieComposition
 
 	aeMovieCompositionAnimation * animation;
 
-	uint32_t update_revision;
+	uint32_t * update_revision;
 
 	ae_bool_t interpolate;
 
 	uint32_t node_count;
 	aeMovieNode * nodes;
 
-	uint32_t submovie_count;
-	aeMovieSubMovie * submovies;
+	uint32_t subcomposition_count;
+	aeMovieSubComposition * subcompositions;
 
 	aeMovieCompositionProviders providers;
 	void * provider_data;

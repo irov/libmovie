@@ -6,6 +6,9 @@
 #	include "movie_resource.h"
 #	include "movie_data.h"
 
+typedef struct aeMovieComposition aeMovieComposition;
+typedef struct aeMovieSubComposition aeMovieSubComposition;
+
 typedef struct aeMovieRenderMesh
 {
 	uint32_t layer_type;
@@ -120,7 +123,7 @@ typedef enum
 typedef struct aeMovieCompositionStateCallbackData
 {
 	aeMovieCompositionStateFlag state;
-	const ae_char_t * subcomposition;
+	const aeMovieSubComposition * subcomposition;
 } aeMovieCompositionStateCallbackData;
 
 typedef void * (*ae_movie_callback_camera_provider_t)(const aeMovieCameraProviderCallbackData * _callbackData, void * _data);
@@ -146,8 +149,6 @@ typedef struct aeMovieCompositionProviders
 
 } aeMovieCompositionProviders;
 
-typedef struct aeMovieComposition aeMovieComposition;
-
 aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * providers, void * _data );
 void ae_destroy_movie_composition( const aeMovieComposition * _composition );
 
@@ -155,30 +156,30 @@ ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _com
 
 uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition );
 
-void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop );
-ae_bool_t ae_get_movie_composition_loop( aeMovieComposition * _composition );
+void ae_set_movie_composition_loop( const aeMovieComposition * _composition, ae_bool_t _loop );
+ae_bool_t ae_get_movie_composition_loop( const aeMovieComposition * _composition );
 
 void ae_set_movie_composition_interpolate( aeMovieComposition * _composition, ae_bool_t _interpolate );
-ae_bool_t ae_get_movie_composition_interpolate( aeMovieComposition * _composition );
+ae_bool_t ae_get_movie_composition_interpolate( const  aeMovieComposition * _composition );
 
-ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition, float _begin, float _end );
-void ae_remove_movie_composition_work_area( aeMovieComposition * _composition );
+ae_bool_t ae_set_movie_composition_work_area( const aeMovieComposition * _composition, float _begin, float _end );
+void ae_remove_movie_composition_work_area( const aeMovieComposition * _composition );
 
-void ae_play_movie_composition( aeMovieComposition * _composition, float _time );
-void ae_stop_movie_composition( aeMovieComposition * _composition );
-void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop);
+void ae_play_movie_composition( const aeMovieComposition * _composition, float _time );
+void ae_stop_movie_composition( const aeMovieComposition * _composition );
+void ae_interrupt_movie_composition( const aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop);
 
-ae_bool_t ae_is_play_movie_composition( aeMovieComposition * _composition );
-ae_bool_t ae_is_interrupt_movie_composition( aeMovieComposition * _composition );
+ae_bool_t ae_is_play_movie_composition( const aeMovieComposition * _composition );
+ae_bool_t ae_is_interrupt_movie_composition( const aeMovieComposition * _composition );
 
-void ae_set_movie_composition_time( aeMovieComposition * _composition, float _timing );
+void ae_set_movie_composition_time( const aeMovieComposition * _composition, float _timing );
 float ae_get_movie_composition_time( const aeMovieComposition * _composition );
 
 float ae_get_movie_composition_duration( const aeMovieComposition * _composition );
 
 void ae_update_movie_composition( aeMovieComposition * _composition, float _timing );
 
-ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData );
+ae_bool_t ae_set_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData );
 void * ae_get_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName );
 ae_bool_t ae_has_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName );
 void * ae_remove_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName );
@@ -190,20 +191,23 @@ uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition
 
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out );
 
-ae_bool_t ae_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _time );
-ae_bool_t ae_stop_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName );
-ae_bool_t ae_interrupt_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, ae_bool_t _skip, ae_bool_t _loop );
+const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name );
 
-ae_bool_t ae_is_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName );
-ae_bool_t ae_is_interrupt_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName );
+const char * ae_get_movie_sub_composition_name( const aeMovieSubComposition * _subcomposition );
+ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time );
+ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
+ae_bool_t ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip, ae_bool_t _loop );
 
-void ae_set_movie_sub_composition_time( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _timing );
-float ae_get_movie_sub_composition_time( const aeMovieComposition * _composition, const ae_char_t * _submovieName );
+ae_bool_t ae_is_play_movie_sub_composition( const aeMovieSubComposition * _subcomposition );
+ae_bool_t ae_is_interrupt_movie_sub_composition( const aeMovieSubComposition * _subcomposition );
 
-void ae_set_movie_sub_composition_loop( aeMovieComposition * _composition, const ae_char_t * _submovieName, ae_bool_t _loop );
-ae_bool_t ae_get_movie_sub_composition_loop( aeMovieComposition * _composition, const ae_char_t * _submovieName );
+void ae_set_movie_sub_composition_time( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _timing );
+float ae_get_movie_sub_composition_time( const aeMovieSubComposition * _subcomposition );
 
-ae_bool_t ae_set_movie_sub_composition_work_area( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _begin, float _end );
-void ae_remove_movie_sub_composition_work_area( aeMovieComposition * _composition, const ae_char_t * _submovieName );
+void ae_set_movie_sub_composition_loop( const aeMovieSubComposition * _subcomposition, ae_bool_t _loop );
+ae_bool_t ae_get_movie_sub_composition_loop( const aeMovieSubComposition * _subcomposition );
+
+ae_bool_t ae_set_movie_sub_composition_work_area( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _begin, float _end );
+void ae_remove_movie_sub_composition_work_area( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
 
 #endif

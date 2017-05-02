@@ -24,6 +24,20 @@ typedef enum
 	__AE_MOVIE_NODE_ANIMATE_STATES__
 } aeMovieNodeAnimationStateEnum;
 //////////////////////////////////////////////////////////////////////////
+static uint32_t __get_composition_update_revision( const aeMovieComposition * _composition )
+{
+	uint32_t update_revision = *_composition->update_revision;
+
+	return update_revision;
+}
+//////////////////////////////////////////////////////////////////////////
+static uint32_t __inc_composition_update_revision( const aeMovieComposition * _composition )
+{
+	uint32_t update_revision = ++(*_composition->update_revision);
+
+	return update_revision;
+}
+//////////////////////////////////////////////////////////////////////////
 static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
 	_render->vertexCount = _mesh->vertex_count;
@@ -852,7 +866,7 @@ static ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _composit
 	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-static uint32_t __get_movie_submovie_count( aeMovieComposition * _composition )
+static uint32_t __get_movie_subcomposition_count( aeMovieComposition * _composition )
 {
 	uint32_t count = 0;
 
@@ -880,7 +894,7 @@ static uint32_t __get_movie_submovie_count( aeMovieComposition * _composition )
 	return count;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_bool_t __setup_movie_submovie2( aeMovieComposition * _composition, uint32_t * _node_iterator, aeMovieSubMovie * _submovies, uint32_t * _submovie_iterator, const aeMovieCompositionData * _compositionData, const aeMovieSubMovie * _submovie )
+static ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _composition, uint32_t * _node_iterator, aeMovieSubComposition * _subcompositions, uint32_t * _subcomposition_iterator, const aeMovieCompositionData * _compositionData, const aeMovieSubComposition * _subcomposition )
 {
 	const aeMovieLayerData * it_layer = _compositionData->layers;
 	const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
@@ -894,22 +908,22 @@ static ae_bool_t __setup_movie_submovie2( aeMovieComposition * _composition, uin
 
         aeMovieLayerTypeEnum layer_type = node_layer->type;
 
-		node->submovie = _submovie;
+		node->subcomposition = _subcomposition;
 
 		switch( layer_type )
 		{
 		case AE_MOVIE_LAYER_TYPE_MOVIE:
 			{
-				if( __setup_movie_submovie2( _composition, _node_iterator, _submovies, _submovie_iterator, layer->sub_composition_data, _submovie ) == AE_FALSE )
+				if( __setup_movie_subcomposition2( _composition, _node_iterator, _subcompositions, _subcomposition_iterator, layer->sub_composition_data, _subcomposition ) == AE_FALSE )
 				{
 					return AE_FALSE;
 				}
 			}break;
 		case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 			{
-				aeMovieSubMovie * submovie = _submovies + ((*_submovie_iterator)++);
+				aeMovieSubComposition * subcomposition = _subcompositions + ((*_subcomposition_iterator)++);
 
-				submovie->layer = layer;
+				subcomposition->layer = layer;
 
 				aeMovieCompositionAnimation * animation = NEW( _composition->movie_data->instance, aeMovieCompositionAnimation );
 
@@ -926,9 +940,9 @@ static ae_bool_t __setup_movie_submovie2( aeMovieComposition * _composition, uin
 				animation->work_area_begin = 0.f;
 				animation->work_area_end = layer->sub_composition_data->duration;
 
-				submovie->animation = animation;
+				subcomposition->animation = animation;
 
-				if( __setup_movie_submovie2( _composition, _node_iterator, _submovies, _submovie_iterator, layer->sub_composition_data, submovie ) == AE_FALSE )
+				if( __setup_movie_subcomposition2( _composition, _node_iterator, _subcompositions, _subcomposition_iterator, layer->sub_composition_data, subcomposition ) == AE_FALSE )
 				{
 					return AE_FALSE;
 				}
@@ -942,22 +956,22 @@ static ae_bool_t __setup_movie_submovie2( aeMovieComposition * _composition, uin
 	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_bool_t __setup_movie_submovie( aeMovieComposition * _composition )
+static ae_bool_t __setup_movie_subcomposition( aeMovieComposition * _composition )
 {
-	uint32_t submovie_count = __get_movie_submovie_count( _composition );
+	uint32_t subcomposition_count = __get_movie_subcomposition_count( _composition );
 
-	aeMovieSubMovie * submovies = NEWN( _composition->movie_data->instance, aeMovieSubMovie, submovie_count );
+	aeMovieSubComposition * subcompositions = NEWN( _composition->movie_data->instance, aeMovieSubComposition, subcomposition_count );
 
 	uint32_t node_iterator = 0;
-	uint32_t submovie_iterator = 0;
+	uint32_t subcomposition_iterator = 0;
 
-	if( __setup_movie_submovie2( _composition, &node_iterator, submovies, &submovie_iterator, _composition->composition_data, AE_NULL ) == AE_FALSE )
+	if( __setup_movie_subcomposition2( _composition, &node_iterator, subcompositions, &subcomposition_iterator, _composition->composition_data, AE_NULL ) == AE_FALSE )
 	{
 		return AE_FALSE;
 	}
 
-	_composition->submovie_count = submovie_count;
-	_composition->submovies = submovies;
+	_composition->subcomposition_count = subcomposition_count;
+	_composition->subcompositions = subcompositions;
 
 	return AE_TRUE;
 }
@@ -1065,7 +1079,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, uint32_t * _iterator,
 			float layer_out = layer->out_time * _stretch - _startTime;
 			float parent_out = _parent->out_time;
 
-			if( node->submovie == _parent->submovie )
+			if( node->subcomposition == _parent->subcomposition )
 			{
 				node->out_time = min_f_f( layer_out, parent_out );
 			}
@@ -1202,9 +1216,9 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition, uint32
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __setup_movie_node_matrix2( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, const aeMovieSubMovie * _submovie )
+static void __setup_movie_node_matrix2( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition )
 {
-	uint32_t update_revision = _composition->update_revision;
+	uint32_t update_revision = __get_composition_update_revision(_composition);
 
 	aeMovieNode *it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
@@ -1212,7 +1226,7 @@ static void __setup_movie_node_matrix2( const aeMovieComposition * _composition,
 	{
 		aeMovieNode * node = it_node;
 
-		if( node->submovie != _submovie )
+		if( node->subcomposition != _subcomposition )
 		{
 			continue;
 		}
@@ -1227,21 +1241,21 @@ static void __setup_movie_node_matrix2( const aeMovieComposition * _composition,
 static void __setup_movie_node_matrix( const aeMovieComposition * _composition )
 {
 	const aeMovieCompositionData * composition_data = _composition->composition_data;
-	aeMovieCompositionAnimation * animation = _composition->animation;
+	const aeMovieCompositionAnimation * animation = _composition->animation;
 
 	__setup_movie_node_matrix2( _composition, composition_data, animation, AE_NULL );
 
-	const aeMovieSubMovie *it_submovie = _composition->submovies;
-	const aeMovieSubMovie *it_submovie_end = _composition->submovies + _composition->submovie_count;
+	const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
+	const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
 
-	for( ; it_submovie != it_submovie_end; ++it_submovie )
+	for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
 	{
-		const aeMovieSubMovie * submovie = it_submovie;
+		const aeMovieSubComposition * subcomposition = it_subcomposition;
 
-		const aeMovieCompositionData * submovie_composition_data = submovie->layer->composition_data;
-		aeMovieCompositionAnimation * submovie_animation = submovie->animation;
+		const aeMovieCompositionData * subcomposition_composition_data = subcomposition->layer->composition_data;
+		aeMovieCompositionAnimation * subcomposition_animation = subcomposition->animation;
 
-		__setup_movie_node_matrix2( _composition, submovie_composition_data, submovie_animation, submovie );
+		__setup_movie_node_matrix2( _composition, subcomposition_composition_data, subcomposition_animation, subcomposition );
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1356,7 +1370,9 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 
 	composition->animation = animation;
 
-	composition->update_revision = 0;
+	composition->update_revision = NEW( _movieData->instance, uint32_t );
+	*composition->update_revision = 0;
+
 	composition->interpolate = _interpolate;
 
 	uint32_t node_count = __get_movie_composition_data_node_count( _compositionData );
@@ -1377,7 +1393,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 	uint32_t node_relative_iterator = 0;
 	__setup_movie_node_relative( composition->nodes, &node_relative_iterator, _compositionData, AE_NULL );
 
-	if( __setup_movie_submovie( composition ) == AE_FALSE )
+	if( __setup_movie_subcomposition( composition ) == AE_FALSE )
 	{
 		return AE_NULL;
 	}
@@ -1391,7 +1407,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 	uint32_t node_camera_iterator = 0;
 	__setup_movie_node_camera( composition, &node_camera_iterator, composition->composition_data, AE_NULL, AE_NULL );
 
-	composition->update_revision++;
+	__inc_composition_update_revision( composition );
 
 	__setup_movie_node_matrix( composition );
 
@@ -1462,18 +1478,20 @@ void ae_destroy_movie_composition( const aeMovieComposition * _composition )
 
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 
-	const aeMovieSubMovie *it_submovie = _composition->submovies;
-	const aeMovieSubMovie *it_submovie_end = _composition->submovies + _composition->submovie_count;
-	for( ; it_submovie != it_submovie_end; ++it_submovie )
+	const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
+	const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
+	for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
 	{
-		const aeMovieSubMovie * submovie = it_submovie;
+		const aeMovieSubComposition * subcomposition = it_subcomposition;
 
-		DELETE( instance, submovie->animation );
+		DELETE( instance, subcomposition->animation );
 	}
 
-	DELETE( instance, _composition->submovies );
+	DELETE( instance, _composition->subcompositions );
 
 	DELETE( instance, _composition->nodes );
+
+	DELETE( instance, _composition->update_revision );
 
 	DELETE( instance, _composition );
 }
@@ -1518,14 +1536,16 @@ uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _c
 	return max_render_node;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_set_movie_composition_loop( aeMovieComposition * _composition, ae_bool_t _loop )
-{
-	_composition->animation->loop = _loop;
-}
-//////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_loop( aeMovieComposition * _composition )
+void ae_set_movie_composition_loop( const aeMovieComposition * _composition, ae_bool_t _loop )
 {
 	aeMovieCompositionAnimation * animation = _composition->animation;
+
+	animation->loop = _loop;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_composition_loop( const  aeMovieComposition * _composition )
+{
+	const aeMovieCompositionAnimation * animation = _composition->animation;
 
 	ae_bool_t loop = animation->loop;
 
@@ -1537,14 +1557,14 @@ void ae_set_movie_composition_interpolate( aeMovieComposition * _composition, ae
 	_composition->interpolate = _interpolate;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_interpolate( aeMovieComposition * _composition )
+ae_bool_t ae_get_movie_composition_interpolate( const aeMovieComposition * _composition )
 {
 	ae_bool_t interpolate = _composition->interpolate;
 
 	return interpolate;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition, float _begin, float _end )
+ae_bool_t ae_set_movie_composition_work_area( const aeMovieComposition * _composition, float _begin, float _end )
 {
 	float duration = _composition->composition_data->duration;
 
@@ -1566,7 +1586,7 @@ ae_bool_t ae_set_movie_composition_work_area( aeMovieComposition * _composition,
 	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_remove_movie_composition_work_area( aeMovieComposition * _composition )
+void ae_remove_movie_composition_work_area( const  aeMovieComposition * _composition )
 {
 	aeMovieCompositionAnimation * animation = _composition->animation;
 
@@ -1576,7 +1596,7 @@ void ae_remove_movie_composition_work_area( aeMovieComposition * _composition )
 	ae_set_movie_composition_time( _composition, 0.f );
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_play_movie_composition( aeMovieComposition * _composition, float _time )
+void ae_play_movie_composition( const aeMovieComposition * _composition, float _time )
 {
 	aeMovieCompositionAnimation * animation = _composition->animation;
 
@@ -1602,25 +1622,25 @@ void ae_play_movie_composition( aeMovieComposition * _composition, float _time )
 	(_composition->providers.composition_state)(&callbackData, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_is_play_movie_composition( aeMovieComposition * _composition )
+ae_bool_t ae_is_play_movie_composition( const aeMovieComposition * _composition )
 {
-	aeMovieCompositionAnimation * animation = _composition->animation;
+	const aeMovieCompositionAnimation * animation = _composition->animation;
 
 	ae_bool_t play = animation->play;
 
 	return play;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_is_interrupt_movie_composition( aeMovieComposition * _composition )
+ae_bool_t ae_is_interrupt_movie_composition( const aeMovieComposition * _composition )
 {
-	aeMovieCompositionAnimation * animation = _composition->animation;
+	const aeMovieCompositionAnimation * animation = _composition->animation;
 
 	ae_bool_t interrupt = animation->interrupt;
 
 	return interrupt;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __notify_stop_nodies( aeMovieComposition * _composition, aeMovieCompositionAnimation * animation, const aeMovieSubMovie * _submovie )
+static void __notify_stop_nodies( const aeMovieComposition * _composition, aeMovieCompositionAnimation * animation, const aeMovieSubComposition * _subcomposition )
 {
 	aeMovieNode *it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
@@ -1628,7 +1648,7 @@ static void __notify_stop_nodies( aeMovieComposition * _composition, aeMovieComp
 	{
 		aeMovieNode * node = it_node;
 
-		if( node->submovie != _submovie )
+		if( node->subcomposition != _subcomposition )
 		{
 			continue;
 		}
@@ -1654,7 +1674,7 @@ static void __notify_stop_nodies( aeMovieComposition * _composition, aeMovieComp
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_stop_movie_composition( aeMovieComposition * _composition )
+void ae_stop_movie_composition( const aeMovieComposition * _composition )
 {
 	aeMovieCompositionAnimation * animation = _composition->animation;
 
@@ -1665,13 +1685,13 @@ void ae_stop_movie_composition( aeMovieComposition * _composition )
 
 	__notify_stop_nodies( _composition, _composition->animation, AE_NULL );
 
-	const aeMovieSubMovie *it_submovie = _composition->submovies;
-	const aeMovieSubMovie *it_submovie_end = _composition->submovies + _composition->submovie_count;
-	for( ; it_submovie != it_submovie_end; ++it_submovie )
+	const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
+	const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
+	for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
 	{
-		const aeMovieSubMovie * submovie = it_submovie;
+		const aeMovieSubComposition * subcomposition = it_subcomposition;
 
-		__notify_stop_nodies( _composition, submovie->animation, submovie );
+		__notify_stop_nodies( _composition, subcomposition->animation, subcomposition );
 	}
 
 	ae_set_movie_composition_time( _composition, animation->work_area_begin );
@@ -1723,7 +1743,7 @@ static float __get_animation_loop_work_end( const aeMovieCompositionAnimation * 
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_interrupt_movie_composition(aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop )
+void ae_interrupt_movie_composition( const aeMovieComposition * _composition, ae_bool_t _skip, ae_bool_t _loop )
 {
 	aeMovieCompositionAnimation * animation = _composition->animation;
 
@@ -1925,7 +1945,7 @@ static void __update_node( const aeMovieComposition * _composition, const aeMovi
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __update_movie_composition_node( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, const aeMovieSubMovie * _submovie, uint32_t _revision, float _beginTime, float _endTime )
+static void __update_movie_composition_node( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition, uint32_t _revision, float _beginTime, float _endTime )
 {
 	ae_bool_t composition_interpolate = _composition->interpolate;
 
@@ -1949,7 +1969,7 @@ static void __update_movie_composition_node( const aeMovieComposition * _composi
 			continue;
 		}
 
-		if( node->submovie != _submovie )
+		if( node->subcomposition != _subcomposition )
 		{
 			continue;
 		}
@@ -2053,7 +2073,7 @@ static void __update_movie_composition_node( const aeMovieComposition * _composi
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __skip_movie_composition_node( aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, const aeMovieSubMovie * _submovie, uint32_t _revision, float _beginTime, float _endTime )
+static void __skip_movie_composition_node( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition, uint32_t _revision, float _beginTime, float _endTime )
 {
 	aeMovieNode	*it_node = _composition->nodes;
 	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
@@ -2066,7 +2086,7 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, co
 			continue;
 		}
 
-		if( node->submovie != _submovie )
+		if( node->subcomposition != _subcomposition )
 		{
 			continue;
 		}
@@ -2129,9 +2149,9 @@ static void __skip_movie_composition_node( aeMovieComposition * _composition, co
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-static void __update_movie_submovie( aeMovieComposition * _composition, float _timing, aeMovieCompositionAnimation * _animation, const aeMovieCompositionData * _compositionData, const aeMovieSubMovie * _submovie )
+static void __update_movie_subcomposition( aeMovieComposition * _composition, float _timing, aeMovieCompositionAnimation * _animation, const aeMovieCompositionData * _compositionData, const aeMovieSubComposition * _subcomposition )
 {
-	uint32_t update_revision = _composition->update_revision;
+	uint32_t update_revision = __get_composition_update_revision( _composition );
 
 	float prev_time = _animation->time;
 
@@ -2149,16 +2169,15 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
 
             if(_animation->time + _timing >= last_time)
             {
-                __update_movie_composition_node(_composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time);
+                __update_movie_composition_node(_composition, _compositionData, _animation, _subcomposition, update_revision, begin_time, last_time);
 
-                _composition->update_revision++;
-                update_revision = _composition->update_revision;
+				update_revision = __inc_composition_update_revision( _composition );
 
                 _animation->time = last_time;
                 _animation->play = AE_FALSE;
                 _animation->interrupt = AE_FALSE;
 
-                if(_submovie == AE_NULL)
+                if(_subcomposition == AE_NULL)
                 {
                     aeMovieCompositionStateCallbackData callbackData;
                     callbackData.state = AE_MOVIE_COMPOSITION_END;
@@ -2170,7 +2189,7 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
                 {
                     aeMovieCompositionStateCallbackData callbackData;
                     callbackData.state = AE_MOVIE_SUB_COMPOSITION_END;
-                    callbackData.subcomposition = _submovie->layer->name;
+                    callbackData.subcomposition = _subcomposition;
 
                     (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
                 }
@@ -2199,16 +2218,15 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
                     new_composition_time += loopBegin;
                 }
 
-                __update_movie_composition_node(_composition, _compositionData, _animation, _submovie, update_revision, begin_time, last_time);
+                __update_movie_composition_node(_composition, _compositionData, _animation, _subcomposition, update_revision, begin_time, last_time);
 
-                _composition->update_revision++;
-                update_revision = _composition->update_revision;
+				update_revision = __inc_composition_update_revision( _composition );
 
                 begin_time = loopBegin;
 
                 _animation->time = new_composition_time;
 
-                if(_submovie == AE_NULL)
+                if(_subcomposition == AE_NULL)
                 {
                     aeMovieCompositionStateCallbackData callbackData;
                     callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
@@ -2220,7 +2238,7 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
                 {
                     aeMovieCompositionStateCallbackData callbackData;
                     callbackData.state = AE_MOVIE_SUB_COMPOSITION_LOOP_END;
-                    callbackData.subcomposition = _submovie->layer->name;
+                    callbackData.subcomposition = _subcomposition;
 
                     (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
                 }
@@ -2232,41 +2250,41 @@ static void __update_movie_submovie( aeMovieComposition * _composition, float _t
         }
     }
 
-	__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, begin_time, _animation->time );
+	__update_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, begin_time, _animation->time );
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_update_movie_composition( aeMovieComposition * _composition, float _timing )
 {
-	_composition->update_revision++;
+	__inc_composition_update_revision( _composition );
 
 	aeMovieCompositionAnimation * animation = _composition->animation;
 	const aeMovieCompositionData * composition_data = _composition->composition_data;
 
 	if( animation->play == AE_TRUE )
 	{
-		__update_movie_submovie( _composition, _timing, animation, composition_data, AE_NULL );
+		__update_movie_subcomposition( _composition, _timing, animation, composition_data, AE_NULL );
 	}
 
-	const aeMovieSubMovie *it_submovie = _composition->submovies;
-	const aeMovieSubMovie *it_submovie_end = _composition->submovies + _composition->submovie_count;
-	for( ; it_submovie != it_submovie_end; ++it_submovie )
+	const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
+	const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
+	for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
 	{
-		const aeMovieSubMovie * submovie = it_submovie;
+		const aeMovieSubComposition * subcomposition = it_subcomposition;
 
-		aeMovieCompositionAnimation * submovie_animation = submovie->animation;
+		aeMovieCompositionAnimation * subcomposition_animation = subcomposition->animation;
 
-		float submovie_timing = _timing;
+		float subcomposition_timing = _timing;
 
-		if( submovie_animation->play == AE_FALSE )
+		if( subcomposition_animation->play == AE_FALSE )
 		{
-			submovie_timing = 0.f;
+			subcomposition_timing = 0.f;
 		}
 
-		__update_movie_submovie( _composition, submovie_timing, submovie_animation, submovie->layer->composition_data, submovie );
+		__update_movie_subcomposition( _composition, subcomposition_timing, subcomposition_animation, subcomposition->layer->composition_data, subcomposition );
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void __set_movie_composition_time( aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, float _time, const aeMovieSubMovie * _submovie )
+void __set_movie_composition_time( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, float _time, const aeMovieSubComposition * _subcomposition )
 {
 	float duration = _compositionData->duration;
 
@@ -2280,25 +2298,23 @@ void __set_movie_composition_time( aeMovieComposition * _composition, const aeMo
 		return;
 	}
 
-	_composition->update_revision++;
-	uint32_t update_revision = _composition->update_revision;
+	uint32_t update_revision = __get_composition_update_revision( _composition );
 
 	if( _animation->time > _time )
 	{
-		__skip_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, _animation->time, _composition->composition_data->duration );
+		__skip_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, _animation->time, _composition->composition_data->duration );
 
-		_composition->update_revision++;
-		update_revision = _composition->update_revision;
+		update_revision = __get_composition_update_revision( _composition );
 
-		__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, 0.f, _time );
+		__update_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, 0.f, _time );
 	}
 	else
 	{
-		__update_movie_composition_node( _composition, _compositionData, _animation, _submovie, update_revision, _animation->time, _time );
+		__update_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, _animation->time, _time );
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_set_movie_composition_time( aeMovieComposition * _composition, float _time )
+void ae_set_movie_composition_time( const aeMovieComposition * _composition, float _time )
 {
 	const aeMovieCompositionData * composition_data = _composition->composition_data;
 	aeMovieCompositionAnimation * animation = _composition->animation;
@@ -2308,9 +2324,11 @@ void ae_set_movie_composition_time( aeMovieComposition * _composition, float _ti
 //////////////////////////////////////////////////////////////////////////
 float ae_get_movie_composition_time( const aeMovieComposition * _composition )
 {
-	aeMovieCompositionAnimation * animation = _composition->animation;
+	const aeMovieCompositionAnimation * animation = _composition->animation;
 
-	return animation->time;
+	float time = animation->time;
+
+	return time;
 }
 //////////////////////////////////////////////////////////////////////////
 float ae_get_movie_composition_duration( const aeMovieComposition * _composition )
@@ -2320,7 +2338,7 @@ float ae_get_movie_composition_duration( const aeMovieComposition * _composition
 	return duration;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_set_movie_composition_slot( aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData )
+ae_bool_t ae_set_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -2582,40 +2600,40 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
 	return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-const aeMovieSubMovie * __get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _submovieName )
+const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
 
-	const aeMovieSubMovie *it_submovie = _composition->submovies;
-	const aeMovieSubMovie *it_submovie_end = _composition->submovies + _composition->submovie_count;
-	for( ; it_submovie != it_submovie_end; ++it_submovie )
+	const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
+	const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
+	for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
 	{
-		const aeMovieSubMovie * submovie = it_submovie;
+		const aeMovieSubComposition * subcomposition = it_subcomposition;
 
-		const aeMovieLayerData * layer = submovie->layer;
+		const aeMovieLayerData * layer = subcomposition->layer;
 
-		if( STRNCMP( instance, layer->name, _submovieName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		if( STRNCMP( instance, layer->name, _name, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
 		{
 			continue;
 		}
 
-		return submovie;
+		return subcomposition;
 	}
 
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _time )
+const char * ae_get_movie_sub_composition_name( const aeMovieSubComposition * _subcomposition )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
+	const char * name = _subcomposition->layer->name;
 
-	if( submovie == AE_NULL )
-	{
-		return AE_FALSE;
-	}
-
-	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	return name;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time )
+{
+	const aeMovieCompositionData * composition_data = _subcomposition->layer->composition_data;
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	if( animation->play == AE_TRUE )
 	{
@@ -2626,7 +2644,7 @@ ae_bool_t ae_play_movie_sub_composition( aeMovieComposition * _composition, cons
 	{
 		float work_time = minimax_f_f( _time, animation->work_area_begin, animation->work_area_end );
 
-		__set_movie_composition_time( _composition, composition_data, animation, work_time, submovie );
+		__set_movie_composition_time( _composition, composition_data, animation, work_time, _subcomposition );
 	}
 
 	animation->play = AE_TRUE;
@@ -2635,25 +2653,18 @@ ae_bool_t ae_play_movie_sub_composition( aeMovieComposition * _composition, cons
 	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_stop_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return AE_FALSE;
-	}
-
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	if( animation->play == AE_FALSE )
 	{
 		return AE_TRUE;
 	}
 
-	__notify_stop_nodies( _composition, animation, submovie );
+	__notify_stop_nodies( _composition, animation, _subcomposition );
 
-	ae_set_movie_sub_composition_time( _composition, _submovieName, animation->work_area_begin );
+	ae_set_movie_sub_composition_time( _composition, _subcomposition, animation->work_area_begin );
 
 	animation->play = AE_FALSE;
 	animation->interrupt = AE_FALSE;
@@ -2661,24 +2672,17 @@ ae_bool_t ae_stop_movie_sub_composition( aeMovieComposition * _composition, cons
 	aeMovieCompositionStateCallbackData callbackData;
 
 	callbackData.state = AE_MOVIE_SUB_COMPOSITION_STOP;
-	callbackData.subcomposition = _submovieName;
+	callbackData.subcomposition = _subcomposition;
 
 	(_composition->providers.composition_state)(&callbackData, _composition->provider_data);
 
 	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_interrupt_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName, ae_bool_t _skip, ae_bool_t _loop )
+ae_bool_t ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip, ae_bool_t _loop )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return AE_FALSE;
-	}
-
-	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionData * composition_data = _subcomposition->layer->composition_data;
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	if( animation->play == AE_FALSE )
 	{
@@ -2698,7 +2702,7 @@ ae_bool_t ae_interrupt_movie_sub_composition( aeMovieComposition * _composition,
 		{
 			float work_end = __get_animation_loop_work_end( animation );
 
-			__set_movie_composition_time( _composition, composition_data, animation, work_end, submovie );
+			__set_movie_composition_time( _composition, composition_data, animation, work_end, _subcomposition );
 		}
 	}
 	else
@@ -2709,105 +2713,63 @@ ae_bool_t ae_interrupt_movie_sub_composition( aeMovieComposition * _composition,
 		{
 			float work_end = animation->loop_segment_end;
 
-			__set_movie_composition_time( _composition, composition_data, animation, work_end, submovie );
+			__set_movie_composition_time( _composition, composition_data, animation, work_end, _subcomposition );
 		}
 	}
 
 	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_is_play_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+ae_bool_t ae_is_play_movie_sub_composition( const aeMovieSubComposition * _subcomposition )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return AE_FALSE;
-	}
-
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	ae_bool_t play = animation->play;
 
 	return play;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_is_interrupt_movie_sub_composition( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+ae_bool_t ae_is_interrupt_movie_sub_composition( const aeMovieSubComposition * _subcomposition )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return AE_FALSE;
-	}
-
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	ae_bool_t interrupt = animation->interrupt;
 
 	return interrupt;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_set_movie_sub_composition_time( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _time )
+void ae_set_movie_sub_composition_time( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return;
-	}
-
-	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionData * composition_data = _subcomposition->layer->composition_data;
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	__set_movie_composition_time( _composition, composition_data, animation, _time, AE_NULL );
 }
 //////////////////////////////////////////////////////////////////////////
-float ae_get_movie_sub_composition_time( const aeMovieComposition * _composition, const ae_char_t * _submovieName )
+float ae_get_movie_sub_composition_time( const aeMovieSubComposition * _subcomposition )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return 0.f;
-	}
-
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	return animation->time;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_set_movie_sub_composition_loop( aeMovieComposition * _composition, const ae_char_t * _submovieName, ae_bool_t _loop )
+void ae_set_movie_sub_composition_loop( const aeMovieSubComposition * _subcomposition, ae_bool_t _loop )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return;
-	}
-
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	animation->loop = _loop;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_sub_composition_loop( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+ae_bool_t ae_get_movie_sub_composition_loop( const aeMovieSubComposition * _subcomposition )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return AE_FALSE;
-	}
-
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	ae_bool_t loop = animation->loop;
 
 	return loop;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_set_movie_sub_composition_work_area( aeMovieComposition * _composition, const ae_char_t * _submovieName, float _begin, float _end )
+ae_bool_t ae_set_movie_sub_composition_work_area( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _begin, float _end )
 {
 	float duration = _composition->composition_data->duration;
 
@@ -2816,42 +2778,28 @@ ae_bool_t ae_set_movie_sub_composition_work_area( aeMovieComposition * _composit
 		return AE_FALSE;
 	}
 
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return AE_FALSE;
-	}
-
-	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionData * composition_data = _subcomposition->layer->composition_data;
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	animation->work_area_begin = _begin;
 	animation->work_area_end = _end;
 
 	if( animation->time < _begin || animation->time >= _end )
 	{
-		__set_movie_composition_time( _composition, composition_data, animation, _begin, submovie );
+		__set_movie_composition_time( _composition, composition_data, animation, _begin, _subcomposition );
 	}
 
 	return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_remove_movie_sub_composition_work_area( aeMovieComposition * _composition, const ae_char_t * _submovieName )
+void ae_remove_movie_sub_composition_work_area( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition )
 {
-	const aeMovieSubMovie * submovie = __get_movie_sub_composition( _composition, _submovieName );
-
-	if( submovie == AE_NULL )
-	{
-		return;
-	}
-
-	const aeMovieCompositionData * composition_data = submovie->layer->composition_data;
-	aeMovieCompositionAnimation * animation = submovie->animation;
+	const aeMovieCompositionData * composition_data = _subcomposition->layer->composition_data;
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
 	animation->work_area_begin = 0.f;
 	animation->work_area_end = _composition->composition_data->duration;
 
-	__set_movie_composition_time( _composition, composition_data, animation, 0.f, submovie );
+	__set_movie_composition_time( _composition, composition_data, animation, 0.f, _subcomposition );
 }
 //////////////////////////////////////////////////////////////////////////
