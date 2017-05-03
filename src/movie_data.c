@@ -1021,9 +1021,30 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+const char * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData )
+{
+	return _compositionData->name;
+}
+//////////////////////////////////////////////////////////////////////////
 float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData )
 {
 	return _compositionData->duration;
+}
+//////////////////////////////////////////////////////////////////////////
+float ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData )
+{
+	return _compositionData->frameDuration;
+}
+//////////////////////////////////////////////////////////////////////////
+uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionData * _compositionData )
+{
+	return _compositionData->frameCount;
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, float * _in, float * _out )
+{
+	*_in = _compositionData->loop_segment[0];
+	*_out = _compositionData->loop_segment[1];
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _compositionData )

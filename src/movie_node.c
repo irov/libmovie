@@ -2329,6 +2329,16 @@ float ae_get_movie_composition_duration( const aeMovieComposition * _composition
 	return duration;
 }
 //////////////////////////////////////////////////////////////////////////
+void ae_get_movie_composition_in_out_loop( const aeMovieComposition * _composition, float * _in, float * _out )
+{
+	aeMovieCompositionAnimation * animation = _composition->animation;
+	float work_begin = max_f_f( animation->loop_segment_begin, animation->work_area_begin );
+	float work_end = min_f_f( animation->loop_segment_end, animation->work_area_end );
+
+	*_in = work_begin;
+	*_out = work_end;
+}
+//////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData )
 {
 	const aeMovieInstance * instance = _composition->movie_data->instance;
@@ -2619,6 +2629,17 @@ const char * ae_get_movie_sub_composition_name( const aeMovieSubComposition * _s
 	const char * name = _subcomposition->layer->name;
 
 	return name;
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_get_movie_sub_composition_in_out_loop( const aeMovieSubComposition * _subcomposition, float * _in, float * _out )
+{
+	aeMovieCompositionAnimation * animation = _subcomposition->animation;
+
+	float work_begin = max_f_f( animation->loop_segment_begin, animation->work_area_begin );
+	float work_end = min_f_f( animation->loop_segment_end, animation->work_area_end );
+
+	*_in = work_begin;
+	*_out = work_end;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time )

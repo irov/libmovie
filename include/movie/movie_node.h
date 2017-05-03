@@ -176,6 +176,7 @@ void ae_set_movie_composition_time( const aeMovieComposition * _composition, flo
 float ae_get_movie_composition_time( const aeMovieComposition * _composition );
 
 float ae_get_movie_composition_duration( const aeMovieComposition * _composition );
+void ae_get_movie_composition_in_out_loop( const aeMovieComposition * _composition, float * _in, float * _out );
 
 void ae_update_movie_composition( aeMovieComposition * _composition, float _timing );
 
@@ -194,6 +195,8 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
 const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name );
 
 const char * ae_get_movie_sub_composition_name( const aeMovieSubComposition * _subcomposition );
+void ae_get_movie_sub_composition_in_out_loop( const aeMovieSubComposition * _subcomposition, float * _in, float * _out );
+
 ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time );
 ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
 void ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip );

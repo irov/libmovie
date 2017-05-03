@@ -192,7 +192,11 @@ void ae_trim_image_resources( aeMovieData * _movieData, ae_movie_data_tream_imag
 
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 
+const char * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData );
 float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
+float ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData );
+uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionData * _compositionData );
+void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, float * _in, float * _out );
 
 ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _compositionData );
 
