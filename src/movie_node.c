@@ -2253,13 +2253,13 @@ void __set_movie_composition_time( const aeMovieComposition * _composition, cons
 		return;
 	}
 
-	uint32_t update_revision = __get_composition_update_revision( _composition );
+	uint32_t update_revision = __inc_composition_update_revision( _composition );
 
 	if( _animation->time > _time )
 	{
 		__skip_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, _animation->time, _composition->composition_data->duration );
 
-		update_revision = __get_composition_update_revision( _composition );
+		update_revision = __inc_composition_update_revision( _composition );
 
 		__update_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, 0.f, _time );
 	}
