@@ -621,10 +621,10 @@ static uint32_t __get_movie_frame_time( const aeMovieCompositionAnimation * _ani
 //////////////////////////////////////////////////////////////////////////
 static void __update_movie_composition_node_matrix( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, aeMovieNode * _node, uint32_t _revision, uint32_t _frameId, ae_bool_t _interpolate, float _t )
 {
-	//if( _node->matrix_revision == _revision )
-	//{
-	//	return;
-	//}
+	if( _node->matrix_revision == _revision )
+	{
+		return;
+	}
 
 	const aeMovieLayerData * layer = _node->layer;
 
@@ -687,7 +687,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
 
 	aeMovieNode * node_relative = _node->relative;
 
-	//if( node_relative->matrix_revision != _revision )
+	if( node_relative->matrix_revision != _revision )
 	{
 		float t_relative = 0.f;
 		uint32_t frame_relative = __get_movie_frame_time( _animation, node_relative, _composition->interpolate, &t_relative );
