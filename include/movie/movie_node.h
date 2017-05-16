@@ -180,11 +180,6 @@ void ae_get_movie_composition_in_out_loop( const aeMovieComposition * _compositi
 
 void ae_update_movie_composition( aeMovieComposition * _composition, float _timing );
 
-uint32_t ae_get_movie_composition_slot_count( const aeMovieComposition * _composition );
-ae_bool_t ae_set_movie_composition_slot_index_data( const aeMovieComposition * _composition, uint32_t _index, void * _slotData );
-void * ae_get_movie_composition_slot_index_data( const aeMovieComposition * _composition, uint32_t _index );
-const char * ae_get_movie_composition_slot_index_name( const aeMovieComposition * _composition, uint32_t _index );
-
 ae_bool_t ae_set_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName, void * _slotData );
 void * ae_get_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName );
 ae_bool_t ae_has_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName );
