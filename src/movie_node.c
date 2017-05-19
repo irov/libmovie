@@ -998,6 +998,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, uint32_t * _itera
 
 		node->active = AE_FALSE;
 		node->ignore = AE_FALSE;
+		node->enable = AE_TRUE;
 		node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;
 
 		if( layer->parent_index == 0 )
@@ -2524,6 +2525,11 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 			continue;
 		}
 
+		if( node->enable == AE_FALSE )
+		{
+			continue;
+		}
+
 		const aeMovieLayerData * layer = node->layer;
 
 		if( layer->renderable == AE_FALSE )
@@ -2605,6 +2611,68 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
 
 		*_in = node->in_time;
 		*_out = node->out_time;
+
+		return AE_TRUE;
+	}
+
+	return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable )
+{
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
+	aeMovieNode *it_node = _composition->nodes;
+	aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
+	for( ; it_node != it_node_end; ++it_node )
+	{
+		aeMovieNode * node = it_node;
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( _type != AE_MOVIE_LAYER_TYPE_ANY
+			&& layer->type != _type )
+		{
+			continue;
+		}
+
+		if( STRNCMP( instance, layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		{
+			continue;
+		}
+
+		node->enable = _enable;
+
+		return AE_TRUE;
+	}
+
+	return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t * _enable )
+{
+	const aeMovieInstance * instance = _composition->movie_data->instance;
+
+	const aeMovieNode *it_node = _composition->nodes;
+	const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
+	for( ; it_node != it_node_end; ++it_node )
+	{
+		const aeMovieNode * node = it_node;
+
+		const aeMovieLayerData * layer = node->layer;
+
+		if( _type != AE_MOVIE_LAYER_TYPE_ANY
+			&& layer->type != _type )
+		{
+			continue;
+		}
+
+		if( STRNCMP( instance, layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+		{
+			continue;
+		}
+
+		*_enable = node->enable;
 
 		return AE_TRUE;
 	}

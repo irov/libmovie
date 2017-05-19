@@ -191,11 +191,14 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, uint32
 uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition );
 
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, float * _in, float * _out );
+ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable );
+ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t * _enable );
 
 const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name );
 
 const char * ae_get_movie_sub_composition_name( const aeMovieSubComposition * _subcomposition );
 void ae_get_movie_sub_composition_in_out_loop( const aeMovieSubComposition * _subcomposition, float * _in, float * _out );
+
 
 ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time );
 ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );

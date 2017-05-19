@@ -80,6 +80,7 @@ typedef struct aeMovieNode
 
 	ae_bool_t active;
 	ae_bool_t ignore;
+	ae_bool_t enable;
 
 	uint32_t animate;
 
