@@ -43,7 +43,8 @@ typedef struct aeMovieLayerTransformation2DImuttable
 	float scale_x;
 	float scale_y;
 	float quaternion_z;
-	float quaternion_w;	
+	float quaternion_w;
+
 }aeMovieLayerTransformation2DImuttable;
 
 typedef struct aeMovieLayerTransformation3DImuttable
@@ -61,6 +62,7 @@ typedef struct aeMovieLayerTransformation3DImuttable
 	float quaternion_y;
 	float quaternion_z;
 	float quaternion_w;	
+
 }aeMovieLayerTransformation3DImuttable;
 
 typedef struct aeMovieLayerTransformation2DTimeline
@@ -73,6 +75,7 @@ typedef struct aeMovieLayerTransformation2DTimeline
 	const void * quaternion_w;
 	const void * scale_x;
 	const void * scale_y;	
+
 }aeMovieLayerTransformation2DTimeline;
 
 typedef struct aeMovieLayerTransformation3DTimeline
@@ -90,6 +93,7 @@ typedef struct aeMovieLayerTransformation3DTimeline
 	const void * scale_x;
 	const void * scale_y;
 	const void * scale_z;
+
 }aeMovieLayerTransformation3DTimeline;
 
 typedef struct aeMovieLayerTransformation
@@ -98,6 +102,7 @@ typedef struct aeMovieLayerTransformation
 
 	float immutable_opacity;
 	const void * timeline_opacity;
+
 }aeMovieLayerTransformation;
 
 typedef struct aeMovieLayerTransformation2D
@@ -109,6 +114,7 @@ typedef struct aeMovieLayerTransformation2D
 
 	aeMovieLayerTransformation2DImuttable immutable;
 	aeMovieLayerTransformation2DTimeline * timeline;
+
 } aeMovieLayerTransformation2D;
 
 typedef struct aeMovieLayerTransformation3D
@@ -120,6 +126,7 @@ typedef struct aeMovieLayerTransformation3D
 
 	aeMovieLayerTransformation3DImuttable immutable;
 	aeMovieLayerTransformation3DTimeline * timeline;
+
 } aeMovieLayerTransformation3D;
 
 

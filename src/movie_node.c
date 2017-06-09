@@ -576,7 +576,7 @@ static ae_bool_t __test_error_composition_layer_frame( const aeMovieInstance * _
 }
 #	endif
 //////////////////////////////////////////////////////////////////////////
-static uint32_t __get_movie_frame_time( const aeMovieCompositionAnimation * _animation, const aeMovieNode * _node, ae_bool_t _interpolate, float * _t )
+static uint32_t __get_movie_frame_time( const struct aeMovieCompositionAnimation * _animation, const struct aeMovieNode * _node, ae_bool_t _interpolate, float * _t )
 {
 	float animation_time = _animation->time;
 

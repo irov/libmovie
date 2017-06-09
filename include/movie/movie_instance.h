@@ -2,6 +2,7 @@
 #define MOVIE_MOVIE_INSTANCE_H_
 
 #	include "movie_type.h"
+#	include "movie_typedef.h"
 
 typedef void * (*ae_movie_alloc_t)(void * _data, size_t _size);
 typedef void * (*ae_movie_alloc_n_t)(void * _data, size_t _size, size_t _n);
@@ -22,8 +23,6 @@ typedef enum
 } aeMovieErrorCode;
 
 typedef void( *ae_movie_logger_t )(void * _data, aeMovieErrorCode _code, const ae_char_t * _message, ...);
-
-typedef struct aeMovieInstance aeMovieInstance;
 
 aeMovieInstance * ae_create_movie_instance(
 	ae_movie_alloc_t _alloc,

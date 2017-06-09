@@ -1,7 +1,7 @@
 #	ifndef MOVIE_MATRIX_H_
 #	define MOVIE_MATRIX_H_
 
-#	include <movie/movie_type.h>
+#	include "movie/movie_type.h"
 
 ae_bool_t equal_f_z( float _a );
 ae_bool_t equal_f_f( float _a, float _b );

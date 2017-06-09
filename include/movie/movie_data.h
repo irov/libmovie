@@ -2,57 +2,10 @@
 #define MOVIE_MOVIE_DATA_H_
 
 #	include "movie_type.h"
+#	include "movie_typedef.h"
+
 #	include "movie_instance.h"
 #	include "movie_resource.h"
-
-typedef struct
-{
-	const float * times;
-
-} aeMovieLayerTimeremap;
-
-typedef struct aeMovieLayerMesh
-{
-	ae_bool_t immutable;
-	aeMovieMesh immutable_mesh;
-
-	const aeMovieMesh * meshes;
-
-} aeMovieLayerMesh;
-
-typedef struct aeMovieLayerBezierWarp
-{
-	ae_bool_t immutable;
-	aeMovieBezierWarp immutable_bezier_warp;
-
-    const aeMovieBezierWarp * bezier_warps;
-
-} aeMovieLayerBezierWarp;
-
-typedef struct aeMovieLayerColorVertex
-{
-	ae_bool_t immutable_r;
-	ae_bool_t immutable_g;
-	ae_bool_t immutable_b;
-
-	float immutable_color_vertex_r;
-	float immutable_color_vertex_g;
-	float immutable_color_vertex_b;
-
-    const ae_color_t * color_vertites_r;
-    const ae_color_t * color_vertites_g;
-    const ae_color_t * color_vertites_b;
-
-} aeMovieLayerColorVertex;
-
-typedef struct aeMovieLayerPolygon
-{
-	ae_bool_t immutable;
-	aeMoviePolygon immutable_polygon;
-
-	const aeMoviePolygon * polygons;
-
-} aeMovieLayerPolygon;
 
 typedef enum aeMovieLayerTypeEnum
 {
@@ -79,50 +32,6 @@ typedef enum aeMovieLayerParamEnum
 	__AE_MOVIE_LAYER_PARAM_END__
 } aeMovieLayerParamEnum;
 
-typedef struct aeMovieLayerData
-{
-	ae_string_t name;
-
-	uint32_t index;
-    aeMovieLayerTypeEnum type;
-
-	ae_bool_t renderable;
-
-	const struct aeMovieCompositionData * composition_data;
-
-	ae_bool_t is_track_matte;
-	ae_bool_t has_track_matte;
-	const struct aeMovieLayerData * track_matte_layer;
-
-	uint32_t frame_count;
-
-	const aeMovieLayerTimeremap * timeremap;
-	const aeMovieLayerMesh * mesh;
-	const aeMovieLayerBezierWarp * bezier_warp;
-	const aeMovieLayerColorVertex * color_vertex;
-	const aeMovieLayerPolygon * polygon;
-
-	const aeMovieResource * resource;
-	const struct aeMovieCompositionData * sub_composition_data;
-
-	uint32_t parent_index;
-
-	ae_bool_t reverse_time;
-	float start_time;
-	float in_time;
-	float out_time;
-
-	uint32_t blend_mode;
-	ae_bool_t threeD;
-	uint32_t params;
-
-	uint32_t play_count;
-
-	float stretch;
-
-	const struct aeMovieLayerTransformation * transformation;
-} aeMovieLayerData;
-
 typedef enum aeMovieCompositionFlag
 {
 	AE_MOVIE_COMPOSITION_LOOP_SEGMENT = 0x00000001,
@@ -131,50 +40,6 @@ typedef enum aeMovieCompositionFlag
 	AE_MOVIE_COMPOSITION_BOUNDS = 0x00000008,
 	__AE_MOVIE_COMPOSITION_FLAGS__
 } aeMovieCompositionFlag;
-
-typedef struct aeMovieCompositionData
-{
-	ae_string_t name;
-
-	ae_bool_t master;
-
-	float width;
-	float height;
-
-	float duration;
-
-	float frameDuration;
-	float frameDurationInv;
-
-	uint32_t frameCount;
-
-	uint32_t flags;
-
-	ae_vector2_t loop_segment;
-	ae_vector3_t anchor_point;
-	ae_vector3_t offset_point;
-	ae_vector4_t bounds;
-
-	ae_bool_t has_threeD;
-
-	float cameraZoom;
-
-	uint32_t layer_count;
-	const aeMovieLayerData * layers;
-} aeMovieCompositionData;
-
-typedef struct aeMovieData
-{
-	const aeMovieInstance * instance;
-
-	ae_string_t name;
-
-	uint32_t resource_count;
-	const aeMovieResource * const * resources;
-
-	uint32_t composition_count;
-	const aeMovieCompositionData * compositions;
-} aeMovieData;
 
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance );
 void ae_delete_movie_data( const aeMovieData * _movieData );

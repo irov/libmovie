@@ -87,6 +87,7 @@
     <ClInclude Include="..\include\movie\movie_resource.h" />
     <ClInclude Include="..\include\movie\movie_skeleton.h" />
     <ClInclude Include="..\include\movie\movie_type.h" />
+    <ClInclude Include="..\include\movie\movie_typedef.h" />
     <ClInclude Include="..\src\movie_math.h" />
     <ClInclude Include="..\src\movie_memory.h" />
     <ClInclude Include="..\src\movie_stream.h" />

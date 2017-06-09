@@ -2,12 +2,9 @@
 #define MOVIE_MOVIE_NODE_H_
 
 #	include "movie_type.h"
+#	include "movie_typedef.h"
 #	include "movie_instance.h"
-#	include "movie_resource.h"
 #	include "movie_data.h"
-
-typedef struct aeMovieComposition aeMovieComposition;
-typedef struct aeMovieSubComposition aeMovieSubComposition;
 
 typedef struct aeMovieRenderMesh
 {

@@ -3,19 +3,6 @@
 
 #	include "movie_type.h"
 
-typedef enum aeMovieResourceTypeEnum
-{
-	AE_MOVIE_RESOURCE_NONE = 0,
-	AE_MOVIE_RESOURCE_SOLID = 4,
-	AE_MOVIE_RESOURCE_VIDEO = 5,
-	AE_MOVIE_RESOURCE_SOUND = 6,
-	AE_MOVIE_RESOURCE_IMAGE = 7,
-	AE_MOVIE_RESOURCE_SEQUENCE = 8,
-	AE_MOVIE_RESOURCE_PARTICLE = 9,
-	AE_MOVIE_RESOURCE_SLOT = 10,
-	__AE_MOVIE_RESOURCE_END__
-} aeMovieResourceTypeEnum;
-
 #	define AE_MOVIE_RESOURCE_BASE()\
 	aeMovieResourceTypeEnum type;\
 	void * data
@@ -26,7 +13,7 @@ typedef struct aeMovieResource
 
 } aeMovieResource;
 
-typedef struct
+typedef struct aeMovieResourceSolid
 {
 	AE_MOVIE_RESOURCE_BASE();
 
@@ -38,7 +25,7 @@ typedef struct
 
 } aeMovieResourceSolid;
 
-typedef struct
+typedef struct aeMovieResourceVideo
 {
 	AE_MOVIE_RESOURCE_BASE();
 
@@ -53,7 +40,7 @@ typedef struct
 
 } aeMovieResourceVideo;
 
-typedef struct
+typedef struct aeMovieResourceSound
 {
 	AE_MOVIE_RESOURCE_BASE();
 
@@ -63,7 +50,7 @@ typedef struct
 
 } aeMovieResourceSound;
 
-typedef struct
+typedef struct aeMovieResourceImage
 {
 	AE_MOVIE_RESOURCE_BASE();
 
@@ -82,7 +69,7 @@ typedef struct
 
 } aeMovieResourceImage;
 
-typedef struct
+typedef struct aeMovieResourceSequence
 {
 	AE_MOVIE_RESOURCE_BASE();
 
@@ -93,7 +80,7 @@ typedef struct
 
 } aeMovieResourceSequence;
 
-typedef struct
+typedef struct aeMovieResourceParticle
 {
 	AE_MOVIE_RESOURCE_BASE();
 
@@ -101,7 +88,7 @@ typedef struct
 
 } aeMovieResourceParticle;
 
-typedef struct
+typedef struct aeMovieResourceSlot
 {
 	AE_MOVIE_RESOURCE_BASE();
 
