@@ -92,6 +92,16 @@ typedef enum
 	__AE_MOVIE_RESOURCE_END__
 } aeMovieResourceTypeEnum;
 
+#	define AE_MOVIE_RESOURCE_BASE()\
+	aeMovieResourceTypeEnum type;\
+	void * data
+
+typedef struct aeMovieResource
+{
+	AE_MOVIE_RESOURCE_BASE();
+
+} aeMovieResource;
+
 typedef enum
 {
 	AE_MOVIE_BLEND_ADD = 1,

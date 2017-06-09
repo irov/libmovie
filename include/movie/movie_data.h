@@ -5,7 +5,6 @@
 #	include "movie_typedef.h"
 
 #	include "movie_instance.h"
-#	include "movie_resource.h"
 
 typedef enum aeMovieLayerTypeEnum
 {
@@ -50,10 +49,6 @@ aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_mo
 void ae_delete_movie_stream( aeMovieStream * _stream );
 
 ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data );
-
-typedef ae_bool_t( *ae_movie_data_tream_image_resource_t )(const aeMovieResourceImage * _imageResource, float * base_width, float * base_height, float * trim_width, float * trim_height, float * offset_x, float * offset_y, void * _data);
-
-void ae_trim_image_resources( aeMovieData * _movieData, ae_movie_data_tream_image_resource_t _provider, void * _data );
 
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 

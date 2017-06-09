@@ -1,5 +1,6 @@
 #	include "movie/movie_data.h"
 
+#	include "movie_resource.h"
 #	include "movie_transformation.h"
 #	include "movie_memory.h"
 #	include "movie_stream.h"
@@ -962,42 +963,6 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 	_movieData->compositions = compositions;
 
 	return AE_MOVIE_SUCCESSFUL;
-}
-//////////////////////////////////////////////////////////////////////////
-void ae_trim_image_resources( aeMovieData * _movieData, ae_movie_data_tream_image_resource_t _provider, void * _data )
-{
-	const aeMovieResource * const * it_resource = _movieData->resources;
-	const aeMovieResource * const * it_resource_end = _movieData->resources + _movieData->resource_count;
-	for( ; it_resource != it_resource_end; ++it_resource )
-	{
-		const aeMovieResource * resource = *it_resource;
-
-		if( resource->type == AE_MOVIE_RESOURCE_IMAGE )
-		{
-			const aeMovieResourceImage * imageResource = (const aeMovieResourceImage *)resource;
-
-			float base_width;
-			float base_height;
-			float trim_width;
-			float trim_height;
-			float offset_x;
-			float offset_y;
-
-			if( (*_provider)(imageResource, &base_width, &base_height, &trim_width, &trim_height, &offset_x, &offset_y, _data) == AE_FALSE )
-			{
-				continue;
-			}
-
-			aeMovieResourceImage * mutable_imageResource = (aeMovieResourceImage *)imageResource;
-
-			mutable_imageResource->base_width = base_width;
-			mutable_imageResource->base_height = base_height;
-			mutable_imageResource->trim_width = trim_width;
-			mutable_imageResource->trim_height = trim_height;
-			mutable_imageResource->offset_x = offset_x;
-			mutable_imageResource->offset_y = offset_y;
-		}
-	}
 }
 //////////////////////////////////////////////////////////////////////////
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name )

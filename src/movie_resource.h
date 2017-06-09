@@ -1,17 +1,7 @@
 #ifndef MOVIE_MOVIE_RESOURCE_H_
 #define MOVIE_MOVIE_RESOURCE_H_
 
-#	include "movie_type.h"
-
-#	define AE_MOVIE_RESOURCE_BASE()\
-	aeMovieResourceTypeEnum type;\
-	void * data
-
-typedef struct aeMovieResource
-{
-	AE_MOVIE_RESOURCE_BASE();
-
-} aeMovieResource;
+#	include "movie/movie_type.h"
 
 typedef struct aeMovieResourceSolid
 {
