@@ -52,6 +52,12 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 
+const char * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer );
+aeMovieLayerTypeEnum ae_get_movie_layer_data_type( const aeMovieLayerData * _layer );
+ae_bool_t ae_is_movie_layer_data_track_mate( const aeMovieLayerData * _layer );
+void * ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer );
+aeMovieBlendMode ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer );
+
 const char * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData );
 float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
 float ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData );

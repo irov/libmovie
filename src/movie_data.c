@@ -986,6 +986,31 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
 	return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+const char * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer )
+{
+	return _layer->name;
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieLayerTypeEnum ae_get_movie_layer_data_type( const aeMovieLayerData * _layer )
+{
+	return _layer->type;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_is_movie_layer_data_track_mate( const aeMovieLayerData * _layer )
+{
+	return _layer->is_track_matte;
+}
+//////////////////////////////////////////////////////////////////////////
+void * ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer )
+{
+	return _layer->resource->data;
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieBlendMode ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer )
+{
+	return _layer->blend_mode;
+}
+//////////////////////////////////////////////////////////////////////////
 const char * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData )
 {
 	return _compositionData->name;
