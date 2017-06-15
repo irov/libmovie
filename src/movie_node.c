@@ -1,6 +1,6 @@
 #	include "movie/movie_node.h"
+#	include "movie/movie_resource.h"
 
-#	include "movie_resource.h"
 #	include "movie_transformation.h"
 #	include "movie_memory.h"
 #	include "movie_math.h"
