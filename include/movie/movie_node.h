@@ -39,10 +39,12 @@ typedef struct aeMovieNode aeMovieNode;
 typedef enum
 {
 	AE_MOVIE_NODE_UPDATE_BEGIN = 0,
-	AE_MOVIE_NODE_UPDATE_UPDATE = 1,
-	AE_MOVIE_NODE_UPDATE_END = 2,
-	AE_MOVIE_NODE_UPDATE_CREATE = 3,
-	AE_MOVIE_NODE_UPDATE_DESTROY = 4,
+	AE_MOVIE_NODE_UPDATE_UPDATE,
+	AE_MOVIE_NODE_UPDATE_PAUSE,
+	AE_MOVIE_NODE_UPDATE_RESUME,
+	AE_MOVIE_NODE_UPDATE_END,
+	AE_MOVIE_NODE_UPDATE_CREATE,
+	AE_MOVIE_NODE_UPDATE_DESTROY,
 	__AE_MOVIE_NODE_UPDATE_STATES__,
 }aeMovieNodeUpdateState;
 
@@ -89,6 +91,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 	aeMovieNodeUpdateState state;
 	float offset;
 	ae_matrix4_ptr_t matrix;
+	float opacity;
 	aeMovieRenderMesh * mesh;
 	void * track_matte_data;
 } aeMovieTrackMatteUpdateCallbackData;
@@ -104,13 +107,17 @@ typedef struct aeMovieCompositionEventCallbackData
 
 typedef enum
 {
-	AE_MOVIE_COMPOSITION_PLAY,
+	AE_MOVIE_COMPOSITION_PLAY = 0,
 	AE_MOVIE_COMPOSITION_STOP,
+	AE_MOVIE_COMPOSITION_PAUSE,
+	AE_MOVIE_COMPOSITION_RESUME,
 	AE_MOVIE_COMPOSITION_INTERRUPT,
 	AE_MOVIE_COMPOSITION_END,
 	AE_MOVIE_COMPOSITION_LOOP_END,
 	AE_MOVIE_SUB_COMPOSITION_PLAY,
 	AE_MOVIE_SUB_COMPOSITION_STOP,
+	AE_MOVIE_SUB_COMPOSITION_PAUSE,
+	AE_MOVIE_SUB_COMPOSITION_RESUME,
 	AE_MOVIE_SUB_COMPOSITION_INTERRUPT,
 	AE_MOVIE_SUB_COMPOSITION_END,
 	AE_MOVIE_SUB_COMPOSITION_LOOP_END,
@@ -164,9 +171,12 @@ void ae_remove_movie_composition_work_area( const aeMovieComposition * _composit
 
 void ae_play_movie_composition( const aeMovieComposition * _composition, float _time );
 void ae_stop_movie_composition( const aeMovieComposition * _composition );
+void ae_pause_movie_composition( const aeMovieComposition * _composition );
+void ae_resume_movie_composition( const aeMovieComposition * _composition );
 void ae_interrupt_movie_composition( const aeMovieComposition * _composition, ae_bool_t _skip );
 
 ae_bool_t ae_is_play_movie_composition( const aeMovieComposition * _composition );
+ae_bool_t ae_is_pause_movie_composition( const aeMovieComposition * _composition );
 ae_bool_t ae_is_interrupt_movie_composition( const aeMovieComposition * _composition );
 
 void ae_set_movie_composition_time( const aeMovieComposition * _composition, float _timing );
@@ -199,9 +209,12 @@ void ae_get_movie_sub_composition_in_out_loop( const aeMovieSubComposition * _su
 
 ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _time );
 ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
+ae_bool_t ae_pause_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
+ae_bool_t ae_resume_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
 void ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip );
 
 ae_bool_t ae_is_play_movie_sub_composition( const aeMovieSubComposition * _subcomposition );
+ae_bool_t ae_is_pause_movie_sub_composition( const aeMovieSubComposition * _subcomposition );
 ae_bool_t ae_is_interrupt_movie_sub_composition( const aeMovieSubComposition * _subcomposition );
 
 void ae_set_movie_sub_composition_time( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, float _timing );

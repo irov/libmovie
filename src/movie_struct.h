@@ -43,6 +43,7 @@ struct aeMovieStream
 struct aeMovieCompositionAnimation
 {
 	ae_bool_t play;
+	ae_bool_t pause;
 	ae_bool_t interrupt;
 	ae_bool_t loop;
 			
@@ -58,6 +59,7 @@ struct aeMovieCompositionAnimation
 struct aeMovieSubComposition
 {
 	const aeMovieLayerData * layer;
+	const aeMovieCompositionData * composition_data;
 
 	struct aeMovieCompositionAnimation * animation;
 };
