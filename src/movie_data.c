@@ -1001,6 +1001,11 @@ ae_bool_t ae_is_movie_layer_data_track_mate( const aeMovieLayerData * _layer )
 	return _layer->is_track_matte;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_is_movie_layer_data_threeD( const aeMovieLayerData * _layer )
+{
+	return _layer->threeD;
+}
+//////////////////////////////////////////////////////////////////////////
 void * ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer )
 {
 	return _layer->resource->data;

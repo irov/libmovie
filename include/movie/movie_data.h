@@ -55,6 +55,7 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
 const char * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer );
 aeMovieLayerTypeEnum ae_get_movie_layer_data_type( const aeMovieLayerData * _layer );
 ae_bool_t ae_is_movie_layer_data_track_mate( const aeMovieLayerData * _layer );
+ae_bool_t ae_is_movie_layer_data_threeD( const aeMovieLayerData * _layer );
 void * ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer );
 aeMovieBlendMode ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer );
 
