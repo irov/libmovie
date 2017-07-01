@@ -84,12 +84,12 @@
     <ClInclude Include="..\include\movie\movie_data.h" />
     <ClInclude Include="..\include\movie\movie_instance.h" />
     <ClInclude Include="..\include\movie\movie_node.h" />
+    <ClInclude Include="..\include\movie\movie_resource.h" />
     <ClInclude Include="..\include\movie\movie_skeleton.h" />
     <ClInclude Include="..\include\movie\movie_type.h" />
     <ClInclude Include="..\include\movie\movie_typedef.h" />
     <ClInclude Include="..\src\movie_math.h" />
     <ClInclude Include="..\src\movie_memory.h" />
-    <ClInclude Include="..\src\movie_resource.h" />
     <ClInclude Include="..\src\movie_stream.h" />
     <ClInclude Include="..\src\movie_struct.h" />
     <ClInclude Include="..\src\movie_transformation.h" />

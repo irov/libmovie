@@ -56,7 +56,7 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
     _render->indices = _mesh->indices;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, float _offset_x, float _offset_y, float _width, float _height, const ae_matrix4_t _matrix, const ae_vector2_t * _uv, aeMovieRenderMesh * _render )
 {
     ae_vector2_t v_position[4];
 
@@ -79,7 +79,7 @@ static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, flo
     mul_v3_v2_m4( _render->position[2], v_position[2], _matrix );
     mul_v3_v2_m4( _render->position[3], v_position[3], _matrix );
 
-    _render->uv = _instance->sprite_uv;
+    _render->uv = _uv;
     _render->indices = _instance->sprite_indices;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -310,7 +310,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
                 float width = resource_solid->width;
                 float height = resource_solid->height;
 
-                __make_layer_sprite_vertices( instance, 0.f, 0.f, width, height, _node->matrix, _render );
+                __make_layer_sprite_vertices( instance, 0.f, 0.f, width, height, _node->matrix, instance->sprite_uv, _render );
             }
 
             _render->r = _node->r * resource_solid->r;
@@ -369,7 +369,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
                 float width = resource_image->trim_width;
                 float height = resource_image->trim_height;
 
-                __make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _render );
+                __make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, resource_image->uv, _render );
             }
 
             _render->r = _node->r;
@@ -394,7 +394,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
                 float width = resource_video->width;
                 float height = resource_video->height;
 
-                __make_layer_sprite_vertices( instance, 0.f, 0.f, width, height, _node->matrix, _render );
+                __make_layer_sprite_vertices( instance, 0.f, 0.f, width, height, _node->matrix, instance->sprite_uv, _render );
             }
 
             _render->r = _node->r;
@@ -426,7 +426,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
                 float width = resource_image->trim_width;
                 float height = resource_image->trim_height;
 
-                __make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, _render );
+                __make_layer_sprite_vertices( instance, offset_x, offset_y, width, height, _node->matrix, resource_image->uv, _render );
             }
 
             _render->r = _node->r;

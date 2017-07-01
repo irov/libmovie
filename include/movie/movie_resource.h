@@ -54,7 +54,7 @@ typedef struct aeMovieResourceImage
 	float trim_height;
 	float offset_x;
 	float offset_y;
-
+	const ae_vector2_t * uv;
 	const aeMovieMesh * mesh;
 
 } aeMovieResourceImage;

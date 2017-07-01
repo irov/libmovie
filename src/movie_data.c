@@ -90,6 +90,11 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
 				DELETEN( instance, resource->path );
 
+				if( resource->uv != _movieData->instance->sprite_uv )
+				{
+					DELETE( instance, resource->uv );
+				}
+
 				if( resource->mesh != AE_NULL )
 				{
 					__ae_delete_mesh_t( instance, resource->mesh );
@@ -849,37 +854,59 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 				READ( _stream, resource->base_width );
 				READ( _stream, resource->base_height );
 
-				ae_bool_t is_trim = READB( _stream );
+				resource->trim_width = resource->base_width;
+				resource->trim_height = resource->base_height;
+				resource->offset_x = 0.f;
+				resource->offset_y = 0.f;
+				resource->uv = _movieData->instance->sprite_uv;
+				resource->mesh = AE_NULL;
 
-				if( is_trim == AE_TRUE )
+				for( ;;)
 				{
-					READ( _stream, resource->trim_width );
-					READ( _stream, resource->trim_height );
-					READ( _stream, resource->offset_x );
-					READ( _stream, resource->offset_y );
-				}
-				else
-				{
-					resource->trim_width = resource->base_width;
-					resource->trim_height = resource->base_height;
-					resource->offset_x = 0.f;
-					resource->offset_y = 0.f;
-				}
+					uint8_t param_type;
+					READ( _stream, param_type );
 
-				ae_bool_t is_mesh = READB( _stream );
+					switch( param_type )
+					{
+					case 0:
+						{
+						}break;
+					case 1:
+						{
+							READ( _stream, resource->trim_width );
+							READ( _stream, resource->trim_height );
+							READ( _stream, resource->offset_x );
+							READ( _stream, resource->offset_y );
+						}break;
+					case 2:
+						{
+							ae_vector2_t * uv = NEWN( _movieData->instance, ae_vector2_t, 4 );
+							READ( _stream, uv[0][0] );
+							READ( _stream, uv[0][1] );
+							READ( _stream, uv[1][0] );
+							READ( _stream, uv[1][1] );
+							READ( _stream, uv[2][0] );
+							READ( _stream, uv[2][1] );
+							READ( _stream, uv[3][0] );
+							READ( _stream, uv[3][1] );
 
-				if( is_mesh == AE_TRUE )
-				{
-                    aeMovieMesh * mesh = NEW( _movieData->instance, aeMovieMesh );
-					READ_MESH( _stream, mesh );
+							resource->uv = uv;
+						}break;
+					case 3:
+						{
+							aeMovieMesh * mesh = NEW( _movieData->instance, aeMovieMesh );
+							READ_MESH( _stream, mesh );
 
-                    resource->mesh = mesh;
+							resource->mesh = mesh;
+						}break;
+					}
+
+					if( param_type == 0 )
+					{
+						break;
+					}
 				}
-				else
-				{
-					resource->mesh = AE_NULL;
-				}
-
+				
 				*it_resource = (aeMovieResource *)resource;
 
 				resource->type = type;
