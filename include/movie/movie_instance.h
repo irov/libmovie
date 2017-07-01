@@ -4,6 +4,11 @@
 #	include "movie_type.h"
 #	include "movie_typedef.h"
 
+/**
+@addtogroup instance
+@{
+*/
+
 typedef void * (*ae_movie_alloc_t)(void * _data, size_t _size);
 typedef void * (*ae_movie_alloc_n_t)(void * _data, size_t _size, size_t _n);
 typedef void( *ae_movie_free_t )(void * _data, const void * _ptr);
@@ -24,6 +29,11 @@ typedef enum
 
 typedef void( *ae_movie_logger_t )(void * _data, aeMovieErrorCode _code, const ae_char_t * _message, ...);
 
+/**
+@brief Create a new instance.
+@param [in] _alloc,_alloc_n,_free,_free_n,_strncmp,_logger User pointers to utility functions.
+@param [in] _data Usually pointer to the creating object.
+*/
 aeMovieInstance * ae_create_movie_instance(
 	ae_movie_alloc_t _alloc,
 	ae_movie_alloc_n_t _alloc_n,
@@ -33,6 +43,13 @@ aeMovieInstance * ae_create_movie_instance(
 	ae_movie_logger_t _logger,
 	void * _data );
 
+/**
+@brief Delete an existing instance.
+@param [in] _instance Instance.
+*/
 void ae_delete_movie_instance( aeMovieInstance * _instance );
+
+// instance
+/// @}
 
 #endif
