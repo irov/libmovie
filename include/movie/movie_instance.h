@@ -35,6 +35,7 @@ typedef void( *ae_movie_logger_t )(void * _data, aeMovieErrorCode _code, const a
 @param [in] _data Usually pointer to the creating object.
 */
 aeMovieInstance * ae_create_movie_instance(
+	const ae_char_t * _hashkey,
 	ae_movie_alloc_t _alloc,
 	ae_movie_alloc_n_t _alloc_n,
 	ae_movie_free_t _free,

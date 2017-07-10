@@ -8,6 +8,8 @@
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieInstance
 {
+	uint32_t hashmask[5];
+
 	ae_movie_alloc_t memory_alloc;
 	ae_movie_alloc_n_t memory_alloc_n;
 	ae_movie_free_t memory_free;
@@ -161,7 +163,7 @@ struct aeMovieCompositionData
 struct aeMovieData
 {
 	const aeMovieInstance * instance;
-
+	
 	ae_string_t name;
 
 	uint32_t resource_count;

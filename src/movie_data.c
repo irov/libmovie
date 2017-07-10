@@ -12,7 +12,13 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance )
 {
 	aeMovieData * m = NEW( _instance, aeMovieData );
 
-	m->instance = _instance;
+	m->instance = _instance;	
+	
+	m->resource_count = 0;
+	m->resources = AE_NULL;
+
+	m->composition_count = 0;
+	m->compositions = AE_NULL;
 
 	return m;
 }
@@ -736,6 +742,23 @@ static ae_result_t __load_movie_data_composition( const aeMovieData * _movieData
 //////////////////////////////////////////////////////////////////////////
 aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_movie_stream_memory_read_t _read, ae_movie_stream_memory_copy_t _copy, void * _data )
 {
+#	ifdef AE_MOVIE_DEBUG
+	if( _instance == AE_NULL )
+	{
+		return AE_NULL;
+	}
+
+	if( _read == AE_NULL )
+	{
+		return AE_NULL;
+	}
+
+	if( _copy == AE_NULL )
+	{
+		return AE_NULL;
+	}
+#	endif
+
 	aeMovieStream * stream = NEW( _instance, aeMovieStream );
 
 	stream->instance = _instance;
@@ -804,6 +827,24 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 				READ( _stream, resource->g );
 				READ( _stream, resource->b );
 
+				for( ;;)
+				{
+					uint8_t param_type;
+					READ( _stream, param_type );
+
+					switch( param_type )
+					{
+					case 0:
+						{
+						}break;
+					}
+
+					if( param_type == 0 )
+					{
+						break;
+					}
+				}
+
 				*it_resource = (aeMovieResource *)resource;
 
 				resource->type = type;
@@ -825,6 +866,24 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 				READ( _stream, resource->frameRate );
 				READ( _stream, resource->duration );
 
+				for( ;;)
+				{
+					uint8_t param_type;
+					READ( _stream, param_type );
+
+					switch( param_type )
+					{
+					case 0:
+						{
+						}break;
+					}
+
+					if( param_type == 0 )
+					{
+						break;
+					}
+				}
+
 				*it_resource = (aeMovieResource *)resource;
 
 				resource->type = type;
@@ -837,6 +896,24 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 				READ_STRING( _stream, resource->path );
 
 				READ( _stream, resource->duration );
+
+				for( ;;)
+				{
+					uint8_t param_type;
+					READ( _stream, param_type );
+
+					switch( param_type )
+					{
+					case 0:
+						{
+						}break;
+					}
+
+					if( param_type == 0 )
+					{
+						break;
+					}
+				}
 
 				*it_resource = (aeMovieResource *)resource;
 
@@ -934,6 +1011,24 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
                 resource->images = images;
 
+				for( ;;)
+				{
+					uint8_t param_type;
+					READ( _stream, param_type );
+
+					switch( param_type )
+					{
+					case 0:
+						{
+						}break;
+					}
+
+					if( param_type == 0 )
+					{
+						break;
+					}
+				}
+
 				*it_resource = (aeMovieResource *)resource;
 
 				resource->type = type;
@@ -944,6 +1039,24 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 				aeMovieResourceParticle * resource = NEW( _movieData->instance, aeMovieResourceParticle );
 
 				READ_STRING( _stream, resource->path );
+
+				for( ;;)
+				{
+					uint8_t param_type;
+					READ( _stream, param_type );
+
+					switch( param_type )
+					{
+					case 0:
+						{
+						}break;
+					}
+
+					if( param_type == 0 )
+					{
+						break;
+					}
+				}
 
 				*it_resource = (aeMovieResource *)resource;
 
@@ -956,6 +1069,24 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
 				READ( _stream, resource->width );
 				READ( _stream, resource->height );
+
+				for( ;;)
+				{
+					uint8_t param_type;
+					READ( _stream, param_type );
+
+					switch( param_type )
+					{
+					case 0:
+						{
+						}break;
+					}
+
+					if( param_type == 0 )
+					{
+						break;
+					}
+				}
 
 				*it_resource = (aeMovieResource *)resource;
 

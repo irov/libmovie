@@ -73,9 +73,42 @@ static void __ae_movie_instance_setup_bezier_warp_indices( aeMovieInstance * ins
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieInstance * ae_create_movie_instance( ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logger_t _logger, void * _data )
+aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logger_t _logger, void * _data )
 {
 	aeMovieInstance * instance = (*_alloc)(_data, sizeof( aeMovieInstance ));
+		
+	instance->hashmask[0] = 0;
+	instance->hashmask[1] = 0;
+	instance->hashmask[2] = 0;
+	instance->hashmask[3] = 0;
+	instance->hashmask[4] = 0;
+
+	for( uint32_t i = 0; i != 41; ++i )
+	{
+		if( _hashkey[i] == '\0' && i != 40 )
+		{
+			return AE_NULL;
+		}
+
+		if( _hashkey[i] != '\0' && i == 40 )
+		{
+			return AE_NULL;
+		}
+
+		if( _hashkey[i] == '\0' && i == 40 )
+		{
+			break;
+		}
+
+		uint32_t j = i / 8;
+		uint32_t k = i % 8;
+		
+		ae_char_t hash_char = _hashkey[i];
+
+		uint32_t v = (hash_char > '9') ? hash_char - 'a' + 10 : (hash_char - '0');
+		
+		instance->hashmask[j] += v << (k * 4);
+	}
 
 	instance->memory_alloc = _alloc;
 	instance->memory_alloc_n = _alloc_n;

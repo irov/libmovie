@@ -4,6 +4,14 @@
 #	include <stdint.h>
 #	include <stddef.h>
 
+#	ifdef _DEBUG
+#	ifndef AE_MOVIE_NO_DEBUG
+#	ifndef AE_MOVIE_DEBUG
+#	define AE_MOVIE_DEBUG
+#	endif
+#	endif
+#	endif
+
 typedef uint32_t ae_bool_t;
 typedef char ae_char_t;
 typedef ae_char_t * ae_string_t;

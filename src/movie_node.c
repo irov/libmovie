@@ -7,14 +7,6 @@
 
 #	include "movie_struct.h"
 
-#	ifdef _DEBUG
-#	ifndef AE_MOVIE_NO_DEBUG
-#	ifndef AE_MOVIE_DEBUG
-#	define AE_MOVIE_DEBUG
-#	endif
-#	endif
-#	endif
-
 //////////////////////////////////////////////////////////////////////////
 typedef enum
 {
@@ -641,7 +633,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
     }
 #	endif
 
-    _node->matrix_revision = _revision;
+	_node->matrix_revision = _revision;
 
     float local_r = 1.f;
     float local_g = 1.f;

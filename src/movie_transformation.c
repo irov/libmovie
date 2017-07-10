@@ -10,8 +10,33 @@ static const void * __load_movie_layer_transformation_timeline( aeMovieStream * 
 
 	uint32_t zp_data_size;
 	READ( _stream, zp_data_size );
+		
+#	ifndef _DEBUG
+	if( zp_data_size % 4 != 0 )
+	{
+		return AE_NULL;
+	}
+#	endif
+
 	void * timeline = NEWV( _stream->instance, _doc, zp_data_size );
 	READV( _stream, timeline, (size_t)zp_data_size );
+	
+	const uint32_t * hashmask = _stream->instance->hashmask;
+
+	uint32_t hashmask_iterator = 0;
+
+	for( uint32_t 
+		*it = (uint32_t *)timeline,
+		*it_end = (uint32_t *)timeline + zp_data_size / 4;
+		it != it_end;
+		++it )
+	{
+		uint32_t hashmask_index = hashmask_iterator++ % 5;
+
+		uint32_t hash = hashmask[hashmask_index];
+
+		*it ^= hash;
+	}
 
 	return timeline;
 }
