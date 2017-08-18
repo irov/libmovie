@@ -159,6 +159,13 @@ ae_bool_t ae_is_movie_layer_data_track_mate( const aeMovieLayerData * _layer );
 */
 ae_bool_t ae_is_movie_layer_data_threeD( const aeMovieLayerData * _layer );
 
+
+/**
+@param [in] _layer Layer.
+@return resource linked to the layer.
+*/
+const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData * _layer );
+
 /**
 @param [in] _layer Layer.
 @return Pointer to the data referenced by the resource linked to the layer.
@@ -176,6 +183,19 @@ aeMovieBlendMode ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _l
 @return Composition name.
 */
 const char * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData );
+
+
+/**
+@param [in] _compositionData Composition data.
+@return Composition width.
+*/
+float ae_get_movie_composition_data_width( const aeMovieCompositionData * _compositionData );
+
+/**
+@param [in] _compositionData Composition data.
+@return Composition height.
+*/
+float ae_get_movie_composition_data_height( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.

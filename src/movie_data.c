@@ -1193,6 +1193,11 @@ ae_bool_t ae_is_movie_layer_data_threeD( const aeMovieLayerData * _layer )
 	return _layer->threeD;
 }
 //////////////////////////////////////////////////////////////////////////
+const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData * _layer )
+{
+	return _layer->resource;
+}
+//////////////////////////////////////////////////////////////////////////
 void * ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer )
 {
 	return _layer->resource->data;
@@ -1206,6 +1211,16 @@ aeMovieBlendMode ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _l
 const char * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData )
 {
 	return _compositionData->name;
+}
+//////////////////////////////////////////////////////////////////////////
+float ae_get_movie_composition_data_width( const aeMovieCompositionData * _compositionData )
+{
+	return _compositionData->width;
+}
+//////////////////////////////////////////////////////////////////////////
+float ae_get_movie_composition_data_height( const aeMovieCompositionData * _compositionData )
+{
+	return _compositionData->height;
 }
 //////////////////////////////////////////////////////////////////////////
 float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData )
