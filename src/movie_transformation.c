@@ -62,6 +62,8 @@ static const void * __load_movie_layer_transformation_timeline( aeMovieStream * 
 
 	if( zp_data_size != zp_data_size_hash )
 	{
+		_stream->instance->logger( _stream->instance->instance_data, AE_ERROR_INTERNAL, "invalid hash code\n" );
+
 		return AE_NULL;
 	}
 
