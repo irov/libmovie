@@ -830,6 +830,21 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 		return AE_MOVIE_INVALID_VERSION;
 	}
 
+	uint32_t hash_crc;
+	READ( _stream, hash_crc );
+
+	uint32_t ae_movie_hashmask_crc =
+		_stream->instance->hashmask[0] ^
+		_stream->instance->hashmask[1] ^
+		_stream->instance->hashmask[2] ^
+		_stream->instance->hashmask[3] ^
+		_stream->instance->hashmask[4];
+	
+	if( hash_crc != ae_movie_hashmask_crc )
+	{
+		return AE_MOVIE_INVALID_HASH;
+	}
+
 	READ_STRING( _stream, _movieData->name );
 
 	uint32_t resource_count = READZ( _stream );

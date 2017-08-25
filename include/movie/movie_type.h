@@ -186,6 +186,7 @@ typedef enum
 	AE_MOVIE_FAILED = -1,
 	AE_MOVIE_INVALID_MAGIC = -2,
 	AE_MOVIE_INVALID_VERSION = -3,
+	AE_MOVIE_INVALID_HASH = -4,
 } ae_result_t;
 
 typedef void( *ae_movie_stream_memory_info_t )(void * _data, const char * _buff, size_t _size);
