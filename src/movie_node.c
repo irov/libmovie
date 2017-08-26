@@ -288,6 +288,15 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
         _render->resource_data = AE_NULL;
     }
 
+    if( layer->threeD == AE_TRUE )
+    {
+        _render->camera_data = _composition->camera_data;
+    }
+    else
+    {
+        _render->camera_data = AE_NULL;
+    }
+
     _render->element_data = _node->element_data;
 
     if( _node->track_matte != AE_NULL && _node->track_matte->active == AE_TRUE )

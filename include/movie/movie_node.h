@@ -81,6 +81,11 @@ typedef struct aeMovieRenderMesh
     /// @}
 
     /**
+    @brief Pointer to a user-provided camera structure.
+    */
+    ae_voidptr_t camera_data;
+
+    /**
     @brief Pointer to a user-provided track matte structure.
 
     Contains track matte layer data, specifically aeMovieRenderMesh.
