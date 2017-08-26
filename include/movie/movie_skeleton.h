@@ -39,9 +39,9 @@ typedef struct aeMovieComposition aeMovieComposition;
 
 typedef struct aeMovieSkeleton
 {
-	aeMovieComposition * base;
+    aeMovieComposition * base;
 
-	aeMovieComposition * animations[8];
+    aeMovieComposition * animations[8];
 
 } aeMovieSkeleton;
 

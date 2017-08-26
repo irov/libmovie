@@ -41,36 +41,37 @@
 
 typedef enum aeMovieLayerTypeEnum
 {
-	AE_MOVIE_LAYER_TYPE_ANY = 0,
-	AE_MOVIE_LAYER_TYPE_MOVIE = 1,
-	AE_MOVIE_LAYER_TYPE_EVENT = 7,
-	AE_MOVIE_LAYER_TYPE_SOCKET = 8,
-	AE_MOVIE_LAYER_TYPE_SHAPE = 9,
-	AE_MOVIE_LAYER_TYPE_SLOT = 11,
-	AE_MOVIE_LAYER_TYPE_NULL = 12,
-	AE_MOVIE_LAYER_TYPE_SOLID = 14,
-	AE_MOVIE_LAYER_TYPE_SEQUENCE = 15,
-	AE_MOVIE_LAYER_TYPE_VIDEO = 16,
-	AE_MOVIE_LAYER_TYPE_SOUND = 17,
-	AE_MOVIE_LAYER_TYPE_PARTICLE = 18,
-	AE_MOVIE_LAYER_TYPE_IMAGE = 20,
-	AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
+    AE_MOVIE_LAYER_TYPE_ANY = 0,
+    AE_MOVIE_LAYER_TYPE_MOVIE = 1,
+    AE_MOVIE_LAYER_TYPE_EVENT = 7,
+    AE_MOVIE_LAYER_TYPE_SOCKET = 8,
+    AE_MOVIE_LAYER_TYPE_SHAPE = 9,
+    AE_MOVIE_LAYER_TYPE_SLOT = 11,
+    AE_MOVIE_LAYER_TYPE_NULL = 12,
+    AE_MOVIE_LAYER_TYPE_SOLID = 14,
+    AE_MOVIE_LAYER_TYPE_SEQUENCE = 15,
+    AE_MOVIE_LAYER_TYPE_VIDEO = 16,
+    AE_MOVIE_LAYER_TYPE_SOUND = 17,
+    AE_MOVIE_LAYER_TYPE_PARTICLE = 18,
+    AE_MOVIE_LAYER_TYPE_IMAGE = 20,
+    AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 } aeMovieLayerTypeEnum;
 
 typedef enum aeMovieLayerParamEnum
 {
-	AE_MOVIE_LAYER_PARAM_LOOP = 0x00000008,
-	AE_MOVIE_LAYER_PARAM_SWITCH = 0x00000010,
-	__AE_MOVIE_LAYER_PARAM_END__
+    AE_MOVIE_LAYER_PARAM_LOOP = 0x00000008,
+    AE_MOVIE_LAYER_PARAM_SWITCH = 0x00000010,
+    __AE_MOVIE_LAYER_PARAM_END__
 } aeMovieLayerParamEnum;
 
 typedef enum aeMovieCompositionFlag
 {
-	AE_MOVIE_COMPOSITION_LOOP_SEGMENT = 0x00000001,
-	AE_MOVIE_COMPOSITION_ANCHOR_POINT = 0x00000002,
-	AE_MOVIE_COMPOSITION_OFFSET_POINT = 0x00000004,
-	AE_MOVIE_COMPOSITION_BOUNDS = 0x00000008,
-	__AE_MOVIE_COMPOSITION_FLAGS__
+    AE_MOVIE_COMPOSITION_LOOP_SEGMENT = 0x00000001,
+    AE_MOVIE_COMPOSITION_ANCHOR_POINT = 0x00000002,
+    AE_MOVIE_COMPOSITION_OFFSET_POINT = 0x00000004,
+    AE_MOVIE_COMPOSITION_BOUNDS = 0x00000008,
+    AE_MOVIE_COMPOSITION_CAMERA = 0x00000010,
+    __AE_MOVIE_COMPOSITION_FLAGS__
 } aeMovieCompositionFlag;
 
 // data_types
@@ -100,7 +101,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData );
 @param [in] _data Object which will hold the resource reference after loading.
 @return Reference to the created resource.
 */
-typedef void * (*ae_movie_data_resource_provider_t)(const aeMovieResource * _resource, void * _data);
+typedef ae_voidptr_t( *ae_movie_data_resource_provider_t )(const aeMovieResource * _resource, ae_voidptr_t _data);
 
 /**
 @brief Create a stream to load the data from the given data pointer.
@@ -109,7 +110,7 @@ typedef void * (*ae_movie_data_resource_provider_t)(const aeMovieResource * _res
 @param [in] _data Object to use in above callbacks to read data from.
 @return Pointer to the stream.
 */
-aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_movie_stream_memory_read_t _read, ae_movie_stream_memory_copy_t _copy, void * _data );
+aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_movie_stream_memory_read_t _read, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data );
 
 /**
 @brief Release stream.
@@ -125,7 +126,7 @@ void ae_delete_movie_stream( aeMovieStream * _stream );
 @param [in] _data Object which will hold the resource reference after loading.
 @return TRUE if successful.
 */
-ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, void * _data );
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, ae_voidptr_t _data );
 
 /**
 @brief Search for composition data by the given name.
@@ -139,7 +140,7 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
 @param [in] _layer Layer.
 @return Layer name.
 */
-const char * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer );
+const ae_char_t * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer );
 
 /**
 @param [in] _layer Layer.
@@ -170,7 +171,7 @@ const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData
 @param [in] _layer Layer.
 @return Pointer to the data referenced by the resource linked to the layer.
 */
-void * ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer );
+ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer );
 
 /**
 @param [in] _layer Layer.
@@ -182,38 +183,38 @@ aeMovieBlendMode ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _l
 @param [in] _compositionData Composition data.
 @return Composition name.
 */
-const char * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData );
+const ae_char_t * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData );
 
 
 /**
 @param [in] _compositionData Composition data.
 @return Composition width.
 */
-float ae_get_movie_composition_data_width( const aeMovieCompositionData * _compositionData );
+ae_float_t ae_get_movie_composition_data_width( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
 @return Composition height.
 */
-float ae_get_movie_composition_data_height( const aeMovieCompositionData * _compositionData );
+ae_float_t ae_get_movie_composition_data_height( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
 @return Composition duration in milliseconds.
 */
-float ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
+ae_float_t ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
 @return Single frame duration in milliseconds.
 */
-float ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData );
+ae_float_t ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
 @return Total number of frames in the composition.
 */
-uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionData * _compositionData );
+ae_uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionData * _compositionData );
 
 /**
 @brief Get composition loop range in milliseconds.
@@ -221,7 +222,7 @@ uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionData
 @param [out] _in Begin time.
 @param [out] _out End time.
 */
-void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, float * _in, float * _out );
+void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_float_t * _in, ae_float_t * _out );
 
 /**
 @param [in] _compositionData Composition data.
@@ -233,27 +234,27 @@ ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _
 @param [in] _movieData Data.
 @return Total number of compositions in the movie.
 */
-uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData );
+ae_uint32_t ae_get_movie_composition_data_count( const aeMovieData * _movieData );
 
 /**
 @param [in] _movieData Data.
 @param [in] _index Composition index.
 @return Composition data under the given index.
 */
-const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, uint32_t _index );
+const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeMovieData * _movieData, ae_uint32_t _index );
 
 /**
 @param [in] _compositionData Composition data.
 @return Total number of events.
 */
-uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _compositionData );
+ae_uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
 @param [in] _index Event index.
 @return Name of the event under the given index.
 */
-const ae_char_t * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, uint32_t _index );
+const ae_char_t * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, ae_uint32_t _index );
 
 // data
 /// @}

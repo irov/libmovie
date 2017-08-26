@@ -57,194 +57,200 @@
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_INFO
 //////////////////////////////////////////////////////////////////////////
-static size_t ae_magic_read_value_info( aeMovieStream * _stream, const char * _info, void * _ptr, size_t _size )
+static ae_size_t ae_magic_read_value_info( aeMovieStream * _stream, const ae_char_t * _info, ae_voidptr_t _ptr, ae_size_t _size )
 {
-	_stream->instance->logger( _stream->instance->instance_data, AE_ERROR_STREAM, "read stream '%s' size '%d'\n", _info, (uint32_t)_size );
+    _stream->instance->logger( _stream->instance->instance_data, AE_ERROR_STREAM, "read stream '%s' size '%d'\n", _info, (ae_uint32_t)_size );
 
-	size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
+    ae_size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
 
-	return bytesRead;
+    return bytesRead;
 }
+//////////////////////////////////////////////////////////////////////////
 #	endif
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_CACHE
-static size_t ae_magic_read_value( aeMovieStream * _stream, void * _ptr, size_t _size )
+//////////////////////////////////////////////////////////////////////////
+static ae_size_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
 {
-	size_t carriage = _stream->carriage;
-	size_t capacity = _stream->capacity;
+    ae_size_t carriage = _stream->carriage;
+    ae_size_t capacity = _stream->capacity;
 
-	if( _size > AE_MOVIE_STREAM_CACHE_BUFFER_SIZE )
-	{
-		size_t tail = capacity - carriage;
+    if( _size > AE_MOVIE_STREAM_CACHE_BUFFER_SIZE )
+    {
+        ae_size_t tail = capacity - carriage;
 
-		if( tail != 0 )
-		{
-			const void * buff_carriage = _stream->buff + carriage;
-			_stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
-		}
+        if( tail != 0 )
+        {
+            ae_constvoidptr_t buff_carriage = _stream->buff + carriage;
+            _stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
+        }
 
-		size_t correct_read = _size - tail;
-		void * correct_ptr = (uint8_t *)_ptr + tail;
+        ae_size_t correct_read = _size - tail;
+        ae_voidptr_t correct_ptr = (ae_uint8_t *)_ptr + tail;
 
-		size_t bytesRead = _stream->memory_read( _stream->data, correct_ptr, correct_read );
+        ae_size_t bytesRead = _stream->memory_read( _stream->data, correct_ptr, correct_read );
 
-		_stream->carriage = 0;
-		_stream->capacity = 0;
+        _stream->carriage = 0;
+        _stream->capacity = 0;
 
-		_stream->reading += bytesRead;
+        _stream->reading += bytesRead;
 
-		return bytesRead + tail;
-	}
+        return bytesRead + tail;
+    }
 
-	if( carriage + _size <= capacity )
-	{
-		const void * buff_carriage = _stream->buff + carriage;
+    if( carriage + _size <= capacity )
+    {
+        ae_constvoidptr_t buff_carriage = _stream->buff + carriage;
 
-		_stream->memory_copy( _stream->data, buff_carriage, _ptr, _size );
+        _stream->memory_copy( _stream->data, buff_carriage, _ptr, _size );
 
-		_stream->carriage += _size;
+        _stream->carriage += _size;
 
-		return _size;
-	}
+        return _size;
+    }
 
-	size_t tail = capacity - carriage;
+    ae_size_t tail = capacity - carriage;
 
-	if( tail != 0 )
-	{
-		const void * buff_carriage = _stream->buff + carriage;
+    if( tail != 0 )
+    {
+        ae_constvoidptr_t buff_carriage = _stream->buff + carriage;
 
-		_stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
-	}
+        _stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
+    }
 
-	size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, AE_MOVIE_STREAM_CACHE_BUFFER_SIZE );
+    ae_size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, AE_MOVIE_STREAM_CACHE_BUFFER_SIZE );
 
-	size_t readSize = _size - tail;
+    ae_size_t readSize = _size - tail;
 
-	if( readSize > bytesRead )
-	{
-		readSize = bytesRead;
-	}
-	
-	_stream->memory_copy( _stream->data, _stream->buff, _ptr, readSize );
+    if( readSize > bytesRead )
+    {
+        readSize = bytesRead;
+    }
 
-	_stream->carriage = readSize;
-	_stream->capacity = bytesRead;
+    _stream->memory_copy( _stream->data, _stream->buff, _ptr, readSize );
 
-	_stream->reading += AE_MOVIE_STREAM_CACHE_BUFFER_SIZE;
+    _stream->carriage = readSize;
+    _stream->capacity = bytesRead;
+
+    _stream->reading += AE_MOVIE_STREAM_CACHE_BUFFER_SIZE;
 
     return bytesRead + tail;
 }
+//////////////////////////////////////////////////////////////////////////
 #else
-static size_t ae_magic_read_value(aeMovieStream * _stream, void * _ptr, size_t _size)
+//////////////////////////////////////////////////////////////////////////
+static ae_size_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
 {
-	size_t bytesRead = _stream->memory_read(_stream->data, _ptr, _size);
-	
-	return bytesRead;
+    ae_size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
+
+    return bytesRead;
 }
+//////////////////////////////////////////////////////////////////////////
 #endif
 //////////////////////////////////////////////////////////////////////////
 static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
 {
-	uint8_t value;
-	READ( _stream, value );
+    ae_uint8_t value;
+    READ( _stream, value );
 
-	return value;
+    return value;
 }
 //////////////////////////////////////////////////////////////////////////
-static uint32_t ae_magic_read_size( aeMovieStream * _stream )
+static ae_uint32_t ae_magic_read_size( aeMovieStream * _stream )
 {
-	uint8_t size255;
-	READ( _stream, size255 );
+    ae_uint8_t size255;
+    READ( _stream, size255 );
 
-	if( size255 != 255 )
-	{
-		return (uint32_t)size255;
-	}
+    if( size255 != 255 )
+    {
+        return (ae_uint32_t)size255;
+    }
 
-	uint16_t size65535;
-	READ( _stream, size65535 );
+    ae_uint16_t size65535;
+    READ( _stream, size65535 );
 
-	if( size65535 != 65535 )
-	{
-		return (uint32_t)size65535;
-	}
+    if( size65535 != 65535 )
+    {
+        return (ae_uint32_t)size65535;
+    }
 
-	uint32_t size;
-	READ( _stream, size );
+    ae_uint32_t size;
+    READ( _stream, size );
 
-	return size;
+    return size;
 }
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )
 {
-	uint32_t size = READZ( _stream );
+    ae_uint32_t size = READZ( _stream );
 
-	ae_string_t str = NEWN( _stream->instance, ae_char_t, size + 1U );
-	READN( _stream, str, size );
+    ae_string_t str = NEWN( _stream->instance, ae_char_t, size + 1U );
+    READN( _stream, str, size );
 
-	str[size] = '\0';
+    str[size] = '\0';
 
-	*_str = str;
+    *_str = str;
 }
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_polygon( aeMovieStream * _stream, aeMoviePolygon * _polygon )
 {
-	uint32_t point_count = READZ( _stream );
-	
-	_polygon->point_count = point_count;
+    ae_uint32_t point_count = READZ( _stream );
 
-	if( point_count == 0 )
-	{		
-		_polygon->points = AE_NULL;
+    _polygon->point_count = point_count;
 
-		return;
-	}
+    if( point_count == 0 )
+    {
+        _polygon->points = AE_NULL;
 
-	ae_vector2_t * points = NEWN( _stream->instance, ae_vector2_t, point_count );
-	READN( _stream, points, point_count );
+        return;
+    }
 
-	_polygon->points = (const ae_vector2_t *)points;
+    ae_vector2_t * points = NEWN( _stream->instance, ae_vector2_t, point_count );
+    READN( _stream, points, point_count );
+
+    _polygon->points = (const ae_vector2_t *)points;
 }
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_viewport( aeMovieStream * _stream, aeMovieViewport * _viewport )
 {
-	READ( _stream, _viewport->begin_x );
-	READ( _stream, _viewport->begin_y );
-	READ( _stream, _viewport->end_x );
-	READ( _stream, _viewport->end_y );
+    READ( _stream, _viewport->begin_x );
+    READ( _stream, _viewport->begin_y );
+    READ( _stream, _viewport->end_x );
+    READ( _stream, _viewport->end_y );
 }
 //////////////////////////////////////////////////////////////////////////
 static void ae_magic_read_mesh( aeMovieStream * _stream, aeMovieMesh * _mesh )
 {
-	uint32_t vertex_count = READZ( _stream );
+    ae_uint32_t vertex_count = READZ( _stream );
 
-	if( vertex_count == 0 || vertex_count > AE_MOVIE_MAX_VERTICES )
-	{
-		_mesh->vertex_count = 0;
-		_mesh->indices_count = 0;
+    if( vertex_count == 0 || vertex_count > AE_MOVIE_MAX_VERTICES )
+    {
+        _mesh->vertex_count = 0;
+        _mesh->indices_count = 0;
 
-		_mesh->positions = AE_NULL;
-		_mesh->uvs = AE_NULL;
-		_mesh->indices = AE_NULL;
+        _mesh->positions = AE_NULL;
+        _mesh->uvs = AE_NULL;
+        _mesh->indices = AE_NULL;
 
-		return;	
-	}
+        return;
+    }
 
-	uint32_t indices_count = READZ( _stream );
+    ae_uint32_t indices_count = READZ( _stream );
 
-	_mesh->vertex_count = vertex_count;
-	_mesh->indices_count = indices_count;
+    _mesh->vertex_count = vertex_count;
+    _mesh->indices_count = indices_count;
 
-	ae_vector2_t * positions = NEWN( _stream->instance, ae_vector2_t, vertex_count );
-	READN( _stream, positions, vertex_count );
-	_mesh->positions = (const ae_vector2_t *)positions;
+    ae_vector2_t * positions = NEWN( _stream->instance, ae_vector2_t, vertex_count );
+    READN( _stream, positions, vertex_count );
+    _mesh->positions = (const ae_vector2_t *)positions;
 
-	ae_vector2_t * uvs = NEWN( _stream->instance, ae_vector2_t, vertex_count );
-    READN(_stream, uvs, vertex_count);
-	_mesh->uvs = (const ae_vector2_t *)uvs;
-	
-	uint16_t * indices = NEWN( _stream->instance, uint16_t, indices_count );
-	READN( _stream, indices, indices_count );
+    ae_vector2_t * uvs = NEWN( _stream->instance, ae_vector2_t, vertex_count );
+    READN( _stream, uvs, vertex_count );
+    _mesh->uvs = (const ae_vector2_t *)uvs;
+
+    ae_uint16_t * indices = NEWN( _stream->instance, ae_uint16_t, indices_count );
+    READN( _stream, indices, indices_count );
     _mesh->indices = indices;
 }
+//////////////////////////////////////////////////////////////////////////
 #	endif

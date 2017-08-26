@@ -14,7 +14,7 @@ int main( int argc, char *argv[] ) {
 	// Initialize library instance, movie & composition names.
 	//
 
-	ex_init();
+	ex_init( "f86464bbdebf0fe3e684b03ec263d049d079e6f1", "../../../examples/resources/ui/ui.aem", "LOBBY" );
 
 	//
 	// Set pointer to resource loader callback, in this example the empty one.

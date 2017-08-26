@@ -23,6 +23,7 @@ ADD_FILTER(
 public
 	${PUBLIC_DIR}/movie.h
     ${PUBLIC_DIR}/movie.hpp
+    ${PUBLIC_DIR}/movie_node.h
     ${PUBLIC_DIR}/movie_data.h
     ${PUBLIC_DIR}/movie_instance.h
     ${PUBLIC_DIR}/movie_resource.h
@@ -57,6 +58,8 @@ if( LIBMOVIE_EXAMPLES_BUILD )
     )
 
     INCLUDE_DIRECTORIES( sandbox ../include )
+    
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 
     ADD_EXECUTABLE( sandbox ${sandbox_SOURCES} )
 

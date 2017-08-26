@@ -6,37 +6,37 @@
 #	include <memory.h>
 
 //////////////////////////////////////////////////////////////////////////
-static void * stdlib_movie_alloc( void * _data, size_t _size )
+static ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size )
 {
 	(void)_data;
 
 	return malloc( _size );
 }
 //////////////////////////////////////////////////////////////////////////
-static void * stdlib_movie_alloc_n( void * _data, size_t _size, size_t _count )
+static ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count )
 {
 	(void)_data;
 
-	uint32_t total = _size * _count;
+	ae_uint32_t total = _size * _count;
 
 	return malloc( total );
 }
 //////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_free( void * _data, const void * _ptr )
+static void stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
 	(void)_data;
 
-	free( (void *)_ptr );
+	free( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_free_n( void * _data, const void * _ptr )
+static void stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
 	(void)_data;
 
-	free( (void *)_ptr );
+	free( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_logerror( void * _data, aeMovieErrorCode _code, const char * _format, ... )
+static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... )
 {
 	(void)_data;
 	(void)_code;
@@ -48,23 +48,23 @@ static void stdlib_movie_logerror( void * _data, aeMovieErrorCode _code, const c
 	va_end( argList );
 }
 //////////////////////////////////////////////////////////////////////////
-static size_t read_file( void * _data, void * _buff, uint32_t _size )
+static ae_size_t read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _size )
 {
 	FILE * f = (FILE *)_data;
 
-	size_t s = fread( _buff, 1, _size, f );
+	ae_size_t s = fread( _buff, 1, _size, f );
 
 	return s;
 }
 
-static void memory_copy( void * _data, const void * _src, void * _dst, size_t _size )
+static void memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
 {
 	(void)_data;
 
 	memcpy( _dst, _src, _size );
 }
 
-static void * resource_provider( const aeMovieResource * _resource, void * _data )
+static ae_voidptr_t resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data )
 {
 	(void)_resource;
 	(void)_data;
@@ -130,7 +130,7 @@ int main( int argc, char *argv[] )
 	//{
 	//	ae_update_movie_composition( composition, 150.f );
 
-	//	uint32_t mesh_iterator = 0;
+	//	ae_uint32_t mesh_iterator = 0;
 
 	//	aeMovieRenderMesh mesh;
 	//	while( ae_compute_movie_mesh( composition, &mesh_iterator, &mesh ) == AE_TRUE )

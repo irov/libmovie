@@ -19,8 +19,9 @@ You can obtain the source code tarball from the GitHub repository at https://git
 
 @subsection step2 Step 2: Build
 <ul>
-	<li>Go to <b>solution</b> folder.</li>
-	<li>Open <b>libmovie.sln</b>.</li>
+    <li>Use <b>CMakeLists.txt</b></li>
+	<li>Go to <b>solutions</b> folder.</li>
+	<li>Open <b>movie.sln</b>.</li>
 	<li>Compile.</li>
 </ul>
 
