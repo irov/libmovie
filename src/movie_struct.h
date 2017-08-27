@@ -132,6 +132,7 @@ struct aeMovieNode
 
     aeMovieBlendMode blend_mode;
 
+    ae_voidptr_t camera_data;
     ae_voidptr_t element_data;
     ae_voidptr_t track_matte_data;
 };

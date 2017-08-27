@@ -288,15 +288,7 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
         _render->resource_data = AE_NULL;
     }
 
-    if( layer->threeD == AE_TRUE )
-    {
-        _render->camera_data = _composition->camera_data;
-    }
-    else
-    {
-        _render->camera_data = AE_NULL;
-    }
-
+    _render->camera_data = _node->camera_data;
     _render->element_data = _node->element_data;
 
     if( _node->track_matte != AE_NULL && _node->track_matte->active == AE_TRUE )
@@ -1196,6 +1188,39 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, ae_uint32_t * _
     }
 }
 //////////////////////////////////////////////////////////////////////////
+static void __setup_movie_node_camera2( aeMovieComposition * _composition, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, void * _cameraData )
+{
+    const aeMovieLayerData *it_layer = _compositionData->layers;
+    const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
+    for( ; it_layer != it_layer_end; ++it_layer )
+    {
+        const aeMovieLayerData * layer = it_layer;
+
+        aeMovieNode * node = _composition->nodes + ((*_iterator)++);
+
+        if( layer->threeD == AE_TRUE )
+        {
+            node->camera_data = _composition->camera_data;
+        }
+        else
+        {
+            node->camera_data = _cameraData;
+        }
+
+        switch( layer->type )
+        {
+        case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+        case AE_MOVIE_LAYER_TYPE_MOVIE:
+            {
+                __setup_movie_node_camera2( _composition, _iterator, layer->sub_composition_data, node->camera_data );
+            }break;
+        default:
+            {
+            }break;
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_camera( aeMovieComposition * _composition )
 {
     const aeMovieCompositionData * composition_data = _composition->composition_data;
@@ -1219,6 +1244,9 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition )
     ae_movie_make_camera_transformation( callbackData.target, callbackData.position, callbackData.quaternion, camera, 0, AE_FALSE, 0.f );
 
     _composition->camera_data = (*_composition->providers.camera_provider)(&callbackData, _composition->provider_data);
+
+    uint32_t node_camera_iterator = 0;
+    __setup_movie_node_camera2( _composition, &node_camera_iterator, composition_data, AE_NULL );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_matrix2( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition )
