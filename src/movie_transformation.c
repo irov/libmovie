@@ -50,7 +50,7 @@ static ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovieStre
     ae_uint32_t hashmask_iterator;
     READ( _stream, hashmask_iterator );
 
-    ae_voidptr_t timeline = NEWV( _stream->instance, _doc, zp_data_size );
+    ae_voidptr_t timeline = AE_NEWV( _stream->instance, _doc, zp_data_size );
     READV( _stream, timeline, (ae_size_t)zp_data_size );
 
     const ae_uint32_t * hashmask = _stream->instance->hashmask;
@@ -148,7 +148,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
         if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_ALL__) != __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
         {
-            timeline = NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
+            timeline = AE_NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
         }
 
         ((aeMovieLayerTransformation2D *)_transformation)->timeline = timeline;
@@ -163,7 +163,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
         if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_THREE_D_ALL__) != __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
         {
-            timeline = NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
+            timeline = AE_NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
         }
 
         ((aeMovieLayerTransformation3D *)_transformation)->timeline = timeline;
@@ -215,7 +215,7 @@ ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovi
 
     if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_CAMERA_ALL__) != __AE_MOVIE_IMMUTABLE_CAMERA_ALL__ )
     {
-        timeline = NEW( _stream->instance, aeMovieCompositionCameraTimeline );
+        timeline = AE_NEW( _stream->instance, aeMovieCompositionCameraTimeline );
     }
 
     _camera->timeline = timeline;
@@ -231,16 +231,16 @@ static void __ae_movie_delete_layer_transformation2d( const aeMovieInstance * _i
     {
         aeMovieLayerTransformation2DTimeline * timeline = _transformation->timeline;
 
-        DELETEN( _instance, timeline->anchor_point_x );
-        DELETEN( _instance, timeline->anchor_point_y );
-        DELETEN( _instance, timeline->position_x );
-        DELETEN( _instance, timeline->position_y );
-        DELETEN( _instance, timeline->quaternion_z );
-        DELETEN( _instance, timeline->quaternion_w );
-        DELETEN( _instance, timeline->scale_x );
-        DELETEN( _instance, timeline->scale_y );
+        AE_DELETEN( _instance, timeline->anchor_point_x );
+        AE_DELETEN( _instance, timeline->anchor_point_y );
+        AE_DELETEN( _instance, timeline->position_x );
+        AE_DELETEN( _instance, timeline->position_y );
+        AE_DELETEN( _instance, timeline->quaternion_z );
+        AE_DELETEN( _instance, timeline->quaternion_w );
+        AE_DELETEN( _instance, timeline->scale_x );
+        AE_DELETEN( _instance, timeline->scale_y );
 
-        DELETE( _instance, _transformation->timeline );
+        AE_DELETE( _instance, _transformation->timeline );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -250,27 +250,27 @@ static void __ae_movie_delete_layer_transformation3d( const aeMovieInstance * _i
     {
         aeMovieLayerTransformation3DTimeline * timeline = _transformation->timeline;
 
-        DELETEN( _instance, timeline->anchor_point_x );
-        DELETEN( _instance, timeline->anchor_point_y );
-        DELETEN( _instance, timeline->anchor_point_z );
-        DELETEN( _instance, timeline->position_x );
-        DELETEN( _instance, timeline->position_y );
-        DELETEN( _instance, timeline->position_z );
-        DELETEN( _instance, timeline->quaternion_x );
-        DELETEN( _instance, timeline->quaternion_y );
-        DELETEN( _instance, timeline->quaternion_z );
-        DELETEN( _instance, timeline->quaternion_w );
-        DELETEN( _instance, timeline->scale_x );
-        DELETEN( _instance, timeline->scale_y );
-        DELETEN( _instance, timeline->scale_z );
+        AE_DELETEN( _instance, timeline->anchor_point_x );
+        AE_DELETEN( _instance, timeline->anchor_point_y );
+        AE_DELETEN( _instance, timeline->anchor_point_z );
+        AE_DELETEN( _instance, timeline->position_x );
+        AE_DELETEN( _instance, timeline->position_y );
+        AE_DELETEN( _instance, timeline->position_z );
+        AE_DELETEN( _instance, timeline->quaternion_x );
+        AE_DELETEN( _instance, timeline->quaternion_y );
+        AE_DELETEN( _instance, timeline->quaternion_z );
+        AE_DELETEN( _instance, timeline->quaternion_w );
+        AE_DELETEN( _instance, timeline->scale_x );
+        AE_DELETEN( _instance, timeline->scale_y );
+        AE_DELETEN( _instance, timeline->scale_z );
 
-        DELETE( _instance, _transformation->timeline );
+        AE_DELETE( _instance, _transformation->timeline );
     }
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
 {
-    DELETEN( _instance, _transformation->timeline_opacity );
+    AE_DELETEN( _instance, _transformation->timeline_opacity );
 
     if( _threeD == AE_FALSE )
     {

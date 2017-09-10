@@ -117,7 +117,7 @@ struct aeMovieNode
 
     ae_uint32_t animate;
 
-    ae_uint32_t matrix_revision;
+    ae_uint32_t update_revision;
     ae_matrix4_t matrix;
 
     ae_float_t composition_opactity;
@@ -134,6 +134,7 @@ struct aeMovieNode
 
     ae_voidptr_t camera_data;
     ae_voidptr_t element_data;
+    ae_voidptr_t shader_data;
     ae_voidptr_t track_matte_data;
 };
 //////////////////////////////////////////////////////////////////////////
@@ -263,8 +264,9 @@ struct aeMovieLayerData
     const aeMovieLayerTimeremap * timeremap;
     const aeMovieLayerMesh * mesh;
     const aeMovieLayerBezierWarp * bezier_warp;
-    const aeMovieLayerColorVertex * color_vertex;
+    const aeMovieLayerColorVertex * color_vertex;    
     const aeMovieLayerPolygon * polygon;
+    const aeMovieLayerShader * shader;
 
     const aeMovieResource * resource;
     const aeMovieCompositionData * sub_composition_data;
@@ -311,19 +313,69 @@ struct aeMovieLayerBezierWarp
 
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerColorVertex
+struct aeMoviePropertyValue
+{
+    ae_bool_t immutable;
+
+    ae_float_t immutable_value;
+
+    const ae_float_t * values;
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMoviePropertyColor
 {
     ae_bool_t immutable_r;
     ae_bool_t immutable_g;
     ae_bool_t immutable_b;
 
-    ae_float_t immutable_color_vertex_r;
-    ae_float_t immutable_color_vertex_g;
-    ae_float_t immutable_color_vertex_b;
+    ae_float_t immutable_color_r;
+    ae_float_t immutable_color_g;
+    ae_float_t immutable_color_b;
 
-    const ae_color_t * color_vertites_r;
-    const ae_color_t * color_vertites_g;
-    const ae_color_t * color_vertites_b;
+    const ae_color_t * colors_r;
+    const ae_color_t * colors_g;
+    const ae_color_t * colors_b;
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerColorVertex
+{
+    const struct aeMoviePropertyColor * property_color;
+
+};
+#	define AE_MOVIE_SHADER_PARAMETER_BASE()\
+    ae_string_t name;\
+    ae_uint32_t type
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerShaderParameter
+{
+    AE_MOVIE_SHADER_PARAMETER_BASE();
+
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerShaderParameterColor
+{
+    AE_MOVIE_SHADER_PARAMETER_BASE();
+
+    const struct aeMoviePropertyColor * property_color;
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerShaderParameterSlider
+{
+    AE_MOVIE_SHADER_PARAMETER_BASE();
+
+    const struct aeMoviePropertyValue * property_value;
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerShader
+{
+    ae_string_t name;
+    ae_uint32_t version;
+
+    ae_string_t shader_vertex;
+    ae_string_t shader_fragment;
+
+    ae_uint32_t parameter_count;
+    const struct aeMovieLayerShaderParameter ** parameters;
 
 };
 //////////////////////////////////////////////////////////////////////////

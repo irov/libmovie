@@ -98,6 +98,8 @@ typedef struct aeMovieRenderMesh
     Contains data for track matte, slot, socket etc.
     */
     ae_voidptr_t element_data;
+
+    ae_voidptr_t shader_data;
 } aeMovieRenderMesh;
 
 typedef struct aeMovieNode aeMovieNode;
@@ -221,6 +223,32 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     ae_voidptr_t track_matte_data;
 } aeMovieTrackMatteUpdateCallbackData;
 
+typedef struct aeMovieShaderProviderCallbackData
+{
+    ae_string_t name;
+    ae_uint32_t version;
+
+    ae_string_t shader_vertex;
+    ae_string_t shader_fragment;
+
+    ae_uint32_t parameter_count;
+    ae_string_t parameter_names[32];
+} aeMovieShaderProviderCallbackData;
+
+typedef struct aeMovieShaderPropertyUpdateCallbackData
+{
+    ae_voidptr_t element;
+
+    ae_string_t name;
+    ae_uint32_t type;
+
+    ae_float_t color_r;
+    ae_float_t color_g;
+    ae_float_t color_b;
+
+    ae_float_t value;
+} aeMovieShaderPropertyUpdateCallbackData;
+
 typedef struct aeMovieCompositionEventCallbackData
 {
     ae_voidptr_t element;
@@ -275,6 +303,9 @@ typedef void( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallback
 
 typedef ae_voidptr_t( *ae_movie_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data);
 
+typedef ae_voidptr_t( *ae_movie_callback_shader_provider_t )(const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_shader_property_update_t )(const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data);
+
 typedef void( *ae_movie_callback_composition_event_t )(const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data);
 
@@ -289,6 +320,9 @@ typedef struct aeMovieCompositionProviders
     ae_movie_callback_node_update_t node_update;
 
     ae_movie_callback_track_matte_update_t track_matte_update;
+
+    ae_movie_callback_shader_provider_t shader_provider;
+    ae_movie_callback_shader_property_update_t shader_property_update;
 
     ae_movie_callback_composition_event_t composition_event;
     ae_movie_callback_composition_state_t composition_state;
@@ -310,7 +344,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 @brief Release a composition from memory.
 @param [in] _composition Composition.
 */
-void ae_destroy_movie_composition( const aeMovieComposition * _composition );
+void ae_delete_movie_composition( const aeMovieComposition * _composition );
 
 /**
 @brief Get composition anchor point.

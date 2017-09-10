@@ -110,22 +110,21 @@ int main( int argc, char *argv[] )
 		return 0;
 	}
 
-	aeMovieCompositionProviders providers;
-
-	providers.camera_provider = (ae_movie_callback_camera_provider_t)AE_NULL;
-
-	providers.node_provider = (ae_movie_callback_node_provider_t)AE_NULL;
-	providers.node_destroyer = (ae_movie_callback_node_destroy_t)AE_NULL;
-	providers.node_update = (ae_movie_callback_node_update_t)AE_NULL;
-	providers.track_matte_update = (ae_movie_callback_track_matte_update_t)AE_NULL;
-
-	providers.composition_event = (ae_movie_callback_composition_event_t)AE_NULL;
-
-	providers.composition_state = (ae_movie_callback_composition_state_t)AE_NULL;
+    aeMovieCompositionProviders providers;
+    providers.camera_provider = AE_NULL;
+    providers.camera_destroyer = AE_NULL;
+    providers.camera_update = AE_NULL;
+    providers.node_provider = AE_NULL;
+    providers.node_destroyer = AE_NULL;
+    providers.node_update = AE_NULL;
+    providers.track_matte_update = AE_NULL;
+    providers.shader_provider = AE_NULL;
+    providers.shader_property_update = AE_NULL;
+    providers.composition_event = AE_NULL;
+    providers.composition_state = AE_NULL;
 
 	aeMovieComposition * composition = ae_create_movie_composition( movieData, compositionData, AE_TRUE, &providers, AE_NULL );
-
-
+    
 	//while( 1 )
 	//{
 	//	ae_update_movie_composition( composition, 150.f );
@@ -141,7 +140,7 @@ int main( int argc, char *argv[] )
 	//	printf( "SUCCESSFUL!!\n" );
 	//}
 
-	ae_destroy_movie_composition( composition );
+	ae_delete_movie_composition( composition );
 
 	ae_delete_movie_data( movieData );
 

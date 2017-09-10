@@ -792,11 +792,6 @@ void ex_shutdown( void ) {
 	// Free the allocated memory.
 	//
 
-	if( ex.composition ) {
-		EX_LOG( "Deleting composition.\n" );
-		ae_destroy_movie_composition( ex.composition );
-	}
-
 	if( ex.data ) {
 		EX_LOG( "Deleting movie data.\n" );
 		ae_delete_movie_data( ex.data );
