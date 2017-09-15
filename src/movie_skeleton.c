@@ -118,7 +118,7 @@ static ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _base, ae
             return AE_FALSE;
         }
 
-        if( instance->strncmp( instance->instance_data, base_node->layer->name, animation_node->layer->name, AE_MOVIE_MAX_LAYER_NAME ) == AE_FALSE )
+        if( instance->strncmp( instance->instance_data, base_node->layer->name, animation_node->layer->name, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
         {
             return AE_FALSE;
         }

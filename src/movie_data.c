@@ -106,6 +106,10 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
         switch( type )
         {
+        case AE_MOVIE_RESOURCE_NONE:
+            {
+
+            }break;
         case AE_MOVIE_RESOURCE_SOLID:
             {
                 const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
@@ -633,10 +637,10 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 READ( _stream, layer_shader->parameter_count );
 
-                struct aeMovieLayerShaderParameter ** parameters = AE_NEWN( _stream->instance, struct aeMovieLayerShaderParameter *, layer_shader->parameter_count );
+                const struct aeMovieLayerShaderParameter ** parameters = AE_NEWN( _stream->instance, const struct aeMovieLayerShaderParameter *, layer_shader->parameter_count );
 
-                struct aeMovieLayerShaderParameter ** it_parameter = parameters;
-                struct aeMovieLayerShaderParameter ** it_parameter_end = parameters + layer_shader->parameter_count;
+                const struct aeMovieLayerShaderParameter ** it_parameter = parameters;
+                const struct aeMovieLayerShaderParameter ** it_parameter_end = parameters + layer_shader->parameter_count;
 
                 for( ;
                     it_parameter != it_parameter_end;
