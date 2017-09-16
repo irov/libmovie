@@ -59,13 +59,14 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
 	va_end( argList );
 }
 
-static ae_size_t read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _size ) {
+static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size ) {
+    (void)_carriage;
 	FILE * f = (FILE *)_data;
 	ae_size_t s = fread( _buff, 1, _size, f );
 	return s;
 }
 
-static void memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) {
+static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) {
 	(void)_data;
 	memcpy( _dst, _src, _size );
 }
@@ -499,13 +500,13 @@ void ex_load_movie_data( void ) {
 
 	EX_LOG( "Creating movie stream.\n" );
 
-	aeMovieStream * stream = ae_create_movie_stream( ex.instance, &read_file, &memory_copy, f );
+	aeMovieStream * stream = ae_create_movie_stream( ex.instance, &__read_file, &__memory_copy, f );
 
 	EX_LOG( "Loading movie data.\n" );
 
-	aeMovieData * data = ae_create_movie_data( ex.instance );
+	aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, AE_NULL, AE_NULL );
 
-	if( ae_load_movie_data( data, stream, ex.resource_provider, NULL ) == AE_MOVIE_FAILED ) {
+	if( ae_load_movie_data( data, stream ) == AE_MOVIE_FAILED ) {
 		EX_LOG( "...failed.\n" );
 
 		ae_delete_movie_data( data );
@@ -726,7 +727,7 @@ void ex_render( void ) {
 					// is in render_mesh.track_matte_data.
 					//
 
-					ae_voidptr_t track_matte_data = render_mesh.track_matte_data;
+					//ae_voidptr_t track_matte_data = render_mesh.track_matte_data;
 					//					const aeMovieRenderMesh * track_matte_render_mesh = &track_matte_data->render_mesh;
 
 										//

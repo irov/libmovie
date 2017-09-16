@@ -1552,6 +1552,21 @@ static void __dummy_ae_movie_composition_state( const aeMovieCompositionStateCal
     (void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
+void ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _providers )
+{
+    _providers->camera_provider = &__dummy_ae_movie_camera_provider;
+    _providers->camera_deleter = &__dummy_ae_movie_camera_destroy;
+    _providers->camera_update = &__dummy_ae_movie_camera_update;
+    _providers->node_provider = &__dummy_ae_movie_node_provider;
+    _providers->node_deleter = &__dummy_ae_movie_node_destroyer;
+    _providers->node_update = &__dummy_ae_movie_node_update;
+    _providers->track_matte_update = &__dummy_ae_movie_track_matte_update;
+    _providers->shader_provider = &__dummy_ae_movie_shader_provider;
+    _providers->shader_property_update = &__dummy_ae_movie_shader_property_update;
+    _providers->composition_event = &__dummy_ae_movie_composition_event;
+    _providers->composition_state = &__dummy_ae_movie_composition_state;
+}
+//////////////////////////////////////////////////////////////////////////
 aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * providers, ae_voidptr_t _data )
 {
     aeMovieComposition * composition = AE_NEW( _movieData->instance, aeMovieComposition );
@@ -1584,18 +1599,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
     composition->node_count = node_count;
     composition->nodes = AE_NEWN( _movieData->instance, aeMovieNode, node_count );
 
-    composition->providers.camera_provider = providers->camera_provider ? providers->camera_provider : &__dummy_ae_movie_camera_provider;
-    composition->providers.camera_destroyer = providers->camera_destroyer ? providers->camera_destroyer : &__dummy_ae_movie_camera_destroy;
-    composition->providers.camera_update = providers->camera_update ? providers->camera_update : &__dummy_ae_movie_camera_update;
-    composition->providers.node_provider = providers->node_provider ? providers->node_provider : &__dummy_ae_movie_node_provider;
-    composition->providers.node_destroyer = providers->node_destroyer ? providers->node_destroyer : &__dummy_ae_movie_node_destroyer;
-    composition->providers.node_update = providers->node_update ? providers->node_update : &__dummy_ae_movie_node_update;
-    composition->providers.track_matte_update = providers->track_matte_update ? providers->track_matte_update : &__dummy_ae_movie_track_matte_update;
-    composition->providers.shader_provider = providers->shader_provider ? providers->shader_provider : &__dummy_ae_movie_shader_provider;
-    composition->providers.shader_property_update = providers->shader_property_update ? providers->shader_property_update : &__dummy_ae_movie_shader_property_update;
-    composition->providers.composition_event = providers->composition_event ? providers->composition_event : &__dummy_ae_movie_composition_event;
-    composition->providers.composition_state = providers->composition_state ? providers->composition_state : &__dummy_ae_movie_composition_state;
-
+    composition->providers = *providers;
     composition->provider_data = _data;
 
     ae_uint32_t node_relative_iterator = 0;
@@ -1677,7 +1681,7 @@ static void __notify_delete_nodes( const aeMovieComposition * _composition )
         callbackData.element = node->element_data;
         callbackData.type = layer->type;
 
-        (*_composition->providers.node_destroyer)(&callbackData, _composition->provider_data);
+        (*_composition->providers.node_deleter)(&callbackData, _composition->provider_data);
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1695,7 +1699,7 @@ static void __notify_delete_camera( const aeMovieComposition * _composition )
     callbackData.name = camera->name;
     callbackData.element = _composition->camera_data;
 
-    (*_composition->providers.camera_destroyer)(&callbackData, _composition->provider_data);
+    (*_composition->providers.camera_deleter)(&callbackData, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_delete_movie_composition( const aeMovieComposition * _composition )

@@ -83,25 +83,26 @@ typedef enum aeMovieCompositionFlag
 */
 
 /**
+@brief Callback to allocate a new resource given by the descriptor.
+@param [in] _resource Description of the resource to load.
+@param [in] _data Object which will hold the resource reference after loading.
+@return Reference to the created resource.
+*/
+typedef ae_voidptr_t( *ae_movie_data_resource_provider_t )(const aeMovieResource * _resource, ae_voidptr_t _ud);
+typedef void( *ae_movie_data_resource_deleter_t )(aeMovieResourceTypeEnum _type, const ae_voidptr_t * _data, ae_voidptr_t _ud);
+
+/**
 @brief Allocate a data structure to load movie file into.
 @param [in] _instance Instance.
 @return Pointer to the created structure.
 */
-aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance );
+aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data );
 
 /**
 @brief Release data.
 @param [in] _movieData Data.
 */
 void ae_delete_movie_data( const aeMovieData * _movieData );
-
-/**
-@brief Callback to allocate a new resource given by the descriptor.
-@param [in] _resource Description of the resource to load.
-@param [in] _data Object which will hold the resource reference after loading.
-@return Reference to the created resource.
-*/
-typedef ae_voidptr_t( *ae_movie_data_resource_provider_t )(const aeMovieResource * _resource, ae_voidptr_t _data);
 
 /**
 @brief Create a stream to load the data from the given data pointer.
@@ -111,6 +112,16 @@ typedef ae_voidptr_t( *ae_movie_data_resource_provider_t )(const aeMovieResource
 @return Pointer to the stream.
 */
 aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_movie_stream_memory_read_t _read, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data );
+
+/**
+@brief Create a stream to load the data from the given data pointer.
+@param [in] _instance Instance.
+@param [in] _read,_copy User pointers to utility functions.
+@param [in] _data Object to use in above callbacks to read data from.
+@return Pointer to the stream.
+*/
+aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_uint32_t _capacity, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data );
+
 
 /**
 @brief Release stream.
@@ -126,7 +137,7 @@ void ae_delete_movie_stream( aeMovieStream * _stream );
 @param [in] _data Object which will hold the resource reference after loading.
 @return TRUE if successful.
 */
-ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, ae_voidptr_t _data );
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream );
 
 /**
 @brief Search for composition data by the given name.

@@ -31,9 +31,10 @@ int main( int argc, char *argv[] ) {
 	// Set composition data provider callbacks here.
 	//
 
+    ae_initialize_movie_composition_providers( &ex.comp_providers );
 	ex.comp_providers.camera_provider = &ex_callback_camera_provider;
 	ex.comp_providers.node_provider = &ex_callback_node_provider;
-	ex.comp_providers.node_destroyer = &ex_callback_node_destroyer;
+	ex.comp_providers.node_deleter = &ex_callback_node_destroyer;
 	ex.comp_providers.node_update = &ex_callback_node_update;
 	ex.comp_providers.track_matte_update = &ex_callback_track_matte_update;
 	ex.comp_providers.composition_event = &ex_callback_composition_event;

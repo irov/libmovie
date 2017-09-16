@@ -37,11 +37,17 @@
 //////////////////////////////////////////////////////////////////////////
 static const ae_uint32_t ae_movie_version = 12;
 //////////////////////////////////////////////////////////////////////////
-aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance )
+aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data )
 {
     aeMovieData * m = AE_NEW( _instance, aeMovieData );
 
     m->instance = _instance;
+
+    m->name = "";
+
+    m->resource_provider = _provider;
+    m->resource_deleter = _deleter;
+    m->resource_ud = _data;
 
     m->resource_count = 0;
     m->resources = AE_NULL;
@@ -114,7 +120,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
 
-                (void)resource;
+                (*_movieData->resource_deleter)( type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_VIDEO:
@@ -123,7 +129,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_DELETEN( instance, resource->path );
 
-                (void)resource;
+                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_SOUND:
@@ -132,7 +138,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_DELETEN( instance, resource->path );
 
-                (void)resource;
+                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_IMAGE:
@@ -153,7 +159,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
                     AE_DELETE( instance, resource->mesh );
                 }
 
-                (void)resource;
+                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_SEQUENCE:
@@ -162,7 +168,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_DELETEN( instance, resource->images );
 
-                (void)resource;
+                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_PARTICLE:
@@ -171,13 +177,14 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_DELETEN( instance, resource->path );
 
-                (void)resource;
+                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
+
             }break;
         case AE_MOVIE_RESOURCE_SLOT:
             {
                 const aeMovieResourceSlot * resource = (const aeMovieResourceSlot *)base_resource;
 
-                (void)resource;
+                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         }
@@ -1003,13 +1010,48 @@ aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_mo
     stream->instance = _instance;
     stream->memory_read = _read;
     stream->memory_copy = _copy;
-    stream->data = _data;
+    stream->read_data = _data;
+    stream->copy_data = _data;
 
-#	ifdef AE_MOVIE_STREAM_CACHE
-    stream->carriage = 0;
-    stream->capacity = 0;
-    stream->reading = 0;
+    stream->buffer = AE_NULL;
+    stream->carriage = 0U;
+
+    return stream;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_size_t __ae_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _carriage, ae_uint32_t _size )
+{
+    aeMovieStream * stream = (aeMovieStream *)_data;
+
+    stream->memory_copy( stream->copy_data, (ae_constbyteptr_t)stream->buffer + stream->carriage, _buff, _size );
+        
+    return _size;
+}
+//////////////////////////////////////////////////////////////////////////
+aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_uint32_t _capacity, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data )
+{
+#	ifdef AE_MOVIE_DEBUG
+    if( _instance == AE_NULL )
+    {
+        return AE_NULL;
+    }
+
+    if( _copy == AE_NULL )
+    {
+        return AE_NULL;
+    }
 #	endif
+
+    aeMovieStream * stream = AE_NEW( _instance, aeMovieStream );
+
+    stream->instance = _instance;
+    stream->memory_read = __ae_read_buffer;
+    stream->memory_copy = _copy;
+    stream->read_data = stream;
+    stream->copy_data = _data;
+
+    stream->buffer = _buffer;
+    stream->carriage = 0U;
 
     return stream;
 }
@@ -1019,7 +1061,7 @@ void ae_delete_movie_stream( aeMovieStream * _stream )
     AE_DELETE( _stream->instance, _stream );
 }
 //////////////////////////////////////////////////////////////////////////
-ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_movie_data_resource_provider_t _provider, ae_voidptr_t _data )
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream )
 {
     ae_uint8_t magic[4];
     READN( _stream, magic, 4 );
@@ -1102,7 +1144,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
+                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
             }break;
         case AE_MOVIE_RESOURCE_VIDEO:
             {
@@ -1142,7 +1184,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
+                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
             }break;
         case AE_MOVIE_RESOURCE_SOUND:
             {
@@ -1174,7 +1216,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
+                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
             }break;
         case AE_MOVIE_RESOURCE_IMAGE:
             {
@@ -1244,7 +1286,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
+                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
             }break;
         case AE_MOVIE_RESOURCE_SEQUENCE:
             {
@@ -1289,7 +1331,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
+                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
             }break;
         case AE_MOVIE_RESOURCE_PARTICLE:
             {
@@ -1319,7 +1361,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
+                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
             }break;
         case AE_MOVIE_RESOURCE_SLOT:
             {
@@ -1349,7 +1391,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_provider)(*it_resource, _data);
+                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
             }break;
         default:
             {

@@ -294,11 +294,11 @@ typedef struct aeMovieCompositionStateCallbackData
 } aeMovieCompositionStateCallbackData;
 
 typedef ae_voidptr_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_camera_destroy_t )(const aeMovieCameraDestroyCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDestroyCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _data);
 
 typedef ae_voidptr_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_node_destroy_t )(const aeMovieNodeDestroyCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDestroyCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data);
 
 typedef ae_voidptr_t( *ae_movie_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data);
@@ -312,11 +312,11 @@ typedef void( *ae_movie_callback_composition_state_t )(const aeMovieCompositionS
 typedef struct aeMovieCompositionProviders
 {
     ae_movie_callback_camera_provider_t camera_provider;
-    ae_movie_callback_camera_destroy_t camera_destroyer;
+    ae_movie_callback_camera_deleter_t camera_deleter;
     ae_movie_callback_camera_update_t camera_update;
 
     ae_movie_callback_node_provider_t node_provider;
-    ae_movie_callback_node_destroy_t node_destroyer;
+    ae_movie_callback_node_deleter_t node_deleter;
     ae_movie_callback_node_update_t node_update;
 
     ae_movie_callback_track_matte_update_t track_matte_update;
@@ -328,6 +328,8 @@ typedef struct aeMovieCompositionProviders
     ae_movie_callback_composition_state_t composition_state;
 
 } aeMovieCompositionProviders;
+
+void ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _providers );
 
 /**
 @brief Allocate a composition in memory.

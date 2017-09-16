@@ -51,6 +51,8 @@ typedef size_t ae_size_t;
 typedef float ae_float_t;
 typedef void * ae_voidptr_t;
 typedef const void * ae_constvoidptr_t;
+typedef ae_uint8_t * ae_byteptr_t;
+typedef const ae_uint8_t * ae_constbyteptr_t;
 
 typedef ae_char_t * ae_string_t;
 
@@ -98,15 +100,15 @@ typedef struct
 typedef struct aeMovieStream aeMovieStream;
 
 #	ifndef AE_MOVIE_MAX_LAYER_NAME
-#	define AE_MOVIE_MAX_LAYER_NAME 128
+#	define AE_MOVIE_MAX_LAYER_NAME 128U
 #	endif
 
 #	ifndef AE_MOVIE_MAX_COMPOSITION_NAME
-#	define AE_MOVIE_MAX_COMPOSITION_NAME 128
+#	define AE_MOVIE_MAX_COMPOSITION_NAME 128U
 #	endif
 
 #	ifndef AE_MOVIE_BEZIER_WARP_GRID
-#	define AE_MOVIE_BEZIER_WARP_GRID 9
+#	define AE_MOVIE_BEZIER_WARP_GRID 9U
 #	endif
 
 static const ae_float_t ae_movie_bezier_warp_grid_invf = (1.f / (ae_float_t)(AE_MOVIE_BEZIER_WARP_GRID - 1));
@@ -115,7 +117,7 @@ static const ae_float_t ae_movie_bezier_warp_grid_invf = (1.f / (ae_float_t)(AE_
 #	define AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT ((AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1) * 6)
 
 #	ifndef AE_MOVIE_MAX_VERTICES
-#	define AE_MOVIE_MAX_VERTICES 1024
+#	define AE_MOVIE_MAX_VERTICES 1024U
 #	endif
 
 typedef struct
@@ -134,8 +136,7 @@ typedef enum
     AE_MOVIE_RESOURCE_IMAGE = 7,
     AE_MOVIE_RESOURCE_SEQUENCE = 8,
     AE_MOVIE_RESOURCE_PARTICLE = 9,
-    AE_MOVIE_RESOURCE_SLOT = 10,
-    __AE_MOVIE_RESOURCE_END__
+    AE_MOVIE_RESOURCE_SLOT = 10
 } aeMovieResourceTypeEnum;
 
 #	define AE_MOVIE_RESOURCE_BASE()\
@@ -185,8 +186,7 @@ typedef enum
     AE_MOVIE_BLEND_SOFT_LIGHT,
     AE_MOVIE_BLEND_STENCIL_ALPHA,
     AE_MOVIE_BLEND_STENCIL_LUMA,
-    AE_MOVIE_BLEND_VIVID_LIGHT,
-    __AE_MOVIE_BLEND_END__
+    AE_MOVIE_BLEND_VIVID_LIGHT
 } aeMovieBlendMode;
 
 typedef enum
@@ -199,17 +199,7 @@ typedef enum
 } ae_result_t;
 
 typedef void( *ae_movie_stream_memory_info_t )(ae_voidptr_t _data, const ae_char_t * _buff, ae_size_t _size);
-typedef ae_size_t( *ae_movie_stream_memory_read_t )(ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _size);
+typedef ae_size_t( *ae_movie_stream_memory_read_t )(ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size);
 typedef void( *ae_movie_stream_memory_copy_t )(ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size);
-
-#	ifndef AE_MOVIE_STREAM_NO_CACHE
-#	define AE_MOVIE_STREAM_CACHE
-#	endif
-
-#	ifndef AE_MOVIE_STREAM_BUFFER_SIZE
-#	define AE_MOVIE_STREAM_CACHE_BUFFER_SIZE 32768
-#	endif
-
-
 
 #endif

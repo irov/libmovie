@@ -60,15 +60,11 @@ struct aeMovieStream
 
     ae_movie_stream_memory_read_t memory_read;
     ae_movie_stream_memory_copy_t memory_copy;
-    ae_voidptr_t data;
+    ae_voidptr_t read_data;
+    ae_voidptr_t copy_data;
 
-#	ifdef AE_MOVIE_STREAM_CACHE
+    ae_constvoidptr_t buffer;
     ae_size_t carriage;
-    ae_size_t capacity;
-    ae_size_t reading;
-
-    ae_uint8_t buff[AE_MOVIE_STREAM_CACHE_BUFFER_SIZE];
-#	endif
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieCompositionAnimation
@@ -236,6 +232,10 @@ struct aeMovieData
     const aeMovieInstance * instance;
 
     ae_string_t name;
+
+    ae_movie_data_resource_provider_t resource_provider;
+    ae_movie_data_resource_deleter_t resource_deleter;
+    ae_voidptr_t resource_ud;
 
     ae_uint32_t resource_count;
     const aeMovieResource * const * resources;

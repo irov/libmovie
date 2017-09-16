@@ -57,96 +57,23 @@
 //////////////////////////////////////////////////////////////////////////
 #	ifdef AE_MOVIE_STREAM_INFO
 //////////////////////////////////////////////////////////////////////////
-static ae_size_t ae_magic_read_value_info( aeMovieStream * _stream, const ae_char_t * _info, ae_voidptr_t _ptr, ae_size_t _size )
+static void ae_magic_read_value_info( aeMovieStream * _stream, const ae_char_t * _info, ae_voidptr_t _ptr, ae_size_t _size )
 {
     _stream->instance->logger( _stream->instance->instance_data, AE_ERROR_STREAM, "read stream '%s' size '%d'\n", _info, (ae_uint32_t)_size );
 
     ae_size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
 
-    return bytesRead;
+    _stream->carriage += bytesRead;
 }
 //////////////////////////////////////////////////////////////////////////
 #	endif
 //////////////////////////////////////////////////////////////////////////
-#	ifdef AE_MOVIE_STREAM_CACHE
-//////////////////////////////////////////////////////////////////////////
-static ae_size_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
+static void ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
 {
-    ae_size_t carriage = _stream->carriage;
-    ae_size_t capacity = _stream->capacity;
+    ae_size_t bytesRead = _stream->memory_read( _stream->read_data, _ptr, _stream->carriage, _size );
 
-    if( _size > AE_MOVIE_STREAM_CACHE_BUFFER_SIZE )
-    {
-        ae_size_t tail = capacity - carriage;
-
-        if( tail != 0 )
-        {
-            ae_constvoidptr_t buff_carriage = _stream->buff + carriage;
-            _stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
-        }
-
-        ae_size_t correct_read = _size - tail;
-        ae_voidptr_t correct_ptr = (ae_uint8_t *)_ptr + tail;
-
-        ae_size_t bytesRead = _stream->memory_read( _stream->data, correct_ptr, correct_read );
-
-        _stream->carriage = 0;
-        _stream->capacity = 0;
-
-        _stream->reading += bytesRead;
-
-        return bytesRead + tail;
-    }
-
-    if( carriage + _size <= capacity )
-    {
-        ae_constvoidptr_t buff_carriage = _stream->buff + carriage;
-
-        _stream->memory_copy( _stream->data, buff_carriage, _ptr, _size );
-
-        _stream->carriage += _size;
-
-        return _size;
-    }
-
-    ae_size_t tail = capacity - carriage;
-
-    if( tail != 0 )
-    {
-        ae_constvoidptr_t buff_carriage = _stream->buff + carriage;
-
-        _stream->memory_copy( _stream->data, buff_carriage, _ptr, tail );
-    }
-
-    ae_size_t bytesRead = _stream->memory_read( _stream->data, _stream->buff, AE_MOVIE_STREAM_CACHE_BUFFER_SIZE );
-
-    ae_size_t readSize = _size - tail;
-
-    if( readSize > bytesRead )
-    {
-        readSize = bytesRead;
-    }
-
-    _stream->memory_copy( _stream->data, _stream->buff, _ptr, readSize );
-
-    _stream->carriage = readSize;
-    _stream->capacity = bytesRead;
-
-    _stream->reading += AE_MOVIE_STREAM_CACHE_BUFFER_SIZE;
-
-    return bytesRead + tail;
+    _stream->carriage += bytesRead;
 }
-//////////////////////////////////////////////////////////////////////////
-#else
-//////////////////////////////////////////////////////////////////////////
-static ae_size_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
-{
-    ae_size_t bytesRead = _stream->memory_read( _stream->data, _ptr, _size );
-
-    return bytesRead;
-}
-//////////////////////////////////////////////////////////////////////////
-#endif
 //////////////////////////////////////////////////////////////////////////
 static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
 {

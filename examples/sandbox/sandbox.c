@@ -48,8 +48,9 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
 	va_end( argList );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_size_t read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _size )
+static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size )
 {
+    (void)_carriage;
 	FILE * f = (FILE *)_data;
 
 	ae_size_t s = fread( _buff, 1, _size, f );
@@ -57,7 +58,7 @@ static ae_size_t read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t 
 	return s;
 }
 
-static void memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
+static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
 {
 	(void)_data;
 
@@ -79,7 +80,7 @@ int main( int argc, char *argv[] )
 
 	aeMovieInstance * instance = ae_create_movie_instance( "0e41faff7d430be811df87466106e7a9b36cc3ea", &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, (ae_movie_strncmp_t)AE_NULL, &stdlib_movie_logerror, AE_NULL );
 
-	aeMovieData * movieData = ae_create_movie_data( instance );
+	aeMovieData * movieData = ae_create_movie_data( instance, &resource_provider, AE_NULL, AE_NULL );
 
 	FILE * f = fopen( "ui.aem", "rb" );
 
@@ -88,13 +89,13 @@ int main( int argc, char *argv[] )
 		return 0;
 	}
 
-	aeMovieStream * stream = ae_create_movie_stream( instance, &read_file, &memory_copy, f );
+	aeMovieStream * stream = ae_create_movie_stream( instance, &__read_file, &__memory_copy, f );
 	//stream.instance = instance;
 	//stream.memory_read = &read_file;
 	//stream.memory_copy = &memory_copy;
 	//stream.data = f;
 
-	if( ae_load_movie_data( movieData, stream, &resource_provider, AE_NULL ) == AE_MOVIE_FAILED )
+	if( ae_load_movie_data( movieData, stream ) == AE_MOVIE_FAILED )
 	{
 		return 0;
 	}
@@ -111,17 +112,7 @@ int main( int argc, char *argv[] )
 	}
 
     aeMovieCompositionProviders providers;
-    providers.camera_provider = AE_NULL;
-    providers.camera_destroyer = AE_NULL;
-    providers.camera_update = AE_NULL;
-    providers.node_provider = AE_NULL;
-    providers.node_destroyer = AE_NULL;
-    providers.node_update = AE_NULL;
-    providers.track_matte_update = AE_NULL;
-    providers.shader_provider = AE_NULL;
-    providers.shader_property_update = AE_NULL;
-    providers.composition_event = AE_NULL;
-    providers.composition_state = AE_NULL;
+    memset( &providers, 0, sizeof( providers ) );
 
 	aeMovieComposition * composition = ae_create_movie_composition( movieData, compositionData, AE_TRUE, &providers, AE_NULL );
     

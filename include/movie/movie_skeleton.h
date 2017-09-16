@@ -35,8 +35,6 @@
 #	include "movie_resource.h"
 #	include "movie_data.h"
 
-typedef struct aeMovieComposition aeMovieComposition;
-
 typedef struct aeMovieSkeleton
 {
     aeMovieComposition * base;
