@@ -2842,6 +2842,15 @@ void ae_set_movie_composition_time( const aeMovieComposition * _composition, ae_
     __set_movie_composition_time( _composition, composition_data, animation, _time, AE_NULL );
 }
 //////////////////////////////////////////////////////////////////////////
+const ae_char_t * ae_get_movie_composition_name( const aeMovieComposition * _composition )
+{
+    const aeMovieCompositionData * composition_data = _composition->composition_data;
+
+    const ae_char_t * name = composition_data->name;
+
+    return name;
+}
+//////////////////////////////////////////////////////////////////////////
 ae_float_t ae_get_movie_composition_time( const aeMovieComposition * _composition )
 {
     const aeMovieCompositionAnimation * animation = _composition->animation;

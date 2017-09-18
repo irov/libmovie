@@ -139,6 +139,9 @@ void ae_delete_movie_stream( aeMovieStream * _stream );
 */
 ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream );
 
+
+const ae_char_t * ae_get_movie_name( const aeMovieData * _movieData );
+
 /**
 @brief Search for composition data by the given name.
 @param [in] _movieData Data.

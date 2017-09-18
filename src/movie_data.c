@@ -1423,6 +1423,13 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+const ae_char_t * ae_get_movie_name( const aeMovieData * _movieData )
+{
+    const ae_char_t * name = _movieData->name;
+
+    return name;
+}
+//////////////////////////////////////////////////////////////////////////
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name )
 {
     const aeMovieInstance * instance = _movieData->instance;

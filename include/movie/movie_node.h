@@ -460,6 +460,9 @@ ae_bool_t ae_is_interrupt_movie_composition( const aeMovieComposition * _composi
 */
 void ae_set_movie_composition_time( const aeMovieComposition * _composition, ae_float_t _timing );
 
+
+const ae_char_t * ae_get_movie_composition_name( const aeMovieComposition * _composition );
+
 /**
 @brief Get composition current playback position in milliseconds.
 @param [in] _composition Composition.
