@@ -17,6 +17,7 @@ EMSCRIPTEN_KEEPALIVE em_movie_composition_handle_t em_create_movie_composition( 
 EMSCRIPTEN_KEEPALIVE void em_delete_movie_composition( em_movie_composition_handle_t _movieComposition );
 
 EMSCRIPTEN_KEEPALIVE void em_set_movie_composition_loop( em_movie_composition_handle_t _movieComposition, unsigned int _loop );
+
 EMSCRIPTEN_KEEPALIVE void em_play_movie_composition( em_movie_composition_handle_t _movieComposition, float _time );
 
 EMSCRIPTEN_KEEPALIVE void em_update_movie_composition( em_movie_composition_handle_t _movieComposition, float _time );

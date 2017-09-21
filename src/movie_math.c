@@ -70,44 +70,39 @@ static const ae_float_t table_inv_255[] = {
 #	define EQUAL_F_Z( v ) ((v >= f_neps) && (v <= f_eps))
 #	define EQUAL_F_1( v ) ((v >= 1.f + f_neps) && (v <= 1.f + f_eps))
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t equal_f_z( ae_float_t _a )
+ae_bool_t ae_equal_f_z( ae_float_t _a )
 {
     return ((_a >= 0.f + f_neps) && (_a <= 0.f + f_eps)) ? AE_TRUE : AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t equal_f_f( ae_float_t _a, ae_float_t _b )
+ae_bool_t ae_equal_f_f( ae_float_t _a, ae_float_t _b )
 {
     return ((_a >= _b + f_neps) && (_a <= _b + f_eps)) ? AE_TRUE : AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t min_f_f( ae_float_t _a, ae_float_t _b )
+ae_float_t ae_min_f_f( ae_float_t _a, ae_float_t _b )
 {
     return (_a > _b) ? _b : _a;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t max_f_f( ae_float_t _a, ae_float_t _b )
+ae_float_t ae_max_f_f( ae_float_t _a, ae_float_t _b )
 {
     return (_a > _b) ? _a : _b;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t minimax_f_f( ae_float_t _v, ae_float_t _min, ae_float_t _max )
+ae_float_t ae_minimax_f_f( ae_float_t _v, ae_float_t _min, ae_float_t _max )
 {
     return (_v > _min) ? ((_v < _max) ? _v : _max) : _min;
 }
-void mul_v2_v2_m4( ae_vector2_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
-{
-    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _b[3 * 4 + 0];
-    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _b[3 * 4 + 1];
-}
 //////////////////////////////////////////////////////////////////////////
-void mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
+void ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _b[3 * 4 + 0];
     _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _b[3 * 4 + 1];
     _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _b[3 * 4 + 2];
 }
 //////////////////////////////////////////////////////////////////////////
-void mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+void ae_mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _a[3] * _b[3 * 4 + 0];
     _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _a[3] * _b[3 * 4 + 1];
@@ -115,29 +110,15 @@ void mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b 
     _out[3] = _a[0] * _b[0 * 4 + 3] + _a[1] * _b[1 * 4 + 3] + _a[2] * _b[2 * 4 + 3] + _a[3] * _b[3 * 4 + 3];
 }
 //////////////////////////////////////////////////////////////////////////
-void mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
+void ae_mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
 {
-    mul_v4_m4( _out + 0, _a + 0, _b );
-    mul_v4_m4( _out + 4, _a + 4, _b );
-    mul_v4_m4( _out + 8, _a + 8, _b );
-    mul_v4_m4( _out + 12, _a + 12, _b );
+    ae_mul_v4_m4( _out + 0, _a + 0, _b );
+    ae_mul_v4_m4( _out + 4, _a + 4, _b );
+    ae_mul_v4_m4( _out + 8, _a + 8, _b );
+    ae_mul_v4_m4( _out + 12, _a + 12, _b );
 }
 //////////////////////////////////////////////////////////////////////////
-void mul_v3_v3_m4_homogenize( ae_vector3_t _out, const ae_vector3_t _a, const ae_matrix4_t _b )
-{
-    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _b[3 * 4 + 0];
-    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _b[3 * 4 + 1];
-    _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _a[2] * _b[2 * 4 + 2] + _b[3 * 4 + 2];
-    ae_float_t w = _a[0] * _b[0 * 4 + 3] + _a[1] * _b[1 * 4 + 3] + _a[2] * _b[2 * 4 + 3] + _b[3 * 4 + 3];
-
-    ae_float_t w_inv = 1.f / w;
-
-    _out[0] *= w_inv;
-    _out[1] *= w_inv;
-    _out[2] *= w_inv;
-}
-//////////////////////////////////////////////////////////////////////////
-void ident_m4( ae_matrix4_t _out )
+void ae_ident_m4( ae_matrix4_t _out )
 {
     _out[0 * 4 + 0] = 1.f;
     _out[0 * 4 + 1] = 0.f;
@@ -297,7 +278,7 @@ void ae_movie_make_transformation3d_m4( ae_matrix4_t _lm, const ae_vector3_t _po
         ae_matrix4_t mat_rotate;
         make_quaternion_m4( mat_rotate, _quaternion );
 
-        mul_m4_m4( _lm, mat_scale, mat_rotate );
+        ae_mul_m4_m4( _lm, mat_scale, mat_rotate );
 
         _lm[3 * 4 + 0] += _position[0];
         _lm[3 * 4 + 1] += _position[1];
@@ -305,84 +286,69 @@ void ae_movie_make_transformation3d_m4( ae_matrix4_t _lm, const ae_vector3_t _po
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_transformation2d_m4( ae_matrix4_t _lm, const ae_vector2_t _position, const ae_vector2_t _origin, const ae_vector2_t _scale, const ae_quaternion_t _quaternion )
+void ae_movie_make_transformation2d_m4( ae_matrix4_t _lm, const ae_vector2_t _position, const ae_vector2_t _origin, const ae_vector2_t _scale )
 {
-    if( EQUAL_F_Z( _quaternion[2] ) &&
-        EQUAL_F_1( _quaternion[3] ) )
-    {
-        _lm[0 * 4 + 1] = 0.f;
-        _lm[0 * 4 + 2] = 0.f;
-        _lm[0 * 4 + 3] = 0.f;
-        _lm[1 * 4 + 0] = 0.f;
-        _lm[1 * 4 + 2] = 0.f;
-        _lm[1 * 4 + 3] = 0.f;
-        _lm[2 * 4 + 0] = 0.f;
-        _lm[2 * 4 + 1] = 0.f;
-        _lm[2 * 4 + 3] = 0.f;
-        _lm[3 * 4 + 3] = 1.f;
+    _lm[0 * 4 + 1] = 0.f;
+    _lm[0 * 4 + 2] = 0.f;
+    _lm[0 * 4 + 3] = 0.f;
+    _lm[1 * 4 + 0] = 0.f;
+    _lm[1 * 4 + 2] = 0.f;
+    _lm[1 * 4 + 3] = 0.f;
+    _lm[2 * 4 + 0] = 0.f;
+    _lm[2 * 4 + 1] = 0.f;
+    _lm[2 * 4 + 3] = 0.f;
+    _lm[3 * 4 + 3] = 1.f;
 
-        _lm[0 * 4 + 0] = _scale[0];
-        _lm[1 * 4 + 1] = _scale[1];
-        _lm[2 * 4 + 2] = 1.f;
+    _lm[0 * 4 + 0] = _scale[0];
+    _lm[1 * 4 + 1] = _scale[1];
+    _lm[2 * 4 + 2] = 1.f;
 
-        _lm[3 * 4 + 0] = _position[0] - _origin[0] * _scale[0];
-        _lm[3 * 4 + 1] = _position[1] - _origin[1] * _scale[1];
-        _lm[3 * 4 + 2] = 0.f;
-    }
-    else
-    {
-        ae_matrix4_t mat_scale;
-
-        mat_scale[0 * 4 + 1] = 0.f;
-        mat_scale[0 * 4 + 2] = 0.f;
-        mat_scale[0 * 4 + 3] = 0.f;
-        mat_scale[1 * 4 + 0] = 0.f;
-        mat_scale[1 * 4 + 2] = 0.f;
-        mat_scale[1 * 4 + 3] = 0.f;
-        mat_scale[2 * 4 + 0] = 0.f;
-        mat_scale[2 * 4 + 1] = 0.f;
-        mat_scale[2 * 4 + 3] = 0.f;
-        mat_scale[3 * 4 + 3] = 1.f;
-
-        mat_scale[0 * 4 + 0] = _scale[0];
-        mat_scale[1 * 4 + 1] = _scale[1];
-        mat_scale[2 * 4 + 2] = 1.f;
-
-        mat_scale[3 * 4 + 0] = -_origin[0] * _scale[0];
-        mat_scale[3 * 4 + 1] = -_origin[1] * _scale[1];
-        mat_scale[3 * 4 + 2] = 0.f;
-
-        ae_matrix4_t mat_rotate;
-        make_quaternionzw_m4( mat_rotate, _quaternion );
-
-        mul_m4_m4( _lm, mat_scale, mat_rotate );
-
-        _lm[3 * 4 + 0] += _position[0];
-        _lm[3 * 4 + 1] += _position[1];
-    }
+    _lm[3 * 4 + 0] = _position[0] - _origin[0] * _scale[0];
+    _lm[3 * 4 + 1] = _position[1] - _origin[1] * _scale[1];
+    _lm[3 * 4 + 2] = 0.f;
 }
 //////////////////////////////////////////////////////////////////////////
-void cross_v3_v3( ae_vector3_t _out, const ae_vector3_t _a, const ae_vector3_t _b )
+void ae_movie_make_transformation2d_m4q( ae_matrix4_t _lm, const ae_vector2_t _position, const ae_vector2_t _origin, const ae_vector2_t _scale, const ae_quaternion_t _quaternion )
 {
-    _out[0] = _a[1] * _b[2] - _a[2] * _b[1];
-    _out[1] = _a[2] * _b[0] - _a[0] * _b[2];
-    _out[2] = _a[0] * _b[1] - _a[1] * _b[0];
+    ae_matrix4_t mat_scale;
+
+    mat_scale[0 * 4 + 1] = 0.f;
+    mat_scale[0 * 4 + 2] = 0.f;
+    mat_scale[0 * 4 + 3] = 0.f;
+    mat_scale[1 * 4 + 0] = 0.f;
+    mat_scale[1 * 4 + 2] = 0.f;
+    mat_scale[1 * 4 + 3] = 0.f;
+    mat_scale[2 * 4 + 0] = 0.f;
+    mat_scale[2 * 4 + 1] = 0.f;
+    mat_scale[2 * 4 + 3] = 0.f;
+    mat_scale[3 * 4 + 3] = 1.f;
+
+    mat_scale[0 * 4 + 0] = _scale[0];
+    mat_scale[1 * 4 + 1] = _scale[1];
+    mat_scale[2 * 4 + 2] = 1.f;
+
+    mat_scale[3 * 4 + 0] = -_origin[0] * _scale[0];
+    mat_scale[3 * 4 + 1] = -_origin[1] * _scale[1];
+    mat_scale[3 * 4 + 2] = 0.f;
+
+    ae_matrix4_t mat_rotate;
+    make_quaternionzw_m4( mat_rotate, _quaternion );
+
+    ae_mul_m4_m4( _lm, mat_scale, mat_rotate );
+
+    _lm[3 * 4 + 0] += _position[0];
+    _lm[3 * 4 + 1] += _position[1];
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t dot_v3_v3( const ae_vector3_t a, const ae_vector3_t b )
-{
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-//////////////////////////////////////////////////////////////////////////
-ae_float_t linerp_f1( ae_float_t _in1, ae_float_t _in2, ae_float_t _t )
+ae_float_t ae_linerp_f1( ae_float_t _in1, ae_float_t _in2, ae_float_t _t )
 {
     return _in1 * (1.f - _t) + _in2 * _t;
 }
 //////////////////////////////////////////////////////////////////////////
-void linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_t _in2, ae_float_t _t )
+void ae_linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_t _in2, ae_float_t _t )
 {
-    _out[0] = linerp_f1( _in1[0], _in2[0], _t );
-    _out[1] = linerp_f1( _in1[1], _in2[1], _t );
+    _out[0] = ae_linerp_f1( _in1[0], _in2[0], _t );
+    _out[1] = ae_linerp_f1( _in1[1], _in2[1], _t );
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_float_t inverse_sqrtf( ae_float_t number )
@@ -403,7 +369,7 @@ static ae_float_t inverse_sqrtf( ae_float_t number )
     return y;
 }
 //////////////////////////////////////////////////////////////////////////
-void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t )
+void ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t )
 {
     ae_float_t inv_t = 1.f - _t;
 
@@ -421,7 +387,7 @@ void linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternio
     _q[3] = w * inv_length;
 }
 //////////////////////////////////////////////////////////////////////////
-void linerp_qzw( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t )
+void ae_linerp_qzw( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t )
 {
     ae_float_t inv_t = 1.f - _t;
 
@@ -437,17 +403,17 @@ void linerp_qzw( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quatern
     _q[3] = w * inv_length;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t linerp_c( const ae_color_t _c1, const ae_color_t _c2, ae_float_t _t )
+ae_float_t ae_linerp_c( const ae_color_t _c1, const ae_color_t _c2, ae_float_t _t )
 {
     ae_float_t c1f = table_inv_255[_c1];
     ae_float_t c2f = table_inv_255[_c2];
 
-    ae_float_t cf = linerp_f1( c1f, c2f, _t );
+    ae_float_t cf = ae_linerp_f1( c1f, c2f, _t );
 
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t tof_c( const ae_color_t _c )
+ae_float_t ae_tof_c( const ae_color_t _c )
 {
     ae_float_t cf = table_inv_255[_c];
 

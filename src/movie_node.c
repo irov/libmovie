@@ -70,7 +70,7 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
     ae_uint32_t i = 0;
     for( ; i != vertex_count; ++i )
     {
-        mul_v3_v2_m4( _render->position[i], _mesh->positions[i], _matrix );
+        ae_mul_v3_v2_m4( _render->position[i], _mesh->positions[i], _matrix );
     }
 
     _render->uv = _mesh->uvs;
@@ -95,10 +95,10 @@ static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, ae_
     _render->vertexCount = 4;
     _render->indexCount = 6;
 
-    mul_v3_v2_m4( _render->position[0], v_position[0], _matrix );
-    mul_v3_v2_m4( _render->position[1], v_position[1], _matrix );
-    mul_v3_v2_m4( _render->position[2], v_position[2], _matrix );
-    mul_v3_v2_m4( _render->position[3], v_position[3], _matrix );
+    ae_mul_v3_v2_m4( _render->position[0], v_position[0], _matrix );
+    ae_mul_v3_v2_m4( _render->position[1], v_position[1], _matrix );
+    ae_mul_v3_v2_m4( _render->position[2], v_position[2], _matrix );
+    ae_mul_v3_v2_m4( _render->position[3], v_position[3], _matrix );
 
     _render->uv = _uv;
     _render->indices = _instance->sprite_indices;
@@ -178,7 +178,7 @@ static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, cons
             position[0] = x;
             position[1] = y;
 
-            mul_v3_v2_m4( *positions++, position, _matrix );
+            ae_mul_v3_v2_m4( *positions++, position, _matrix );
 
             du += ae_movie_bezier_warp_grid_invf;
         }
@@ -207,22 +207,22 @@ static void __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance
 
         aeMovieBezierWarp bezierWarp;
 
-        linerp_f2( bezierWarp.corners[0], current_corners[0], next_corners[0], _t );
-        linerp_f2( bezierWarp.corners[1], current_corners[1], next_corners[1], _t );
-        linerp_f2( bezierWarp.corners[2], current_corners[2], next_corners[2], _t );
-        linerp_f2( bezierWarp.corners[3], current_corners[3], next_corners[3], _t );
+        ae_linerp_f2( bezierWarp.corners[0], current_corners[0], next_corners[0], _t );
+        ae_linerp_f2( bezierWarp.corners[1], current_corners[1], next_corners[1], _t );
+        ae_linerp_f2( bezierWarp.corners[2], current_corners[2], next_corners[2], _t );
+        ae_linerp_f2( bezierWarp.corners[3], current_corners[3], next_corners[3], _t );
 
         const ae_vector2_t * current_beziers = bezier_warp_frame_current->beziers;
         const ae_vector2_t * next_beziers = bezier_warp_frame_next->beziers;
 
-        linerp_f2( bezierWarp.beziers[0], current_beziers[0], next_beziers[0], _t );
-        linerp_f2( bezierWarp.beziers[1], current_beziers[1], next_beziers[1], _t );
-        linerp_f2( bezierWarp.beziers[2], current_beziers[2], next_beziers[2], _t );
-        linerp_f2( bezierWarp.beziers[3], current_beziers[3], next_beziers[3], _t );
-        linerp_f2( bezierWarp.beziers[4], current_beziers[4], next_beziers[4], _t );
-        linerp_f2( bezierWarp.beziers[5], current_beziers[5], next_beziers[5], _t );
-        linerp_f2( bezierWarp.beziers[6], current_beziers[6], next_beziers[6], _t );
-        linerp_f2( bezierWarp.beziers[7], current_beziers[7], next_beziers[7], _t );
+        ae_linerp_f2( bezierWarp.beziers[0], current_beziers[0], next_beziers[0], _t );
+        ae_linerp_f2( bezierWarp.beziers[1], current_beziers[1], next_beziers[1], _t );
+        ae_linerp_f2( bezierWarp.beziers[2], current_beziers[2], next_beziers[2], _t );
+        ae_linerp_f2( bezierWarp.beziers[3], current_beziers[3], next_beziers[3], _t );
+        ae_linerp_f2( bezierWarp.beziers[4], current_beziers[4], next_beziers[4], _t );
+        ae_linerp_f2( bezierWarp.beziers[5], current_beziers[5], next_beziers[5], _t );
+        ae_linerp_f2( bezierWarp.beziers[6], current_beziers[6], next_beziers[6], _t );
+        ae_linerp_f2( bezierWarp.beziers[7], current_beziers[7], next_beziers[7], _t );
 
         __make_bezier_warp_vertices( _instance, &bezierWarp, _matrix, _render );
     }
@@ -524,7 +524,7 @@ static ae_float_t __compute_movie_property_value( const struct aeMoviePropertyVa
     ae_float_t value0 = _property->values[_frame + 0];
     ae_float_t value1 = _property->values[_frame + 1];
 
-    ae_float_t valuef = linerp_f1( value0, value1, t );
+    ae_float_t valuef = ae_linerp_f1( value0, value1, t );
 
     return valuef;
 }
@@ -540,7 +540,7 @@ static ae_float_t __compute_movie_property_color_r( const struct aeMovieProperty
     {
         ae_color_t c = _property->colors_r[_frame];
 
-        ae_float_t cf = tof_c( c );
+        ae_float_t cf = ae_tof_c( c );
 
         return cf;
     }
@@ -548,7 +548,7 @@ static ae_float_t __compute_movie_property_color_r( const struct aeMovieProperty
     ae_color_t c0 = _property->colors_r[_frame + 0];
     ae_color_t c1 = _property->colors_r[_frame + 1];
 
-    ae_float_t cf = linerp_c( c0, c1, t );
+    ae_float_t cf = ae_linerp_c( c0, c1, t );
 
     return cf;
 }
@@ -564,7 +564,7 @@ static ae_float_t __compute_movie_property_color_g( const struct aeMovieProperty
     {
         ae_color_t c = _property->colors_g[_frame];
 
-        ae_float_t cf = tof_c( c );
+        ae_float_t cf = ae_tof_c( c );
 
         return cf;
     }
@@ -572,7 +572,7 @@ static ae_float_t __compute_movie_property_color_g( const struct aeMovieProperty
     ae_color_t c0 = _property->colors_g[_frame + 0];
     ae_color_t c1 = _property->colors_g[_frame + 1];
 
-    ae_float_t cf = linerp_c( c0, c1, t );
+    ae_float_t cf = ae_linerp_c( c0, c1, t );
 
     return cf;
 }
@@ -588,7 +588,7 @@ static ae_float_t __compute_movie_property_color_b( const struct aeMovieProperty
     {
         ae_color_t c = _property->colors_b[_frame];
 
-        ae_float_t cf = tof_c( c );
+        ae_float_t cf = ae_tof_c( c );
 
         return cf;
     }
@@ -596,7 +596,7 @@ static ae_float_t __compute_movie_property_color_b( const struct aeMovieProperty
     ae_color_t c0 = _property->colors_b[_frame + 0];
     ae_color_t c1 = _property->colors_b[_frame + 1];
 
-    ae_float_t cf = linerp_c( c0, c1, t );
+    ae_float_t cf = ae_linerp_c( c0, c1, t );
 
     return cf;
 }
@@ -745,7 +745,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
     ae_matrix4_t local_matrix;
     ae_movie_make_layer_transformation( local_matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
 
-    mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
+    ae_mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
     if( layer->sub_composition_data != AE_NULL )
     {
@@ -1209,7 +1209,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, ae_uint32_t * _iterat
 
             if( node->subcomposition == _parent->subcomposition )
             {
-                node->out_time = min_f_f( layer_out, parent_out );
+                node->out_time = ae_min_f_f( layer_out, parent_out );
             }
             else
             {
@@ -1324,6 +1324,17 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition )
 
     if( composition_data->camera == AE_NULL )
     {
+        _composition->camera_data = AE_NULL;
+
+        aeMovieNode *it_node = _composition->nodes;
+        aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
+        for( ; it_node != it_node_end; ++it_node )
+        {
+            aeMovieNode * node = it_node;
+
+            node->camera_data = AE_NULL;
+        }
+
         return;
     }
 
@@ -1471,7 +1482,7 @@ static void __setup_movie_composition_active( aeMovieComposition * _composition 
             continue;
         }
 
-        if( equal_f_z( node->in_time ) == AE_TRUE )
+        if( ae_equal_f_z( node->in_time ) == AE_TRUE )
         {
             node->active = AE_TRUE;
         }
@@ -1784,11 +1795,6 @@ ae_bool_t ae_get_movie_composition_loop( const  aeMovieComposition * _compositio
     return loop;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_set_movie_composition_interpolate( aeMovieComposition * _composition, ae_bool_t _interpolate )
-{
-    _composition->interpolate = _interpolate;
-}
-//////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_interpolate( const aeMovieComposition * _composition )
 {
     ae_bool_t interpolate = _composition->interpolate;
@@ -1839,7 +1845,7 @@ void ae_play_movie_composition( const aeMovieComposition * _composition, ae_floa
 
     if( _time >= 0.f )
     {
-        ae_float_t work_time = minimax_f_f( _time, animation->work_area_begin, animation->work_area_end );
+        ae_float_t work_time = ae_minimax_f_f( _time, animation->work_area_begin, animation->work_area_end );
 
         ae_set_movie_composition_time( _composition, work_time );
     }
@@ -2182,7 +2188,7 @@ static ae_float_t __get_animation_loop_work_begin( const aeMovieCompositionAnima
 
     if( loop == AE_TRUE )
     {
-        ae_float_t work_begin = max_f_f( _animation->loop_segment_begin, _animation->work_area_begin );
+        ae_float_t work_begin = ae_max_f_f( _animation->loop_segment_begin, _animation->work_area_begin );
 
         return work_begin;
     }
@@ -2200,7 +2206,7 @@ static ae_float_t __get_animation_loop_work_end( const aeMovieCompositionAnimati
 
     if( loop == AE_TRUE )
     {
-        ae_float_t work_end = min_f_f( _animation->loop_segment_end, _animation->work_area_end );
+        ae_float_t work_end = ae_min_f_f( _animation->loop_segment_end, _animation->work_area_end );
 
         return work_end;
     }
@@ -2675,8 +2681,8 @@ static void __update_movie_subcomposition( aeMovieComposition * _composition, co
         }
         else
         {
-            ae_float_t loopBegin = max_f_f( _animation->loop_segment_begin, _animation->work_area_begin );
-            ae_float_t loopEnd = min_f_f( _animation->loop_segment_end, _animation->work_area_end );
+            ae_float_t loopBegin = ae_max_f_f( _animation->loop_segment_begin, _animation->work_area_begin );
+            ae_float_t loopEnd = ae_min_f_f( _animation->loop_segment_end, _animation->work_area_end );
 
             ae_float_t last_time = loopEnd - frameDuration;
 
@@ -2768,7 +2774,7 @@ void __set_movie_composition_time( const aeMovieComposition * _composition, cons
         return;
     }
 
-    if( equal_f_f( _animation->time, _time ) == AE_TRUE )
+    if( ae_equal_f_f( _animation->time, _time ) == AE_TRUE )
     {
         return;
     }
@@ -2870,8 +2876,8 @@ ae_float_t ae_get_movie_composition_duration( const aeMovieComposition * _compos
 void ae_get_movie_composition_in_out_loop( const aeMovieComposition * _composition, ae_float_t * _in, ae_float_t * _out )
 {
     aeMovieCompositionAnimation * animation = _composition->animation;
-    ae_float_t work_begin = max_f_f( animation->loop_segment_begin, animation->work_area_begin );
-    ae_float_t work_end = min_f_f( animation->loop_segment_end, animation->work_area_end );
+    ae_float_t work_begin = ae_max_f_f( animation->loop_segment_begin, animation->work_area_begin );
+    ae_float_t work_end = ae_min_f_f( animation->loop_segment_end, animation->work_area_end );
 
     *_in = work_begin;
     *_out = work_end;
@@ -3245,8 +3251,8 @@ void ae_get_movie_sub_composition_in_out_loop( const aeMovieSubComposition * _su
 {
     aeMovieCompositionAnimation * animation = _subcomposition->animation;
 
-    ae_float_t work_begin = max_f_f( animation->loop_segment_begin, animation->work_area_begin );
-    ae_float_t work_end = min_f_f( animation->loop_segment_end, animation->work_area_end );
+    ae_float_t work_begin = ae_max_f_f( animation->loop_segment_begin, animation->work_area_begin );
+    ae_float_t work_end = ae_min_f_f( animation->loop_segment_end, animation->work_area_end );
 
     *_in = work_begin;
     *_out = work_end;
@@ -3264,7 +3270,7 @@ ae_bool_t ae_play_movie_sub_composition( const aeMovieComposition * _composition
 
     if( _time >= 0.f )
     {
-        ae_float_t work_time = minimax_f_f( _time, animation->work_area_begin, animation->work_area_end );
+        ae_float_t work_time = ae_minimax_f_f( _time, animation->work_area_begin, animation->work_area_end );
 
         __set_movie_composition_time( _composition, composition_data, animation, work_time, _subcomposition );
     }

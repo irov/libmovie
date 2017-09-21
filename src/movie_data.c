@@ -120,6 +120,8 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
 
+                (void)resource;
+
                 (*_movieData->resource_deleter)( type, base_resource->data, _movieData->resource_ud);
 
             }break;
@@ -183,6 +185,8 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
         case AE_MOVIE_RESOURCE_SLOT:
             {
                 const aeMovieResourceSlot * resource = (const aeMovieResourceSlot *)base_resource;
+
+                (void)resource;
 
                 (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
@@ -1023,12 +1027,12 @@ static ae_size_t __ae_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, ae_ui
 {
     aeMovieStream * stream = (aeMovieStream *)_data;
 
-    stream->memory_copy( stream->copy_data, (ae_constbyteptr_t)stream->buffer + stream->carriage, _buff, _size );
+    stream->memory_copy( stream->copy_data, (ae_constbyteptr_t)stream->buffer + _carriage, _buff, _size );
         
     return _size;
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_uint32_t _capacity, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data )
+aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data )
 {
 #	ifdef AE_MOVIE_DEBUG
     if( _instance == AE_NULL )

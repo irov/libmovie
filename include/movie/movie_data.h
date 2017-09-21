@@ -120,7 +120,7 @@ aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_mo
 @param [in] _data Object to use in above callbacks to read data from.
 @return Pointer to the stream.
 */
-aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_uint32_t _capacity, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data );
+aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data );
 
 
 /**

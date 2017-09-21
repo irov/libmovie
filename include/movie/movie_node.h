@@ -376,13 +376,6 @@ void ae_set_movie_composition_loop( const aeMovieComposition * _composition, ae_
 ae_bool_t ae_get_movie_composition_loop( const aeMovieComposition * _composition );
 
 /**
-@brief Set whether a composition is interpolated or not.
-@param [in] _composition Composition.
-@param [in] _interpolate If TRUE, playback will be interpolated.
-*/
-void ae_set_movie_composition_interpolate( aeMovieComposition * _composition, ae_bool_t _interpolate );
-
-/**
 @param [in] _composition Composition.
 @return TRUE if composition playback is interpolated.
 */

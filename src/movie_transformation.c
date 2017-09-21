@@ -361,7 +361,7 @@ static ae_float_t __get_movie_transformation_property_interpolate( ae_constvoidp
     ae_float_t data_0 = __get_movie_transformation_property( _property, _index + 0 );
     ae_float_t data_1 = __get_movie_transformation_property( _property, _index + 1 );
 
-    ae_float_t data = linerp_f1( data_0, data_1, _t );
+    ae_float_t data = ae_linerp_f1( data_0, data_1, _t );
 
     return data;
 }
@@ -378,11 +378,17 @@ static ae_float_t __get_movie_transformation_property_interpolate( ae_constvoidp
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_make_layer_transformation2d( ae_matrix4_t _out, const aeMovieLayerTransformation2D * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t )
 {
+    if( (_transformation->immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_ALL__) == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+    {
+        ae_ident_m4( _out );
+
+        return;
+    }
+
     ae_vector2_t anchor_point;
     ae_vector2_t position;
     ae_vector2_t scale;
-    ae_quaternion_t quaternion;
-
+    
     if( _interpolate == AE_TRUE )
     {
         AE_INTERPOLATE_PROPERTY( _transformation, anchor_point_x, anchor_point[0] );
@@ -393,20 +399,30 @@ static void __ae_movie_make_layer_transformation2d( ae_matrix4_t _out, const aeM
 
         AE_INTERPOLATE_PROPERTY( _transformation, scale_x, scale[0] );
         AE_INTERPOLATE_PROPERTY( _transformation, scale_y, scale[1] );
+        
+        if( (_transformation->immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_QUATERNION__) == __AE_MOVIE_IMMUTABLE_TWO_D_QUATERNION__ )
+        {
+            ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale );
+        }
+        else
+        {
+            ae_quaternion_t q1;
+            q1[0] = 0.f;
+            q1[1] = 0.f;
+            AE_FIXED_PROPERTY( _transformation, quaternion_z, 0, q1[2] );
+            AE_FIXED_PROPERTY( _transformation, quaternion_w, 0, q1[3] );
 
-        ae_quaternion_t q1;
-        q1[0] = 0.f;
-        q1[1] = 0.f;
-        AE_FIXED_PROPERTY( _transformation, quaternion_z, 0, q1[2] );
-        AE_FIXED_PROPERTY( _transformation, quaternion_w, 0, q1[3] );
+            ae_quaternion_t q2;
+            q2[0] = 0.f;
+            q2[1] = 0.f;
+            AE_FIXED_PROPERTY( _transformation, quaternion_z, 1, q2[2] );
+            AE_FIXED_PROPERTY( _transformation, quaternion_w, 1, q2[3] );
 
-        ae_quaternion_t q2;
-        q2[0] = 0.f;
-        q2[1] = 0.f;
-        AE_FIXED_PROPERTY( _transformation, quaternion_z, 1, q2[2] );
-        AE_FIXED_PROPERTY( _transformation, quaternion_w, 1, q2[3] );
+            ae_quaternion_t quaternion;
+            ae_linerp_qzw( quaternion, q1, q2, _t );
 
-        linerp_qzw( quaternion, q1, q2, _t );
+            ae_movie_make_transformation2d_m4q( _out, position, anchor_point, scale, quaternion );
+        }
     }
     else
     {
@@ -419,18 +435,34 @@ static void __ae_movie_make_layer_transformation2d( ae_matrix4_t _out, const aeM
         AE_FIXED_PROPERTY( _transformation, scale_x, 0, scale[0] );
         AE_FIXED_PROPERTY( _transformation, scale_y, 0, scale[1] );
 
-        quaternion[0] = 0.f;
-        quaternion[1] = 0.f;
+        if( (_transformation->immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_QUATERNION__) == __AE_MOVIE_IMMUTABLE_TWO_D_QUATERNION__ )
+        {
+            ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale );
+        }
+        else
+        {
+            ae_quaternion_t quaternion;
 
-        AE_FIXED_PROPERTY( _transformation, quaternion_z, 0, quaternion[2] );
-        AE_FIXED_PROPERTY( _transformation, quaternion_w, 0, quaternion[3] );
-    }
+            quaternion[0] = 0.f;
+            quaternion[1] = 0.f;
 
-    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
+            AE_FIXED_PROPERTY( _transformation, quaternion_z, 0, quaternion[2] );
+            AE_FIXED_PROPERTY( _transformation, quaternion_w, 0, quaternion[3] );
+
+            ae_movie_make_transformation2d_m4q( _out, position, anchor_point, scale, quaternion );
+        }
+    }    
 }
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_make_layer_transformation3d( ae_matrix4_t _out, const aeMovieLayerTransformation3D * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t )
 {
+    //if( (_transformation->immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_ALL__) == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+    //{
+    //    ae_ident_m4( _out );
+
+    //    return;
+    //}
+
     ae_vector3_t anchor_point;
     ae_vector3_t position;
     ae_vector3_t scale;
@@ -462,7 +494,7 @@ static void __ae_movie_make_layer_transformation3d( ae_matrix4_t _out, const aeM
         AE_FIXED_PROPERTY( _transformation, quaternion_z, 1, q2[2] );
         AE_FIXED_PROPERTY( _transformation, quaternion_w, 1, q2[3] );
 
-        linerp_q( quaternion, q1, q2, _t );
+        ae_linerp_q( quaternion, q1, q2, _t );
     }
     else
     {
@@ -523,7 +555,7 @@ void ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _po
         AE_FIXED_PROPERTY( _camera, quaternion_z, 1, q2[2] );
         AE_FIXED_PROPERTY( _camera, quaternion_w, 1, q2[3] );
 
-        linerp_q( _quaternion, q1, q2, _t );
+        ae_linerp_q( _quaternion, q1, q2, _t );
     }
     else
     {

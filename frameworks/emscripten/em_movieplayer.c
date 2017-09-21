@@ -503,7 +503,7 @@ em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const c
     fread( buffer, sz, 1, f );
     fclose( f );
 
-    aeMovieStream * ae_stream = ae_create_movie_stream_memory( em_instance->instance, buffer, sz, &__memory_copy, AE_NULL );
+    aeMovieStream * ae_stream = ae_create_movie_stream_memory( em_instance->instance, buffer, &__memory_copy, AE_NULL );
 
     if( ae_load_movie_data( ae_movie_data, ae_stream ) == AE_MOVIE_FAILED )
     {

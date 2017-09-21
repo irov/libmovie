@@ -46,17 +46,17 @@ static ae_bool_t __test_movie_skeleton_base( aeMovieComposition * _base )
     {
         const aeMovieNode * node = it;
 
-        if( equal_f_z( node->in_time ) == AE_FALSE )
+        if( ae_equal_f_z( node->in_time ) == AE_FALSE )
         {
             return AE_FALSE;
         }
 
-        if( equal_f_f( node->out_time, duration ) == AE_FALSE )
+        if( ae_equal_f_f( node->out_time, duration ) == AE_FALSE )
         {
             return AE_FALSE;
         }
 
-        if( equal_f_z( node->start_time ) == AE_FALSE )
+        if( ae_equal_f_z( node->start_time ) == AE_FALSE )
         {
             return AE_FALSE;
         }
