@@ -63,7 +63,7 @@ static const ae_float_t table_inv_255[] = {
     220.f / 255.f, 221.f / 255.f, 222.f / 255.f, 223.f / 255.f, 224.f / 255.f, 225.f / 255.f, 226.f / 255.f, 227.f / 255.f, 228.f / 255.f, 229.f / 255.f,
     230.f / 255.f, 231.f / 255.f, 232.f / 255.f, 233.f / 255.f, 234.f / 255.f, 235.f / 255.f, 236.f / 255.f, 237.f / 255.f, 238.f / 255.f, 239.f / 255.f,
     240.f / 255.f, 241.f / 255.f, 242.f / 255.f, 243.f / 255.f, 244.f / 255.f, 245.f / 255.f, 246.f / 255.f, 247.f / 255.f, 248.f / 255.f, 249.f / 255.f,
-    250.f / 255.f, 251.f / 255.f, 252.f / 255.f, 253.f / 255.f, 254.f / 255.f, 255.f / 255.f, 256.f / 255.f, 257.f / 255.f, 258.f / 255.f, 259.f / 255.f
+    250.f / 255.f, 251.f / 255.f, 252.f / 255.f, 253.f / 255.f, 254.f / 255.f, 255.f / 255.f
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ void ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4
     _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _b[3 * 4 + 2];
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+void __mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _a[3] * _b[3 * 4 + 0];
     _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _a[3] * _b[3 * 4 + 1];
@@ -112,10 +112,10 @@ void ae_mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t 
 //////////////////////////////////////////////////////////////////////////
 void ae_mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
 {
-    ae_mul_v4_m4( _out + 0, _a + 0, _b );
-    ae_mul_v4_m4( _out + 4, _a + 4, _b );
-    ae_mul_v4_m4( _out + 8, _a + 8, _b );
-    ae_mul_v4_m4( _out + 12, _a + 12, _b );
+    __mul_v4_m4( _out + 0, _a + 0, _b );
+    __mul_v4_m4( _out + 4, _a + 4, _b );
+    __mul_v4_m4( _out + 8, _a + 8, _b );
+    __mul_v4_m4( _out + 12, _a + 12, _b );
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_ident_m4( ae_matrix4_t _out )
@@ -138,30 +138,7 @@ void ae_ident_m4( ae_matrix4_t _out )
     _out[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
-void copy_m4( ae_matrix4_t _out, const ae_matrix4_t _in )
-{
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-    *_out++ = *_in++;
-}
-//////////////////////////////////////////////////////////////////////////
-void make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
+static void __make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
 {
     ae_float_t x = _quaternion[0];
     ae_float_t y = _quaternion[1];
@@ -199,7 +176,7 @@ void make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
     _m[3 * 4 + 3] = 1.0f;
 }
 //////////////////////////////////////////////////////////////////////////
-void make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
+static void __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
 {
     ae_float_t z = _quaternion[2];
     ae_float_t w = _quaternion[3];
@@ -276,7 +253,7 @@ void ae_movie_make_transformation3d_m4( ae_matrix4_t _lm, const ae_vector3_t _po
         mat_scale[3 * 4 + 2] = -_origin[2] * _scale[2];
 
         ae_matrix4_t mat_rotate;
-        make_quaternion_m4( mat_rotate, _quaternion );
+        __make_quaternion_m4( mat_rotate, _quaternion );
 
         ae_mul_m4_m4( _lm, mat_scale, mat_rotate );
 
@@ -332,7 +309,7 @@ void ae_movie_make_transformation2d_m4q( ae_matrix4_t _lm, const ae_vector2_t _p
     mat_scale[3 * 4 + 2] = 0.f;
 
     ae_matrix4_t mat_rotate;
-    make_quaternionzw_m4( mat_rotate, _quaternion );
+    __make_quaternionzw_m4( mat_rotate, _quaternion );
 
     ae_mul_m4_m4( _lm, mat_scale, mat_rotate );
 
@@ -351,7 +328,7 @@ void ae_linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_
     _out[1] = ae_linerp_f1( _in1[1], _in2[1], _t );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_float_t inverse_sqrtf( ae_float_t number )
+static ae_float_t __inverse_sqrtf( ae_float_t number )
 {
     ae_uint32_t i;
     ae_float_t x2, y;
@@ -379,7 +356,7 @@ void ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quater
     ae_float_t w = _q1[3] * inv_t + _q2[3] * _t;
 
     ae_float_t q_dot = x * x + y * y + z * z + w * w;
-    ae_float_t inv_length = inverse_sqrtf( q_dot );
+    ae_float_t inv_length = __inverse_sqrtf( q_dot );
 
     _q[0] = x * inv_length;
     _q[1] = y * inv_length;
@@ -395,7 +372,7 @@ void ae_linerp_qzw( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quat
     ae_float_t w = _q1[3] * inv_t + _q2[3] * _t;
 
     ae_float_t q_dot = z * z + w * w;
-    ae_float_t inv_length = inverse_sqrtf( q_dot );
+    ae_float_t inv_length = __inverse_sqrtf( q_dot );
 
     _q[0] = 0.f;
     _q[1] = 0.f;

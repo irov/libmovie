@@ -40,7 +40,6 @@ ae_float_t ae_max_f_f( ae_float_t _a, ae_float_t _b );
 ae_float_t ae_minimax_f_f( ae_float_t _v, ae_float_t _min, ae_float_t _max );
 
 void ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b );
-void ae_mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b );
 void ae_mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b );
 void ae_ident_m4( ae_matrix4_t _out );
 void ae_movie_make_transformation3d_m4( ae_matrix4_t _lm, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale, const ae_quaternion_t _quaternion );
