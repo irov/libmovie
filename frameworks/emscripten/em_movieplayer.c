@@ -93,6 +93,8 @@ typedef struct em_player_t
 
     GLint samplerLocation;
 
+    em_render_vertex_t vertices[1024];
+
 } em_player_t;
 //////////////////////////////////////////////////////////////////////////
 static void * __instance_alloc( void * _data, size_t _size )
@@ -207,7 +209,7 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
         "varying lowp vec4 v_Col;\n"
         "void main( void )\n"
         "{\n"
-        "   gl_Position = viewMatrix * projectionMatrix * inVert;\n"
+        "   gl_Position = projectionMatrix * viewMatrix * inVert;\n"
         "   v_UV = inUV;\n"
         "   v_Col = inCol;\n"
         "}\n";
@@ -384,8 +386,6 @@ static ae_voidptr_t __data_resource_provider( const aeMovieResource * _resource,
                 emscripten_log( EM_LOG_CONSOLE, "bad load image '%s'\n", r->path );
             }
 
-            emscripten_log( EM_LOG_CONSOLE, "create texture %ux%u (%u)\n", surface->w, surface->h, surface->format->BytesPerPixel );
-
             GLuint texture_id;
             GLCALL( glGenTextures, (1, &texture_id) );
             GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
@@ -399,6 +399,13 @@ static ae_voidptr_t __data_resource_provider( const aeMovieResource * _resource,
             SDL_FreeSurface( surface );
             
             em_resource->texture_id = texture_id;
+
+            emscripten_log( EM_LOG_CONSOLE, "create texture %ux%u (%u) id '%d'\n"
+                , surface->w
+                , surface->h
+                , surface->format->BytesPerPixel
+                , texture_id 
+            );
 
             return em_resource;
 
@@ -661,21 +668,86 @@ static void ae_movie_callback_camera_deleter( const aeMovieCameraDestroyCallback
     free( camera );
 }
 //////////////////////////////////////////////////////////////////////////
+static void ae_movie_callback_camera_update( const aeMovieCameraUpdateCallbackData * _callbackData, void * _data )
+{
+    (void)_data;
+
+    ae_camera_t * camera = (ae_camera_t *)_callbackData->element;
+
+    ae_vector3_t direction;
+    direction[0] = _callbackData->target[0] - _callbackData->position[0];
+    direction[1] = _callbackData->target[1] - _callbackData->position[1];
+    direction[2] = _callbackData->target[2] - _callbackData->position[2];
+
+    ae_vector3_t zaxis;
+    vector3_normalize( zaxis, direction );
+
+    ae_vector3_t up = { 0.f, 1.f, 0.f };
+
+    ae_vector3_t xaxis;
+    vector3_cross( xaxis, up, zaxis );
+    vector3_normalize( xaxis, xaxis );
+
+    ae_vector3_t yaxis;
+    vector3_cross( yaxis, zaxis, xaxis );
+
+    camera->view[0] = xaxis[0];
+    camera->view[1] = yaxis[0];
+    camera->view[2] = zaxis[0];
+    camera->view[3] = 0.f;
+
+    camera->view[4] = xaxis[1];
+    camera->view[5] = yaxis[1];
+    camera->view[6] = zaxis[1];
+    camera->view[7] = 0.f;
+
+    camera->view[8] = xaxis[2];
+    camera->view[9] = yaxis[2];
+    camera->view[10] = zaxis[2];
+    camera->view[11] = 0.f;
+
+    camera->view[12] = -vector3_dot( xaxis, _callbackData->position );
+    camera->view[13] = -vector3_dot( yaxis, _callbackData->position );
+    camera->view[14] = -vector3_dot( zaxis, _callbackData->position );
+    camera->view[15] = 1.f;
+}
+//////////////////////////////////////////////////////////////////////////
 em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_t _movieData, const char * _name )
 {
     aeMovieData * ae_movie_data = (aeMovieData *)_movieData;
 
+    const ae_char_t * movieName = ae_get_movie_name( ae_movie_data );
+
     const aeMovieCompositionData * movieCompositionData = ae_get_movie_composition_data( ae_movie_data, _name );
+
+    if( movieCompositionData == AE_NULL )
+    {
+        emscripten_log( EM_LOG_CONSOLE, "error get movie '%s' composition data '%s'"
+            , movieName
+            , _name
+        );
+
+        return AE_NULL;
+    }
 
     aeMovieCompositionProviders compositionProviders;
     ae_initialize_movie_composition_providers( &compositionProviders );
 
     compositionProviders.camera_provider = &ae_movie_callback_camera_provider;
     compositionProviders.camera_deleter = &ae_movie_callback_camera_deleter;
+    compositionProviders.camera_update = &ae_movie_callback_camera_update;
 
     aeMovieComposition * movieComposition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &compositionProviders, AE_NULL );
 
-    const ae_char_t * movieName = ae_get_movie_name( ae_movie_data );
+    if( movieComposition == AE_NULL )
+    {
+        emscripten_log( EM_LOG_CONSOLE, "error create movie '%s' composition '%s'"
+            , movieName
+            , _name
+        );
+
+        return AE_NULL;
+    }        
 
     emscripten_log( EM_LOG_CONSOLE, "successful create movie '%s' composition '%s'"
         , movieName
@@ -773,7 +845,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
         GLuint texture_id = 0U;
 
-        em_render_vertex_t * vertices = malloc( opengl_vertex_buffer_size );
+        em_render_vertex_t * vertices = player->vertices;
         const ae_uint16_t * indices = mesh.indices;        
 
         switch( mesh.layer_type )
@@ -913,10 +985,12 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
         GLCALL( glVertexAttribPointer, (player->inColLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
         GLCALL( glVertexAttribPointer, (player->inUVLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv )) );
 
-        //emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d'"
-        //    , mesh.vertexCount
-        //    , mesh.indexCount
-        //);
+        emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' texture '%d' index '%d'"
+            , mesh.vertexCount
+            , mesh.indexCount
+            , texture_id
+            , mesh_iterator
+        );
 
         GLuint opengl_indices_buffer_id = 0;
         GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
@@ -939,7 +1013,5 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
         GLCALL( glDeleteBuffers, (1, &opengl_indices_buffer_id) );
         GLCALL( glDeleteBuffers, (1, &opengl_vertex_buffer_id) );
-
-        free( vertices );
     }
 }
