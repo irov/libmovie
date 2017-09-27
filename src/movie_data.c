@@ -1541,7 +1541,7 @@ const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeM
     return _movieData->compositions + _index;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _compositionData )
+ae_uint32_t ae_get_movie_composition_data_event_count( const aeMovieCompositionData * _compositionData )
 {
     ae_uint32_t count = 0;
 
@@ -1557,7 +1557,7 @@ ae_uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * 
         }
         else if( type == AE_MOVIE_LAYER_TYPE_MOVIE )
         {
-            count += ae_get_composition_data_event_count( it_layer->sub_composition_data );
+            count += ae_get_movie_composition_data_event_count( it_layer->sub_composition_data );
         }
     }
 
@@ -1593,7 +1593,7 @@ static ae_bool_t __ae_get_composition_data_event_name( const aeMovieCompositionD
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-const ae_char_t * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, ae_uint32_t _index )
+const ae_char_t * ae_get_movie_composition_data_event_name( const aeMovieCompositionData * _compositionData, ae_uint32_t _index )
 {
     ae_uint32_t iterator = 0;
     const ae_char_t * name;

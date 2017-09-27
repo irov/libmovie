@@ -349,6 +349,12 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 void ae_delete_movie_composition( const aeMovieComposition * _composition );
 
 /**
+@brief get composition data from composition.
+@param [in] _composition Composition.
+*/
+const aeMovieCompositionData * ae_get_movie_composition_composition_data( const aeMovieComposition * _composition );
+
+/**
 @brief Get composition anchor point.
 @param [in] _composition Composition.
 @param [out] _point point.

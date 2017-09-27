@@ -65,6 +65,8 @@ typedef enum aeMoviePropertyImmutableEnum
     | AE_MOVIE_IMMUTABLE_POSITION_X | AE_MOVIE_IMMUTABLE_POSITION_Y | AE_MOVIE_IMMUTABLE_POSITION_Z
     | AE_MOVIE_IMMUTABLE_SCALE_X | AE_MOVIE_IMMUTABLE_SCALE_Y | AE_MOVIE_IMMUTABLE_SCALE_Z
     | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
+    __AE_MOVIE_IMMUTABLE_THREE_D_QUATERNION__ = 0
+    | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
     __AE_MOVIE_IMMUTABLE_CAMERA_ALL__ = 0
     | AE_MOVIE_IMMUTABLE_TARGET_X | AE_MOVIE_IMMUTABLE_TARGET_Y | AE_MOVIE_IMMUTABLE_TARGET_Z
     | AE_MOVIE_IMMUTABLE_POSITION_X | AE_MOVIE_IMMUTABLE_POSITION_Y | AE_MOVIE_IMMUTABLE_POSITION_Z
@@ -134,33 +136,37 @@ typedef struct aeMovieLayerTransformation3DTimeline
 
 }aeMovieLayerTransformation3DTimeline;
 
+typedef struct aeMovieLayerTransformation aeMovieLayerTransformation;
+
+typedef void( *ae_movie_make_layer_transformation_intepolate_t )(ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t);
+typedef void( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index);
+
+#   define AE_MOVIE_LAYER_TRANSFORMATION_BASE()\
+    ae_uint32_t immutable_property_mask;\
+    ae_float_t immutable_opacity;\
+    ae_constvoidptr_t timeline_opacity;\
+    ae_movie_make_layer_transformation_intepolate_t transforamtion_interpolate_matrix;\
+    ae_movie_make_layer_transformation_fixed_t transforamtion_fixed_matrix;\
+    ae_matrix4_t immutable_matrix
+
 typedef struct aeMovieLayerTransformation
 {
-    ae_uint32_t immutable_property_mask;
+    AE_MOVIE_LAYER_TRANSFORMATION_BASE();
 
-    ae_float_t immutable_opacity;
-    ae_constvoidptr_t timeline_opacity;
-
-}aeMovieLayerTransformation;
+} aeMovieLayerTransformation;
 
 typedef struct aeMovieLayerTransformation2D
 {
-    ae_uint32_t immutable_property_mask;
-
-    ae_float_t immutable_opacity;
-    ae_constvoidptr_t timeline_opacity;
-
+    AE_MOVIE_LAYER_TRANSFORMATION_BASE();
+    
     aeMovieLayerTransformation2DImuttable immutable;
-    aeMovieLayerTransformation2DTimeline * timeline;
+    aeMovieLayerTransformation2DTimeline * timeline;    
 
 } aeMovieLayerTransformation2D;
 
 typedef struct aeMovieLayerTransformation3D
 {
-    ae_uint32_t immutable_property_mask;
-
-    ae_float_t immutable_opacity;
-    ae_constvoidptr_t timeline_opacity;
+    AE_MOVIE_LAYER_TRANSFORMATION_BASE();
 
     aeMovieLayerTransformation3DImuttable immutable;
     aeMovieLayerTransformation3DTimeline * timeline;
@@ -172,7 +178,8 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovieCompositionCamera * _camera );
 void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
 ae_float_t ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
-void ae_movie_make_layer_transformation( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
+void ae_movie_make_layer_transformation_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t );
+void ae_movie_make_layer_transformation_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index );
 void ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 
 #	endif

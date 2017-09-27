@@ -59,6 +59,7 @@ typedef ae_char_t * ae_string_t;
 typedef ae_float_t ae_vector2_t[2];
 typedef ae_float_t ae_vector3_t[3];
 typedef ae_float_t ae_vector4_t[4];
+typedef ae_float_t ae_quaternionzw_t[2];
 typedef ae_float_t ae_quaternion_t[4];
 typedef ae_float_t ae_matrix4_t[16];
 

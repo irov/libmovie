@@ -702,7 +702,14 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
     {
         ae_float_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
 
-        ae_movie_make_layer_transformation( _node->matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
+        if( _interpolate == AE_TRUE )
+        {
+            ae_movie_make_layer_transformation_interpolate( _node->matrix, layer->transformation, _frameId, _t );
+        }
+        else
+        {
+            ae_movie_make_layer_transformation_fixed( _node->matrix, layer->transformation, _frameId );
+        }
 
         if( layer->sub_composition_data != AE_NULL )
         {
@@ -743,7 +750,15 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
     ae_float_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
 
     ae_matrix4_t local_matrix;
-    ae_movie_make_layer_transformation( local_matrix, layer->transformation, layer->threeD, _frameId, _interpolate, _t );
+
+    if( _interpolate == AE_TRUE )
+    {
+        ae_movie_make_layer_transformation_interpolate( local_matrix, layer->transformation, _frameId, _t );
+    }
+    else
+    {
+        ae_movie_make_layer_transformation_fixed( local_matrix, layer->transformation, _frameId );
+    }
 
     ae_mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
@@ -1737,6 +1752,13 @@ void ae_delete_movie_composition( const aeMovieComposition * _composition )
     AE_DELETE( instance, _composition->update_revision );
 
     AE_DELETE( instance, _composition );
+}
+//////////////////////////////////////////////////////////////////////////
+const aeMovieCompositionData * ae_get_movie_composition_composition_data( const aeMovieComposition * _composition )
+{
+    const aeMovieCompositionData * composition_data = _composition->composition_data;
+
+    return composition_data;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _composition, ae_vector3_t _point )

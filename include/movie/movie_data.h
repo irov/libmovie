@@ -261,14 +261,14 @@ const aeMovieCompositionData * ae_get_movie_composition_data_by_index( const aeM
 @param [in] _compositionData Composition data.
 @return Total number of events.
 */
-ae_uint32_t ae_get_composition_data_event_count( const aeMovieCompositionData * _compositionData );
+ae_uint32_t ae_get_movie_composition_data_event_count( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
 @param [in] _index Event index.
 @return Name of the event under the given index.
 */
-const ae_char_t * ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, ae_uint32_t _index );
+const ae_char_t * ae_get_movie_composition_data_event_name( const aeMovieCompositionData * _compositionData, ae_uint32_t _index );
 
 // data
 /// @}

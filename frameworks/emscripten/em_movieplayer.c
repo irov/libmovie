@@ -164,8 +164,8 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
 
     const char * fragmentShaderSource =
         "uniform sampler2D inSampler0;\n"
-        "varying mediump vec2 v_UV;\n"
         "varying lowp vec4 v_Col;\n"
+        "varying mediump vec2 v_UV;\n"        
         "void main( void ) {\n"
         "mediump vec4 c = v_Col * texture2D( inSampler0, v_UV );\n"
         "gl_FragColor = c;\n"
@@ -205,13 +205,13 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
         "attribute highp vec4 inVert;\n"
         "attribute lowp vec4 inCol;\n"
         "attribute mediump vec2 inUV;\n"        
-        "varying mediump vec2 v_UV;\n"
         "varying lowp vec4 v_Col;\n"
+        "varying mediump vec2 v_UV;\n"
         "void main( void )\n"
         "{\n"
         "   gl_Position = projectionMatrix * viewMatrix * inVert;\n"
-        "   v_UV = inUV;\n"
         "   v_Col = inCol;\n"
+        "   v_UV = inUV;\n"
         "}\n";
 
     GLint vertexShaderSourceSize = (GLint)strlen( vertexShaderSource );
@@ -315,7 +315,7 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
     em_player->projectionMatrixLocation = projectionMatrixLocation;
     em_player->samplerLocation = samplerLocation;
 
-    emscripten_log( EM_LOG_CONSOLE, "successful create movie instance hashkey '%s' width '%f' height '%f'"
+    emscripten_log( EM_LOG_CONSOLE, "successful create player hashkey '%s' width '%f' height '%f'"
         , _hashkey
         , _width
         , _height
@@ -546,6 +546,8 @@ typedef struct ae_camera_t
 {
     float view[16];
     float projection[16];
+    float width;
+    float height;
 } ae_camera_t;
 //////////////////////////////////////////////////////////////////////////
 static float vector3_sqrlength( const float * _v )
@@ -572,6 +574,13 @@ static void vector3_normalize( float * _out, const float * _v )
     _out[2] = _v[2] * inv_len;
 }
 //////////////////////////////////////////////////////////////////////////
+static void vector3_negative( float * _out, const float * _v )
+{
+    _out[0] = -_v[0];
+    _out[1] = -_v[1];
+    _out[2] = -_v[2];
+}
+//////////////////////////////////////////////////////////////////////////
 static void vector3_cross( float * _out, const float * _a, const float * _b )
 {
     _out[0] = _a[1] * _b[2] - _a[2] * _b[1];
@@ -584,77 +593,93 @@ static float vector3_dot( const float * _a, const float * _b )
     return _a[0] * _b[0] + _a[1] * _b[1] + _a[2] * _b[2];
 }
 //////////////////////////////////////////////////////////////////////////
+static void __make_lookat_m4( float * _out, const float * _position, const float * _target )
+{
+    ae_vector3_t direction;
+    direction[0] = _target[0] - _position[0];
+    direction[1] = _target[1] - _position[1];
+    direction[2] = _target[2] - _position[2];
+
+    ae_vector3_t zaxis;
+    vector3_normalize( zaxis, direction );
+
+    ae_vector3_t up = { 0.f, -1.f, 0.f };
+
+    ae_vector3_t xaxis;
+    vector3_cross( xaxis, up, zaxis );
+    vector3_normalize( xaxis, xaxis );
+    
+    ae_vector3_t yaxis;
+    vector3_cross( yaxis, zaxis, xaxis );
+
+    vector3_negative( xaxis, xaxis );
+
+    _out[0] = xaxis[0];
+    _out[1] = yaxis[0];
+    _out[2] = zaxis[0];
+    _out[3] = 0.f;
+
+    _out[4] = xaxis[1];
+    _out[5] = yaxis[1];
+    _out[6] = zaxis[1];
+    _out[7] = 0.f;
+
+    _out[8] = xaxis[2];
+    _out[9] = yaxis[2];
+    _out[10] = zaxis[2];
+    _out[11] = 0.f;
+
+    _out[12] = -vector3_dot( xaxis, _position );
+    _out[13] = -vector3_dot( yaxis, _position );
+    _out[14] = -vector3_dot( zaxis, _position );
+    _out[15] = 1.f;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __make_projection_fov_m4( float * _out, float _width, float _height, float _fov )
+{
+    float aspect = _width / _height;
+
+    float zn = 1.f;
+    float zf = 10000.f;
+
+    float h = 1.f / tanf( _fov * 0.5f );
+    float w = h / aspect;
+
+    float a = zf / (zf - zn);
+    float b = -zn * zf / (zf - zn);
+
+    _out[0] = w;
+    _out[1] = 0.f;
+    _out[2] = 0.f;
+    _out[3] = 0.f;
+
+    _out[4] = 0.f;
+    _out[5] = h;
+    _out[6] = 0.f;
+    _out[7] = 0.f;
+
+    _out[8] = 0.f;
+    _out[9] = 0.f;
+    _out[10] = a;
+    _out[11] = 1.f;
+
+    _out[12] = 0.f;
+    _out[13] = 0.f;
+    _out[14] = b;
+    _out[15] = 0.f;
+}
+//////////////////////////////////////////////////////////////////////////
 static void * ae_movie_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, void * _data )
 {
     (void)_data;
 
     ae_camera_t * camera = malloc( sizeof( ae_camera_t ) );
 
-    ae_vector3_t direction;
-    direction[0] = _callbackData->target[0] - _callbackData->position[0];
-    direction[1] = _callbackData->target[1] - _callbackData->position[1];
-    direction[2] = _callbackData->target[2] - _callbackData->position[2];
+    __make_lookat_m4( camera->view, _callbackData->position, _callbackData->target );
+    __make_projection_fov_m4( camera->projection, _callbackData->width, _callbackData->height, _callbackData->fov );
 
-    ae_vector3_t zaxis;
-    vector3_normalize( zaxis, direction );
-
-    ae_vector3_t up = { 0.f, 1.f, 0.f };
-
-    ae_vector3_t xaxis;
-    vector3_cross( xaxis, up, zaxis );
-    vector3_normalize( xaxis, xaxis );
-
-    ae_vector3_t yaxis;
-    vector3_cross( yaxis, zaxis, xaxis );
-
-    camera->view[0] = xaxis[0];
-    camera->view[1] = yaxis[0];
-    camera->view[2] = zaxis[0];
-    camera->view[3] = 0.f;
-    
-    camera->view[4] = xaxis[1];
-    camera->view[5] = yaxis[1];
-    camera->view[6] = zaxis[1];
-    camera->view[7] = 0.f;
-    
-    camera->view[8] = xaxis[2];
-    camera->view[9] = yaxis[2];
-    camera->view[10] = zaxis[2];
-    camera->view[11] = 0.f;
-    
-    camera->view[12] = -vector3_dot( xaxis, _callbackData->position );
-    camera->view[13] = -vector3_dot( yaxis, _callbackData->position );
-    camera->view[14] = -vector3_dot( zaxis, _callbackData->position );
-    camera->view[15] = 1.f;
-        
-    float aspect = _callbackData->width / _callbackData->height;
-    float fov = _callbackData->fov;
-    
-    float yscale = 1.f / tanf( fov * 0.5f );
-    float xscale = yscale / aspect;
-
-    float zn = 0.1f;
-    float zf = 10000.f;
-    
-    camera->projection[0] = xscale;
-    camera->projection[1] = 0.f;
-    camera->projection[2] = 0.f;
-    camera->projection[3] = 0.f;
-
-    camera->projection[4] = 0.f;
-    camera->projection[5] = yscale;
-    camera->projection[6] = 0.f;
-    camera->projection[7] = 0.f;
-
-    camera->projection[8] = 0.f;
-    camera->projection[9] = 0.f;
-    camera->projection[10] = zf / (zf - zn);
-    camera->projection[11] = 1.f;
-
-    camera->projection[12] = 0.f;
-    camera->projection[13] = 0.f;
-    camera->projection[14] = -zn * zf / (zf - zn);
-    camera->projection[15] = 0.f;
+    camera->width = _callbackData->width;
+    camera->height = _callbackData->height;
 
     return camera;
 }
@@ -674,42 +699,7 @@ static void ae_movie_callback_camera_update( const aeMovieCameraUpdateCallbackDa
 
     ae_camera_t * camera = (ae_camera_t *)_callbackData->element;
 
-    ae_vector3_t direction;
-    direction[0] = _callbackData->target[0] - _callbackData->position[0];
-    direction[1] = _callbackData->target[1] - _callbackData->position[1];
-    direction[2] = _callbackData->target[2] - _callbackData->position[2];
-
-    ae_vector3_t zaxis;
-    vector3_normalize( zaxis, direction );
-
-    ae_vector3_t up = { 0.f, 1.f, 0.f };
-
-    ae_vector3_t xaxis;
-    vector3_cross( xaxis, up, zaxis );
-    vector3_normalize( xaxis, xaxis );
-
-    ae_vector3_t yaxis;
-    vector3_cross( yaxis, zaxis, xaxis );
-
-    camera->view[0] = xaxis[0];
-    camera->view[1] = yaxis[0];
-    camera->view[2] = zaxis[0];
-    camera->view[3] = 0.f;
-
-    camera->view[4] = xaxis[1];
-    camera->view[5] = yaxis[1];
-    camera->view[6] = zaxis[1];
-    camera->view[7] = 0.f;
-
-    camera->view[8] = xaxis[2];
-    camera->view[9] = yaxis[2];
-    camera->view[10] = zaxis[2];
-    camera->view[11] = 0.f;
-
-    camera->view[12] = -vector3_dot( xaxis, _callbackData->position );
-    camera->view[13] = -vector3_dot( yaxis, _callbackData->position );
-    camera->view[14] = -vector3_dot( zaxis, _callbackData->position );
-    camera->view[15] = 1.f;
+    __make_lookat_m4( camera->view, _callbackData->position, _callbackData->target );
 }
 //////////////////////////////////////////////////////////////////////////
 em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_t _movieData, const char * _name )
@@ -831,8 +821,6 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 {
     em_player_t * player = (em_player_t *)_player;
 
-    glViewport( 0, 0, player->width, player->height );
-
     const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
     
     uint32_t mesh_iterator = 0;
@@ -906,22 +894,80 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
         }
 
         GLCALL( glUseProgram, (player->program) );
-        
+
+        GLCALL( glEnable, (GL_BLEND) );
+
+        switch( mesh.blend_mode )
+        {
+        case AE_MOVIE_BLEND_ADD:
+            {
+                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );
+            }break;
+        case AE_MOVIE_BLEND_NORMAL:
+            {
+                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE) );
+            }break;
+        case AE_MOVIE_BLEND_ALPHA_ADD:
+        case AE_MOVIE_BLEND_CLASSIC_COLOR_BURN:
+        case AE_MOVIE_BLEND_CLASSIC_COLOR_DODGE:
+        case AE_MOVIE_BLEND_CLASSIC_DIFFERENCE:
+        case AE_MOVIE_BLEND_COLOR:
+        case AE_MOVIE_BLEND_COLOR_BURN:
+        case AE_MOVIE_BLEND_COLOR_DODGE:
+        case AE_MOVIE_BLEND_DANCING_DISSOLVE:
+        case AE_MOVIE_BLEND_DARKEN:
+        case AE_MOVIE_BLEND_DARKER_COLOR:
+        case AE_MOVIE_BLEND_DIFFERENCE:
+        case AE_MOVIE_BLEND_DISSOLVE:
+        case AE_MOVIE_BLEND_EXCLUSION:
+        case AE_MOVIE_BLEND_HARD_LIGHT:
+        case AE_MOVIE_BLEND_HARD_MIX:
+        case AE_MOVIE_BLEND_HUE:
+        case AE_MOVIE_BLEND_LIGHTEN:
+        case AE_MOVIE_BLEND_LIGHTER_COLOR:
+        case AE_MOVIE_BLEND_LINEAR_BURN:
+        case AE_MOVIE_BLEND_LINEAR_DODGE:
+        case AE_MOVIE_BLEND_LINEAR_LIGHT:
+        case AE_MOVIE_BLEND_LUMINESCENT_PREMUL:
+        case AE_MOVIE_BLEND_LUMINOSITY:
+        case AE_MOVIE_BLEND_MULTIPLY:
+        case AE_MOVIE_BLEND_OVERLAY:
+        case AE_MOVIE_BLEND_PIN_LIGHT:
+        case AE_MOVIE_BLEND_SATURATION:
+        case AE_MOVIE_BLEND_SCREEN:
+        case AE_MOVIE_BLEND_SILHOUETE_ALPHA:
+        case AE_MOVIE_BLEND_SILHOUETTE_LUMA:
+        case AE_MOVIE_BLEND_SOFT_LIGHT:
+        case AE_MOVIE_BLEND_STENCIL_ALPHA:
+        case AE_MOVIE_BLEND_STENCIL_LUMA:
+        case AE_MOVIE_BLEND_VIVID_LIGHT:
+            {
+
+            }break;
+        }
+
         GLCALL( glActiveTexture, (GL_TEXTURE0) );
+
         if( texture_id != 0U )
         {
             GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
+
+            GLCALL( glUniform1i, (player->samplerLocation, 0) );
         }
         else
         {
             GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
-        }
-
-        GLCALL( glUniform1i, (player->samplerLocation, 0) );
+        }        
 
         if( mesh.camera_data == AE_NULL )
         {
+            const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
+
+            float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
+            float composition_height = ae_get_movie_composition_data_width( ae_movie_composition_data );
+
             float viewMatrix[16];
+
             viewMatrix[0] = 1.f;
             viewMatrix[1] = 0.f;
             viewMatrix[2] = 0.f;
@@ -944,25 +990,38 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
             GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, viewMatrix) );
 
+            float zn = -1.f;
+            float zf = 1.f;
+            float r = 1.f;
+            float l = 0.f;
+            float t = 1.f;
+            float b = 0.f;
+
             float projectionMatrix[16];
-            projectionMatrix[0] = 2.f / player->width;
+
+            projectionMatrix[0] = 2.f / composition_width;
             projectionMatrix[1] = 0.f;
             projectionMatrix[2] = 0.f;
             projectionMatrix[3] = 0.f;
+
             projectionMatrix[4] = 0.f;
-            projectionMatrix[5] = 2.f / player->height;
+            projectionMatrix[5] = -2.f / composition_height;
             projectionMatrix[6] = 0.f;
             projectionMatrix[7] = 0.f;
+
             projectionMatrix[8] = 0.f;
             projectionMatrix[9] = 0.f;
-            projectionMatrix[10] = -1.f;
+            projectionMatrix[10] = 2.f / (zf - zn);
             projectionMatrix[11] = 0.f;
-            projectionMatrix[12] = -1.f;
-            projectionMatrix[13] = -1.f;
-            projectionMatrix[14] = 0.f;
+
+            projectionMatrix[12] = -(r + l) / (r - l);
+            projectionMatrix[13] = (t + b) / (t - b);
+            projectionMatrix[14] = -zn / (zn - zf);
             projectionMatrix[15] = 1.f;
 
             GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, projectionMatrix) );
+            
+            glViewport( 0, 0, composition_width, composition_height );
         }
         else
         {
@@ -970,6 +1029,8 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
             GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, camera->view) );
             GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, camera->projection) );
+
+            glViewport( 0, 0, camera->width, camera->height );
         }
 
         GLuint opengl_vertex_buffer_id = 0;
@@ -985,12 +1046,12 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
         GLCALL( glVertexAttribPointer, (player->inColLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
         GLCALL( glVertexAttribPointer, (player->inUVLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv )) );
 
-        emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' texture '%d' index '%d'"
-            , mesh.vertexCount
-            , mesh.indexCount
-            , texture_id
-            , mesh_iterator
-        );
+        //emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' texture '%d' index '%d'"
+        //    , mesh.vertexCount
+        //    , mesh.indexCount
+        //    , texture_id
+        //    , mesh_iterator
+        //);
 
         GLuint opengl_indices_buffer_id = 0;
         GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
