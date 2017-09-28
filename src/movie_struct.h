@@ -95,8 +95,8 @@ struct aeMovieNode
 {
     const aeMovieLayerData * layer;
 
-    struct aeMovieNode * relative;
-    struct aeMovieNode * track_matte;
+    struct aeMovieNode * relative_node;
+    struct aeMovieNode * track_matte_node;
 
     const aeMovieSubComposition * subcomposition;
 

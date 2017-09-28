@@ -292,9 +292,9 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
     _render->element_data = _node->element_data;
     _render->shader_data = _node->shader_data;
 
-    if( _node->track_matte != AE_NULL && _node->track_matte->active == AE_TRUE )
+    if( _node->track_matte_node != AE_NULL && _node->track_matte_node->active == AE_TRUE )
     {
-        _render->track_matte_data = _node->track_matte->track_matte_data;
+        _render->track_matte_data = _node->track_matte_node->track_matte_data;
     }
     else
     {
@@ -698,7 +698,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
         local_b = __compute_movie_property_color_g( property_color, _frameId, _interpolate, _t );
     }
 
-    if( _node->relative == AE_NULL )
+    if( _node->relative_node == AE_NULL )
     {
         ae_float_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
 
@@ -737,7 +737,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
         return;
     }
 
-    aeMovieNode * node_relative = _node->relative;
+    aeMovieNode * node_relative = _node->relative_node;
 
     if( node_relative->update_revision != _revision )
     {
@@ -812,6 +812,8 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
     const struct aeMovieLayerShaderParameter ** it_parameter = shader->parameters;
     const struct aeMovieLayerShaderParameter ** it_parameter_end = shader->parameters + shader->parameter_count;
 
+    ae_uint32_t index = 0;
+
     for( ;
         it_parameter != it_parameter_end;
         ++it_parameter )
@@ -828,6 +830,7 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.element = _node->shader_data;
+                callbackData.index = index;
                 callbackData.name = parameter_slider->name;
                 callbackData.type = parameter_slider->type;
                 callbackData.color_r = 0;
@@ -847,6 +850,7 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.element = _node->shader_data;
+                callbackData.index = index;
                 callbackData.name = parameter_color->name;
                 callbackData.type = parameter_color->type;
                 callbackData.color_r = color_r;
@@ -857,6 +861,8 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
                 (*_composition->providers.shader_property_update)(&callbackData, _composition->provider_data);
             }break;
         }
+
+        ++index;
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -915,21 +921,21 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, ae_uint32
 
                         aeMovieNode * track_matte_node = _nodes + (*_iterator) + sub_composition_node_count;
 
-                        node->track_matte = track_matte_node;
+                        node->track_matte_node = track_matte_node;
                         node->track_matte_data = AE_NULL;
                     }break;
                 default:
                     {
                         aeMovieNode * track_matte_node = _nodes + (*_iterator);
 
-                        node->track_matte = track_matte_node;
+                        node->track_matte_node = track_matte_node;
                         node->track_matte_data = AE_NULL;
                     }break;
                 }
             }
             else
             {
-                node->track_matte = AE_NULL;
+                node->track_matte_node = AE_NULL;
                 node->track_matte_data = AE_NULL;
             }
         }
@@ -941,7 +947,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, ae_uint32
             }
             else
             {
-                node->track_matte = _trackMatte;
+                node->track_matte_node = _trackMatte;
                 node->track_matte_data = AE_NULL;
             }
         }
@@ -951,7 +957,7 @@ static ae_bool_t __setup_movie_node_track_matte( aeMovieNode * _nodes, ae_uint32
         case AE_MOVIE_LAYER_TYPE_MOVIE:
         case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
             {
-                if( __setup_movie_node_track_matte( _nodes, _iterator, layer->sub_composition_data, node->track_matte ) == AE_FALSE )
+                if( __setup_movie_node_track_matte( _nodes, _iterator, layer->sub_composition_data, node->track_matte_node ) == AE_FALSE )
                 {
                     return AE_FALSE;
                 }
@@ -985,18 +991,16 @@ static ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _composit
             aeMovieRenderMesh mesh;
             __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
-            aeMovieTrackMatteUpdateCallbackData callbackData;
-            callbackData.element = node->element_data;
+            aeMovieTrackMatteProviderCallbackData callbackData;
+            callbackData.node_element = node->element_data;
             callbackData.type = layer->type;
             callbackData.loop = AE_FALSE;
-            callbackData.state = AE_MOVIE_NODE_UPDATE_CREATE;
             callbackData.offset = node->start_time;
             callbackData.matrix = node->matrix;
             callbackData.opacity = node->opacity;
             callbackData.mesh = &mesh;
-            callbackData.track_matte_data = AE_NULL;
 
-            ae_voidptr_t track_matte_data = (*_composition->providers.track_matte_update)(&callbackData, _composition->provider_data);
+            ae_voidptr_t track_matte_data = (*_composition->providers.track_matte_provider)(&callbackData, _composition->provider_data);
             node->track_matte_data = track_matte_data;
         }
     }
@@ -1140,7 +1144,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, ae_uint32_t * _it
 
         if( layer->parent_index == 0 )
         {
-            node->relative = _parent;
+            node->relative_node = _parent;
         }
 
         node->current_time = 0.f;
@@ -1179,7 +1183,7 @@ static void __setup_movie_node_relative( aeMovieNode * _nodes, ae_uint32_t * _it
 
         aeMovieNode * parent_node = __find_node_by_layer( _nodes, begin_index, end_index, parent_layer );
 
-        node->relative = parent_node;
+        node->relative_node = parent_node;
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1470,7 +1474,7 @@ static void __setup_movie_composition_element( aeMovieComposition * _composition
     {
         aeMovieNode * node = it_node;
 
-        const aeMovieLayerData * track_matte_layer = node->track_matte == AE_NULL ? AE_NULL : node->track_matte->layer;
+        const aeMovieLayerData * track_matte_layer = node->track_matte_node == AE_NULL ? AE_NULL : node->track_matte_node->layer;
 
         aeMovieNodeProviderCallbackData callbackData;
         callbackData.layer = node->layer;
@@ -1544,12 +1548,26 @@ static void __dummy_ae_movie_node_update( const aeMovieNodeUpdateCallbackData * 
     (void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t __dummy_ae_movie_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_voidptr_t __dummy_ae_movie_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
     (void)_callbackData;
     (void)_data;
 
     return AE_NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __dummy_ae_movie_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    (void)_callbackData;
+    (void)_data;
+
+}
+//////////////////////////////////////////////////////////////////////////
+static void __dummy_ae_movie_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    (void)_callbackData;
+    (void)_data;
+
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_voidptr_t __dummy_ae_movie_shader_provider( const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data )
@@ -1558,6 +1576,12 @@ static ae_voidptr_t __dummy_ae_movie_shader_provider( const aeMovieShaderProvide
     (void)_data;
 
     return AE_NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __dummy_ae_movie_shader_deleter( const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    (void)_callbackData;
+    (void)_data;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __dummy_ae_movie_shader_property_update( const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data )
@@ -1586,8 +1610,11 @@ void ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _p
     _providers->node_provider = &__dummy_ae_movie_node_provider;
     _providers->node_deleter = &__dummy_ae_movie_node_destroyer;
     _providers->node_update = &__dummy_ae_movie_node_update;
+    _providers->track_matte_provider = &__dummy_ae_movie_track_matte_provider;
     _providers->track_matte_update = &__dummy_ae_movie_track_matte_update;
+    _providers->track_matte_deleter = &__dummy_ae_movie_track_matte_deleter;
     _providers->shader_provider = &__dummy_ae_movie_shader_provider;
+    _providers->shader_deleter = &__dummy_ae_movie_shader_deleter;
     _providers->shader_property_update = &__dummy_ae_movie_shader_property_update;
     _providers->composition_event = &__dummy_ae_movie_composition_event;
     _providers->composition_state = &__dummy_ae_movie_composition_state;
@@ -1668,7 +1695,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
     return composition;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __notify_delete_track_mattes( const aeMovieComposition * _composition )
+static void __delete_nodes( const aeMovieComposition * _composition )
 {
     const aeMovieNode *it_node = _composition->nodes;
     const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
@@ -1678,30 +1705,24 @@ static void __notify_delete_track_mattes( const aeMovieComposition * _compositio
 
         const aeMovieLayerData * layer = node->layer;
 
-        aeMovieTrackMatteUpdateCallbackData callbackData;
-        callbackData.element = node->element_data;
-        callbackData.type = layer->type;
-        callbackData.loop = AE_FALSE;
-        callbackData.state = AE_MOVIE_NODE_UPDATE_DESTROY;
-        callbackData.offset = 0.f;
-        callbackData.matrix = AE_NULL;
-        callbackData.opacity = 0.f;
-        callbackData.mesh = AE_NULL;
-        callbackData.track_matte_data = node->track_matte_data;
+        if( node->shader_data != AE_NULL )
+        { 
+            aeMovieShaderDeleterCallbackData callbackData;
+            callbackData.element = node->shader_data;
+            callbackData.name = layer->shader->name;
+            callbackData.version = layer->shader->version;
 
-        (*_composition->providers.track_matte_update)(&callbackData, _composition->provider_data);
-    }
-}
-//////////////////////////////////////////////////////////////////////////
-static void __notify_delete_nodes( const aeMovieComposition * _composition )
-{
-    const aeMovieNode *it_node = _composition->nodes;
-    const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
-    for( ; it_node != it_node_end; ++it_node )
-    {
-        const aeMovieNode * node = it_node;
+            (*_composition->providers.shader_deleter)(&callbackData, _composition->provider_data);
+        }
 
-        const aeMovieLayerData * layer = node->layer;
+        if( layer->is_track_matte == AE_TRUE )
+        {
+            aeMovieTrackMatteDeleterCallbackData callbackData;
+            callbackData.element = node->track_matte_data;
+            callbackData.type = layer->type;
+            
+            (*_composition->providers.track_matte_deleter)(&callbackData, _composition->provider_data);
+        }
 
         aeMovieNodeDestroyCallbackData callbackData;
         callbackData.element = node->element_data;
@@ -1711,7 +1732,7 @@ static void __notify_delete_nodes( const aeMovieComposition * _composition )
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __notify_delete_camera( const aeMovieComposition * _composition )
+static void __delete_camera( const aeMovieComposition * _composition )
 {
     if( _composition->camera_data == AE_NULL )
     {
@@ -1727,13 +1748,13 @@ static void __notify_delete_camera( const aeMovieComposition * _composition )
 
     (*_composition->providers.camera_deleter)(&callbackData, _composition->provider_data);
 }
+///
 //////////////////////////////////////////////////////////////////////////
 void ae_delete_movie_composition( const aeMovieComposition * _composition )
 {
-    __notify_delete_track_mattes( _composition );
-    __notify_delete_nodes( _composition );
-    __notify_delete_camera( _composition );
-
+    __delete_nodes( _composition );
+    __delete_camera( _composition );
+    
     const aeMovieInstance * instance = _composition->movie_data->instance;
 
     const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
@@ -3096,7 +3117,7 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, ae_uin
             continue;
         }
 
-        if( node->track_matte != AE_NULL && node->track_matte->active == AE_FALSE )
+        if( node->track_matte_node != AE_NULL && node->track_matte_node->active == AE_FALSE )
         {
             continue;
         }
@@ -3134,7 +3155,7 @@ ae_uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composit
             continue;
         }
 
-        if( node->track_matte != AE_NULL && node->track_matte->active == AE_FALSE )
+        if( node->track_matte_node != AE_NULL && node->track_matte_node->active == AE_FALSE )
         {
             continue;
         }

@@ -343,7 +343,28 @@ void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackDat
 	}
 }
 
-ae_voidptr_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
+ae_voidptr_t ex_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
+    (void)_data;
+
+    EX_LOG( "Track matte provider callback.\n" );
+
+    EX_LOG( " NODE_UPDATE_CREATE\n" );
+
+    //
+    // Create a reference here to a user-provided structure.
+    // It should contain the mesh data from the callback & be used during updating & rendering.
+    // Return value goes into layer->track_matte_data.
+    //
+
+    // 			ex_track_matte_data_t track_matte_data = ;
+    //			track_matte_data->mesh = *_callbackData->mesh;
+    //			return track_matte_data;
+
+    return NULL;
+}
+
+
+void ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;
 
 	EX_LOG( "Track matte update callback.\n" );
@@ -351,21 +372,6 @@ ae_voidptr_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallba
 	EX_LOG( " State:" );
 
 	switch( _callbackData->state ) {
-	case AE_MOVIE_NODE_UPDATE_CREATE: {
-			EX_LOG( " NODE_UPDATE_CREATE\n" );
-
-			//
-			// Create a reference here to a user-provided structure.
-			// It should contain the mesh data from the callback & be used during updating & rendering.
-			// Return value goes into layer->track_matte_data.
-			//
-
-// 			ex_track_matte_data_t track_matte_data = ;
-//			track_matte_data->mesh = *_callbackData->mesh;
-//			return track_matte_data;
-
-			break;
-		}
 	case AE_MOVIE_NODE_UPDATE_BEGIN: {
 			EX_LOG( " NODE_UPDATE_BEGIN\n" );
 
@@ -388,9 +394,14 @@ ae_voidptr_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallba
 			break;
 		}
 	}
-
-	return NULL;
 }
+
+void ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
+    (void)_data;
+
+    EX_LOG( "Track matte deleter callback.\n" );
+}
+
 
 void ex_callback_composition_event( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;

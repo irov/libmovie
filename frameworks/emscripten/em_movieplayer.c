@@ -702,6 +702,184 @@ static void ae_movie_callback_camera_update( const aeMovieCameraUpdateCallbackDa
     __make_lookat_m4( camera->view, _callbackData->position, _callbackData->target );
 }
 //////////////////////////////////////////////////////////////////////////
+typedef struct em_shader_t
+{
+    GLuint program;
+
+    uint32_t parameter_count;
+    const char * parameter_names[32];
+    GLint parameter_locations[32];    
+
+    GLint mvpMatrixLocation;
+    GLint tex0Location;
+} em_shader_t;
+//////////////////////////////////////////////////////////////////////////
+static ae_voidptr_t ae_movie_callback_shader_provider( const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    em_shader_t * shader = malloc( sizeof( em_shader_t ) );
+
+    GLuint fragmentShaderId;
+    GLCALLR( fragmentShaderId, glCreateShader, (GL_FRAGMENT_SHADER) );
+
+    if( fragmentShaderId == 0 )
+    {
+        return em_nullptr;
+    }
+
+    const char * fragmentShaderSource = _callbackData->shader_fragment;
+
+    GLint fragmentShaderSourceSize = (GLint)strlen( fragmentShaderSource );
+
+    GLCALL( glShaderSource, (fragmentShaderId, 1, &fragmentShaderSource, &fragmentShaderSourceSize) );
+    GLCALL( glCompileShader, (fragmentShaderId) );
+
+    GLint fragmentShaderStatus;
+    GLCALL( glGetShaderiv, (fragmentShaderId, GL_COMPILE_STATUS, &fragmentShaderStatus) );
+
+    if( fragmentShaderStatus == GL_FALSE )
+    {
+        GLchar errorLog[1024];
+        GLCALL( glGetShaderInfoLog, (fragmentShaderId, sizeof( errorLog ) - 1, NULL, errorLog) );
+
+        emscripten_log( EM_LOG_CONSOLE, "opengl compilation fragment shader '%s' version '%d' error '%s'\n"
+            , _callbackData->name
+            , _callbackData->version
+            , errorLog
+        );
+
+        return em_nullptr;
+    }
+
+    GLuint vertexShaderId;
+    GLCALLR( vertexShaderId, glCreateShader, (GL_VERTEX_SHADER) );
+
+    if( vertexShaderId == 0 )
+    {
+        return em_nullptr;
+    }
+
+    const char * vertexShaderSource = _callbackData->shader_vertex;
+
+    GLint vertexShaderSourceSize = (GLint)strlen( vertexShaderSource );
+
+    GLCALL( glShaderSource, (vertexShaderId, 1, &vertexShaderSource, &vertexShaderSourceSize) );
+    GLCALL( glCompileShader, (vertexShaderId) );
+
+    GLint vertexShaderStatus;
+    GLCALL( glGetShaderiv, (vertexShaderId, GL_COMPILE_STATUS, &vertexShaderStatus) );
+
+    if( vertexShaderStatus == GL_FALSE )
+    {
+        GLchar errorLog[1024];
+        GLCALL( glGetShaderInfoLog, (vertexShaderId, sizeof( errorLog ) - 1, NULL, errorLog) );
+
+        emscripten_log( EM_LOG_CONSOLE, "opengl compilation vertex shader '%s' version '%d' error '%s'\n"
+            , _callbackData->name
+            , _callbackData->version
+            , errorLog
+        );
+
+        return em_nullptr;
+    }
+
+    GLuint program;
+    GLCALLR( program, glCreateProgram, () );
+
+    if( program == 0 )
+    {
+        return em_nullptr;
+    }
+
+    GLCALL( glAttachShader, (program, vertexShaderId) );
+    GLCALL( glAttachShader, (program, fragmentShaderId) );
+
+    GLCALL( glLinkProgram, (program) );
+
+    GLint programLinkStatus;
+    GLCALL( glGetProgramiv, (program, GL_LINK_STATUS, &programLinkStatus) );
+
+    if( programLinkStatus == GL_FALSE )
+    {
+        GLchar errorLog[1024] = { 0 };
+        GLCALL( glGetProgramInfoLog, (program, sizeof( errorLog ) - 1, NULL, errorLog) );
+
+        emscripten_log( EM_LOG_CONSOLE, "opengl program '%s' version '%d' linking error '%s'\n"
+            , _callbackData->name
+            , _callbackData->version
+            , errorLog
+        );
+
+        return em_nullptr;
+    }
+
+    GLCALL( glDeleteShader, (vertexShaderId) );
+    GLCALL( glDeleteShader, (fragmentShaderId) );
+
+    shader->program = program;
+
+    shader->parameter_count = _callbackData->parameter_count;
+
+    for( uint32_t i = 0; i != _callbackData->parameter_count; ++i )
+    {
+        const char * parameter_name = _callbackData->parameter_names[i];
+
+        GLint parameter_location;
+        GLCALLR( parameter_location, glGetAttribLocation, (program, parameter_name) );
+
+        shader->parameter_names[i] = parameter_name;
+        shader->parameter_locations[i] = parameter_location;
+
+        emscripten_log( EM_LOG_CONSOLE, "opengl attrib '%s' location '%d'\n"
+            , parameter_name
+            , parameter_location
+        );
+    }
+
+    int mvpMatrixLocation;
+    GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program, "g_mvpMatrix") );
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl uniform mvpMatrix '%d'\n"
+        , mvpMatrixLocation
+    );
+
+    shader->mvpMatrixLocation = mvpMatrixLocation;
+
+    int tex0Location;
+    GLCALLR( tex0Location, glGetUniformLocation, (program, "g_tex0") );
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl uniform tex0 '%d'\n"
+        , tex0Location
+    );
+
+    shader->tex0Location = tex0Location;
+
+    return shader;
+}
+//////////////////////////////////////////////////////////////////////////
+static void ae_movie_callback_shader_property_update( const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    em_shader_t * shader = (em_shader_t *)_callbackData->element;
+
+    GLint location = shader->parameter_locations[_callbackData->index];
+
+    switch( _callbackData->type )
+    {
+    case 3:
+        {            
+            GLCALL( glUniform1f, (location, _callbackData->value) );
+        }break;
+    case 5:
+        {
+            GLCALL( glUniform3f, ( location, _callbackData->color_r, _callbackData->color_g, _callbackData->color_b ) );
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+static void ae_movie_callback_shader_deleter( const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    free( _callbackData->element );
+}
+//////////////////////////////////////////////////////////////////////////
 em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_t _movieData, const char * _name )
 {
     aeMovieData * ae_movie_data = (aeMovieData *)_movieData;
@@ -720,14 +898,18 @@ em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_
         return AE_NULL;
     }
 
-    aeMovieCompositionProviders compositionProviders;
-    ae_initialize_movie_composition_providers( &compositionProviders );
+    aeMovieCompositionProviders providers;
+    ae_initialize_movie_composition_providers( &providers );
 
-    compositionProviders.camera_provider = &ae_movie_callback_camera_provider;
-    compositionProviders.camera_deleter = &ae_movie_callback_camera_deleter;
-    compositionProviders.camera_update = &ae_movie_callback_camera_update;
+    providers.camera_provider = &ae_movie_callback_camera_provider;
+    providers.camera_deleter = &ae_movie_callback_camera_deleter;
+    providers.camera_update = &ae_movie_callback_camera_update;
 
-    aeMovieComposition * movieComposition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &compositionProviders, AE_NULL );
+    providers.shader_provider = &ae_movie_callback_shader_provider;
+    providers.shader_deleter = &ae_movie_callback_shader_deleter;
+    providers.shader_property_update = &ae_movie_callback_shader_property_update;
+
+    aeMovieComposition * movieComposition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &providers, AE_NULL );
 
     if( movieComposition == AE_NULL )
     {
@@ -817,6 +999,59 @@ static uint32_t __make_argb( float _r, float _g, float _b, float _a )
     return argb;
 }
 //////////////////////////////////////////////////////////////////////////
+static void __make_orthogonal( float * _out )
+{
+    _out[0] = 1.f;
+    _out[1] = 0.f;
+    _out[2] = 0.f;
+    _out[3] = 0.f;
+
+    _out[4] = 0.f;
+    _out[5] = 1.f;
+    _out[6] = 0.f;
+    _out[7] = 0.f;
+
+    _out[8] = 0.f;
+    _out[9] = 0.f;
+    _out[10] = 1.f;
+    _out[11] = 0.f;
+
+    _out[12] = 0.f;
+    _out[13] = 0.f;
+    _out[14] = 0.f;
+    _out[15] = 1.f;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __make_fov( float * _out, float _width, float _height )
+{
+    float zn = -1.f;
+    float zf = 1.f;
+    float r = 1.f;
+    float l = 0.f;
+    float t = 1.f;
+    float b = 0.f;
+    
+    _out[0] = 2.f / _width;
+    _out[1] = 0.f;
+    _out[2] = 0.f;
+    _out[3] = 0.f;
+
+    _out[4] = 0.f;
+    _out[5] = -2.f / _height;
+    _out[6] = 0.f;
+    _out[7] = 0.f;
+
+    _out[8] = 0.f;
+    _out[9] = 0.f;
+    _out[10] = 2.f / (zf - zn);
+    _out[11] = 0.f;
+
+    _out[12] = -(r + l) / (r - l);
+    _out[13] = (t + b) / (t - b);
+    _out[14] = -zn / (zn - zf);
+    _out[15] = 1.f;
+}
+//////////////////////////////////////////////////////////////////////////
 void em_render_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition )
 {
     em_player_t * player = (em_player_t *)_player;
@@ -893,8 +1128,6 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
             }break;
         }
 
-        GLCALL( glUseProgram, (player->program) );
-
         GLCALL( glEnable, (GL_BLEND) );
 
         switch( mesh.blend_mode )
@@ -946,112 +1179,65 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
             }break;
         }
 
-        GLCALL( glActiveTexture, (GL_TEXTURE0) );
-
-        if( texture_id != 0U )
-        {
-            GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
-
-            GLCALL( glUniform1i, (player->samplerLocation, 0) );
-        }
-        else
-        {
-            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
-        }        
-
-        if( mesh.camera_data == AE_NULL )
-        {
-            const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
-
-            float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
-            float composition_height = ae_get_movie_composition_data_width( ae_movie_composition_data );
-
-            float viewMatrix[16];
-
-            viewMatrix[0] = 1.f;
-            viewMatrix[1] = 0.f;
-            viewMatrix[2] = 0.f;
-            viewMatrix[3] = 0.f;
-
-            viewMatrix[4] = 0.f;
-            viewMatrix[5] = 1.f;
-            viewMatrix[6] = 0.f;
-            viewMatrix[7] = 0.f;
-
-            viewMatrix[8] = 0.f;
-            viewMatrix[9] = 0.f;
-            viewMatrix[10] = 1.f;
-            viewMatrix[11] = 0.f;
-
-            viewMatrix[12] = 0.f;
-            viewMatrix[13] = 0.f;
-            viewMatrix[14] = 0.f;
-            viewMatrix[15] = 1.f;
-
-            GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, viewMatrix) );
-
-            float zn = -1.f;
-            float zf = 1.f;
-            float r = 1.f;
-            float l = 0.f;
-            float t = 1.f;
-            float b = 0.f;
-
-            float projectionMatrix[16];
-
-            projectionMatrix[0] = 2.f / composition_width;
-            projectionMatrix[1] = 0.f;
-            projectionMatrix[2] = 0.f;
-            projectionMatrix[3] = 0.f;
-
-            projectionMatrix[4] = 0.f;
-            projectionMatrix[5] = -2.f / composition_height;
-            projectionMatrix[6] = 0.f;
-            projectionMatrix[7] = 0.f;
-
-            projectionMatrix[8] = 0.f;
-            projectionMatrix[9] = 0.f;
-            projectionMatrix[10] = 2.f / (zf - zn);
-            projectionMatrix[11] = 0.f;
-
-            projectionMatrix[12] = -(r + l) / (r - l);
-            projectionMatrix[13] = (t + b) / (t - b);
-            projectionMatrix[14] = -zn / (zn - zf);
-            projectionMatrix[15] = 1.f;
-
-            GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, projectionMatrix) );
-            
-            glViewport( 0, 0, composition_width, composition_height );
-        }
-        else
-        {
-            ae_camera_t * camera = (ae_camera_t *)mesh.camera_data;
-
-            GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, camera->view) );
-            GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, camera->projection) );
-
-            glViewport( 0, 0, camera->width, camera->height );
-        }
-
         GLuint opengl_vertex_buffer_id = 0;
         GLCALL( glGenBuffers, (1, &opengl_vertex_buffer_id) );
         GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
         GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
 
-        GLCALL( glEnableVertexAttribArray, (player->inVertLocation) );
-        GLCALL( glEnableVertexAttribArray, (player->inColLocation) );
-        GLCALL( glEnableVertexAttribArray, (player->inUVLocation) );
+        if( mesh.shader_data == AE_NULL )
+        {
+            GLCALL( glUseProgram, (player->program) );
 
-        GLCALL( glVertexAttribPointer, (player->inVertLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, position )) );
-        GLCALL( glVertexAttribPointer, (player->inColLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
-        GLCALL( glVertexAttribPointer, (player->inUVLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv )) );
+            GLCALL( glActiveTexture, (GL_TEXTURE0) );
 
-        //emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' texture '%d' index '%d'"
-        //    , mesh.vertexCount
-        //    , mesh.indexCount
-        //    , texture_id
-        //    , mesh_iterator
-        //);
+            if( texture_id != 0U )
+            {
+                GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
+
+                GLCALL( glUniform1i, (player->samplerLocation, 0) );
+            }
+            else
+            {
+                GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
+            }
+
+            if( mesh.camera_data == AE_NULL )
+            {
+                const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
+
+                float viewMatrix[16];
+                __make_orthogonal( viewMatrix );
+
+                GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, viewMatrix) );
+
+                float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
+                float composition_height = ae_get_movie_composition_data_width( ae_movie_composition_data );
+
+                float projectionMatrix[16];
+                __make_fov( projectionMatrix, composition_width, composition_height );
+
+                GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, projectionMatrix) );
+
+                glViewport( 0, 0, composition_width, composition_height );
+            }
+            else
+            {
+                ae_camera_t * camera = (ae_camera_t *)mesh.camera_data;
+
+                GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, camera->view) );
+                GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, camera->projection) );
+
+                glViewport( 0, 0, camera->width, camera->height );
+            }
+
+            GLCALL( glEnableVertexAttribArray, (player->inVertLocation) );
+            GLCALL( glEnableVertexAttribArray, (player->inColLocation) );
+            GLCALL( glEnableVertexAttribArray, (player->inUVLocation) );
+
+            GLCALL( glVertexAttribPointer, (player->inVertLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, position )) );
+            GLCALL( glVertexAttribPointer, (player->inColLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
+            GLCALL( glVertexAttribPointer, (player->inUVLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv )) );
+        }
 
         GLuint opengl_indices_buffer_id = 0;
         GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
@@ -1060,9 +1246,12 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
         GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, 0) );
 
-        GLCALL( glDisableVertexAttribArray, (player->inVertLocation) );
-        GLCALL( glDisableVertexAttribArray, (player->inColLocation) );
-        GLCALL( glDisableVertexAttribArray, (player->inUVLocation) );
+        if( mesh.shader_data == AE_NULL )
+        {
+            GLCALL( glDisableVertexAttribArray, (player->inVertLocation) );
+            GLCALL( glDisableVertexAttribArray, (player->inColLocation) );
+            GLCALL( glDisableVertexAttribArray, (player->inUVLocation) );
+        }
 
         GLCALL( glActiveTexture, (GL_TEXTURE0) );
         GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
@@ -1074,5 +1263,12 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
         GLCALL( glDeleteBuffers, (1, &opengl_indices_buffer_id) );
         GLCALL( glDeleteBuffers, (1, &opengl_vertex_buffer_id) );
+
+        //emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' texture '%d' index '%d'"
+        //    , mesh.vertexCount
+        //    , mesh.indexCount
+        //    , texture_id
+        //    , mesh_iterator
+        //);
     }
 }

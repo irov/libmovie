@@ -121,8 +121,6 @@ typedef enum
     AE_MOVIE_NODE_UPDATE_PAUSE,
     AE_MOVIE_NODE_UPDATE_RESUME,
     AE_MOVIE_NODE_UPDATE_END,
-    AE_MOVIE_NODE_UPDATE_CREATE,
-    AE_MOVIE_NODE_UPDATE_DESTROY,
     __AE_MOVIE_NODE_UPDATE_STATES__,
 } aeMovieNodeUpdateState;
 
@@ -205,6 +203,23 @@ typedef struct aeMovieNodeUpdateCallbackData
     ae_float_t opacity;
 } aeMovieNodeUpdateCallbackData;
 
+typedef struct aeMovieTrackMatteProviderCallbackData
+{
+    ae_voidptr_t node_element;
+    aeMovieLayerTypeEnum type;
+    ae_bool_t loop;
+    aeMovieNodeUpdateState state;
+    ae_float_t offset;
+
+    /// @brief Additional transform, e.g. for slots/sockets.
+    ae_matrix4_ptr_t matrix;
+
+    /// @brief Value from 0.0 to 1.0.
+    ae_float_t opacity;
+
+    aeMovieRenderMesh * mesh;    
+} aeMovieTrackMatteProviderCallbackData;
+
 typedef struct aeMovieTrackMatteUpdateCallbackData
 {
     ae_voidptr_t element;
@@ -223,6 +238,13 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     ae_voidptr_t track_matte_data;
 } aeMovieTrackMatteUpdateCallbackData;
 
+typedef struct aeMovieTrackMatteDeleterCallbackData
+{
+    ae_voidptr_t element;
+    aeMovieLayerTypeEnum type;
+
+} aeMovieTrackMatteDeleterCallbackData;
+
 typedef struct aeMovieShaderProviderCallbackData
 {
     ae_string_t name;
@@ -239,6 +261,8 @@ typedef struct aeMovieShaderPropertyUpdateCallbackData
 {
     ae_voidptr_t element;
 
+    ae_uint32_t index;
+
     ae_string_t name;
     ae_uint32_t type;
 
@@ -248,6 +272,15 @@ typedef struct aeMovieShaderPropertyUpdateCallbackData
 
     ae_float_t value;
 } aeMovieShaderPropertyUpdateCallbackData;
+
+typedef struct aeMovieShaderDeleterCallbackData
+{
+    ae_voidptr_t element;
+
+    ae_string_t name;
+    ae_uint32_t version;
+
+} aeMovieShaderDeleterCallbackData;
 
 typedef struct aeMovieCompositionEventCallbackData
 {
@@ -301,10 +334,15 @@ typedef ae_voidptr_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProv
 typedef void( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDestroyCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data);
 
-typedef ae_voidptr_t( *ae_movie_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data);
+typedef ae_voidptr_t( *ae_movie_callback_track_matte_provider_t )(const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_track_matte_deleter_t )(const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data);
+
 
 typedef ae_voidptr_t( *ae_movie_callback_shader_provider_t )(const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_shader_deleter_t )(const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_shader_property_update_t )(const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data);
+
 
 typedef void( *ae_movie_callback_composition_event_t )(const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data);
@@ -319,10 +357,14 @@ typedef struct aeMovieCompositionProviders
     ae_movie_callback_node_deleter_t node_deleter;
     ae_movie_callback_node_update_t node_update;
 
+    ae_movie_callback_track_matte_provider_t track_matte_provider;
     ae_movie_callback_track_matte_update_t track_matte_update;
+    ae_movie_callback_track_matte_deleter_t track_matte_deleter;
 
     ae_movie_callback_shader_provider_t shader_provider;
+    ae_movie_callback_shader_deleter_t shader_deleter;
     ae_movie_callback_shader_property_update_t shader_property_update;
+    
 
     ae_movie_callback_composition_event_t composition_event;
     ae_movie_callback_composition_state_t composition_state;
