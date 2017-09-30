@@ -102,20 +102,36 @@ void ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4
     _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _b[3 * 4 + 2];
 }
 //////////////////////////////////////////////////////////////////////////
-void __mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+static void __mul_v4_m4_r( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+{
+    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0];
+    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1];
+    _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _a[2] * _b[2 * 4 + 2];
+    _out[3] = _a[3] * _b[3 * 4 + 3];
+}
+//////////////////////////////////////////////////////////////////////////
+static void __mul_v4_m4_rr( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+{
+    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _a[3] * _b[3 * 4 + 0];
+    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _a[3] * _b[3 * 4 + 1];
+    _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _a[2] * _b[2 * 4 + 2] + _a[3] * _b[3 * 4 + 2];
+    _out[3] = _a[3] * _b[3 * 4 + 3];
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_mul_m4_m4_r( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
+{
+    __mul_v4_m4_r( _out + 0, _a + 0, _b );
+    __mul_v4_m4_r( _out + 4, _a + 4, _b );
+    __mul_v4_m4_r( _out + 8, _a + 8, _b );
+    __mul_v4_m4_rr( _out + 12, _a + 12, _b );
+}
+//////////////////////////////////////////////////////////////////////////
+static void __mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _a[3] * _b[3 * 4 + 0];
     _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _a[3] * _b[3 * 4 + 1];
     _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _a[2] * _b[2 * 4 + 2] + _a[3] * _b[3 * 4 + 2];
     _out[3] = _a[0] * _b[0 * 4 + 3] + _a[1] * _b[1 * 4 + 3] + _a[2] * _b[2 * 4 + 3] + _a[3] * _b[3 * 4 + 3];
-}
-//////////////////////////////////////////////////////////////////////////
-void ae_mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
-{
-    __mul_v4_m4( _out + 0, _a + 0, _b );
-    __mul_v4_m4( _out + 4, _a + 4, _b );
-    __mul_v4_m4( _out + 8, _a + 8, _b );
-    __mul_v4_m4( _out + 12, _a + 12, _b );
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_ident_m4( ae_matrix4_t _out )
@@ -276,7 +292,7 @@ void ae_movie_make_transformation3d_m4( ae_matrix4_t _out, const ae_vector3_t _p
     ae_matrix4_t mat_rotate;
     __make_quaternion_m4( mat_rotate, _quaternion );
 
-    ae_mul_m4_m4( _out, mat_scale, mat_rotate );
+    ae_mul_m4_m4_r( _out, mat_scale, mat_rotate );
 
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
@@ -333,7 +349,7 @@ void ae_movie_make_transformation2d_m4( ae_matrix4_t _out, const ae_vector2_t _p
     ae_matrix4_t mat_rotate;
     __make_quaternionzw_m4( mat_rotate, _quaternion );
 
-    ae_mul_m4_m4( _out, mat_base, mat_rotate );
+    ae_mul_m4_m4_r( _out, mat_base, mat_rotate );
 
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];

@@ -141,7 +141,7 @@ typedef enum
 } aeMovieResourceTypeEnum;
 
 #	define AE_MOVIE_RESOURCE_BASE()\
-	aeMovieResourceTypeEnum type;\
+	uint8_t type;\
 	ae_voidptr_t data
 
 typedef struct aeMovieResource

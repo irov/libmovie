@@ -191,9 +191,9 @@ typedef struct aeMovieNodeDestroyCallbackData
 typedef struct aeMovieNodeUpdateCallbackData
 {
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
+    ae_uint8_t type;
     ae_bool_t loop;
-    aeMovieNodeUpdateState state;
+    ae_uint8_t state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
@@ -206,9 +206,9 @@ typedef struct aeMovieNodeUpdateCallbackData
 typedef struct aeMovieTrackMatteProviderCallbackData
 {
     ae_voidptr_t node_element;
-    aeMovieLayerTypeEnum type;
+    ae_uint8_t type;
     ae_bool_t loop;
-    aeMovieNodeUpdateState state;
+    ae_uint8_t state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
@@ -223,9 +223,9 @@ typedef struct aeMovieTrackMatteProviderCallbackData
 typedef struct aeMovieTrackMatteUpdateCallbackData
 {
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
+    ae_uint8_t type;
     ae_bool_t loop;
-    aeMovieNodeUpdateState state;
+    ae_uint8_t state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
@@ -241,7 +241,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 typedef struct aeMovieTrackMatteDeleterCallbackData
 {
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
+    ae_uint8_t type;
 
 } aeMovieTrackMatteDeleterCallbackData;
 
@@ -253,18 +253,21 @@ typedef struct aeMovieShaderProviderCallbackData
     ae_string_t shader_vertex;
     ae_string_t shader_fragment;
 
-    ae_uint32_t parameter_count;
+    ae_uint8_t parameter_count;
     ae_string_t parameter_names[32];
+    ae_string_t parameter_uniforms[32];
+    ae_uint8_t parameter_types[32];
 } aeMovieShaderProviderCallbackData;
 
 typedef struct aeMovieShaderPropertyUpdateCallbackData
 {
     ae_voidptr_t element;
 
-    ae_uint32_t index;
+    ae_uint8_t index;
 
     ae_string_t name;
-    ae_uint32_t type;
+    ae_string_t uniform;
+    ae_uint8_t type;
 
     ae_float_t color_r;
     ae_float_t color_g;
@@ -320,7 +323,7 @@ typedef enum
 typedef struct aeMovieCompositionStateCallbackData
 {
     /// @brief New composition state.
-    aeMovieCompositionStateFlag state;
+    ae_uint8_t state;
 
     /// @brief Sub-composition ???.
     const aeMovieSubComposition * subcomposition;

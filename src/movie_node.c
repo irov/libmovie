@@ -760,7 +760,7 @@ static void __update_movie_composition_node_matrix( const aeMovieComposition * _
         ae_movie_make_layer_transformation_fixed( local_matrix, layer->transformation, _frameId );
     }
 
-    ae_mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
+    ae_mul_m4_m4_r( _node->matrix, local_matrix, node_relative->matrix );
 
     if( layer->sub_composition_data != AE_NULL )
     {
@@ -812,7 +812,7 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
     const struct aeMovieLayerShaderParameter ** it_parameter = shader->parameters;
     const struct aeMovieLayerShaderParameter ** it_parameter_end = shader->parameters + shader->parameter_count;
 
-    ae_uint32_t index = 0;
+    ae_uint8_t index = 0;
 
     for( ;
         it_parameter != it_parameter_end;
@@ -832,10 +832,11 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
                 callbackData.element = _node->shader_data;
                 callbackData.index = index;
                 callbackData.name = parameter_slider->name;
+                callbackData.uniform = parameter_slider->uniform;
                 callbackData.type = parameter_slider->type;
-                callbackData.color_r = 0;
-                callbackData.color_g = 0;
-                callbackData.color_b = 0;
+                callbackData.color_r = 0.f;
+                callbackData.color_g = 0.f;
+                callbackData.color_b = 0.f;
                 callbackData.value = value;
 
                 (*_composition->providers.shader_property_update)(&callbackData, _composition->provider_data);
@@ -852,6 +853,7 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
                 callbackData.element = _node->shader_data;
                 callbackData.index = index;
                 callbackData.name = parameter_color->name;
+                callbackData.uniform = parameter_color->uniform;
                 callbackData.type = parameter_color->type;
                 callbackData.color_r = color_r;
                 callbackData.color_g = color_g;
@@ -1457,6 +1459,8 @@ static void __setup_movie_node_shader( aeMovieComposition * _composition )
             const struct aeMovieLayerShaderParameter * parameter = *it_parameter;
 
             callbackData.parameter_names[paremeter_index] = parameter->name;
+            callbackData.parameter_uniforms[paremeter_index] = parameter->uniform;
+            callbackData.parameter_types[paremeter_index] = parameter->type;
             paremeter_index++;
         }
         

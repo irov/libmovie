@@ -657,7 +657,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                     it_parameter != it_parameter_end;
                     ++it_parameter )
                 {
-                    uint32_t paramater_type;
+                    uint8_t paramater_type;
                     READ( _stream, paramater_type );
 
                     switch( paramater_type )
@@ -667,7 +667,8 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                             struct aeMovieLayerShaderParameterSlider * parameter_slider = AE_NEW( _stream->instance, struct aeMovieLayerShaderParameterSlider );
 
                             parameter_slider->type = paramater_type;
-                            READ_STRING( _stream, parameter_slider->name );
+                            READ_STRING( _stream, parameter_slider->name );                                                        
+                            READ_STRING( _stream, parameter_slider->uniform );
 
                             struct aeMoviePropertyValue * property_value = AE_NEW( _stream->instance, struct aeMoviePropertyValue );
 
@@ -683,6 +684,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                             parameter_color->type = paramater_type;
                             READ_STRING( _stream, parameter_color->name );
+                            READ_STRING( _stream, parameter_color->uniform );
 
                             struct aeMoviePropertyColor * property_color = AE_NEW( _stream->instance, struct aeMoviePropertyColor );
 
@@ -792,7 +794,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
     }
     else
     {
-        aeMovieLayerTypeEnum layer_type = _layer->type;
+        uint8_t layer_type = _layer->type;
 
         switch( layer_type )
         {

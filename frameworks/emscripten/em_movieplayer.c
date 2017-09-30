@@ -21,6 +21,23 @@ typedef struct em_render_vertex_t
 //////////////////////////////////////////////////////////////////////////
 typedef uint16_t em_render_index_t;
 //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+static void __mul_v4_m4( float * _out, const float * _a, const float * _b )
+{
+    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _a[3] * _b[3 * 4 + 0];
+    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _a[3] * _b[3 * 4 + 1];
+    _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _a[2] * _b[2 * 4 + 2] + _a[3] * _b[3 * 4 + 2];
+    _out[3] = _a[0] * _b[0 * 4 + 3] + _a[1] * _b[1 * 4 + 3] + _a[2] * _b[2 * 4 + 3] + _a[3] * _b[3 * 4 + 3];
+}
+//////////////////////////////////////////////////////////////////////////
+static void __mul_m4_m4( float * _out, const float * _a, const float * _b )
+{
+    __mul_v4_m4( _out + 0, _a + 0, _b );
+    __mul_v4_m4( _out + 4, _a + 4, _b );
+    __mul_v4_m4( _out + 8, _a + 8, _b );
+    __mul_v4_m4( _out + 12, _a + 12, _b );
+}
+//////////////////////////////////////////////////////////////////////////
 static const char * __opengl_get_error_string( GLenum _err )
 {
     switch( _err )
@@ -82,16 +99,15 @@ typedef struct em_player_t
     float width;
     float height;
 
-    GLuint program;
+    GLuint program_id;
 
-    GLint inVertLocation;
-    GLint inColLocation;
-    GLint inUVLocation;
+    GLint positionLocation;
+    GLint colorLocation;
+    GLint texcoordLocation;
 
-    GLint viewMatrixLocation;
-    GLint projectionMatrixLocation;
+    GLint mvpMatrixLocation;
 
-    GLint samplerLocation;
+    GLint tex0Location;
 
     em_render_vertex_t vertices[1024];
 
@@ -154,35 +170,35 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
 
     IMG_Init( IMG_INIT_PNG );
 
-    GLuint fragmentShaderId;
-    GLCALLR( fragmentShaderId, glCreateShader, (GL_FRAGMENT_SHADER) );
+    GLuint shader_fragment_id;
+    GLCALLR( shader_fragment_id, glCreateShader, (GL_FRAGMENT_SHADER) );
 
-    if( fragmentShaderId == 0 )
+    if( shader_fragment_id == 0 )
     {
         return em_nullptr;
     }
 
     const char * fragmentShaderSource =
-        "uniform sampler2D inSampler0;\n"
-        "varying lowp vec4 v_Col;\n"
-        "varying mediump vec2 v_UV;\n"        
+        "uniform sampler2D g_tex0;\n"
+        "varying lowp vec4 v_color;\n"
+        "varying mediump vec2 v_texcoord;\n"        
         "void main( void ) {\n"
-        "mediump vec4 c = v_Col * texture2D( inSampler0, v_UV );\n"
+        "mediump vec4 c = v_color * texture2D( g_tex0, v_texcoord );\n"
         "gl_FragColor = c;\n"
         "}\n";
 
     GLint fragmentShaderSourceSize = (GLint)strlen( fragmentShaderSource );
 
-    GLCALL( glShaderSource, (fragmentShaderId, 1, &fragmentShaderSource, &fragmentShaderSourceSize) );
-    GLCALL( glCompileShader, (fragmentShaderId) );
+    GLCALL( glShaderSource, (shader_fragment_id, 1, &fragmentShaderSource, &fragmentShaderSourceSize) );
+    GLCALL( glCompileShader, (shader_fragment_id) );
 
     GLint fragmentShaderStatus;
-    GLCALL( glGetShaderiv, (fragmentShaderId, GL_COMPILE_STATUS, &fragmentShaderStatus) );
+    GLCALL( glGetShaderiv, (shader_fragment_id, GL_COMPILE_STATUS, &fragmentShaderStatus) );
 
     if( fragmentShaderStatus == GL_FALSE )
     {
         GLchar errorLog[1024];
-        GLCALL( glGetShaderInfoLog, (fragmentShaderId, sizeof( errorLog ) - 1, NULL, errorLog) );
+        GLCALL( glGetShaderInfoLog, (shader_fragment_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
         emscripten_log( EM_LOG_CONSOLE, "opengl compilation fragment shader error '%s'\n"
             , errorLog
@@ -191,69 +207,68 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
         return em_nullptr;
     }
 
-    GLuint vertexShaderId;
-    GLCALLR( vertexShaderId, glCreateShader, (GL_VERTEX_SHADER) );
+    GLuint shader_vertex_id;
+    GLCALLR( shader_vertex_id, glCreateShader, (GL_VERTEX_SHADER) );
 
-    if( vertexShaderId == 0 )
+    if( shader_vertex_id == 0 )
     {
         return em_nullptr;
     }
 
     const char * vertexShaderSource =
-        "uniform highp mat4 viewMatrix;\n"
-        "uniform highp mat4 projectionMatrix;\n"
-        "attribute highp vec4 inVert;\n"
-        "attribute lowp vec4 inCol;\n"
-        "attribute mediump vec2 inUV;\n"        
-        "varying lowp vec4 v_Col;\n"
-        "varying mediump vec2 v_UV;\n"
+        "uniform highp mat4 g_mvpMatrix;\n"
+        "attribute highp vec4 a_position;\n"
+        "attribute lowp vec4 a_color;\n"
+        "attribute mediump vec2 a_texcoord;\n"
+        "varying lowp vec4 v_color;\n"
+        "varying mediump vec2 v_texcoord;\n"
         "void main( void )\n"
         "{\n"
-        "   gl_Position = projectionMatrix * viewMatrix * inVert;\n"
-        "   v_Col = inCol;\n"
-        "   v_UV = inUV;\n"
+        "   gl_Position = g_mvpMatrix * a_position;\n"
+        "   v_color = a_color;\n"
+        "   v_texcoord = a_texcoord;\n"
         "}\n";
 
     GLint vertexShaderSourceSize = (GLint)strlen( vertexShaderSource );
 
-    GLCALL( glShaderSource, (vertexShaderId, 1, &vertexShaderSource, &vertexShaderSourceSize) );
-    GLCALL( glCompileShader, (vertexShaderId) );
+    GLCALL( glShaderSource, (shader_vertex_id, 1, &vertexShaderSource, &vertexShaderSourceSize) );
+    GLCALL( glCompileShader, (shader_vertex_id) );
 
     GLint vertexShaderStatus;
-    GLCALL( glGetShaderiv, (vertexShaderId, GL_COMPILE_STATUS, &vertexShaderStatus) );
+    GLCALL( glGetShaderiv, (shader_vertex_id, GL_COMPILE_STATUS, &vertexShaderStatus) );
 
     if( vertexShaderStatus == GL_FALSE )
     {
         GLchar errorLog[1024];
-        GLCALL( glGetShaderInfoLog, (vertexShaderId, sizeof( errorLog ) - 1, NULL, errorLog) );
+        GLCALL( glGetShaderInfoLog, (shader_vertex_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
-        emscripten_log( EM_LOG_CONSOLE, "opengl compilation fragment shader error '%s'\n"
+        emscripten_log( EM_LOG_CONSOLE, "opengl compilation vertex shader error '%s'\n"
             , errorLog
         );
 
         return em_nullptr;
     }
 
-    GLuint program;
-    GLCALLR( program, glCreateProgram, () );
+    GLuint program_id;
+    GLCALLR( program_id, glCreateProgram, () );
 
-    if( program == 0 )
+    if( program_id == 0 )
     {
         return em_nullptr;
     }
 
-    GLCALL( glAttachShader, (program, vertexShaderId) );
-    GLCALL( glAttachShader, (program, fragmentShaderId) );
+    GLCALL( glAttachShader, (program_id, shader_vertex_id) );
+    GLCALL( glAttachShader, (program_id, shader_fragment_id) );
 
-    GLCALL( glLinkProgram, (program) );
+    GLCALL( glLinkProgram, (program_id) );
 
     GLint programLinkStatus;
-    GLCALL( glGetProgramiv, (program, GL_LINK_STATUS, &programLinkStatus) );
+    GLCALL( glGetProgramiv, (program_id, GL_LINK_STATUS, &programLinkStatus) );
 
     if( programLinkStatus == GL_FALSE )
     {
         GLchar errorLog[1024] = { 0 };
-        GLCALL( glGetProgramInfoLog, (program, sizeof( errorLog ) - 1, NULL, errorLog) );
+        GLCALL( glGetProgramInfoLog, (program_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
         emscripten_log( EM_LOG_CONSOLE, "opengl program linking error '%s'\n"
             , errorLog
@@ -262,58 +277,54 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
         return em_nullptr;
     }
 
-    GLCALL( glDeleteShader, (vertexShaderId) );
-    GLCALL( glDeleteShader, (fragmentShaderId) );
+    GLCALL( glDeleteShader, (shader_vertex_id) );
+    GLCALL( glDeleteShader, (shader_fragment_id) );
 
-    int inVertLocation;
-    GLCALLR( inVertLocation, glGetAttribLocation, (program, "inVert") );
+    int positionLocation;
+    GLCALLR( positionLocation, glGetAttribLocation, (program_id, "a_position") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inVert '%d'\n"
-        , inVertLocation
+    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_position '%d'\n"
+        , positionLocation
     );
 
-    int inColLocation;
-    GLCALLR( inColLocation, glGetAttribLocation, (program, "inCol") );
+    int colorLocation;
+    GLCALLR( colorLocation, glGetAttribLocation, (program_id, "a_color") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inCol '%d'\n"
-        , inColLocation
+    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_color '%d'\n"
+        , colorLocation
     );
 
-    int inUVLocation;
-    GLCALLR( inUVLocation, glGetAttribLocation, (program, "inUV") );
+    int texcoordLocation;
+    GLCALLR( texcoordLocation, glGetAttribLocation, (program_id, "a_texcoord") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inUV '%d'\n"
-        , inUVLocation
-    );
-    
-    int viewMatrixLocation;
-    GLCALLR( viewMatrixLocation, glGetUniformLocation, (program, "viewMatrix") );
-        
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform viewMatrix '%d'\n"
-        , viewMatrixLocation
-    );
-
-    int projectionMatrixLocation;
-    GLCALLR( projectionMatrixLocation, glGetUniformLocation, (program, "projectionMatrix") );
-
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform projectionMatrix '%d'\n"
-        , projectionMatrixLocation
+    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_texcoord '%d'\n"
+        , texcoordLocation
     );
     
-    int samplerLocation;
-    GLCALLR( samplerLocation, glGetUniformLocation, (program, "inSampler0") );
+    int mvpMatrixLocation;
+    GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform inSampler0 '%d'\n"
-        , samplerLocation
+    emscripten_log( EM_LOG_CONSOLE, "opengl uniform g_mvpMatrix '%d'\n"
+        , mvpMatrixLocation
+    );
+    
+    int tex0Location;
+    GLCALLR( tex0Location, glGetUniformLocation, (program_id, "g_tex0") );
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl uniform g_tex0 '%d'\n"
+        , tex0Location
     );
 
-    em_player->program = program;
-    em_player->inVertLocation = inVertLocation;
-    em_player->inColLocation = inColLocation;
-    em_player->inUVLocation = inUVLocation;
-    em_player->viewMatrixLocation = viewMatrixLocation;
-    em_player->projectionMatrixLocation = projectionMatrixLocation;
-    em_player->samplerLocation = samplerLocation;
+    emscripten_log( EM_LOG_CONSOLE, "opengl create program '__default__' id '%d'\n"
+        , program_id
+    );
+
+    em_player->program_id = program_id;
+    em_player->positionLocation = positionLocation;
+    em_player->colorLocation = colorLocation;
+    em_player->texcoordLocation = texcoordLocation;
+    em_player->mvpMatrixLocation = mvpMatrixLocation;
+    em_player->tex0Location = tex0Location;
 
     emscripten_log( EM_LOG_CONSOLE, "successful create player hashkey '%s' width '%f' height '%f'"
         , _hashkey
@@ -702,13 +713,27 @@ static void ae_movie_callback_camera_update( const aeMovieCameraUpdateCallbackDa
     __make_lookat_m4( camera->view, _callbackData->position, _callbackData->target );
 }
 //////////////////////////////////////////////////////////////////////////
+typedef struct em_parameter_color_t
+{
+    GLfloat r;
+    GLfloat g;
+    GLfloat b;
+} em_parameter_color_t;
+//////////////////////////////////////////////////////////////////////////
 typedef struct em_shader_t
 {
-    GLuint program;
+    GLuint program_id;
 
-    uint32_t parameter_count;
-    const char * parameter_names[32];
-    GLint parameter_locations[32];    
+    uint8_t parameter_count;
+    int8_t parameter_types[32];
+    GLint parameter_locations[32];
+
+    GLfloat parameter_values[32];
+    em_parameter_color_t parameter_colors[32];
+
+    GLint positionLocation;
+    GLint colorLocation;
+    GLint texcoordLocation;
 
     GLint mvpMatrixLocation;
     GLint tex0Location;
@@ -718,28 +743,34 @@ static ae_voidptr_t ae_movie_callback_shader_provider( const aeMovieShaderProvid
 {
     em_shader_t * shader = malloc( sizeof( em_shader_t ) );
 
-    GLuint fragmentShaderId;
-    GLCALLR( fragmentShaderId, glCreateShader, (GL_FRAGMENT_SHADER) );
+    GLuint shader_fragment_id;
+    GLCALLR( shader_fragment_id, glCreateShader, (GL_FRAGMENT_SHADER) );
 
-    if( fragmentShaderId == 0 )
+    if( shader_fragment_id == 0 )
     {
         return em_nullptr;
     }
 
     const char * fragmentShaderSource = _callbackData->shader_fragment;
 
+    emscripten_log( EM_LOG_CONSOLE, "opengl fragment shader '%s' version '%d':\n%s\n"
+        , _callbackData->name
+        , _callbackData->version
+        , fragmentShaderSource
+    );
+
     GLint fragmentShaderSourceSize = (GLint)strlen( fragmentShaderSource );
 
-    GLCALL( glShaderSource, (fragmentShaderId, 1, &fragmentShaderSource, &fragmentShaderSourceSize) );
-    GLCALL( glCompileShader, (fragmentShaderId) );
+    GLCALL( glShaderSource, (shader_fragment_id, 1, &fragmentShaderSource, &fragmentShaderSourceSize) );
+    GLCALL( glCompileShader, (shader_fragment_id) );
 
     GLint fragmentShaderStatus;
-    GLCALL( glGetShaderiv, (fragmentShaderId, GL_COMPILE_STATUS, &fragmentShaderStatus) );
+    GLCALL( glGetShaderiv, (shader_fragment_id, GL_COMPILE_STATUS, &fragmentShaderStatus) );
 
     if( fragmentShaderStatus == GL_FALSE )
     {
         GLchar errorLog[1024];
-        GLCALL( glGetShaderInfoLog, (fragmentShaderId, sizeof( errorLog ) - 1, NULL, errorLog) );
+        GLCALL( glGetShaderInfoLog, (shader_fragment_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
         emscripten_log( EM_LOG_CONSOLE, "opengl compilation fragment shader '%s' version '%d' error '%s'\n"
             , _callbackData->name
@@ -750,28 +781,34 @@ static ae_voidptr_t ae_movie_callback_shader_provider( const aeMovieShaderProvid
         return em_nullptr;
     }
 
-    GLuint vertexShaderId;
-    GLCALLR( vertexShaderId, glCreateShader, (GL_VERTEX_SHADER) );
+    GLuint shader_vertex_id;
+    GLCALLR( shader_vertex_id, glCreateShader, (GL_VERTEX_SHADER) );
 
-    if( vertexShaderId == 0 )
+    if( shader_vertex_id == 0 )
     {
         return em_nullptr;
     }
 
     const char * vertexShaderSource = _callbackData->shader_vertex;
 
+    emscripten_log( EM_LOG_CONSOLE, "opengl vertex shader '%s' version '%d':\n%s\n"
+        , _callbackData->name
+        , _callbackData->version
+        , vertexShaderSource
+    );
+
     GLint vertexShaderSourceSize = (GLint)strlen( vertexShaderSource );
 
-    GLCALL( glShaderSource, (vertexShaderId, 1, &vertexShaderSource, &vertexShaderSourceSize) );
-    GLCALL( glCompileShader, (vertexShaderId) );
+    GLCALL( glShaderSource, (shader_vertex_id, 1, &vertexShaderSource, &vertexShaderSourceSize) );
+    GLCALL( glCompileShader, (shader_vertex_id) );
 
     GLint vertexShaderStatus;
-    GLCALL( glGetShaderiv, (vertexShaderId, GL_COMPILE_STATUS, &vertexShaderStatus) );
+    GLCALL( glGetShaderiv, (shader_vertex_id, GL_COMPILE_STATUS, &vertexShaderStatus) );
 
     if( vertexShaderStatus == GL_FALSE )
     {
         GLchar errorLog[1024];
-        GLCALL( glGetShaderInfoLog, (vertexShaderId, sizeof( errorLog ) - 1, NULL, errorLog) );
+        GLCALL( glGetShaderInfoLog, (shader_vertex_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
         emscripten_log( EM_LOG_CONSOLE, "opengl compilation vertex shader '%s' version '%d' error '%s'\n"
             , _callbackData->name
@@ -782,26 +819,26 @@ static ae_voidptr_t ae_movie_callback_shader_provider( const aeMovieShaderProvid
         return em_nullptr;
     }
 
-    GLuint program;
-    GLCALLR( program, glCreateProgram, () );
+    GLuint program_id;
+    GLCALLR( program_id, glCreateProgram, () );
 
-    if( program == 0 )
+    if( program_id == 0 )
     {
         return em_nullptr;
     }
 
-    GLCALL( glAttachShader, (program, vertexShaderId) );
-    GLCALL( glAttachShader, (program, fragmentShaderId) );
+    GLCALL( glAttachShader, (program_id, shader_vertex_id) );
+    GLCALL( glAttachShader, (program_id, shader_fragment_id) );
 
-    GLCALL( glLinkProgram, (program) );
+    GLCALL( glLinkProgram, (program_id) );
 
     GLint programLinkStatus;
-    GLCALL( glGetProgramiv, (program, GL_LINK_STATUS, &programLinkStatus) );
+    GLCALL( glGetProgramiv, (program_id, GL_LINK_STATUS, &programLinkStatus) );
 
     if( programLinkStatus == GL_FALSE )
     {
         GLchar errorLog[1024] = { 0 };
-        GLCALL( glGetProgramInfoLog, (program, sizeof( errorLog ) - 1, NULL, errorLog) );
+        GLCALL( glGetProgramInfoLog, (program_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
         emscripten_log( EM_LOG_CONSOLE, "opengl program '%s' version '%d' linking error '%s'\n"
             , _callbackData->name
@@ -812,31 +849,62 @@ static ae_voidptr_t ae_movie_callback_shader_provider( const aeMovieShaderProvid
         return em_nullptr;
     }
 
-    GLCALL( glDeleteShader, (vertexShaderId) );
-    GLCALL( glDeleteShader, (fragmentShaderId) );
+    GLCALL( glDeleteShader, (shader_vertex_id) );
+    GLCALL( glDeleteShader, (shader_fragment_id) );
 
-    shader->program = program;
+    shader->program_id = program_id;
+
+    int positionLocation;
+    GLCALLR( positionLocation, glGetAttribLocation, (program_id, "a_position") );
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inVert '%d'\n"
+        , positionLocation
+    );
+
+    shader->positionLocation = positionLocation;
+
+    int colorLocation;
+    GLCALLR( colorLocation, glGetAttribLocation, (program_id, "a_color") );
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inCol '%d'\n"
+        , colorLocation
+    );
+
+    shader->colorLocation = colorLocation;
+
+    int texcoordLocation;
+    GLCALLR( texcoordLocation, glGetAttribLocation, (program_id, "a_texcoord") );
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inUV '%d'\n"
+        , texcoordLocation
+    );
+
+    shader->texcoordLocation = texcoordLocation;
 
     shader->parameter_count = _callbackData->parameter_count;
 
     for( uint32_t i = 0; i != _callbackData->parameter_count; ++i )
     {
         const char * parameter_name = _callbackData->parameter_names[i];
+        const char * parameter_uniform = _callbackData->parameter_uniforms[i];
+        uint8_t parameter_type = _callbackData->parameter_types[i];        
+
+        shader->parameter_types[i] = parameter_type;
 
         GLint parameter_location;
-        GLCALLR( parameter_location, glGetAttribLocation, (program, parameter_name) );
-
-        shader->parameter_names[i] = parameter_name;
+        GLCALLR( parameter_location, glGetUniformLocation, (program_id, parameter_uniform) );
+        
         shader->parameter_locations[i] = parameter_location;
-
-        emscripten_log( EM_LOG_CONSOLE, "opengl attrib '%s' location '%d'\n"
+        
+        emscripten_log( EM_LOG_CONSOLE, "opengl attrib '%s' uniform '%s' location '%d'\n"
             , parameter_name
+            , parameter_uniform
             , parameter_location
         );
     }
 
     int mvpMatrixLocation;
-    GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program, "g_mvpMatrix") );
+    GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
 
     emscripten_log( EM_LOG_CONSOLE, "opengl uniform mvpMatrix '%d'\n"
         , mvpMatrixLocation
@@ -845,13 +913,19 @@ static ae_voidptr_t ae_movie_callback_shader_provider( const aeMovieShaderProvid
     shader->mvpMatrixLocation = mvpMatrixLocation;
 
     int tex0Location;
-    GLCALLR( tex0Location, glGetUniformLocation, (program, "g_tex0") );
+    GLCALLR( tex0Location, glGetUniformLocation, (program_id, "g_tex0") );
 
     emscripten_log( EM_LOG_CONSOLE, "opengl uniform tex0 '%d'\n"
         , tex0Location
     );
 
     shader->tex0Location = tex0Location;
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl create program '%s' version '%d' id '%d'\n"
+        , _callbackData->name
+        , _callbackData->version
+        , program_id
+    );
 
     return shader;
 }
@@ -860,17 +934,24 @@ static void ae_movie_callback_shader_property_update( const aeMovieShaderPropert
 {
     em_shader_t * shader = (em_shader_t *)_callbackData->element;
 
-    GLint location = shader->parameter_locations[_callbackData->index];
+    uint8_t index = _callbackData->index;
+
+    GLint location = shader->parameter_locations[index];
 
     switch( _callbackData->type )
     {
     case 3:
-        {            
-            GLCALL( glUniform1f, (location, _callbackData->value) );
+        {
+            shader->parameter_values[index] = _callbackData->value;            
         }break;
     case 5:
         {
-            GLCALL( glUniform3f, ( location, _callbackData->color_r, _callbackData->color_g, _callbackData->color_b ) );
+            em_parameter_color_t c;
+            c.r = _callbackData->color_r;
+            c.g = _callbackData->color_g;
+            c.b = _callbackData->color_b;
+
+            shader->parameter_colors[index] = c;
         }
     }
 }
@@ -1057,6 +1138,9 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
     em_player_t * player = (em_player_t *)_player;
 
     const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
+
+    GLCALL( glDisable, (GL_CULL_FACE) );
+    GLCALL( glEnable, (GL_BLEND) );
     
     uint32_t mesh_iterator = 0;
 
@@ -1128,17 +1212,15 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
             }break;
         }
 
-        GLCALL( glEnable, (GL_BLEND) );
-
         switch( mesh.blend_mode )
         {
         case AE_MOVIE_BLEND_ADD:
             {
-                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );
+                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE) );
             }break;
         case AE_MOVIE_BLEND_NORMAL:
             {
-                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE) );
+                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );                
             }break;
         case AE_MOVIE_BLEND_ALPHA_ADD:
         case AE_MOVIE_BLEND_CLASSIC_COLOR_BURN:
@@ -1184,59 +1266,114 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
         GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
         GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
 
+        GLint positionLocation;
+        GLint colorLocation;
+        GLint texcoordLocation;
+        GLint mvpMatrixLocation;
+        GLint tex0Location;
+
+        GLuint program_id;
+
         if( mesh.shader_data == AE_NULL )
         {
-            GLCALL( glUseProgram, (player->program) );
+            program_id = player->program_id;
 
-            GLCALL( glActiveTexture, (GL_TEXTURE0) );
+            GLCALL( glUseProgram, (player->program_id) );
 
-            if( texture_id != 0U )
+            positionLocation = player->positionLocation;
+            colorLocation = player->colorLocation;
+            texcoordLocation = player->texcoordLocation;
+            mvpMatrixLocation = player->mvpMatrixLocation;
+            tex0Location = player->tex0Location;
+        }
+        else
+        {
+            em_shader_t * shader = (em_shader_t *)mesh.shader_data;
+
+            program_id = shader->program_id;
+
+            GLCALL( glUseProgram, (shader->program_id) );
+
+            uint8_t parameter_count = shader->parameter_count;
+            for( uint8_t i = 0; i != parameter_count; ++i )
             {
-                GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
+                GLint parameter_location = shader->parameter_locations[i];
 
-                GLCALL( glUniform1i, (player->samplerLocation, 0) );
-            }
-            else
-            {
-                GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
-            }
+                uint8_t parameter_type = shader->parameter_types[i];
 
-            if( mesh.camera_data == AE_NULL )
-            {
-                const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
-
-                float viewMatrix[16];
-                __make_orthogonal( viewMatrix );
-
-                GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, viewMatrix) );
-
-                float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
-                float composition_height = ae_get_movie_composition_data_width( ae_movie_composition_data );
-
-                float projectionMatrix[16];
-                __make_fov( projectionMatrix, composition_width, composition_height );
-
-                GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, projectionMatrix) );
-
-                glViewport( 0, 0, composition_width, composition_height );
-            }
-            else
-            {
-                ae_camera_t * camera = (ae_camera_t *)mesh.camera_data;
-
-                GLCALL( glUniformMatrix4fv, (player->viewMatrixLocation, 1, GL_FALSE, camera->view) );
-                GLCALL( glUniformMatrix4fv, (player->projectionMatrixLocation, 1, GL_FALSE, camera->projection) );
-
-                glViewport( 0, 0, camera->width, camera->height );
+                switch( parameter_type )
+                {
+                case 3:
+                    {
+                        float value = shader->parameter_values[i];
+                        GLCALL( glUniform1f, (parameter_location, value) );
+                    }break;
+                case 5:
+                    {
+                        em_parameter_color_t * c = shader->parameter_colors + i;
+                        GLCALL( glUniform3f, (parameter_location, c->r, c->g, c->b) );
+                    }break;
+                }
             }
 
-            GLCALL( glEnableVertexAttribArray, (player->inVertLocation) );
-            GLCALL( glEnableVertexAttribArray, (player->inColLocation) );
-            GLCALL( glEnableVertexAttribArray, (player->inUVLocation) );
+            positionLocation = shader->positionLocation;
+            colorLocation = shader->colorLocation;
+            texcoordLocation = shader->texcoordLocation;
+            mvpMatrixLocation = shader->mvpMatrixLocation;
+            tex0Location = shader->tex0Location;
+        }
 
-            GLCALL( glVertexAttribPointer, (player->inVertLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, position )) );
-            GLCALL( glVertexAttribPointer, (player->inColLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
-            GLCALL( glVertexAttribPointer, (player->inUVLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv )) );
+        GLCALL( glActiveTexture, (GL_TEXTURE0) );
+
+        if( texture_id != 0U )
+        {
+            GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
+
+            GLCALL( glUniform1i, (tex0Location, 0) );
+        }
+        else
+        {
+            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
+        }
+
+        GLCALL( glEnableVertexAttribArray, (positionLocation) );
+        GLCALL( glEnableVertexAttribArray, (colorLocation) );
+        GLCALL( glEnableVertexAttribArray, (texcoordLocation) );
+
+        GLCALL( glVertexAttribPointer, (positionLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, position )) );
+        GLCALL( glVertexAttribPointer, (colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
+        GLCALL( glVertexAttribPointer, (texcoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv )) );
+
+        if( mesh.camera_data == AE_NULL )
+        {
+            const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
+
+            float viewMatrix[16];
+            __make_orthogonal( viewMatrix );
+
+            float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
+            float composition_height = ae_get_movie_composition_data_width( ae_movie_composition_data );
+
+            float projectionMatrix[16];
+            __make_fov( projectionMatrix, composition_width, composition_height );
+
+            float projectionViewMatrix[16];
+            __mul_m4_m4( projectionViewMatrix, projectionMatrix, viewMatrix );
+
+            GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
+
+            glViewport( 0, 0, (GLsizei)composition_width, (GLsizei)composition_height );
+        }
+        else
+        {
+            ae_camera_t * camera = (ae_camera_t *)mesh.camera_data;
+
+            float projectionViewMatrix[16];
+            __mul_m4_m4( projectionViewMatrix, camera->projection, camera->view );
+
+            GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
+
+            glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
         }
 
         GLuint opengl_indices_buffer_id = 0;
@@ -1246,12 +1383,9 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
         GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, 0) );
 
-        if( mesh.shader_data == AE_NULL )
-        {
-            GLCALL( glDisableVertexAttribArray, (player->inVertLocation) );
-            GLCALL( glDisableVertexAttribArray, (player->inColLocation) );
-            GLCALL( glDisableVertexAttribArray, (player->inUVLocation) );
-        }
+        GLCALL( glDisableVertexAttribArray, (positionLocation) );
+        GLCALL( glDisableVertexAttribArray, (colorLocation) );
+        GLCALL( glDisableVertexAttribArray, (texcoordLocation) );
 
         GLCALL( glActiveTexture, (GL_TEXTURE0) );
         GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
@@ -1264,9 +1398,10 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
         GLCALL( glDeleteBuffers, (1, &opengl_indices_buffer_id) );
         GLCALL( glDeleteBuffers, (1, &opengl_vertex_buffer_id) );
 
-        //emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' texture '%d' index '%d'"
+        //emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' program '%d' texture '%d' index '%d'"
         //    , mesh.vertexCount
         //    , mesh.indexCount
+        //    , program_id
         //    , texture_id
         //    , mesh_iterator
         //);

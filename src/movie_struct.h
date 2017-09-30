@@ -344,7 +344,8 @@ struct aeMovieLayerColorVertex
 };
 #	define AE_MOVIE_SHADER_PARAMETER_BASE()\
     ae_string_t name;\
-    ae_uint32_t type
+    ae_string_t uniform;\
+    ae_uint8_t type
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerShaderParameter
 {
@@ -374,7 +375,7 @@ struct aeMovieLayerShader
     ae_string_t shader_vertex;
     ae_string_t shader_fragment;
 
-    ae_uint32_t parameter_count;
+    ae_uint8_t parameter_count;
     const struct aeMovieLayerShaderParameter ** parameters;
 
 };
