@@ -191,7 +191,7 @@ ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * 
 
 	EX_LOG( " Layer: '%s'", ae_get_movie_layer_data_name( _callbackData->layer ) );
 
-	if( _callbackData->trackmatteLayer == NULL ) {
+	if( _callbackData->track_matte_layer == NULL ) {
 		EX_LOG( " Has track matte: no\n" );
 
 		EX_LOG( " Type:" );
@@ -257,11 +257,14 @@ ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * 
 	return NULL;
 }
 
-void ex_callback_node_destroyer( const aeMovieNodeDestroyCallbackData * _callbackData, ae_voidptr_t _data ) {
+void ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;
 
 	EX_LOG( "Node destroyer callback.\n" );
-	EX_LOG( " Layer type: %i\n", _callbackData->type );
+
+    aeMovieLayerTypeEnum type = ae_get_movie_layer_data_type( _callbackData->layer );
+
+	EX_LOG( " Layer type: %i\n", type );
 }
 
 void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {

@@ -144,14 +144,14 @@ typedef struct aeMovieCameraProviderCallbackData
 
 } aeMovieCameraProviderCallbackData;
 
-typedef struct aeMovieCameraDestroyCallbackData
+typedef struct aeMovieCameraDeleterCallbackData
 {
     /// @brief Camera name.
     const ae_char_t * name;
 
     /// @brief Camera element data.
     ae_voidptr_t element;
-} aeMovieCameraDestroyCallbackData;
+} aeMovieCameraDeleterCallbackData;
 
 typedef struct aeMovieCameraUpdateCallbackData
 {
@@ -179,14 +179,16 @@ typedef struct aeMovieNodeProviderCallbackData
     ae_float_t opacity;
 
     /// @brief Pointer to track matte layer, should be used to create user track matte structure inside provider.
-    const aeMovieLayerData * trackmatteLayer;
+    const aeMovieLayerData * track_matte_layer;
 } aeMovieNodeProviderCallbackData;
 
-typedef struct aeMovieNodeDestroyCallbackData
+typedef struct aeMovieNodeDeleterCallbackData
 {
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
-} aeMovieNodeDestroyCallbackData;
+
+    const aeMovieLayerData * layer;
+    const aeMovieLayerData * track_matte_layer;
+} aeMovieNodeDeleterCallbackData;
 
 typedef struct aeMovieNodeUpdateCallbackData
 {
@@ -330,11 +332,11 @@ typedef struct aeMovieCompositionStateCallbackData
 } aeMovieCompositionStateCallbackData;
 
 typedef ae_voidptr_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDestroyCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _data);
 
 typedef ae_voidptr_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDestroyCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data);
 
 typedef ae_voidptr_t( *ae_movie_callback_track_matte_provider_t )(const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data);

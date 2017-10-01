@@ -1484,7 +1484,7 @@ static void __setup_movie_composition_element( aeMovieComposition * _composition
         callbackData.layer = node->layer;
         callbackData.matrix = node->matrix;
         callbackData.opacity = node->opacity;
-        callbackData.trackmatteLayer = track_matte_layer;
+        callbackData.track_matte_layer = track_matte_layer;
 
         ae_voidptr_t element_data = (*_composition->providers.node_provider)(&callbackData, _composition->provider_data);
 
@@ -1520,7 +1520,7 @@ static ae_voidptr_t __dummy_ae_movie_camera_provider( const aeMovieCameraProvide
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __dummy_ae_movie_camera_destroy( const aeMovieCameraDestroyCallbackData * _callbackData, ae_voidptr_t _data )
+static void __dummy_ae_movie_camera_destroy( const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
     (void)_callbackData;
     (void)_data;
@@ -1540,7 +1540,7 @@ static ae_voidptr_t __dummy_ae_movie_node_provider( const aeMovieNodeProviderCal
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __dummy_ae_movie_node_destroyer( const aeMovieNodeDestroyCallbackData * _callbackData, ae_voidptr_t _data )
+static void __dummy_ae_movie_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
     (void)_callbackData;
     (void)_data;
@@ -1728,9 +1728,12 @@ static void __delete_nodes( const aeMovieComposition * _composition )
             (*_composition->providers.track_matte_deleter)(&callbackData, _composition->provider_data);
         }
 
-        aeMovieNodeDestroyCallbackData callbackData;
+        const aeMovieLayerData * track_matte_layer = node->track_matte_node == AE_NULL ? AE_NULL : node->track_matte_node->layer;
+
+        aeMovieNodeDeleterCallbackData callbackData;
         callbackData.element = node->element_data;
-        callbackData.type = layer->type;
+        callbackData.layer = layer;
+        callbackData.track_matte_layer = track_matte_layer;
 
         (*_composition->providers.node_deleter)(&callbackData, _composition->provider_data);
     }
@@ -1746,7 +1749,7 @@ static void __delete_camera( const aeMovieComposition * _composition )
     const aeMovieCompositionData * composition_data = _composition->composition_data;
     const aeMovieCompositionCamera * camera = composition_data->camera;
 
-    aeMovieCameraDestroyCallbackData callbackData;
+    aeMovieCameraDeleterCallbackData callbackData;
     callbackData.name = camera->name;
     callbackData.element = _composition->camera_data;
 

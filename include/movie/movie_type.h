@@ -109,7 +109,7 @@ typedef struct aeMovieStream aeMovieStream;
 #	endif
 
 #	ifndef AE_MOVIE_BEZIER_WARP_GRID
-#	define AE_MOVIE_BEZIER_WARP_GRID 9U
+#	define AE_MOVIE_BEZIER_WARP_GRID 19U
 #	endif
 
 static const ae_float_t ae_movie_bezier_warp_grid_invf = (1.f / (ae_float_t)(AE_MOVIE_BEZIER_WARP_GRID - 1));
