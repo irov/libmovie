@@ -1,18 +1,19 @@
-#   include "em_movieplayer.h"
+#include "em_movieplayer.h"
 
-#   include "movie/movie.h"
+#include "movie/movie.h"
 
-#   include <stdint.h>
-#   include <string.h>
+#include <stdint.h>
+#include <string.h>
 
-#   include <GLES2/gl2.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
-#   include <SDL/SDL_image.h>
+#include <SDL/SDL_image.h>
 
-#   include "em_typedef.h"
-#   include "em_memory.h"
-#   include "em_math.h"
-#   include "em_opengles.h"
+#include "em_typedef.h"
+#include "em_memory.h"
+#include "em_math.h"
+#include "em_opengles.h"
 
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_blend_render_vertex_t
@@ -585,6 +586,9 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
 
                 em_resource_image_t * base_image = (em_resource_image_t *)ae_get_movie_layer_data_resource_data( _callbackData->layer );
                 em_resource_image_t * track_matte_image = (em_resource_image_t *)ae_get_movie_layer_data_resource_data( _callbackData->track_matte_layer );
+
+                node_track_matte->base_image = base_image;
+                node_track_matte->track_matte_image = track_matte_image;
 
                 return node_track_matte;
             }break;
@@ -1304,7 +1308,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                     const aeMovieRenderMesh * track_matte_mesh = &track_matte->mesh;
 
-                    uint32_t color = __make_argb( mesh.r, mesh.g, mesh.b, mesh.a );
+                    uint32_t color = __make_argb( mesh.r, mesh.g, mesh.b, mesh.a * track_matte_mesh->a );
 
                     for( uint32_t index = 0; index != mesh.vertexCount; ++index )
                     {

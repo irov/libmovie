@@ -175,7 +175,7 @@ static GLuint __make_opengl_texture( uint32_t _width, uint32_t _height, const vo
     GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) );
     GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) );
 
-    GLCALL( glTexImage2D, (GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _data) );
+    GLCALL( glTexImage2D, (GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0x00000000, GL_RGBA, GL_UNSIGNED_BYTE, _data) );
 
     return texture_id;
 }

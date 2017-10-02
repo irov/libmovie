@@ -1,6 +1,6 @@
-#   pragma once
+#pragma once
 
-#   include <emscripten.h>
+#include <emscripten.h>
 
 typedef void * em_handle_t;
 typedef em_handle_t em_player_handle_t;
