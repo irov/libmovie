@@ -253,9 +253,9 @@ static void __calc_point_uv( float * _out, const float * _a, const float * _b, c
     _dac[0] = _dAC[0] * _a[1] - _dAC[1] * _a[0];
     _dac[1] = -(_dAB[0] * _a[1] - _dAB[1] * _a[0]);
 
-    __mul_v2_f( _dAB, -1.f );
+    //__mul_v2_f( _dAB, -1.f );
 
-    _dAB[0] *= -1.f;
+    _dAB[1] *= -1.f;
     _dAC[0] *= -1.f;
 
     float _duvAB[2];
