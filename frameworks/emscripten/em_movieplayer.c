@@ -62,8 +62,8 @@ typedef struct em_player_t
     float width;
     float height;
 
-    const em_blend_shader_t * blend_shader;
-    const em_track_matte_shader_t * track_matte_shader;
+    em_blend_shader_t * blend_shader;
+    em_track_matte_shader_t * track_matte_shader;
 
     em_blend_render_vertex_t blend_vertices[1024];
     em_track_matte_render_vertex_t track_matte_vertices[1024];
@@ -347,11 +347,11 @@ void em_delete_player( em_player_handle_t _player )
 {
     em_player_t * player = (em_player_t *)_player;
 
-    free( (em_blend_shader_t *)player->blend_shader );
+    EM_FREE( player->blend_shader );
 
     ae_delete_movie_instance( player->instance );
 
-    free( player );
+    EM_FREE( player );
 
     emscripten_log( EM_LOG_CONSOLE, "successful delete movie instance" );
 }
@@ -379,8 +379,14 @@ static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidpt
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_resource_image_t
 {
+    uint32_t resource_id;
     GLuint texture_id;
 } em_resource_image_t;
+//////////////////////////////////////////////////////////////////////////
+typedef struct em_resource_sound_t
+{
+    uint32_t resource_id;
+} em_resource_sound_t;
 //////////////////////////////////////////////////////////////////////////
 static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _resource, ae_voidptr_t _ud )
 {
@@ -407,37 +413,47 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
                 emscripten_log( EM_LOG_CONSOLE, "bad load image '%s'\n", r->path );
             }
 
+            //GLuint texture_id;
+            //GLCALL( glGenTextures, (1, &texture_id) );
+            //GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
+            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) );
+            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE) );
+            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) );
+            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) );
+
             GLuint texture_id = __make_opengl_texture( surface->w, surface->h, surface->pixels );
 
             SDL_FreeSurface( surface );
 
-            resource_image->texture_id = texture_id;
+            uint32_t resource_id = EM_ASM_INT(
+            {
+                var i = em_player_resource_image_provider( $0, Module.Pointer_stringify( $1 ), $2, $3 );
+            return i;
+            }, texture_id, r->path, r->codec, r->premultiplied );
 
-            emscripten_log( EM_LOG_CONSOLE, "create texture %ux%u (%u) id '%d'\n"
-                , surface->w
-                , surface->h
-                , surface->format->BytesPerPixel
+            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
+
+            emscripten_log( EM_LOG_CONSOLE, "create texture '%d'\n"
                 , texture_id
             );
 
-            return resource_image;
+            resource_image->resource_id = resource_id;
+            resource_image->texture_id = texture_id;
 
-            break;
-        }
+            return resource_image;            
+        }break;
     case AE_MOVIE_RESOURCE_SEQUENCE:
         {
             emscripten_log( EM_LOG_CONSOLE, "Resource type: image sequence.\n" );
-
-            break;
-        }
+            
+        }break;
     case AE_MOVIE_RESOURCE_VIDEO:
         {
             //			const aeMovieResourceVideo * r = (const aeMovieResourceVideo *)_resource;
 
             emscripten_log( EM_LOG_CONSOLE, "Resource type: video.\n" );
-
-            break;
-        }
+            
+        }break;
     case AE_MOVIE_RESOURCE_SOUND:
         {
             const aeMovieResourceSound * r = (const aeMovieResourceSound *)_resource;
@@ -445,8 +461,18 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
             emscripten_log( EM_LOG_CONSOLE, "Resource type: sound.\n" );
             emscripten_log( EM_LOG_CONSOLE, " path        = '%s'", r->path );
 
-            break;
-        }
+            uint32_t id = EM_ASM_INT(
+            {
+                var i = em_player_resource_sound_provider( Module.Pointer_stringify( $0 ), $1, $2 );
+            return i;
+            }, r->path, r->codec, r->duration );
+
+            em_resource_sound_t * resource = EM_NEW( em_resource_sound_t );
+
+            resource->resource_id = id;
+
+            return resource;            
+        }break;
     case AE_MOVIE_RESOURCE_SLOT:
         {
             const aeMovieResourceSlot * r = (const aeMovieResourceSlot *)_resource;
@@ -454,9 +480,8 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
             emscripten_log( EM_LOG_CONSOLE, "Resource type: slot.\n" );
             emscripten_log( EM_LOG_CONSOLE, " width  = %.2f\n", r->width );
             emscripten_log( EM_LOG_CONSOLE, " height = %.2f\n", r->height );
-
-            break;
-        }
+                        
+        }break;
     default:
         {
             emscripten_log( EM_LOG_CONSOLE, "Resource type: other (%i).\n", _resource->type );
@@ -467,7 +492,12 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, const ae_voidptr_t * _data, ae_voidptr_t _ud )
+void em_opengl_bind_texture( GLuint _id )
+{
+    GLCALL( glBindTexture, (GL_TEXTURE_2D, _id) );
+}
+//////////////////////////////////////////////////////////////////////////
+static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t * _data, ae_voidptr_t _ud )
 {
     (void)_data;
     (void)_ud;
@@ -480,7 +510,7 @@ static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, con
 
             glDeleteTextures( 1, &image_data->texture_id );
 
-            free( (ae_voidptr_t *)_data );
+            EM_FREE( _data );
 
             break;
         }
@@ -494,6 +524,15 @@ static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, con
         }
     case AE_MOVIE_RESOURCE_SOUND:
         {
+            em_resource_sound_t * resource = (em_resource_sound_t *)_data;
+            
+            EM_ASM(
+            {
+                em_player_resource_sound_deleter( $0 );
+            }, resource->resource_id );
+            
+            EM_FREE( _data );
+
             break;
         }
     case AE_MOVIE_RESOURCE_SLOT:
@@ -539,7 +578,7 @@ em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const c
 
     ae_delete_movie_stream( ae_stream );
 
-    free( buffer );
+    EM_FREE( buffer );
 
     emscripten_log( EM_LOG_CONSOLE, "successful create movie data from file '%s'", _path );
 
@@ -560,6 +599,11 @@ typedef struct em_node_track_matte_t
     em_resource_image_t * base_image;
     em_resource_image_t * track_matte_image;
 } em_node_track_matte_t;
+//////////////////////////////////////////////////////////////////////////
+typedef struct em_node_sound_t
+{
+    em_resource_sound_t * resource;
+} em_node_sound_t;
 //////////////////////////////////////////////////////////////////////////
 static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, void * _data )
 {
@@ -609,9 +653,13 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
             }break;
         case AE_MOVIE_LAYER_TYPE_SOUND:
             {
-                //Empty
+                em_node_sound_t * node_sound = EM_NEW( em_node_sound_t );
 
-                return AE_NULL;
+                ae_voidptr_t resource_data = ae_get_movie_layer_data_resource_data( layer );
+
+                node_sound->resource = (em_resource_sound_t *)resource_data;
+
+                return node_sound;
             }break;
         default:
             {
@@ -661,11 +709,113 @@ static void __ae_movie_composition_node_deleter( const aeMovieNodeDeleterCallbac
             }break;
         case AE_MOVIE_LAYER_TYPE_SOUND:
             {
+                em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
+
+                EM_DELETE( node_sound );
             }break;
         default:
             {
             }break;
         }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    switch( _callbackData->state )
+    {
+    case AE_MOVIE_NODE_UPDATE_UPDATE:
+        {
+            //Empty
+        }break;
+    case AE_MOVIE_NODE_UPDATE_BEGIN:
+        {
+            switch( _callbackData->type )
+            {
+            case AE_MOVIE_LAYER_TYPE_VIDEO:
+                {
+                    //Empty
+                }break;
+            case AE_MOVIE_LAYER_TYPE_SOUND:
+                {
+                    em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
+
+                    em_resource_sound_t * resource_sound = node_sound->resource;
+
+                    EM_ASM(
+                    {
+                        em_player_node_sound_play( $0, $1 );
+                    }, resource_sound->resource_id, _callbackData->offset );
+                    
+                }break;
+            }
+        }break;
+    case AE_MOVIE_NODE_UPDATE_END:
+        {
+            switch( _callbackData->type )
+            {
+            case AE_MOVIE_LAYER_TYPE_VIDEO:
+                {
+                    //Empty
+                }break;
+            case AE_MOVIE_LAYER_TYPE_SOUND:
+                {
+                    em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
+
+                    em_resource_sound_t * resource_sound = node_sound->resource;
+
+                    EM_ASM(
+                    {
+                        em_player_node_sound_stop( $0 );
+                    }, resource_sound->resource_id );
+
+                }break;
+            }
+        }break;
+    case AE_MOVIE_NODE_UPDATE_PAUSE:
+        {
+            switch( _callbackData->type )
+            {
+            case AE_MOVIE_LAYER_TYPE_VIDEO:
+                {
+                    //Empty
+                }break;
+            case AE_MOVIE_LAYER_TYPE_SOUND:
+                {
+                    em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
+
+                    em_resource_sound_t * resource_sound = node_sound->resource;
+
+                    EM_ASM(
+                    {
+                        em_player_node_sound_pause( $0 );
+                    }, resource_sound->resource_id );
+
+                }break;
+            }
+        }break;
+    case AE_MOVIE_NODE_UPDATE_RESUME:
+        {
+            switch( _callbackData->type )
+            {
+            case AE_MOVIE_LAYER_TYPE_VIDEO:
+                {
+                    //Empty
+                }break;
+            case AE_MOVIE_LAYER_TYPE_SOUND:
+                {
+                    em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
+
+                    em_resource_sound_t * resource_sound = node_sound->resource;
+
+                    EM_ASM(
+                    {
+                        em_player_node_sound_resume( $0 );
+                    }, resource_sound->resource_id );
+
+                }break;
+            }
+        }break;
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -698,7 +848,7 @@ static void __ae_movie_callback_camera_deleter( const aeMovieCameraDeleterCallba
 
     ae_camera_t * camera = (ae_camera_t *)_callbackData->element;
 
-    free( camera );
+    EM_FREE( camera );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_callback_camera_update( const aeMovieCameraUpdateCallbackData * _callbackData, void * _data )
@@ -853,7 +1003,7 @@ static void __ae_movie_callback_shader_property_update( const aeMovieShaderPrope
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_callback_shader_deleter( const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    free( _callbackData->element );
+    EM_FREE( _callbackData->element );
 }
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_track_matte_t
@@ -901,7 +1051,7 @@ static void __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatteDele
 
     em_track_matte_t * track_matte = (em_track_matte_t *)_callbackData->element;
 
-    free( track_matte );
+    EM_FREE( track_matte );
 }
 //////////////////////////////////////////////////////////////////////////
 em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_t _movieData, const char * _name )
@@ -927,7 +1077,7 @@ em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_
 
     providers.node_provider = &__ae_movie_composition_node_provider;
     providers.node_deleter = &__ae_movie_composition_node_deleter;
-    //providers.node_update = &ae_movie_composition_node_update;
+    providers.node_update = &__ae_movie_composition_node_update;
 
     providers.camera_provider = &__ae_movie_callback_camera_provider;
     providers.camera_deleter = &__ae_movie_callback_camera_deleter;
@@ -1162,7 +1312,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
             if( mesh.shader_data == AE_NULL )
             {
-                const em_blend_shader_t * blend_shader = player->blend_shader;
+                em_blend_shader_t * blend_shader = player->blend_shader;
 
                 program_id = blend_shader->program_id;
 
@@ -1351,7 +1501,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
             GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
             GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
 
-            const em_track_matte_shader_t * track_matte_shader = player->track_matte_shader;
+            em_track_matte_shader_t * track_matte_shader = player->track_matte_shader;
 
             GLuint program_id = track_matte_shader->program_id;
 

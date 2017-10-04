@@ -39,23 +39,23 @@ static const ae_uint32_t ae_movie_version = 12;
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data )
 {
-    aeMovieData * m = AE_NEW( _instance, aeMovieData );
+    aeMovieData * movie = AE_NEW( _instance, aeMovieData );
 
-    m->instance = _instance;
+    movie->instance = _instance;
 
-    m->name = "";
+    movie->name = "";
 
-    m->resource_provider = _provider;
-    m->resource_deleter = _deleter;
-    m->resource_ud = _data;
+    movie->resource_provider = _provider;
+    movie->resource_deleter = _deleter;
+    movie->resource_ud = _data;
 
-    m->resource_count = 0;
-    m->resources = AE_NULL;
+    movie->resource_count = 0;
+    movie->resources = AE_NULL;
 
-    m->composition_count = 0;
-    m->compositions = AE_NULL;
+    movie->composition_count = 0;
+    movie->compositions = AE_NULL;
 
-    return m;
+    return movie;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __ae_delete_mesh_t( const aeMovieInstance * _instance, const aeMovieMesh * _mesh )
