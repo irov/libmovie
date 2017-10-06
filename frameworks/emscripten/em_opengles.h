@@ -165,17 +165,10 @@ static GLuint __make_opengl_program( const char * _name, uint32_t _version, cons
     return program_id;
 }
 //////////////////////////////////////////////////////////////////////////
-static GLuint __make_opengl_texture( uint32_t _width, uint32_t _height, const void * _data )
+static GLuint __make_opengl_texture()
 {
     GLuint texture_id;
     GLCALL( glGenTextures, (1, &texture_id) );
-    GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
-    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) );
-    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE) );
-    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) );
-    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) );
-
-    GLCALL( glTexImage2D, (GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0x00000000, GL_RGBA, GL_UNSIGNED_BYTE, _data) );
 
     return texture_id;
 }

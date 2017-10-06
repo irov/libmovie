@@ -2,13 +2,10 @@
 
 #include "movie/movie.h"
 
-#include <stdint.h>
+#include <stdarg.h>
 #include <string.h>
 
 #include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-
-#include <SDL/SDL_image.h>
 
 #include "em_typedef.h"
 #include "em_memory.h"
@@ -105,6 +102,15 @@ static void __instance_logerror( void * _data, aeMovieErrorCode _code, const cha
     (void)_data;
     (void)_code;
     (void)_format;
+
+    va_list argList;
+
+    va_start( argList, _format );
+    char msg[4096];
+    vsprintf( msg, _format, argList );
+    va_end( argList );
+
+    emscripten_log( EM_LOG_CONSOLE, msg );
 }
 //////////////////////////////////////////////////////////////////////////
 static em_blend_shader_t * __make_blend_shader()
@@ -313,9 +319,6 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
     em_player->width = _width;
     em_player->height = _height;
 
-    IMG_Init( IMG_INIT_PNG );
-
-
     em_blend_shader_t * blend_shader = __make_blend_shader();
 
     if( blend_shader == em_nullptr )
@@ -379,7 +382,6 @@ static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidpt
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_resource_image_t
 {
-    uint32_t resource_id;
     GLuint texture_id;
 } em_resource_image_t;
 //////////////////////////////////////////////////////////////////////////
@@ -406,38 +408,17 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
 
             em_resource_image_t * resource_image = EM_NEW( em_resource_image_t );
 
-            SDL_Surface * surface = IMG_Load( r->path );
+            GLuint texture_id = __make_opengl_texture();
 
-            if( surface == NULL )
+            EM_ASM(
             {
-                emscripten_log( EM_LOG_CONSOLE, "bad load image '%s'\n", r->path );
-            }
-
-            //GLuint texture_id;
-            //GLCALL( glGenTextures, (1, &texture_id) );
-            //GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
-            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) );
-            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE) );
-            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) );
-            //GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) );
-
-            GLuint texture_id = __make_opengl_texture( surface->w, surface->h, surface->pixels );
-
-            SDL_FreeSurface( surface );
-
-            uint32_t resource_id = EM_ASM_INT(
-            {
-                var i = em_player_resource_image_provider( $0, Module.Pointer_stringify( $1 ), $2, $3 );
-            return i;
+                em_player_resource_image_provider( $0, Module.Pointer_stringify( $1 ), $2, $3 );
             }, texture_id, r->path, r->codec, r->premultiplied );
-
-            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
-
+            
             emscripten_log( EM_LOG_CONSOLE, "create texture '%d'\n"
                 , texture_id
             );
 
-            resource_image->resource_id = resource_id;
             resource_image->texture_id = texture_id;
 
             return resource_image;            
@@ -546,41 +527,28 @@ static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_
     }
 }
 //////////////////////////////////////////////////////////////////////////
-em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const char * _path )
-{
+em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const uint8_t * _data )
+{    
     em_player_t * em_instance = (em_player_t *)_player;
 
     aeMovieData * ae_movie_data = ae_create_movie_data( em_instance->instance, &__ae_movie_data_resource_provider, &__ae_movie_data_resource_deleter, AE_NULL );
 
-    FILE * f = fopen( _path, "rb" );
+    aeMovieStream * ae_stream = ae_create_movie_stream_memory( em_instance->instance, _data, &__memory_copy, AE_NULL );
 
-    if( f == NULL )
+    ae_result_t result_load = ae_load_movie_data( ae_movie_data, ae_stream );
+
+    if( result_load != AE_MOVIE_SUCCESSFUL )
     {
-        emscripten_log( EM_LOG_CONSOLE, "invalid open file (%s)", _path );
+        emscripten_log( EM_LOG_CONSOLE, "invalid create movie data from data %d"
+            , result_load 
+        );
 
-        return AE_NULL;
-    }
-
-    fseek( f, 0L, SEEK_END );
-    size_t sz = ftell( f );
-    rewind( f );
-
-    ae_voidptr_t * buffer = EM_MALLOC( sz );
-    fread( buffer, sz, 1, f );
-    fclose( f );
-
-    aeMovieStream * ae_stream = ae_create_movie_stream_memory( em_instance->instance, buffer, &__memory_copy, AE_NULL );
-
-    if( ae_load_movie_data( ae_movie_data, ae_stream ) == AE_MOVIE_FAILED )
-    {
-        emscripten_log( EM_LOG_CONSOLE, "WRONG LOAD (%s)", _path );
+        return em_nullptr;
     }
 
     ae_delete_movie_stream( ae_stream );
 
-    EM_FREE( buffer );
-
-    emscripten_log( EM_LOG_CONSOLE, "successful create movie data from file '%s'", _path );
+    emscripten_log( EM_LOG_CONSOLE, "successful create movie data from data");
 
     return ae_movie_data;
 }
@@ -1599,4 +1567,23 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
         //    , mesh_iterator
         //);
     }
+}
+//////////////////////////////////////////////////////////////////////////
+void em_opengl_create_texture( uint32_t _id, uint32_t _width, uint32_t _height, const uint8_t * _data )
+{
+    GLCALL( glBindTexture, (GL_TEXTURE_2D, _id) );
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) );
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE) );
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) );
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) );
+
+    GLCALL( glTexImage2D, (GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0x00000000, GL_RGBA, GL_UNSIGNED_BYTE, _data) );
+    
+    GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
+
+    emscripten_log( EM_LOG_CONSOLE, "opengl create texture '%d' size '%d:%d'"
+        , _id
+        , _width
+        , _height
+    );
 }
