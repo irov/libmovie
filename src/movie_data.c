@@ -1073,7 +1073,9 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 {
     const aeMovieInstance * instance = _movieData->instance;
 
+#ifdef _DEBUG
     instance->logger( instance->instance_data, AE_ERROR_STREAM, "begin" );
+#endif
 
     ae_uint8_t magic[4];
     READN( _stream, magic, 4 );
@@ -1123,7 +1125,9 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         ae_uint8_t type;
         READ( _stream, type );
 
+#ifdef _DEBUG
         instance->logger( instance->instance_data, AE_ERROR_STREAM, "read type %d", type );
+#endif
 
         switch( type )
         {
