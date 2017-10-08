@@ -22,6 +22,7 @@ EMSCRIPTEN_KEEPALIVE void em_set_movie_composition_loop( em_movie_composition_ha
 
 EMSCRIPTEN_KEEPALIVE void em_play_movie_composition( em_movie_composition_handle_t _movieComposition, float _time );
 
+EMSCRIPTEN_KEEPALIVE void em_set_movie_wm( em_player_handle_t _player, float _px, float _py, float _ox, float _oy, float _sx, float _sy, float _angle );
 EMSCRIPTEN_KEEPALIVE void em_update_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition, float _time );
 EMSCRIPTEN_KEEPALIVE void em_render_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition );
 

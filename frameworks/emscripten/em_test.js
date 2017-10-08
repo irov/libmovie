@@ -115,9 +115,13 @@ function onload_movie(canvas, response, em_player, composition_name)
 function libMOVIE_test(rendercanvas, movie_hash, movie_url, composition_name)
 {
     var canvas = document.getElementById(rendercanvas);    
-    movie.utils_opengl_initialize(canvas);
+    var gl = movie.utils_opengl_initialize(canvas);
+    
+    gl.enable(gl.BLEND)
     
     var em_player = movie.create_player(movie_hash, canvas.width, canvas.height, 0)
+    
+    movie.set_movie_wm(em_player, 100.0, 100.0, 0.0, 0.0, 1.0, 1.0, 0.0)
     
     if( em_player == 0 )
     {

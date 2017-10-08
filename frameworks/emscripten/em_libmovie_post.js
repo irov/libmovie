@@ -9,19 +9,20 @@ AEMovie["render_movie_composition"] = cwrap('em_render_movie_composition', 'void
 AEMovie["delete_movie_data"] = cwrap('em_delete_movie_data', 'void', ['number', 'number'])
 AEMovie["delete_player"] = cwrap('em_delete_player', 'void', ['number'])
 AEMovie["utils_opengl_create_texture"] = cwrap('em_utils_opengl_create_texture', 'void', ['number', 'number', 'number', 'number'])
+AEMovie["set_movie_wm"] = cwrap('em_set_movie_wm', 'void', ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'])
 
 AEMovie["utils_opengl_initialize"] = function(canvas)
 {    
     try 
     {
-        var gl = canvas.getContext("webgl");
+        var context = canvas.getContext("webgl");
         
-        if( gl == null )
+        if( context == null )
         {
-            gl = canvas.getContext("experimental-webgl");
+            context = canvas.getContext("experimental-webgl");
         }
      
-        if( gl == null) 
+        if( context == null) 
         {
             console.log("Could not initialize WebGL")
             
@@ -32,17 +33,17 @@ AEMovie["utils_opengl_initialize"] = function(canvas)
         webGLContextAttributes['majorVersion'] = 2;
         webGLContextAttributes['minorVersion'] = 0;
         
-        var glctxhandle = AEMovie["GL"].registerContext(gl, webGLContextAttributes);
+        var glctxhandle = AEMovie["GL"].registerContext(context, webGLContextAttributes);
         AEMovie["GL"].makeContextCurrent(glctxhandle)
+
+        return context
     } 
     catch(e) 
     {
         console.log(e)
-        
-        return false
     }
     
-    return true
+    return false
 }
 
 AEMovie["utils_opengl_load_texure_from_image"] = function(imageloadercanvas, id, image)

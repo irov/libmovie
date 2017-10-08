@@ -6,6 +6,7 @@
 
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
 
 #include "em_typedef.h"
 #include "em_memory.h"
@@ -66,6 +67,8 @@ typedef struct em_player_t
 
     em_blend_render_vertex_t blend_vertices[1024];
     em_track_matte_render_vertex_t track_matte_vertices[1024];
+
+    float wm[16];
 
 } em_player_t;
 //////////////////////////////////////////////////////////////////////////
@@ -379,7 +382,7 @@ static em_track_matte_shader_t * __make_track_matte_shader()
 //////////////////////////////////////////////////////////////////////////
 em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uint32_t _height, uint32_t _ud )
 {
-    em_player_t * em_player = EM_NEW( em_player_t );
+    em_player_t * player = EM_NEW( em_player_t );
 
     aeMovieInstance * ae_instance = ae_create_movie_instance( _hashkey
         , &__instance_alloc
@@ -388,13 +391,13 @@ em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uin
         , &__instance_free_n
         , AE_NULL
         , &__instance_logerror
-        , em_player );
+        , player );
 
-    em_player->instance = ae_instance;
+    player->instance = ae_instance;
 
-    em_player->width = _width;
-    em_player->height = _height;
-    em_player->ud = _ud;
+    player->width = _width;
+    player->height = _height;
+    player->ud = _ud;
 
     em_blend_shader_t * blend_shader = __make_blend_shader();
 
@@ -403,7 +406,7 @@ em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uin
         return em_nullptr;
     }
 
-    em_player->blend_shader = blend_shader;
+    player->blend_shader = blend_shader;
 
     em_track_matte_shader_t * track_matte_shader = __make_track_matte_shader();
 
@@ -412,9 +415,11 @@ em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uin
         return em_nullptr;
     }
 
-    em_player->track_matte_shader = track_matte_shader;
+    player->track_matte_shader = track_matte_shader;
 
-    return em_player;
+    __identity_m4( player->wm );
+
+    return player;
 }
 //////////////////////////////////////////////////////////////////////////
 void em_delete_player( em_player_handle_t _player )
@@ -1180,6 +1185,68 @@ void em_play_movie_composition( em_movie_composition_handle_t _movieComposition,
     ae_play_movie_composition( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
+void em_set_movie_wm( em_player_handle_t _player, float _px, float _py, float _ox, float _oy, float _sx, float _sy, float _angle )
+{
+    em_player_t * player = (em_player_t *)_player;
+
+    float matrix_base[16];
+    matrix_base[0 * 4 + 0] = _sx;
+    matrix_base[0 * 4 + 1] = 0.f;
+    matrix_base[0 * 4 + 2] = 0.f;
+    matrix_base[0 * 4 + 3] = 0.f;
+
+    matrix_base[1 * 4 + 0] = 0.f;
+    matrix_base[1 * 4 + 1] = _sy;
+    matrix_base[1 * 4 + 2] = 0.f;
+    matrix_base[1 * 4 + 3] = 0.f;
+
+    matrix_base[2 * 4 + 0] = 0.f;
+    matrix_base[2 * 4 + 1] = 0.f;
+    matrix_base[2 * 4 + 2] = 1.f;
+    matrix_base[2 * 4 + 3] = 0.f;
+
+    matrix_base[3 * 4 + 0] = -_ox * _sx;
+    matrix_base[3 * 4 + 1] = -_oy * _sy;
+    matrix_base[3 * 4 + 2] = 0.f;
+    matrix_base[3 * 4 + 3] = 1.f;
+
+    if( _angle != 0.f )
+    {
+        float cosa = cosf( _angle );
+        float sina = sinf( _angle );
+
+        float matrix_rotate[16];
+        matrix_rotate[0 * 4 + 0] = cosa;
+        matrix_rotate[0 * 4 + 1] = -sina;
+        matrix_rotate[0 * 4 + 2] = 0.f;
+        matrix_rotate[0 * 4 + 3] = 0.f;
+
+        matrix_rotate[1 * 4 + 0] = sina;
+        matrix_rotate[1 * 4 + 1] = cosa;
+        matrix_rotate[1 * 4 + 2] = 0.f;
+        matrix_rotate[1 * 4 + 3] = 0.f;
+
+        matrix_rotate[2 * 4 + 0] = 0.f;
+        matrix_rotate[2 * 4 + 1] = 0.f;
+        matrix_rotate[2 * 4 + 2] = 1.f;
+        matrix_rotate[2 * 4 + 3] = 0.f;
+
+        matrix_rotate[3 * 4 + 0] = 0.f;
+        matrix_rotate[3 * 4 + 1] = 0.f;
+        matrix_rotate[3 * 4 + 2] = 0.f;
+        matrix_rotate[3 * 4 + 3] = 1.f;
+
+        __mul_m4_m4( player->wm, matrix_base, matrix_rotate );
+    }
+    else
+    {
+        __copy_m4( player->wm, matrix_base );
+    }
+
+    player->wm[3 * 4 + 0] += _px;
+    player->wm[3 * 4 + 1] += _py;
+}
+//////////////////////////////////////////////////////////////////////////
 void em_update_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition, float _time )
 {
     (void)_player;
@@ -1194,9 +1261,6 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
     em_player_t * player = (em_player_t *)_player;
 
     const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
-
-    GLCALL( glDisable, (GL_CULL_FACE) );
-    GLCALL( glEnable, (GL_BLEND) );
 
     uint32_t mesh_iterator = 0;
 
@@ -1274,10 +1338,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                         em_blend_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-
-                        v->position[0] = mesh_position[0];
-                        v->position[1] = mesh_position[1];
-                        v->position[2] = mesh_position[2];
+                        __v3_v3_m4( v->position, mesh_position, player->wm );
 
                         v->color = color;
 
@@ -1301,10 +1362,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                         em_blend_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-
-                        v->position[0] = mesh_position[0];
-                        v->position[1] = mesh_position[1];
-                        v->position[2] = mesh_position[2];
+                        __v3_v3_m4( v->position, mesh_position, player->wm );
 
                         v->color = color;
 
@@ -1413,16 +1471,19 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                 float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
                 float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
+                
+                float width = player->width;
+                float height = player->height;
 
                 float projectionMatrix[16];
-                __make_orthogonal_m4( projectionMatrix, composition_width, composition_height );
+                __make_orthogonal_m4( projectionMatrix, width, height );
 
                 float projectionViewMatrix[16];
                 __mul_m4_m4( projectionViewMatrix, projectionMatrix, viewMatrix );
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, player->height - composition_height, (GLsizei)composition_width, (GLsizei)composition_height );
+                glViewport( 0, 0, (GLsizei)width, (GLsizei)height );
             }
             else
             {
@@ -1433,7 +1494,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, (GLint)player->height - (GLint)camera->height, (GLsizei)camera->width, (GLsizei)camera->height );
+                glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
             }
 
             GLuint opengl_indices_buffer_id = 0;
@@ -1487,10 +1548,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                         em_track_matte_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-
-                        v->position[0] = mesh_position[0];
-                        v->position[1] = mesh_position[1];
-                        v->position[2] = mesh_position[2];
+                        __v3_v3_m4( v->position, mesh_position, player->wm );
 
                         v->color = color;
 
@@ -1565,15 +1623,18 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                 float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
                 float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
 
+                float width = player->width;
+                float height = player->height;
+
                 float projectionMatrix[16];
-                __make_orthogonal_m4( projectionMatrix, composition_width, composition_height );
+                __make_orthogonal_m4( projectionMatrix, width, height );
 
                 float projectionViewMatrix[16];
                 __mul_m4_m4( projectionViewMatrix, projectionMatrix, viewMatrix );
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, (GLint)player->height - (GLint)composition_height, (GLsizei)composition_width, (GLsizei)composition_height );
+                glViewport( 0, 0, (GLsizei)width, (GLsizei)height );
             }
             else
             {
@@ -1584,7 +1645,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, player->height - camera->height, (GLsizei)camera->width, (GLsizei)camera->height );
+                glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
             }
 
             GLuint opengl_indices_buffer_id = 0;
