@@ -102,13 +102,6 @@ void ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4
     _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _b[3 * 4 + 2];
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_mul_v3_v2_m4_r( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
-{
-    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0];
-    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1];
-    _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2];
-}
-//////////////////////////////////////////////////////////////////////////
 static void __mul_v4_m4_r( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0];
