@@ -56,8 +56,8 @@ typedef struct em_player_t
 {
     aeMovieInstance * instance;
 
-    float width;
-    float height;
+    uint32_t width;
+    uint32_t height;
 
     uint32_t ud;
 
@@ -377,7 +377,7 @@ static em_track_matte_shader_t * __make_track_matte_shader()
     return track_matte_shader;
 }
 //////////////////////////////////////////////////////////////////////////
-em_player_handle_t em_create_player( const char * _hashkey, float _width, float _height, uint32_t _ud )
+em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uint32_t _height, uint32_t _ud )
 {
     em_player_t * em_player = EM_NEW( em_player_t );
 
@@ -1412,7 +1412,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                 __identity_m4( viewMatrix );
 
                 float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
-                float composition_height = ae_get_movie_composition_data_width( ae_movie_composition_data );
+                float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
 
                 float projectionMatrix[16];
                 __make_orthogonal_m4( projectionMatrix, composition_width, composition_height );
@@ -1422,7 +1422,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, 0, (GLsizei)composition_width, (GLsizei)composition_height );
+                glViewport( 0, player->height - composition_height, (GLsizei)composition_width, (GLsizei)composition_height );
             }
             else
             {
@@ -1433,7 +1433,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
+                glViewport( 0, (GLint)player->height - (GLint)camera->height, (GLsizei)camera->width, (GLsizei)camera->height );
             }
 
             GLuint opengl_indices_buffer_id = 0;
@@ -1563,7 +1563,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                 __identity_m4( viewMatrix );
 
                 float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
-                float composition_height = ae_get_movie_composition_data_width( ae_movie_composition_data );
+                float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
 
                 float projectionMatrix[16];
                 __make_orthogonal_m4( projectionMatrix, composition_width, composition_height );
@@ -1573,7 +1573,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, 0, (GLsizei)composition_width, (GLsizei)composition_height );
+                glViewport( 0, (GLint)player->height - (GLint)composition_height, (GLsizei)composition_width, (GLsizei)composition_height );
             }
             else
             {
@@ -1584,7 +1584,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
                 GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-                glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
+                glViewport( 0, player->height - camera->height, (GLsizei)camera->width, (GLsizei)camera->height );
             }
 
             GLuint opengl_indices_buffer_id = 0;

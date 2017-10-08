@@ -9,7 +9,7 @@ typedef em_handle_t em_player_handle_t;
 typedef em_handle_t em_movie_data_handle_t;
 typedef em_handle_t em_movie_composition_handle_t;
 
-EMSCRIPTEN_KEEPALIVE em_player_handle_t em_create_player( const char * _hashkey, float _width, float _height, uint32_t _ud );
+EMSCRIPTEN_KEEPALIVE em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uint32_t _height, uint32_t _ud );
 EMSCRIPTEN_KEEPALIVE void em_delete_player( em_player_handle_t _instance );
 
 EMSCRIPTEN_KEEPALIVE em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const uint8_t * _data );
