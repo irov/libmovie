@@ -70,7 +70,7 @@ static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t 
     ae_uint32_t i = 0;
     for( ; i != vertex_count; ++i )
     {
-        ae_mul_v3_v2_m4( _render->position[i], _mesh->positions[i], _matrix );
+        ae_mul_v3_v2_m4_r( _render->position[i], _mesh->positions[i], _matrix );
     }
 
     _render->uv = _mesh->uvs;
@@ -95,10 +95,10 @@ static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, ae_
     _render->vertexCount = 4;
     _render->indexCount = 6;
 
-    ae_mul_v3_v2_m4( _render->position[0], v_position[0], _matrix );
-    ae_mul_v3_v2_m4( _render->position[1], v_position[1], _matrix );
-    ae_mul_v3_v2_m4( _render->position[2], v_position[2], _matrix );
-    ae_mul_v3_v2_m4( _render->position[3], v_position[3], _matrix );
+    ae_mul_v3_v2_m4_r( _render->position[0], v_position[0], _matrix );
+    ae_mul_v3_v2_m4_r( _render->position[1], v_position[1], _matrix );
+    ae_mul_v3_v2_m4_r( _render->position[2], v_position[2], _matrix );
+    ae_mul_v3_v2_m4_r( _render->position[3], v_position[3], _matrix );
 
     _render->uv = _uv;
     _render->indices = _instance->sprite_indices;
@@ -178,7 +178,7 @@ static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, cons
             position[0] = x;
             position[1] = y;
 
-            ae_mul_v3_v2_m4( *positions++, position, _matrix );
+            ae_mul_v3_v2_m4_r( *positions++, position, _matrix );
 
             du += ae_movie_bezier_warp_grid_invf;
         }
