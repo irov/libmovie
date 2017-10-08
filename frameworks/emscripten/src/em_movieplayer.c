@@ -2,10 +2,10 @@
 
 #include "movie/movie.h"
 
+#include <GLES2/gl2.h>
+
 #include <stdarg.h>
 #include <string.h>
-
-#include <GLES2/gl2.h>
 
 #include "em_typedef.h"
 #include "em_memory.h"
@@ -59,6 +59,8 @@ typedef struct em_player_t
     float width;
     float height;
 
+    uint32_t ud;
+
     em_blend_shader_t * blend_shader;
     em_track_matte_shader_t * track_matte_shader;
 
@@ -110,7 +112,29 @@ static void __instance_logerror( void * _data, aeMovieErrorCode _code, const cha
     vsprintf( msg, _format, argList );
     va_end( argList );
 
-    emscripten_log( EM_LOG_CONSOLE, msg );
+    switch( _code )
+    {
+    case AE_ERROR_INFO:
+    case AE_ERROR_MEMORY:
+    case AE_ERROR_STREAM:
+        {            
+        }break;
+    case AE_ERROR_WARNING:
+    case AE_ERROR_UNSUPPORT:
+        {
+            emscripten_log( EM_LOG_WARN, "libmovie: %s"
+                , msg 
+            );
+        }break;
+    case AE_ERROR_ERROR:
+    case AE_ERROR_INTERNAL:
+    case AE_ERROR_CRITICAL:
+        {
+            emscripten_log( EM_LOG_WARN, "libmovie: %s"
+                , msg
+            );
+        }break;
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 static em_blend_shader_t * __make_blend_shader()
@@ -148,37 +172,62 @@ static em_blend_shader_t * __make_blend_shader()
     int positionLocation;
     GLCALLR( positionLocation, glGetAttribLocation, (program_id, "a_position") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_position '%d'\n"
-        , positionLocation
-    );
+    if( positionLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_position '%d'\n"
+            , positionLocation
+        );
+
+        return em_nullptr;
+    }
 
     int colorLocation;
     GLCALLR( colorLocation, glGetAttribLocation, (program_id, "a_color") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_color '%d'\n"
-        , colorLocation
-    );
+    if( colorLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_color '%d'\n"
+            , colorLocation
+        );
+
+        return em_nullptr;
+    }
 
     int texcoordLocation;
     GLCALLR( texcoordLocation, glGetAttribLocation, (program_id, "a_texcoord") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_texcoord '%d'\n"
-        , texcoordLocation
-    );
+    if( texcoordLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_texcoord '%d'\n"
+            , texcoordLocation
+        );
+
+        return em_nullptr;
+    }
 
     int mvpMatrixLocation;
     GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform g_mvpMatrix '%d'\n"
-        , mvpMatrixLocation
-    );
+    if( mvpMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_mvpMatrix '%d'\n"
+            , mvpMatrixLocation
+        );
+
+        return em_nullptr;
+    }
 
     int tex0Location;
     GLCALLR( tex0Location, glGetUniformLocation, (program_id, "g_tex0") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform g_tex0 '%d'\n"
-        , tex0Location
-    );
+    if( tex0Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl uniform g_tex0 '%d'\n"
+            , tex0Location
+        );
+
+        return em_nullptr;
+    }
 
     em_blend_shader_t * blend_shader = EM_NEW( em_blend_shader_t );
 
@@ -188,10 +237,6 @@ static em_blend_shader_t * __make_blend_shader()
     blend_shader->texcoordLocation = texcoordLocation;
     blend_shader->mvpMatrixLocation = mvpMatrixLocation;
     blend_shader->tex0Location = tex0Location;
-
-    emscripten_log( EM_LOG_CONSOLE, "opengl create program '__blend__' id '%d'\n"
-        , program_id
-    );
 
     return blend_shader;
 }
@@ -237,51 +282,86 @@ static em_track_matte_shader_t * __make_track_matte_shader()
     int positionLocation;
     GLCALLR( positionLocation, glGetAttribLocation, (program_id, "a_position") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_position '%d'\n"
-        , positionLocation
-    );
+    if( positionLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_position '%d'\n"
+            , positionLocation
+        );
+
+        return em_nullptr;
+    }
 
     int colorLocation;
     GLCALLR( colorLocation, glGetAttribLocation, (program_id, "a_color") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_color '%d'\n"
-        , colorLocation
-    );
+    if( colorLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_color '%d'\n"
+            , colorLocation
+        );
+
+        return em_nullptr;
+    }
 
     int texcoord0Location;
     GLCALLR( texcoord0Location, glGetAttribLocation, (program_id, "a_texcoord0") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_texcoord0 '%d'\n"
-        , texcoord0Location
-    );
+    if( texcoord0Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl attrib a_texcoord0 '%d'\n"
+            , texcoord0Location
+        );
+
+        return em_nullptr;
+    }
 
     int texcoord1Location;
     GLCALLR( texcoord1Location, glGetAttribLocation, (program_id, "a_texcoord1") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib a_texcoord1 '%d'\n"
-        , texcoord1Location
-    );
+    if( texcoord1Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_texcoord1 '%d'\n"
+            , texcoord1Location
+        );
+
+        return em_nullptr;
+    }
 
     int mvpMatrixLocation;
     GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform g_mvpMatrix '%d'\n"
-        , mvpMatrixLocation
-    );
+    if( mvpMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_mvpMatrix '%d'\n"
+            , mvpMatrixLocation
+        );
+
+        return em_nullptr;
+    }
 
     int tex0Location;
     GLCALLR( tex0Location, glGetUniformLocation, (program_id, "g_tex0") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform g_tex0 '%d'\n"
-        , tex0Location
-    );
+    if( tex0Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_tex0 '%d'\n"
+            , tex0Location
+        );
+
+        return em_nullptr;
+    }
 
     int tex1Location;
     GLCALLR( tex1Location, glGetUniformLocation, (program_id, "g_tex1") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform g_tex1 '%d'\n"
-        , tex1Location
-    );
+    if( tex1Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_tex1 '%d'\n"
+            , tex1Location
+        );
+
+        return em_nullptr;
+    }
 
     em_track_matte_shader_t * track_matte_shader = EM_NEW( em_track_matte_shader_t );
 
@@ -294,14 +374,10 @@ static em_track_matte_shader_t * __make_track_matte_shader()
     track_matte_shader->tex0Location = tex0Location;
     track_matte_shader->tex1Location = tex1Location;
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl create program '__track_mate__' id '%d'\n"
-        , program_id
-    );
-
     return track_matte_shader;
 }
 //////////////////////////////////////////////////////////////////////////
-em_player_handle_t em_create_player( const char * _hashkey, float _width, float _height )
+em_player_handle_t em_create_player( const char * _hashkey, float _width, float _height, uint32_t _ud )
 {
     em_player_t * em_player = EM_NEW( em_player_t );
 
@@ -312,12 +388,13 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
         , &__instance_free_n
         , AE_NULL
         , &__instance_logerror
-        , AE_NULL );
+        , em_player );
 
     em_player->instance = ae_instance;
 
     em_player->width = _width;
     em_player->height = _height;
+    em_player->ud = _ud;
 
     em_blend_shader_t * blend_shader = __make_blend_shader();
 
@@ -337,12 +414,6 @@ em_player_handle_t em_create_player( const char * _hashkey, float _width, float 
 
     em_player->track_matte_shader = track_matte_shader;
 
-    emscripten_log( EM_LOG_CONSOLE, "successful create player hashkey '%s' width '%f' height '%f'"
-        , _hashkey
-        , _width
-        , _height
-    );
-
     return em_player;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -355,8 +426,6 @@ void em_delete_player( em_player_handle_t _player )
     ae_delete_movie_instance( player->instance );
 
     EM_FREE( player );
-
-    emscripten_log( EM_LOG_CONSOLE, "successful delete movie instance" );
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _carriage, ae_uint32_t _size )
@@ -367,8 +436,6 @@ static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_
 
     ae_size_t s = fread( _buff, 1, _size, f );
 
-    //emscripten_log( EM_LOG_CONSOLE, "read_file %u", _size );
-
     return s;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -376,8 +443,6 @@ static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidpt
 {
     (void)_data;
     memcpy( _dst, _src, _size );
-
-    //emscripten_log( EM_LOG_CONSOLE, "memory_copy %u", _size );
 }
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_resource_image_t
@@ -387,13 +452,12 @@ typedef struct em_resource_image_t
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_resource_sound_t
 {
-    uint32_t resource_id;
+    uint32_t ud;
 } em_resource_sound_t;
 //////////////////////////////////////////////////////////////////////////
 static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _resource, ae_voidptr_t _ud )
 {
-    (void)_resource;
-    (void)_ud;
+    em_player_t * em_player = (em_player_t *)_ud;
 
     switch( _resource->type )
     {
@@ -401,71 +465,55 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
         {
             const aeMovieResourceImage * r = (const aeMovieResourceImage *)_resource;
 
-            emscripten_log( EM_LOG_CONSOLE, "Resource type: image.\n" );
-            emscripten_log( EM_LOG_CONSOLE, " path        = '%s'\n", r->path );
-            emscripten_log( EM_LOG_CONSOLE, " trim_width  = %f\n", r->trim_width );
-            emscripten_log( EM_LOG_CONSOLE, " trim_height = %f\n", r->trim_height );
-
             em_resource_image_t * resource_image = EM_NEW( em_resource_image_t );
 
             GLuint texture_id = __make_opengl_texture();
 
             EM_ASM(
             {
-                em_player_resource_image_provider( $0, Module.Pointer_stringify( $1 ), $2, $3 );
-            }, texture_id, r->path, r->codec, r->premultiplied );
+                em_player_resource_image_provider( $0, $1, Module.Pointer_stringify( $2 ), $3, $4 );
+            }, em_player->ud, texture_id, r->path, r->codec, r->premultiplied );
             
-            emscripten_log( EM_LOG_CONSOLE, "create texture '%d'\n"
-                , texture_id
-            );
-
             resource_image->texture_id = texture_id;
 
             return resource_image;            
         }break;
     case AE_MOVIE_RESOURCE_SEQUENCE:
-        {
-            emscripten_log( EM_LOG_CONSOLE, "Resource type: image sequence.\n" );
-            
+        {   
         }break;
     case AE_MOVIE_RESOURCE_VIDEO:
         {
-            //			const aeMovieResourceVideo * r = (const aeMovieResourceVideo *)_resource;
-
-            emscripten_log( EM_LOG_CONSOLE, "Resource type: video.\n" );
+            emscripten_log( EM_LOG_ERROR, "Unsuported resource type: video.\n"
+            );
             
         }break;
     case AE_MOVIE_RESOURCE_SOUND:
         {
             const aeMovieResourceSound * r = (const aeMovieResourceSound *)_resource;
 
-            emscripten_log( EM_LOG_CONSOLE, "Resource type: sound.\n" );
-            emscripten_log( EM_LOG_CONSOLE, " path        = '%s'", r->path );
-
-            uint32_t id = EM_ASM_INT(
+            uint32_t ud = EM_ASM_INT(
             {
-                var i = em_player_resource_sound_provider( Module.Pointer_stringify( $0 ), $1, $2 );
-            return i;
-            }, r->path, r->codec, r->duration );
+                return em_player_resource_sound_provider( $0, Module.Pointer_stringify( $1 ), $2, $3 );
+            }, em_player->ud, r->path, r->codec, r->duration );
 
             em_resource_sound_t * resource = EM_NEW( em_resource_sound_t );
 
-            resource->resource_id = id;
+            resource->ud = ud;
 
             return resource;            
         }break;
     case AE_MOVIE_RESOURCE_SLOT:
         {
             const aeMovieResourceSlot * r = (const aeMovieResourceSlot *)_resource;
-
-            emscripten_log( EM_LOG_CONSOLE, "Resource type: slot.\n" );
-            emscripten_log( EM_LOG_CONSOLE, " width  = %.2f\n", r->width );
-            emscripten_log( EM_LOG_CONSOLE, " height = %.2f\n", r->height );
                         
+            //TODO
         }break;
     default:
         {
-            emscripten_log( EM_LOG_CONSOLE, "Resource type: other (%i).\n", _resource->type );
+            emscripten_log( EM_LOG_ERROR, "Unsuport resource type: other (%i).\n"
+                , _resource->type 
+            );
+
             break;
         }
     }
@@ -473,15 +521,9 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-void em_opengl_bind_texture( GLuint _id )
-{
-    GLCALL( glBindTexture, (GL_TEXTURE_2D, _id) );
-}
-//////////////////////////////////////////////////////////////////////////
 static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t * _data, ae_voidptr_t _ud )
 {
-    (void)_data;
-    (void)_ud;
+    em_player_t * em_player = (em_player_t *)_ud;
 
     switch( _type )
     {
@@ -509,8 +551,8 @@ static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_
             
             EM_ASM(
             {
-                em_player_resource_sound_deleter( $0 );
-            }, resource->resource_id );
+                em_player_resource_sound_deleter( $0, $1 );
+            }, em_player->ud, resource->ud );
             
             EM_FREE( _data );
 
@@ -529,37 +571,41 @@ static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_
 //////////////////////////////////////////////////////////////////////////
 em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const uint8_t * _data )
 {    
-    em_player_t * em_instance = (em_player_t *)_player;
+    em_player_t * em_player = (em_player_t *)_player;
 
-    aeMovieData * ae_movie_data = ae_create_movie_data( em_instance->instance, &__ae_movie_data_resource_provider, &__ae_movie_data_resource_deleter, AE_NULL );
+    aeMovieData * movie_data = ae_create_movie_data( em_player->instance, &__ae_movie_data_resource_provider, &__ae_movie_data_resource_deleter, em_player );
 
-    aeMovieStream * ae_stream = ae_create_movie_stream_memory( em_instance->instance, _data, &__memory_copy, AE_NULL );
+    if( movie_data == em_nullptr )
+    {
+        emscripten_log( EM_LOG_ERROR, "invalid create movie data"            
+        );
 
-    ae_result_t result_load = ae_load_movie_data( ae_movie_data, ae_stream );
+        return em_nullptr;
+    }
+
+    aeMovieStream * stream = ae_create_movie_stream_memory( em_player->instance, _data, &__memory_copy, AE_NULL );
+
+    ae_result_t result_load = ae_load_movie_data( movie_data, stream );
 
     if( result_load != AE_MOVIE_SUCCESSFUL )
     {
-        emscripten_log( EM_LOG_CONSOLE, "invalid create movie data from data %d"
+        emscripten_log( EM_LOG_ERROR, "invalid load movie data 'result %d'"
             , result_load 
         );
 
         return em_nullptr;
     }
 
-    ae_delete_movie_stream( ae_stream );
-
-    emscripten_log( EM_LOG_CONSOLE, "successful create movie data from data");
-
-    return ae_movie_data;
+    ae_delete_movie_stream( stream );
+    
+    return movie_data;
 }
 //////////////////////////////////////////////////////////////////////////
 void em_delete_movie_data( em_movie_data_handle_t _movieData )
 {
-    aeMovieData * ae_movie_data = (aeMovieData *)_movieData;
+    aeMovieData * movie_data = (aeMovieData *)_movieData;
 
-    ae_delete_movie_data( ae_movie_data );
-
-    emscripten_log( EM_LOG_CONSOLE, "successful delete movie data" );
+    ae_delete_movie_data( movie_data );
 }
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_node_track_matte_t
@@ -690,6 +736,8 @@ static void __ae_movie_composition_node_deleter( const aeMovieNodeDeleterCallbac
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data )
 {
+    em_player_t * em_player = (em_player_t *)_data;
+
     switch( _callbackData->state )
     {
     case AE_MOVIE_NODE_UPDATE_UPDATE:
@@ -712,8 +760,8 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
 
                     EM_ASM(
                     {
-                        em_player_node_sound_play( $0, $1 );
-                    }, resource_sound->resource_id, _callbackData->offset );
+                        em_player_node_sound_play( $0, $1, $2 );
+                    }, em_player->ud, resource_sound->ud, _callbackData->offset );
                     
                 }break;
             }
@@ -734,8 +782,8 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
 
                     EM_ASM(
                     {
-                        em_player_node_sound_stop( $0 );
-                    }, resource_sound->resource_id );
+                        em_player_node_sound_stop( $0, $1 );
+                    }, em_player->ud, resource_sound->ud );
 
                 }break;
             }
@@ -756,8 +804,8 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
 
                     EM_ASM(
                     {
-                        em_player_node_sound_pause( $0 );
-                    }, resource_sound->resource_id );
+                        em_player_node_sound_pause( $0, $1 );
+                    }, em_player->ud, resource_sound->ud );
 
                 }break;
             }
@@ -778,8 +826,8 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
 
                     EM_ASM(
                     {
-                        em_player_node_sound_resume( $0 );
-                    }, resource_sound->resource_id );
+                        em_player_node_sound_resume( $0, $1 );
+                    }, em_player->ud, resource_sound->ud );
 
                 }break;
             }
@@ -856,6 +904,8 @@ typedef struct em_custom_shader_t
 //////////////////////////////////////////////////////////////////////////
 static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
+    (void)_data;
+
     em_custom_shader_t * shader = EM_NEW( em_custom_shader_t );
 
     GLuint program_id = __make_opengl_program( _callbackData->name, _callbackData->version, _callbackData->shader_vertex, _callbackData->shader_fragment );
@@ -870,27 +920,45 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
     int positionLocation;
     GLCALLR( positionLocation, glGetAttribLocation, (program_id, "a_position") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inVert '%d'\n"
-        , positionLocation
-    );
+    if( positionLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid attrib inVert '%d'\n"
+            , _callbackData->name
+            , positionLocation
+        );
+
+        return em_nullptr;
+    }
 
     shader->positionLocation = positionLocation;
 
     int colorLocation;
     GLCALLR( colorLocation, glGetAttribLocation, (program_id, "a_color") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inCol '%d'\n"
-        , colorLocation
-    );
+    if( colorLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid attrib inCol '%d'\n"
+            , _callbackData->name
+            , colorLocation
+        );
+
+        return em_nullptr;
+    }
 
     shader->colorLocation = colorLocation;
 
     int texcoordLocation;
     GLCALLR( texcoordLocation, glGetAttribLocation, (program_id, "a_texcoord") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl attrib inUV '%d'\n"
-        , texcoordLocation
-    );
+    if( texcoordLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid attrib inUV '%d'\n"
+            , _callbackData->name
+            , texcoordLocation
+        );
+
+        return em_nullptr;
+    }
 
     shader->texcoordLocation = texcoordLocation;
 
@@ -907,44 +975,58 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
         GLint parameter_location;
         GLCALLR( parameter_location, glGetUniformLocation, (program_id, parameter_uniform) );
 
-        shader->parameter_locations[i] = parameter_location;
+        if( parameter_location == -1 )
+        {
+            emscripten_log( EM_LOG_ERROR, "shader '%s' invalid attrib '%s' uniform '%s' location '%d'\n"
+                , _callbackData->name
+                , parameter_name
+                , parameter_uniform
+                , parameter_location
+            );
 
-        emscripten_log( EM_LOG_CONSOLE, "opengl attrib '%s' uniform '%s' location '%d'\n"
-            , parameter_name
-            , parameter_uniform
-            , parameter_location
-        );
+            return em_nullptr;
+        }
+
+        shader->parameter_locations[i] = parameter_location;
     }
 
     int mvpMatrixLocation;
     GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform mvpMatrix '%d'\n"
-        , mvpMatrixLocation
-    );
+    if( mvpMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid uniform mvpMatrix '%d'\n"
+            , _callbackData->name
+            , mvpMatrixLocation
+        );
+
+        return em_nullptr;
+    }
 
     shader->mvpMatrixLocation = mvpMatrixLocation;
 
     int tex0Location;
     GLCALLR( tex0Location, glGetUniformLocation, (program_id, "g_tex0") );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl uniform tex0 '%d'\n"
-        , tex0Location
-    );
+    if( tex0Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid uniform tex0 '%d'\n"
+            , _callbackData->name
+            , tex0Location
+        );
+
+        return em_nullptr;
+    }
 
     shader->tex0Location = tex0Location;
-
-    emscripten_log( EM_LOG_CONSOLE, "opengl create program '%s' version '%d' id '%d'\n"
-        , _callbackData->name
-        , _callbackData->version
-        , program_id
-    );
 
     return shader;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_callback_shader_property_update( const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data )
 {
+    (void)_data;
+
     em_custom_shader_t * shader = (em_custom_shader_t *)_callbackData->element;
 
     uint8_t index = _callbackData->index;
@@ -971,6 +1053,8 @@ static void __ae_movie_callback_shader_property_update( const aeMovieShaderPrope
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_callback_shader_deleter( const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
+    (void)_data;
+
     EM_FREE( _callbackData->element );
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1022,8 +1106,9 @@ static void __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatteDele
     EM_FREE( track_matte );
 }
 //////////////////////////////////////////////////////////////////////////
-em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_t _movieData, const char * _name )
+em_movie_composition_handle_t em_create_movie_composition( em_player_handle_t _player, em_movie_data_handle_t _movieData, const char * _name )
 {
+    em_player_t * em_player = (em_player_t *)_player;
     aeMovieData * ae_movie_data = (aeMovieData *)_movieData;
 
     const ae_char_t * movieName = ae_get_movie_name( ae_movie_data );
@@ -1032,7 +1117,7 @@ em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_
 
     if( movieCompositionData == AE_NULL )
     {
-        emscripten_log( EM_LOG_CONSOLE, "error get movie '%s' composition data '%s'"
+        emscripten_log( EM_LOG_ERROR, "error get movie '%s' composition data '%s'"
             , movieName
             , _name
         );
@@ -1059,22 +1144,17 @@ em_movie_composition_handle_t em_create_movie_composition( em_movie_data_handle_
     providers.track_matte_update = &__ae_movie_callback_track_matte_update;
     providers.track_matte_deleter = &__ae_movie_callback_track_matte_deleter;
 
-    aeMovieComposition * movieComposition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &providers, AE_NULL );
+    aeMovieComposition * movieComposition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &providers, em_player );
 
     if( movieComposition == AE_NULL )
     {
-        emscripten_log( EM_LOG_CONSOLE, "error create movie '%s' composition '%s'"
+        emscripten_log( EM_LOG_ERROR, "error create movie '%s' composition '%s'"
             , movieName
             , _name
         );
 
         return AE_NULL;
     }
-
-    emscripten_log( EM_LOG_CONSOLE, "successful create movie '%s' composition '%s'"
-        , movieName
-        , _name
-    );
 
     return movieComposition;
 }
@@ -1083,14 +1163,7 @@ void em_delete_movie_composition( em_movie_composition_handle_t _movieCompositio
 {
     const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
 
-    const ae_char_t * movieName = ae_get_movie_composition_name( ae_movie_composition );
-
-    emscripten_log( EM_LOG_CONSOLE, "successful delete movie composition '%s'"
-        , movieName
-    );
-
     ae_delete_movie_composition( ae_movie_composition );
-
 }
 //////////////////////////////////////////////////////////////////////////
 void em_set_movie_composition_loop( em_movie_composition_handle_t _movieComposition, unsigned int _loop )
@@ -1098,13 +1171,6 @@ void em_set_movie_composition_loop( em_movie_composition_handle_t _movieComposit
     const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
 
     ae_set_movie_composition_loop( ae_movie_composition, _loop );
-
-    const ae_char_t * movieName = ae_get_movie_composition_name( ae_movie_composition );
-
-    emscripten_log( EM_LOG_CONSOLE, "successful set movie composition '%s' loop '%u'"
-        , movieName
-        , _loop
-    );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_play_movie_composition( em_movie_composition_handle_t _movieComposition, float _time )
@@ -1112,27 +1178,15 @@ void em_play_movie_composition( em_movie_composition_handle_t _movieComposition,
     aeMovieComposition * ae_movie_composition = (aeMovieComposition *)_movieComposition;
 
     ae_play_movie_composition( ae_movie_composition, _time );
-
-    const ae_char_t * movieName = ae_get_movie_composition_name( ae_movie_composition );
-
-    emscripten_log( EM_LOG_CONSOLE, "successful play movie composition '%s' time '%f'"
-        , movieName
-        , _time
-    );
 }
 //////////////////////////////////////////////////////////////////////////
-void em_update_movie_composition( em_movie_composition_handle_t _movieComposition, float _time )
+void em_update_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition, float _time )
 {
+    (void)_player;
+
     aeMovieComposition * ae_movie_composition = (aeMovieComposition *)_movieComposition;
 
-    ae_update_movie_composition( ae_movie_composition, _time * 1000.f );
-
-    const ae_char_t * movieName = ae_get_movie_composition_name( ae_movie_composition );
-
-    //emscripten_log( EM_LOG_CONSOLE, "successful update movie composition '%s' time '%f'"
-    //    , movieName
-    //    , _time
-    //);
+    ae_update_movie_composition( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_render_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition )
@@ -1558,18 +1612,10 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
             GLCALL( glDeleteBuffers, (1, &opengl_indices_buffer_id) );
             GLCALL( glDeleteBuffers, (1, &opengl_vertex_buffer_id) );
         }
-
-        //emscripten_log( EM_LOG_CONSOLE, "draw elements vertices '%d' indices '%d' program '%d' texture '%d' index '%d'"
-        //    , mesh.vertexCount
-        //    , mesh.indexCount
-        //    , program_id
-        //    , texture_id
-        //    , mesh_iterator
-        //);
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void em_opengl_create_texture( uint32_t _id, uint32_t _width, uint32_t _height, const uint8_t * _data )
+void em_utils_opengl_create_texture( uint32_t _id, uint32_t _width, uint32_t _height, const uint8_t * _data )
 {
     GLCALL( glBindTexture, (GL_TEXTURE_2D, _id) );
     GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) );
@@ -1580,10 +1626,4 @@ void em_opengl_create_texture( uint32_t _id, uint32_t _width, uint32_t _height, 
     GLCALL( glTexImage2D, (GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0x00000000, GL_RGBA, GL_UNSIGNED_BYTE, _data) );
     
     GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
-
-    emscripten_log( EM_LOG_CONSOLE, "opengl create texture '%d' size '%d:%d'"
-        , _id
-        , _width
-        , _height
-    );
 }

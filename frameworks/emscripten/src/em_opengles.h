@@ -30,7 +30,7 @@ static void __opengl_error_check( const char * _method, const char * _file, int 
 
     const char * err_str = __opengl_get_error_string( err );
 
-    emscripten_log( EM_LOG_CONSOLE, "opengl error method '%s' file '%s:%d' error '%s:%d'"
+    emscripten_log( EM_LOG_ERROR, "opengl error method '%s' file '%s:%d' error '%s:%d'"
         , _method
         , _file
         , _line
@@ -59,7 +59,7 @@ static GLuint __make_opengl_program( const char * _name, uint32_t _version, cons
 
     if( shader_vertex_id == 0 )
     {
-        emscripten_log( EM_LOG_CONSOLE, "opengl create vertex shader '%s' version '%d'\n"
+        emscripten_log( EM_LOG_ERROR, "opengl invalid create vertex shader '%s' version '%d'\n"
             , _name
             , _version
         );
@@ -80,7 +80,7 @@ static GLuint __make_opengl_program( const char * _name, uint32_t _version, cons
         GLchar errorLog[1024];
         GLCALL( glGetShaderInfoLog, (shader_vertex_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
-        emscripten_log( EM_LOG_CONSOLE, "opengl compilation vertex shader '%s' version '%d' error '%s'\n"
+        emscripten_log( EM_LOG_ERROR, "opengl invalid compilation vertex shader '%s' version '%d' error '%s'\n"
             , _name
             , _version
             , errorLog
@@ -94,7 +94,7 @@ static GLuint __make_opengl_program( const char * _name, uint32_t _version, cons
 
     if( shader_fragment_id == 0 )
     {
-        emscripten_log( EM_LOG_CONSOLE, "opengl create fragment shader '%s' version '%d'\n"
+        emscripten_log( EM_LOG_ERROR, "opengl invalid create fragment shader '%s' version '%d'\n"
             , _name
             , _version
         );
@@ -115,7 +115,7 @@ static GLuint __make_opengl_program( const char * _name, uint32_t _version, cons
         GLchar errorLog[1024];
         GLCALL( glGetShaderInfoLog, (shader_fragment_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
-        emscripten_log( EM_LOG_CONSOLE, "opengl compilation fragment shader '%s' version '%d' error '%s'\n"
+        emscripten_log( EM_LOG_ERROR, "opengl invalid compilation fragment shader '%s' version '%d' error '%s'\n"
             , _name
             , _version
             , errorLog
@@ -129,7 +129,7 @@ static GLuint __make_opengl_program( const char * _name, uint32_t _version, cons
 
     if( program_id == 0 )
     {
-        emscripten_log( EM_LOG_CONSOLE, "opengl create program '%s' version '%d'\n"
+        emscripten_log( EM_LOG_ERROR, "opengl invalid create program '%s' version '%d'\n"
             , _name
             , _version
         );
@@ -150,7 +150,7 @@ static GLuint __make_opengl_program( const char * _name, uint32_t _version, cons
         GLchar errorLog[1024] = { 0 };
         GLCALL( glGetProgramInfoLog, (program_id, sizeof( errorLog ) - 1, NULL, errorLog) );
 
-        emscripten_log( EM_LOG_CONSOLE, "opengl program '%s' version '%d' linking error '%s'\n"
+        emscripten_log( EM_LOG_ERROR, "opengl invalid program '%s' version '%d' linking error '%s'\n"
             , _name
             , _version
             , errorLog
