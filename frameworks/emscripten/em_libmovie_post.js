@@ -9,7 +9,7 @@ AEMovie["render_movie_composition"] = cwrap('em_render_movie_composition', 'void
 AEMovie["delete_movie_data"] = cwrap('em_delete_movie_data', 'void', ['number', 'number'])
 AEMovie["delete_player"] = cwrap('em_delete_player', 'void', ['number'])
 AEMovie["utils_opengl_create_texture"] = cwrap('em_utils_opengl_create_texture', 'void', ['number', 'number', 'number', 'number'])
-AEMovie["set_movie_wm"] = cwrap('em_set_movie_wm', 'void', ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'])
+AEMovie["set_movie_composition_wm"] = cwrap('em_set_movie_composition_wm', 'void', ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'])
 
 AEMovie["utils_opengl_initialize"] = function(canvas)
 {    

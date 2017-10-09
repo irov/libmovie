@@ -91,6 +91,8 @@ function onload_movie(canvas, response, em_player, composition_name)
         
         return
     }
+    
+    movie.set_movie_wm(em_movie_composition, 100.0, 100.0, 0.0, 0.0, 1.0, 1.0, 0.0)
         
     movie.play_movie_composition(em_movie_composition, 0.0)
     movie.set_movie_composition_loop(em_movie_composition, 1)
@@ -120,8 +122,6 @@ function libMOVIE_test(rendercanvas, movie_hash, movie_url, composition_name)
     gl.enable(gl.BLEND)
     
     var em_player = movie.create_player(movie_hash, canvas.width, canvas.height, 0)
-    
-    movie.set_movie_wm(em_player, 100.0, 100.0, 0.0, 0.0, 1.0, 1.0, 0.0)
     
     if( em_player == 0 )
     {

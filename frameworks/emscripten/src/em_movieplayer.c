@@ -67,9 +67,7 @@ typedef struct em_player_t
 
     em_blend_render_vertex_t blend_vertices[1024];
     em_track_matte_render_vertex_t track_matte_vertices[1024];
-
-    float wm[16];
-
+    
 } em_player_t;
 //////////////////////////////////////////////////////////////////////////
 static void * __instance_alloc( void * _data, size_t _size )
@@ -380,7 +378,7 @@ static em_track_matte_shader_t * __make_track_matte_shader()
     return track_matte_shader;
 }
 //////////////////////////////////////////////////////////////////////////
-em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uint32_t _height, uint32_t _ud )
+em_player_t * em_create_player( const char * _hashkey, uint32_t _width, uint32_t _height, uint32_t _ud )
 {
     em_player_t * player = EM_NEW( em_player_t );
 
@@ -416,21 +414,17 @@ em_player_handle_t em_create_player( const char * _hashkey, uint32_t _width, uin
     }
 
     player->track_matte_shader = track_matte_shader;
-
-    __identity_m4( player->wm );
-
+    
     return player;
 }
 //////////////////////////////////////////////////////////////////////////
-void em_delete_player( em_player_handle_t _player )
+void em_delete_player( em_player_t * _player )
 {
-    em_player_t * player = (em_player_t *)_player;
+    EM_FREE( _player->blend_shader );
 
-    EM_FREE( player->blend_shader );
+    ae_delete_movie_instance( _player->instance );
 
-    ae_delete_movie_instance( player->instance );
-
-    EM_FREE( player );
+    EM_FREE( _player );
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _carriage, ae_uint32_t _size )
@@ -574,11 +568,15 @@ static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_
     }
 }
 //////////////////////////////////////////////////////////////////////////
-em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const uint8_t * _data )
-{    
-    em_player_t * em_player = (em_player_t *)_player;
+typedef struct em_movie_data_t
+{
+    aeMovieData * movie_data;
 
-    aeMovieData * movie_data = ae_create_movie_data( em_player->instance, &__ae_movie_data_resource_provider, &__ae_movie_data_resource_deleter, em_player );
+} em_movie_data_t;
+//////////////////////////////////////////////////////////////////////////
+em_movie_data_t * em_create_movie_data( em_player_t * _player, const uint8_t * _data )
+{    
+    aeMovieData * movie_data = ae_create_movie_data( _player->instance, &__ae_movie_data_resource_provider, &__ae_movie_data_resource_deleter, _player );
 
     if( movie_data == em_nullptr )
     {
@@ -588,7 +586,7 @@ em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const u
         return em_nullptr;
     }
 
-    aeMovieStream * stream = ae_create_movie_stream_memory( em_player->instance, _data, &__memory_copy, AE_NULL );
+    aeMovieStream * stream = ae_create_movie_stream_memory( _player->instance, _data, &__memory_copy, AE_NULL );
 
     ae_result_t result_load = ae_load_movie_data( movie_data, stream );
 
@@ -603,12 +601,16 @@ em_movie_data_handle_t em_create_movie_data( em_player_handle_t _player, const u
 
     ae_delete_movie_stream( stream );
     
-    return movie_data;
+    em_movie_data_t * em_movie_data = EM_NEW( em_movie_data_t );
+    
+    em_movie_data->movie_data = movie_data;
+
+    return em_movie_data;
 }
 //////////////////////////////////////////////////////////////////////////
-void em_delete_movie_data( em_movie_data_handle_t _movieData )
+void em_delete_movie_data( em_movie_data_t * _data )
 {
-    aeMovieData * movie_data = (aeMovieData *)_movieData;
+    aeMovieData * movie_data = _data->movie_data;
 
     ae_delete_movie_data( movie_data );
 }
@@ -1111,10 +1113,17 @@ static void __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatteDele
     EM_FREE( track_matte );
 }
 //////////////////////////////////////////////////////////////////////////
-em_movie_composition_handle_t em_create_movie_composition( em_player_handle_t _player, em_movie_data_handle_t _movieData, const char * _name )
+typedef struct em_movie_composition_t
 {
-    em_player_t * em_player = (em_player_t *)_player;
-    aeMovieData * ae_movie_data = (aeMovieData *)_movieData;
+    aeMovieComposition * composition;
+    
+    float wm[16];
+
+} em_movie_composition_t;
+//////////////////////////////////////////////////////////////////////////
+em_movie_composition_t * em_create_movie_composition( em_player_t * _player, em_movie_data_t * _data, const char * _name )
+{    
+    aeMovieData * ae_movie_data = _data->movie_data;
 
     const ae_char_t * movieName = ae_get_movie_name( ae_movie_data );
 
@@ -1149,9 +1158,9 @@ em_movie_composition_handle_t em_create_movie_composition( em_player_handle_t _p
     providers.track_matte_update = &__ae_movie_callback_track_matte_update;
     providers.track_matte_deleter = &__ae_movie_callback_track_matte_deleter;
 
-    aeMovieComposition * movieComposition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &providers, em_player );
+    aeMovieComposition * composition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &providers, _player );
 
-    if( movieComposition == AE_NULL )
+    if( composition == AE_NULL )
     {
         emscripten_log( EM_LOG_ERROR, "error create movie '%s' composition '%s'"
             , movieName
@@ -1161,34 +1170,38 @@ em_movie_composition_handle_t em_create_movie_composition( em_player_handle_t _p
         return AE_NULL;
     }
 
-    return movieComposition;
-}
-//////////////////////////////////////////////////////////////////////////
-void em_delete_movie_composition( em_movie_composition_handle_t _movieComposition )
-{
-    const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
+    em_movie_composition_t * em_composition = EM_NEW( em_movie_composition_t );
 
-    ae_delete_movie_composition( ae_movie_composition );
+    em_composition->composition = composition;
+    
+    __identity_m4( em_composition->wm );
+
+    return em_composition;
 }
 //////////////////////////////////////////////////////////////////////////
-void em_set_movie_composition_loop( em_movie_composition_handle_t _movieComposition, unsigned int _loop )
+void em_delete_movie_composition( em_movie_composition_t * _composition )
 {
-    const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
+    ae_delete_movie_composition( _composition->composition );
+
+    EM_FREE( _composition );
+}
+//////////////////////////////////////////////////////////////////////////
+void em_set_movie_composition_loop( em_movie_composition_t * _composition, unsigned int _loop )
+{
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_set_movie_composition_loop( ae_movie_composition, _loop );
 }
 //////////////////////////////////////////////////////////////////////////
-void em_play_movie_composition( em_movie_composition_handle_t _movieComposition, float _time )
+void em_play_movie_composition( em_movie_composition_t * _composition, float _time )
 {
-    aeMovieComposition * ae_movie_composition = (aeMovieComposition *)_movieComposition;
+    aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_play_movie_composition( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
-void em_set_movie_wm( em_player_handle_t _player, float _px, float _py, float _ox, float _oy, float _sx, float _sy, float _angle )
+void em_set_movie_composition_wm( em_movie_composition_t * _composition, float _px, float _py, float _ox, float _oy, float _sx, float _sy, float _angle )
 {
-    em_player_t * player = (em_player_t *)_player;
-
     float matrix_base[16];
     matrix_base[0 * 4 + 0] = _sx;
     matrix_base[0 * 4 + 1] = 0.f;
@@ -1236,31 +1249,27 @@ void em_set_movie_wm( em_player_handle_t _player, float _px, float _py, float _o
         matrix_rotate[3 * 4 + 2] = 0.f;
         matrix_rotate[3 * 4 + 3] = 1.f;
 
-        __mul_m4_m4( player->wm, matrix_base, matrix_rotate );
+        __mul_m4_m4( _composition->wm, matrix_base, matrix_rotate );
     }
     else
     {
-        __copy_m4( player->wm, matrix_base );
+        __copy_m4( _composition->wm, matrix_base );
     }
 
-    player->wm[3 * 4 + 0] += _px;
-    player->wm[3 * 4 + 1] += _py;
+    _composition->wm[3 * 4 + 0] += _px;
+    _composition->wm[3 * 4 + 1] += _py;
 }
 //////////////////////////////////////////////////////////////////////////
-void em_update_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition, float _time )
+void em_update_movie_composition( em_player_t * _player, em_movie_composition_t * _composition, float _time )
 {
-    (void)_player;
-
-    aeMovieComposition * ae_movie_composition = (aeMovieComposition *)_movieComposition;
+    aeMovieComposition * ae_movie_composition = (aeMovieComposition *)_composition->composition;
 
     ae_update_movie_composition( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
-void em_render_movie_composition( em_player_handle_t _player, em_movie_composition_handle_t _movieComposition )
+void em_render_movie_composition( em_player_t * _player, em_movie_composition_t * _composition )
 {
-    em_player_t * player = (em_player_t *)_player;
-
-    const aeMovieComposition * ae_movie_composition = (const aeMovieComposition *)_movieComposition;
+    aeMovieComposition * ae_movie_composition = _composition->composition;
 
     uint32_t mesh_iterator = 0;
 
@@ -1323,7 +1332,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
             GLuint texture_id = 0U;
 
-            em_blend_render_vertex_t * vertices = player->blend_vertices;
+            em_blend_render_vertex_t * vertices = _player->blend_vertices;
             const ae_uint16_t * indices = mesh.indices;
 
             switch( mesh.layer_type )
@@ -1338,7 +1347,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                         em_blend_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-                        __v3_v3_m4( v->position, mesh_position, player->wm );
+                        __v3_v3_m4( v->position, mesh_position, _composition->wm );
 
                         v->color = color;
 
@@ -1362,7 +1371,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                         em_blend_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-                        __v3_v3_m4( v->position, mesh_position, player->wm );
+                        __v3_v3_m4( v->position, mesh_position, _composition->wm );
 
                         v->color = color;
 
@@ -1392,7 +1401,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
 
             if( mesh.shader_data == AE_NULL )
             {
-                em_blend_shader_t * blend_shader = player->blend_shader;
+                em_blend_shader_t * blend_shader = _player->blend_shader;
 
                 program_id = blend_shader->program_id;
 
@@ -1472,8 +1481,8 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                 float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
                 float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
                 
-                float width = player->width;
-                float height = player->height;
+                float width = _player->width;
+                float height = _player->height;
 
                 float projectionMatrix[16];
                 __make_orthogonal_m4( projectionMatrix, width, height );
@@ -1529,7 +1538,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
             GLuint base_texture_id = node_track_matte->base_image->texture_id;
             GLuint track_matte_texture_id = node_track_matte->track_matte_image->texture_id;
 
-            em_track_matte_render_vertex_t * vertices = player->track_matte_vertices;
+            em_track_matte_render_vertex_t * vertices = _player->track_matte_vertices;
             const ae_uint16_t * indices = mesh.indices;
 
             switch( mesh.layer_type )
@@ -1548,7 +1557,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                         em_track_matte_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-                        __v3_v3_m4( v->position, mesh_position, player->wm );
+                        __v3_v3_m4( v->position, mesh_position, _composition->wm );
 
                         v->color = color;
 
@@ -1581,7 +1590,7 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
             GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
             GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
 
-            em_track_matte_shader_t * track_matte_shader = player->track_matte_shader;
+            em_track_matte_shader_t * track_matte_shader = _player->track_matte_shader;
 
             GLuint program_id = track_matte_shader->program_id;
 
@@ -1623,8 +1632,8 @@ void em_render_movie_composition( em_player_handle_t _player, em_movie_compositi
                 float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
                 float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
 
-                float width = player->width;
-                float height = player->height;
+                float width = _player->width;
+                float height = _player->height;
 
                 float projectionMatrix[16];
                 __make_orthogonal_m4( projectionMatrix, width, height );
