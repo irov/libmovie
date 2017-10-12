@@ -91,7 +91,7 @@ typedef struct
 typedef struct
 {
     ae_uint32_t vertex_count;
-    ae_uint32_t indices_count;
+    ae_uint32_t index_count;
     const ae_vector2_t * positions;
     const ae_vector2_t * uvs;
     const ae_uint16_t * indices;

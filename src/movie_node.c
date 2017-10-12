@@ -63,7 +63,7 @@ static ae_uint32_t __inc_composition_update_revision( const aeMovieComposition *
 static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
     _render->vertexCount = _mesh->vertex_count;
-    _render->indexCount = _mesh->indices_count;
+    _render->indexCount = _mesh->index_count;
 
     ae_uint32_t vertex_count = _mesh->vertex_count;
 
@@ -1805,13 +1805,125 @@ ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _com
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition )
+static ae_uint32_t __mesh_max_vertex_count( const aeMovieLayerMesh * _mesh, ae_uint32_t _count )
 {
-    ae_uint32_t max_render_node = 0;
+    if( _mesh->immutable == AE_TRUE )
+    {
+        return _mesh->immutable_mesh.vertex_count;
+    }
+
+    ae_uint32_t max_vertex_count = 0U;
+
+    const aeMovieMesh * it_mesh = _mesh->meshes;
+    const aeMovieMesh * it_mesh_end = _mesh->meshes + _count;
+    for( ; it_mesh != it_mesh_end; ++it_mesh )
+    {
+        const aeMovieMesh * mesh = it_mesh;
+
+        if( max_vertex_count < mesh->vertex_count )
+        {
+            max_vertex_count = mesh->vertex_count;
+        }
+    }
+
+    return max_vertex_count;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_uint32_t __mesh_max_index_count( const aeMovieLayerMesh * _mesh, ae_uint32_t _count )
+{
+    if( _mesh->immutable == AE_TRUE )
+    {
+        return _mesh->immutable_mesh.index_count;
+    }
+
+    ae_uint32_t max_index_count = 0U;
+
+    const aeMovieMesh * it_mesh = _mesh->meshes;
+    const aeMovieMesh * it_mesh_end = _mesh->meshes + _count;
+    for( ; it_mesh != it_mesh_end; ++it_mesh )
+    {
+        const aeMovieMesh * mesh = it_mesh;
+
+        if( max_index_count < mesh->index_count )
+        {
+            max_index_count = mesh->index_count;
+        }
+    }
+
+    return max_index_count;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_uint32_t __resource_sequence_images_max_vertex_count( const aeMovieResourceSequence * _resource_sequence )
+{
+    ae_uint32_t max_vertex_count = 0U;
+
+    const aeMovieResourceImage * const * it_image = _resource_sequence->images;
+    const aeMovieResourceImage * const * it_image_end = _resource_sequence->images + _resource_sequence->image_count;
+    for( ; it_image != it_image_end; ++it_image )
+    {
+        const aeMovieResourceImage * image = *it_image;
+
+        const aeMovieMesh * mesh = image->mesh;
+
+        if( mesh == AE_NULL )
+        {
+            if( max_vertex_count < 6 )
+            {
+                max_vertex_count = 6;
+            }
+        }
+        else
+        {
+            if( max_vertex_count < mesh->vertex_count )
+            {
+                max_vertex_count = mesh->vertex_count;
+            }
+        }
+    }
+
+    return max_vertex_count;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_uint32_t __resource_sequence_images_max_index_count( const aeMovieResourceSequence * _resource_sequence )
+{
+    ae_uint32_t max_index_count = 0U;
+
+    const aeMovieResourceImage * const * it_image = _resource_sequence->images;
+    const aeMovieResourceImage * const * it_image_end = _resource_sequence->images + _resource_sequence->image_count;
+    for( ; it_image != it_image_end; ++it_image )
+    {
+        const aeMovieResourceImage * image = *it_image;
+
+        const aeMovieMesh * mesh = image->mesh;
+
+        if( mesh == AE_NULL )
+        {
+            if( max_index_count < 6 )
+            {
+                max_index_count = 6;
+            }
+        }
+        else
+        {
+            if( max_index_count < mesh->index_count )
+            {
+                max_index_count = mesh->index_count;
+            }
+        }
+    }
+
+    return max_index_count;
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_calculate_movie_composition_render_info( const aeMovieComposition * _composition, aeMovieCompositionRenderInfo * _info )
+{
+    _info->max_render_node = 0U;
+    _info->max_vertex_count = 0U;
+    _info->max_index_count = 0U;
 
     ae_uint32_t node_count = _composition->node_count;
 
-    ae_uint32_t iterator = 0;
+    ae_uint32_t iterator = 0U;
     for( ; iterator != node_count; ++iterator )
     {
         const aeMovieNode * node = _composition->nodes + iterator;
@@ -1823,10 +1935,110 @@ ae_uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition *
             continue;
         }
 
-        ++max_render_node;
-    }
+        ++_info->max_render_node;
 
-    return max_render_node;
+        aeMovieLayerTypeEnum layer_type = layer->type;
+        const aeMovieResource * layer_resource = layer->resource;
+
+        switch( layer_type )
+        {
+        case AE_MOVIE_LAYER_TYPE_SHAPE:
+            {
+                _info->max_vertex_count += __mesh_max_vertex_count( layer->mesh, layer->frame_count );
+                _info->max_index_count += __mesh_max_index_count( layer->mesh, layer->frame_count );
+            }break;
+        case AE_MOVIE_LAYER_TYPE_SOLID:
+            {
+                //aeMovieResourceSolid * resource_solid = (aeMovieResourceSolid *)resource;
+
+                if( layer->mesh != AE_NULL )
+                {
+                    _info->max_vertex_count += __mesh_max_vertex_count( layer->mesh, layer->frame_count );
+                    _info->max_index_count += __mesh_max_index_count( layer->mesh, layer->frame_count );
+                }
+                else if( layer->bezier_warp != AE_NULL )
+                {
+                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
+                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                }
+                else
+                {
+                    _info->max_vertex_count += 4U;
+                    _info->max_index_count += 6U;
+                }
+            }break;
+        case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+            {
+                aeMovieResourceSequence * resource_sequence = (aeMovieResourceSequence *)layer_resource;
+
+                if( layer->mesh != AE_NULL )
+                {
+                    _info->max_vertex_count += __mesh_max_vertex_count( layer->mesh, layer->frame_count );
+                    _info->max_index_count += __mesh_max_index_count( layer->mesh, layer->frame_count );
+                }
+                else if( layer->bezier_warp != AE_NULL )
+                {
+                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
+                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                }
+                else
+                {
+                    _info->max_vertex_count += __resource_sequence_images_max_vertex_count( resource_sequence );
+                    _info->max_index_count += __resource_sequence_images_max_index_count( resource_sequence );
+                }
+            }break;
+        case AE_MOVIE_LAYER_TYPE_VIDEO:
+            {
+                //aeMovieResourceVideo * resource_video = (aeMovieResourceVideo *)resource;
+
+                if( layer->mesh != AE_NULL )
+                {
+                    _info->max_vertex_count += __mesh_max_vertex_count( layer->mesh, layer->frame_count );
+                    _info->max_index_count += __mesh_max_index_count( layer->mesh, layer->frame_count );
+                }
+                else if( layer->bezier_warp != AE_NULL )
+                {
+                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
+                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                }
+                else
+                {
+                    _info->max_vertex_count += 4U;
+                    _info->max_index_count += 6U;
+                }
+            }break;
+        case AE_MOVIE_LAYER_TYPE_IMAGE:
+            {
+                aeMovieResourceImage * resource_image = (aeMovieResourceImage *)layer_resource;
+
+                if( layer->mesh != AE_NULL )
+                {
+                    _info->max_vertex_count += __mesh_max_vertex_count( layer->mesh, layer->frame_count );
+                    _info->max_index_count += __mesh_max_index_count( layer->mesh, layer->frame_count );
+                }
+                else if( layer->bezier_warp != AE_NULL )
+                {
+                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
+                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                }
+                else if( resource_image->mesh != AE_NULL )
+                {
+                    const aeMovieMesh * mesh = resource_image->mesh;
+
+                    _info->max_vertex_count += mesh->vertex_count;
+                    _info->max_index_count += mesh->index_count;
+                }
+                else
+                {
+                    _info->max_vertex_count += 4U;
+                    _info->max_index_count += 6U;
+                }
+            }break;
+        default:
+            {
+            }break;
+        }
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 void ae_set_movie_composition_loop( const aeMovieComposition * _composition, ae_bool_t _loop )

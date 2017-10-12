@@ -409,11 +409,19 @@ const aeMovieCompositionData * ae_get_movie_composition_composition_data( const 
 */
 ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _composition, ae_vector3_t _point );
 
+typedef struct aeMovieCompositionRenderInfo
+{
+    ae_uint32_t max_render_node;
+    ae_uint32_t max_vertex_count;
+    ae_uint32_t max_index_count;
+    
+} aeMovieCompositionRenderInfo;
+
 /**
 @param [in] _composition Composition.
 @return Maximum number of render meshes you will ever get during a full ae_compute_movie_mesh() cycle.
 */
-uint32_t ae_get_movie_composition_max_render_node( const aeMovieComposition * _composition );
+void ae_calculate_movie_composition_render_info( const aeMovieComposition * _composition, aeMovieCompositionRenderInfo * _info );
 
 /**
 @brief Set whether a composition is looped or not.

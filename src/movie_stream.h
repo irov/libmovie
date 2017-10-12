@@ -153,7 +153,7 @@ static void ae_magic_read_mesh( aeMovieStream * _stream, aeMovieMesh * _mesh )
     if( vertex_count == 0 || vertex_count > AE_MOVIE_MAX_VERTICES )
     {
         _mesh->vertex_count = 0;
-        _mesh->indices_count = 0;
+        _mesh->index_count = 0;
 
         _mesh->positions = AE_NULL;
         _mesh->uvs = AE_NULL;
@@ -165,7 +165,7 @@ static void ae_magic_read_mesh( aeMovieStream * _stream, aeMovieMesh * _mesh )
     ae_uint32_t indices_count = READZ( _stream );
 
     _mesh->vertex_count = vertex_count;
-    _mesh->indices_count = indices_count;
+    _mesh->index_count = indices_count;
 
     ae_vector2_t * positions = AE_NEWN( _stream->instance, ae_vector2_t, vertex_count );
     READN( _stream, positions, vertex_count );
