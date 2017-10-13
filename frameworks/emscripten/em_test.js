@@ -92,7 +92,7 @@ function onload_movie(canvas, response, em_player, composition_name)
         return
     }
     
-    movie.set_movie_wm(em_movie_composition, 100.0, 100.0, 0.0, 0.0, 1.0, 1.0, 0.0)
+    movie.set_movie_composition_wm(em_movie_composition, 100.0, 100.0, 0.0, 0.0, 1.0, 1.0, 0.0)
         
     movie.play_movie_composition(em_movie_composition, 0.0)
     movie.set_movie_composition_loop(em_movie_composition, 1)

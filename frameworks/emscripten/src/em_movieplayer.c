@@ -1116,6 +1116,9 @@ static void __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatteDele
 typedef struct em_movie_composition_t
 {
     aeMovieComposition * composition;
+
+    GLuint opengl_vertex_buffer_id;
+    GLuint opengl_indices_buffer_id;
     
     float wm[16];
 
@@ -1170,18 +1173,40 @@ em_movie_composition_t * em_create_movie_composition( em_player_t * _player, em_
         return AE_NULL;
     }
 
+    aeMovieCompositionRenderInfo info;
+    ae_calculate_movie_composition_render_info( composition, &info );
+
+    //size_t opengl_vertex_buffer_size = info.max_vertex_count * sizeof( em_blend_render_vertex_t );
+
+    GLuint opengl_vertex_buffer_id = 0;
+    GLCALL( glGenBuffers, (1, &opengl_vertex_buffer_id) );
+    //GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
+    //GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
+
+    //size_t opengl_indices_buffer_size = info.max_index_count * sizeof( em_render_index_t );
+
+    GLuint opengl_indices_buffer_id = 0;
+    GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
+    //GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_id) );
+    //GLCALL( glBufferData, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_size, indices, GL_STREAM_DRAW) );
+    
     em_movie_composition_t * em_composition = EM_NEW( em_movie_composition_t );
 
     em_composition->composition = composition;
+    em_composition->opengl_vertex_buffer_id = opengl_vertex_buffer_id;
+    em_composition->opengl_indices_buffer_id = opengl_indices_buffer_id;
     
     __identity_m4( em_composition->wm );
-
+    
     return em_composition;
 }
 //////////////////////////////////////////////////////////////////////////
 void em_delete_movie_composition( em_movie_composition_t * _composition )
 {
     ae_delete_movie_composition( _composition->composition );
+
+    GLCALL( glDeleteBuffers, (1, &_composition->opengl_indices_buffer_id) );
+    GLCALL( glDeleteBuffers, (1, &_composition->opengl_vertex_buffer_id) );
 
     EM_FREE( _composition );
 }
@@ -1386,9 +1411,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 }break;
             }
 
-            GLuint opengl_vertex_buffer_id = 0;
-            GLCALL( glGenBuffers, (1, &opengl_vertex_buffer_id) );
-            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
+            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, _composition->opengl_vertex_buffer_id) );
             GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
 
             GLint positionLocation;
@@ -1506,9 +1529,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
             }
 
-            GLuint opengl_indices_buffer_id = 0;
-            GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
-            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_id) );
+            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, _composition->opengl_indices_buffer_id) );
             GLCALL( glBufferData, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_size, indices, GL_STREAM_DRAW) );
 
             GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, 0) );
@@ -1524,9 +1545,6 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
             GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0) );
             GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0) );
-
-            GLCALL( glDeleteBuffers, (1, &opengl_indices_buffer_id) );
-            GLCALL( glDeleteBuffers, (1, &opengl_vertex_buffer_id) );
         }
         else
         {
@@ -1585,9 +1603,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 }break;
             }
 
-            GLuint opengl_vertex_buffer_id = 0;
-            GLCALL( glGenBuffers, (1, &opengl_vertex_buffer_id) );
-            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
+            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, _composition->opengl_vertex_buffer_id) );
             GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
 
             em_track_matte_shader_t * track_matte_shader = _player->track_matte_shader;
@@ -1657,9 +1673,9 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
             }
 
-            GLuint opengl_indices_buffer_id = 0;
-            GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
-            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_id) );
+            //GLuint opengl_indices_buffer_id = 0;
+            //GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
+            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, _composition->opengl_indices_buffer_id) );
             GLCALL( glBufferData, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_size, indices, GL_STREAM_DRAW) );
 
             GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, 0) );
@@ -1678,9 +1694,6 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
             GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0) );
             GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0) );
-
-            GLCALL( glDeleteBuffers, (1, &opengl_indices_buffer_id) );
-            GLCALL( glDeleteBuffers, (1, &opengl_vertex_buffer_id) );
         }
     }
 }
