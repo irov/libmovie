@@ -28,7 +28,8 @@ typedef struct em_blend_shader_t
     GLint positionLocation;
     GLint colorLocation;
     GLint texcoordLocation;
-    GLint mvpMatrixLocation;
+    GLint vpMatrixLocation;
+    GLint worldMatrixLocation;
     GLint tex0Location;
 } em_blend_shader_t;
 //////////////////////////////////////////////////////////////////////////
@@ -47,8 +48,9 @@ typedef struct em_track_matte_shader_t
     GLint positionLocation;
     GLint colorLocation;
     GLint texcoord0Location;
-    GLint texcoord1Location;
-    GLint mvpMatrixLocation;
+    GLint texcoord1Location;    
+    GLint vpMatrixLocation;
+    GLint worldMatrixLocation;
     GLint tex0Location;
     GLint tex1Location;
 } em_track_matte_shader_t;
@@ -109,7 +111,7 @@ static void __instance_logerror( void * _data, aeMovieErrorCode _code, const cha
     va_list argList;
 
     va_start( argList, _format );
-    char msg[4096];
+    char msg[2048];
     vsprintf( msg, _format, argList );
     va_end( argList );
 
@@ -141,7 +143,8 @@ static void __instance_logerror( void * _data, aeMovieErrorCode _code, const cha
 static em_blend_shader_t * __make_blend_shader()
 {
     const char * vertex_shader_source =
-        "uniform highp mat4 g_mvpMatrix;\n"
+        "uniform highp mat4 g_vpMatrix;\n"
+        "uniform highp mat4 g_worldMatrix;\n"
         "attribute highp vec4 a_position;\n"
         "attribute lowp vec4 a_color;\n"
         "attribute mediump vec2 a_texcoord;\n"
@@ -149,7 +152,7 @@ static em_blend_shader_t * __make_blend_shader()
         "varying mediump vec2 v_texcoord;\n"
         "void main( void )\n"
         "{\n"
-        "   gl_Position = g_mvpMatrix * a_position;\n"
+        "   gl_Position = g_vpMatrix * g_worldMatrix * a_position;\n"
         "   v_color = a_color;\n"
         "   v_texcoord = a_texcoord;\n"
         "}\n";
@@ -206,13 +209,25 @@ static em_blend_shader_t * __make_blend_shader()
         return em_nullptr;
     }
 
-    int mvpMatrixLocation;
-    GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
+    int vpMatrixLocation;
+    GLCALLR( vpMatrixLocation, glGetUniformLocation, (program_id, "g_vpMatrix") );
 
-    if( mvpMatrixLocation == -1 )
+    if( vpMatrixLocation == -1 )
     {
-        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_mvpMatrix '%d'\n"
-            , mvpMatrixLocation
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_vpMatrix '%d'\n"
+            , vpMatrixLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int worldMatrixLocation;
+    GLCALLR( worldMatrixLocation, glGetUniformLocation, (program_id, "g_worldMatrix") );
+
+    if( worldMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_worldMatrix '%d'\n"
+            , worldMatrixLocation
         );
 
         return em_nullptr;
@@ -236,7 +251,8 @@ static em_blend_shader_t * __make_blend_shader()
     blend_shader->positionLocation = positionLocation;
     blend_shader->colorLocation = colorLocation;
     blend_shader->texcoordLocation = texcoordLocation;
-    blend_shader->mvpMatrixLocation = mvpMatrixLocation;
+    blend_shader->vpMatrixLocation = vpMatrixLocation;
+    blend_shader->worldMatrixLocation = worldMatrixLocation;
     blend_shader->tex0Location = tex0Location;
 
     return blend_shader;
@@ -245,7 +261,8 @@ static em_blend_shader_t * __make_blend_shader()
 static em_track_matte_shader_t * __make_track_matte_shader()
 {
     const char * vertex_shader_source =
-        "uniform highp mat4 g_mvpMatrix;\n"
+        "uniform highp mat4 g_vpMatrix;\n"
+        "uniform highp mat4 g_worldMatrix;\n"
         "attribute highp vec4 a_position;\n"
         "attribute lowp vec4 a_color;\n"
         "attribute mediump vec2 a_texcoord0;\n"
@@ -255,7 +272,7 @@ static em_track_matte_shader_t * __make_track_matte_shader()
         "varying mediump vec2 v_texcoord1;\n"
         "void main( void )\n"
         "{\n"
-        "   gl_Position = g_mvpMatrix * a_position;\n"
+        "   gl_Position = g_vpMatrix * g_worldMatrix * a_position;\n"
         "   v_color = a_color;\n"
         "   v_texcoord0 = a_texcoord0;\n"
         "   v_texcoord1 = a_texcoord1;\n"
@@ -328,13 +345,25 @@ static em_track_matte_shader_t * __make_track_matte_shader()
         return em_nullptr;
     }
 
-    int mvpMatrixLocation;
-    GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
+    int vpMatrixLocation;
+    GLCALLR( vpMatrixLocation, glGetUniformLocation, (program_id, "g_vpMatrix") );
 
-    if( mvpMatrixLocation == -1 )
+    if( vpMatrixLocation == -1 )
     {
-        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_mvpMatrix '%d'\n"
-            , mvpMatrixLocation
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_vpMatrix '%d'\n"
+            , vpMatrixLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int worldMatrixLocation;
+    GLCALLR( worldMatrixLocation, glGetUniformLocation, (program_id, "g_worldMatrix") );
+
+    if( worldMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_worldMatrix '%d'\n"
+            , worldMatrixLocation
         );
 
         return em_nullptr;
@@ -371,7 +400,8 @@ static em_track_matte_shader_t * __make_track_matte_shader()
     track_matte_shader->colorLocation = colorLocation;
     track_matte_shader->texcoord0Location = texcoord0Location;
     track_matte_shader->texcoord1Location = texcoord1Location;
-    track_matte_shader->mvpMatrixLocation = mvpMatrixLocation;
+    track_matte_shader->vpMatrixLocation = vpMatrixLocation;
+    track_matte_shader->worldMatrixLocation = worldMatrixLocation;    
     track_matte_shader->tex0Location = tex0Location;
     track_matte_shader->tex1Location = tex1Location;
 
@@ -905,7 +935,8 @@ typedef struct em_custom_shader_t
     GLint colorLocation;
     GLint texcoordLocation;
 
-    GLint mvpMatrixLocation;
+    GLint vpMatrixLocation;
+    GLint worldMatrixLocation;
     GLint tex0Location;
 } em_custom_shader_t;
 //////////////////////////////////////////////////////////////////////////
@@ -997,21 +1028,32 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
         shader->parameter_locations[i] = parameter_location;
     }
 
-    int mvpMatrixLocation;
-    GLCALLR( mvpMatrixLocation, glGetUniformLocation, (program_id, "g_mvpMatrix") );
+    int vpMatrixLocation;
+    GLCALLR( vpMatrixLocation, glGetUniformLocation, (program_id, "g_vpMatrix") );
 
-    if( mvpMatrixLocation == -1 )
+    if( vpMatrixLocation == -1 )
     {
-        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid uniform mvpMatrix '%d'\n"
+        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid uniform g_vpMatrix '%d'\n"
             , _callbackData->name
-            , mvpMatrixLocation
+            , vpMatrixLocation
         );
 
         return em_nullptr;
     }
 
-    shader->mvpMatrixLocation = mvpMatrixLocation;
+    int worldMatrixLocation;
+    GLCALLR( worldMatrixLocation, glGetUniformLocation, (program_id, "g_worlMatrix") );
 
+    if( worldMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "shader '%s' invalid uniform g_worlMatrix '%d'\n"
+            , _callbackData->name
+            , worldMatrixLocation
+        );
+
+        return em_nullptr;
+    }
+    
     int tex0Location;
     GLCALLR( tex0Location, glGetUniformLocation, (program_id, "g_tex0") );
 
@@ -1025,6 +1067,9 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
         return em_nullptr;
     }
 
+    
+    shader->vpMatrixLocation = vpMatrixLocation; 
+    shader->worldMatrixLocation = worldMatrixLocation;    
     shader->tex0Location = tex0Location;
 
     return shader;
@@ -1372,8 +1417,10 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                         em_blend_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-                        __v3_v3_m4( v->position, mesh_position, _composition->wm );
-
+                        v->position[0] = mesh_position[0];
+                        v->position[1] = mesh_position[1];
+                        v->position[2] = mesh_position[2];
+                        
                         v->color = color;
 
                         const float * mesh_uv = mesh.uv[index];
@@ -1396,7 +1443,9 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                         em_blend_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-                        __v3_v3_m4( v->position, mesh_position, _composition->wm );
+                        v->position[0] = mesh_position[0];
+                        v->position[1] = mesh_position[1];
+                        v->position[2] = mesh_position[2];
 
                         v->color = color;
 
@@ -1417,7 +1466,8 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             GLint positionLocation;
             GLint colorLocation;
             GLint texcoordLocation;
-            GLint mvpMatrixLocation;
+            GLint vpMatrixLocation;
+            GLint worldMatrixLocation;
             GLint tex0Location;
 
             GLuint program_id;
@@ -1433,7 +1483,8 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 positionLocation = blend_shader->positionLocation;
                 colorLocation = blend_shader->colorLocation;
                 texcoordLocation = blend_shader->texcoordLocation;
-                mvpMatrixLocation = blend_shader->mvpMatrixLocation;
+                vpMatrixLocation = blend_shader->vpMatrixLocation;
+                worldMatrixLocation = blend_shader->worldMatrixLocation;
                 tex0Location = blend_shader->tex0Location;
             }
             else
@@ -1469,7 +1520,8 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 positionLocation = shader->positionLocation;
                 colorLocation = shader->colorLocation;
                 texcoordLocation = shader->texcoordLocation;
-                mvpMatrixLocation = shader->mvpMatrixLocation;
+                vpMatrixLocation = shader->vpMatrixLocation;
+                worldMatrixLocation = shader->worldMatrixLocation;
                 tex0Location = shader->tex0Location;
             }
 
@@ -1494,6 +1546,11 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             GLCALL( glVertexAttribPointer, (colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_blend_render_vertex_t ), (const GLvoid *)offsetof( em_blend_render_vertex_t, color )) );
             GLCALL( glVertexAttribPointer, (texcoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_blend_render_vertex_t ), (const GLvoid *)offsetof( em_blend_render_vertex_t, uv )) );
 
+            if( worldMatrixLocation != -1 )
+            {
+                GLCALL( glUniformMatrix4fv, (worldMatrixLocation, 1, GL_FALSE, _composition->wm) );
+            }
+
             if( mesh.camera_data == AE_NULL )
             {
                 const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
@@ -1513,7 +1570,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 float projectionViewMatrix[16];
                 __mul_m4_m4( projectionViewMatrix, projectionMatrix, viewMatrix );
 
-                GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
+                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
                 glViewport( 0, 0, (GLsizei)width, (GLsizei)height );
             }
@@ -1524,7 +1581,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 float projectionViewMatrix[16];
                 __mul_m4_m4( projectionViewMatrix, camera->projection, camera->view );
 
-                GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
+                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
                 glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
             }
@@ -1615,8 +1672,9 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             GLint positionLocation = track_matte_shader->positionLocation;
             GLint colorLocation = track_matte_shader->colorLocation;
             GLint texcoord0Location = track_matte_shader->texcoord0Location;
-            GLint texcoord1Location = track_matte_shader->texcoord1Location;
-            GLint mvpMatrixLocation = track_matte_shader->mvpMatrixLocation;
+            GLint texcoord1Location = track_matte_shader->texcoord1Location;            
+            GLint vpMatrixLocation = track_matte_shader->vpMatrixLocation;
+            GLint worldMatrixLocation = track_matte_shader->worldMatrixLocation;
             GLint tex0Location = track_matte_shader->tex0Location;
             GLint tex1Location = track_matte_shader->tex1Location;
 
@@ -1638,6 +1696,11 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             GLCALL( glVertexAttribPointer, (texcoord0Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_track_matte_render_vertex_t ), (const GLvoid *)offsetof( em_track_matte_render_vertex_t, uv0 )) );
             GLCALL( glVertexAttribPointer, (texcoord1Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_track_matte_render_vertex_t ), (const GLvoid *)offsetof( em_track_matte_render_vertex_t, uv1 )) );
 
+            if( worldMatrixLocation != -1 )
+            {
+                GLCALL( glUniformMatrix4fv, (worldMatrixLocation, 1, GL_FALSE, _composition->wm) );
+            }
+
             if( mesh.camera_data == AE_NULL )
             {
                 const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
@@ -1657,7 +1720,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 float projectionViewMatrix[16];
                 __mul_m4_m4( projectionViewMatrix, projectionMatrix, viewMatrix );
 
-                GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
+                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
                 glViewport( 0, 0, (GLsizei)width, (GLsizei)height );
             }
@@ -1668,7 +1731,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 float projectionViewMatrix[16];
                 __mul_m4_m4( projectionViewMatrix, camera->projection, camera->view );
 
-                GLCALL( glUniformMatrix4fv, (mvpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
+                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
                 glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
             }
