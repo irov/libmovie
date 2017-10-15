@@ -3385,6 +3385,35 @@ ae_uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composit
     return count;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type )
+{
+    const aeMovieInstance * instance = _composition->movie_data->instance;
+
+    const aeMovieNode *it_node = _composition->nodes;
+    const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
+    for( ; it_node != it_node_end; ++it_node )
+    {
+        const aeMovieNode * node = it_node;
+
+        const aeMovieLayerData * layer = node->layer;
+
+        if( _type != AE_MOVIE_LAYER_TYPE_ANY
+            && layer->type != _type )
+        {
+            continue;
+        }
+
+        if( AE_STRNCMP( instance, layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+        {
+            continue;
+        }
+
+        return AE_TRUE;
+    }
+
+    return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_float_t * _in, ae_float_t * _out )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;

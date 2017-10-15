@@ -642,6 +642,16 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, ae_uin
 */
 uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition );
 
+
+/**
+@brief test exist node.
+@param [in] _composition Composition.
+@param [in] _layerName Node name.
+@param [in] _type Node type.
+@return TRUE if the node is found.
+*/
+ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type );
+
 /**
 @brief Get node active time range in milliseconds.
 Returns interval on which node is active, i.e. being played, rendered, etc.
