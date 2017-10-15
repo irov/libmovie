@@ -643,6 +643,8 @@ void em_delete_movie_data( em_movie_data_t * _data )
     aeMovieData * movie_data = _data->movie_data;
 
     ae_delete_movie_data( movie_data );
+
+    EM_DELETE( _data );
 }
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_node_track_matte_t
@@ -1256,11 +1258,34 @@ void em_delete_movie_composition( em_movie_composition_t * _composition )
     EM_FREE( _composition );
 }
 //////////////////////////////////////////////////////////////////////////
-void em_set_movie_composition_loop( em_movie_composition_t * _composition, unsigned int _loop )
+void em_set_movie_composition_loop( em_movie_composition_t * _composition, uint32_t _loop )
 {
     const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_set_movie_composition_loop( ae_movie_composition, _loop );
+}
+//////////////////////////////////////////////////////////////////////////
+uint32_t em_get_movie_composition_loop( em_movie_composition_t * _composition )
+{
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    uint32_t loop = ae_get_movie_composition_loop( ae_movie_composition );
+
+    return loop;
+}
+//////////////////////////////////////////////////////////////////////////
+void em_set_movie_composition_work_area( em_movie_composition_t * _composition, ae_float_t _begin, ae_float_t _end )
+{
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_set_movie_composition_work_area( ae_movie_composition, _begin, _end );
+}
+//////////////////////////////////////////////////////////////////////////
+void em_remove_movie_composition_work_area( em_movie_composition_t * _composition )
+{
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_remove_movie_composition_work_area( ae_movie_composition );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_play_movie_composition( em_movie_composition_t * _composition, float _time )
@@ -1270,64 +1295,168 @@ void em_play_movie_composition( em_movie_composition_t * _composition, float _ti
     ae_play_movie_composition( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
-void em_set_movie_composition_wm( em_movie_composition_t * _composition, float _px, float _py, float _ox, float _oy, float _sx, float _sy, float _angle )
+void em_stop_movie_composition( em_movie_composition_t * _composition )
 {
-    float matrix_base[16];
-    matrix_base[0 * 4 + 0] = _sx;
-    matrix_base[0 * 4 + 1] = 0.f;
-    matrix_base[0 * 4 + 2] = 0.f;
-    matrix_base[0 * 4 + 3] = 0.f;
+    aeMovieComposition * ae_movie_composition = _composition->composition;
 
-    matrix_base[1 * 4 + 0] = 0.f;
-    matrix_base[1 * 4 + 1] = _sy;
-    matrix_base[1 * 4 + 2] = 0.f;
-    matrix_base[1 * 4 + 3] = 0.f;
+    ae_stop_movie_composition( ae_movie_composition );
+}
+//////////////////////////////////////////////////////////////////////////
+void em_pause_movie_composition( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
 
-    matrix_base[2 * 4 + 0] = 0.f;
-    matrix_base[2 * 4 + 1] = 0.f;
-    matrix_base[2 * 4 + 2] = 1.f;
-    matrix_base[2 * 4 + 3] = 0.f;
+    ae_pause_movie_composition( ae_movie_composition );
+}
+//////////////////////////////////////////////////////////////////////////
+void em_resume_movie_composition( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
 
-    matrix_base[3 * 4 + 0] = -_ox * _sx;
-    matrix_base[3 * 4 + 1] = -_oy * _sy;
-    matrix_base[3 * 4 + 2] = 0.f;
-    matrix_base[3 * 4 + 3] = 1.f;
+    ae_resume_movie_composition( ae_movie_composition );
+}
+//////////////////////////////////////////////////////////////////////////
+void em_interrupt_movie_composition( em_movie_composition_t * _composition, uint32_t _skip )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
 
-    if( _angle != 0.f )
+    ae_interrupt_movie_composition( ae_movie_composition, _skip );
+}
+//////////////////////////////////////////////////////////////////////////
+void em_set_movie_composition_time( em_movie_composition_t * _composition, float _time )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_set_movie_composition_time( ae_movie_composition, _time );
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_time( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    float time = ae_get_movie_composition_time( ae_movie_composition );
+
+    return time;
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_duration( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    float duration = ae_get_movie_composition_duration( ae_movie_composition );
+
+    return duration;
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_width( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
+
+    float width = ae_get_movie_composition_data_width( ae_movie_composition_data );
+
+    return width;
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_height( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
+
+    float height = ae_get_movie_composition_data_height( ae_movie_composition_data );
+
+    return height;
+}
+//////////////////////////////////////////////////////////////////////////
+uint32_t em_get_movie_composition_frame_count( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
+
+    uint32_t frame_count = ae_get_movie_composition_data_frame_count( ae_movie_composition_data );
+
+    return frame_count;
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_in_loop( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_float_t in;
+    ae_float_t out;
+    ae_get_movie_composition_in_out_loop( ae_movie_composition, &in, &out );
+
+    return in;
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_out_loop( em_movie_composition_t * _composition )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_float_t in;
+    ae_float_t out;
+    ae_get_movie_composition_in_out_loop( ae_movie_composition, &in, &out );
+
+    return out;
+}
+//////////////////////////////////////////////////////////////////////////
+uint32_t em_has_movie_composition_node( em_movie_composition_t * _composition, const char * _layer )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    uint32_t exist = ae_has_movie_composition_node( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY );
+
+    return exist;
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_node_in_time( em_movie_composition_t * _composition, const char * _layer )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_float_t in;
+    ae_float_t out;
+    ae_get_movie_composition_node_in_out_time( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, &in, &out );
+
+    return in;
+}
+//////////////////////////////////////////////////////////////////////////
+float em_get_movie_composition_node_out_time( em_movie_composition_t * _composition, const char * _layer )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_float_t in;
+    ae_float_t out;
+    ae_get_movie_composition_node_in_out_time( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, &in, &out );
+
+    return out;
+}
+//////////////////////////////////////////////////////////////////////////
+void em_set_movie_composition_node_enable( em_movie_composition_t * _composition, const char * _layer, uint32_t _enable )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_set_movie_composition_node_enable( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, _enable );
+}
+//////////////////////////////////////////////////////////////////////////
+uint32_t em_get_movie_composition_node_enable( em_movie_composition_t * _composition, const char * _layer )
+{
+    aeMovieComposition * ae_movie_composition = _composition->composition;
+
+    ae_bool_t enable;
+    if( ae_get_movie_composition_node_enable( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, &enable ) == AE_FALSE )
     {
-        float cosa = cosf( _angle );
-        float sina = sinf( _angle );
+        emscripten_log( EM_LOG_ERROR, "movie '%s' not found node '%s'\n"
+            , ae_get_movie_composition_name( ae_movie_composition )
+            , _layer
+        );
 
-        float matrix_rotate[16];
-        matrix_rotate[0 * 4 + 0] = cosa;
-        matrix_rotate[0 * 4 + 1] = -sina;
-        matrix_rotate[0 * 4 + 2] = 0.f;
-        matrix_rotate[0 * 4 + 3] = 0.f;
-
-        matrix_rotate[1 * 4 + 0] = sina;
-        matrix_rotate[1 * 4 + 1] = cosa;
-        matrix_rotate[1 * 4 + 2] = 0.f;
-        matrix_rotate[1 * 4 + 3] = 0.f;
-
-        matrix_rotate[2 * 4 + 0] = 0.f;
-        matrix_rotate[2 * 4 + 1] = 0.f;
-        matrix_rotate[2 * 4 + 2] = 1.f;
-        matrix_rotate[2 * 4 + 3] = 0.f;
-
-        matrix_rotate[3 * 4 + 0] = 0.f;
-        matrix_rotate[3 * 4 + 1] = 0.f;
-        matrix_rotate[3 * 4 + 2] = 0.f;
-        matrix_rotate[3 * 4 + 3] = 1.f;
-
-        __mul_m4_m4( _composition->wm, matrix_base, matrix_rotate );
-    }
-    else
-    {
-        __copy_m4( _composition->wm, matrix_base );
+        return 0;
     }
 
-    _composition->wm[3 * 4 + 0] += _px;
-    _composition->wm[3 * 4 + 1] += _py;
+    return enable;
 }
 //////////////////////////////////////////////////////////////////////////
 void em_update_movie_composition( em_player_t * _player, em_movie_composition_t * _composition, float _time )
@@ -1772,4 +1901,64 @@ void em_utils_opengl_create_texture( uint32_t _id, uint32_t _width, uint32_t _he
     GLCALL( glTexImage2D, (GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0x00000000, GL_RGBA, GL_UNSIGNED_BYTE, _data) );
     
     GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
+}
+//////////////////////////////////////////////////////////////////////////
+void em_set_movie_composition_wm( em_movie_composition_t * _composition, float _px, float _py, float _ox, float _oy, float _sx, float _sy, float _angle )
+{
+    float matrix_base[16];
+    matrix_base[0 * 4 + 0] = _sx;
+    matrix_base[0 * 4 + 1] = 0.f;
+    matrix_base[0 * 4 + 2] = 0.f;
+    matrix_base[0 * 4 + 3] = 0.f;
+
+    matrix_base[1 * 4 + 0] = 0.f;
+    matrix_base[1 * 4 + 1] = _sy;
+    matrix_base[1 * 4 + 2] = 0.f;
+    matrix_base[1 * 4 + 3] = 0.f;
+
+    matrix_base[2 * 4 + 0] = 0.f;
+    matrix_base[2 * 4 + 1] = 0.f;
+    matrix_base[2 * 4 + 2] = 1.f;
+    matrix_base[2 * 4 + 3] = 0.f;
+
+    matrix_base[3 * 4 + 0] = -_ox * _sx;
+    matrix_base[3 * 4 + 1] = -_oy * _sy;
+    matrix_base[3 * 4 + 2] = 0.f;
+    matrix_base[3 * 4 + 3] = 1.f;
+
+    if( _angle != 0.f )
+    {
+        float cosa = cosf( _angle );
+        float sina = sinf( _angle );
+
+        float matrix_rotate[16];
+        matrix_rotate[0 * 4 + 0] = cosa;
+        matrix_rotate[0 * 4 + 1] = -sina;
+        matrix_rotate[0 * 4 + 2] = 0.f;
+        matrix_rotate[0 * 4 + 3] = 0.f;
+
+        matrix_rotate[1 * 4 + 0] = sina;
+        matrix_rotate[1 * 4 + 1] = cosa;
+        matrix_rotate[1 * 4 + 2] = 0.f;
+        matrix_rotate[1 * 4 + 3] = 0.f;
+
+        matrix_rotate[2 * 4 + 0] = 0.f;
+        matrix_rotate[2 * 4 + 1] = 0.f;
+        matrix_rotate[2 * 4 + 2] = 1.f;
+        matrix_rotate[2 * 4 + 3] = 0.f;
+
+        matrix_rotate[3 * 4 + 0] = 0.f;
+        matrix_rotate[3 * 4 + 1] = 0.f;
+        matrix_rotate[3 * 4 + 2] = 0.f;
+        matrix_rotate[3 * 4 + 3] = 1.f;
+
+        __mul_m4_m4( _composition->wm, matrix_base, matrix_rotate );
+    }
+    else
+    {
+        __copy_m4( _composition->wm, matrix_base );
+    }
+
+    _composition->wm[3 * 4 + 0] += _px;
+    _composition->wm[3 * 4 + 1] += _py;
 }
