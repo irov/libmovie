@@ -89,7 +89,7 @@ typedef enum aeMovieCompositionFlag
 @return Reference to the created resource.
 */
 typedef ae_voidptr_t( *ae_movie_data_resource_provider_t )(const aeMovieResource * _resource, ae_voidptr_t _ud);
-typedef void( *ae_movie_data_resource_deleter_t )(aeMovieResourceTypeEnum _type, ae_voidptr_t * _data, ae_voidptr_t _ud);
+typedef void( *ae_movie_data_resource_deleter_t )(aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud);
 
 /**
 @brief Allocate a data structure to load movie file into.

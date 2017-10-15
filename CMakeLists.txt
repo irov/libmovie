@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 PROJECT(movie)
 
 OPTION(LIBMOVIE_EXTERNAL_BUILD  "LIBMOVIE_EXTERNAL_BUILD"  OFF)
+OPTION(LIBMOVIE_COCOS2DX_BUILD  "LIBMOVIE_COCOS2DX_BUILD"  OFF)
 OPTION(LIBMOVIE_EXAMPLES_BUILD  "LIBMOVIE_EXAMPLES_BUILD"  OFF)
 
 IF( NOT LIBMOVIE_EXTERNAL_BUILD )
@@ -50,6 +51,46 @@ source
 INCLUDE_DIRECTORIES( ${PROJECT_NAME} include ) 
 
 ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SRC_FILES} )
+
+if( LIBMOVIE_COCOS2DX_BUILD )
+    set(
+    cocos2dx_SOURCES
+        frameworks/cocos2d-x/AEMovieCache.h
+        frameworks/cocos2d-x/AEMovie.h
+        frameworks/cocos2d-x/AETrackMatteNode.h
+        frameworks/cocos2d-x/AETrackMatteData.h
+        frameworks/cocos2d-x/AESoundNode.h
+        frameworks/cocos2d-x/AEMovieData.h
+        frameworks/cocos2d-x/AERenderData.h
+        frameworks/cocos2d-x/AESlotNode.h
+        frameworks/cocos2d-x/AESound.h
+        frameworks/cocos2d-x/AEMovie.cpp        
+        frameworks/cocos2d-x/AEMovieCache.cpp
+        frameworks/cocos2d-x/AETrackMatteNode.cpp
+        frameworks/cocos2d-x/AETrackMatteData.cpp
+        frameworks/cocos2d-x/AESoundNode.cpp
+        frameworks/cocos2d-x/AESlotNode.cpp
+        frameworks/cocos2d-x/AESound.cpp
+        frameworks/cocos2d-x/AEMovieData.cpp
+    )
+    
+    INCLUDE_DIRECTORIES( cocos2dx include )
+    INCLUDE_DIRECTORIES( cocos2dx dependencies/cocos2d-x )
+    INCLUDE_DIRECTORIES( cocos2dx dependencies/cocos2d-x/cocos )    
+    INCLUDE_DIRECTORIES( cocos2dx dependencies/cocos2d-x/external )
+    INCLUDE_DIRECTORIES( cocos2dx dependencies/cocos2d-x/external/glfw3/include/win32 )
+    INCLUDE_DIRECTORIES( cocos2dx dependencies/cocos2d-x/external/win32-specific/gles/include/OGLES )
+    
+    ADD_DEFINITIONS(-DCC_STATIC)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
+
+    ADD_LIBRARY( cocos2dx STATIC ${cocos2dx_SOURCES} )
+    
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251 /wd4273")
+    
+    TARGET_LINK_LIBRARIES( cocos2dx movie )    
+    TARGET_LINK_LIBRARIES( cocos2dx dependencies/cocos2d-x/build/)
+endif()
 
 if( LIBMOVIE_EXAMPLES_BUILD )
     set(
