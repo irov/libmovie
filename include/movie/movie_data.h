@@ -191,7 +191,7 @@ ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _la
 @param [in] _layer Layer.
 @return Layer blend mode.
 */
-aeMovieBlendMode ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer );
+ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer );
 
 /**
 @param [in] _compositionData Composition data.

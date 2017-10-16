@@ -77,7 +77,7 @@ typedef struct
     ae_uint32_t point_count;
     const ae_vector2_t * points;
 
-} aeMoviePolygon;
+} ae_polygon_t;
 
 typedef struct
 {
@@ -86,7 +86,7 @@ typedef struct
     ae_float_t end_x;
     ae_float_t end_y;
 
-} aeMovieViewport;
+} ae_viewport_t;
 
 typedef struct
 {
@@ -96,7 +96,7 @@ typedef struct
     const ae_vector2_t * uvs;
     const ae_uint16_t * indices;
 
-} aeMovieMesh;
+} ae_mesh_t;
 
 typedef struct aeMovieStream aeMovieStream;
 
@@ -108,25 +108,9 @@ typedef struct aeMovieStream aeMovieStream;
 #	define AE_MOVIE_MAX_COMPOSITION_NAME 128U
 #	endif
 
-#	ifndef AE_MOVIE_BEZIER_WARP_GRID
-#	define AE_MOVIE_BEZIER_WARP_GRID 19U
-#	endif
-
-static const ae_float_t ae_movie_bezier_warp_grid_invf = (1.f / (ae_float_t)(AE_MOVIE_BEZIER_WARP_GRID - 1));
-
-#	define AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT (AE_MOVIE_BEZIER_WARP_GRID * AE_MOVIE_BEZIER_WARP_GRID)
-#	define AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT ((AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1) * 6)
-
 #	ifndef AE_MOVIE_MAX_VERTICES
 #	define AE_MOVIE_MAX_VERTICES 1024U
 #	endif
-
-typedef struct
-{
-    ae_vector2_t corners[4];
-    ae_vector2_t beziers[8];
-
-} aeMovieBezierWarp;
 
 typedef enum
 {
@@ -188,7 +172,7 @@ typedef enum
     AE_MOVIE_BLEND_STENCIL_ALPHA,
     AE_MOVIE_BLEND_STENCIL_LUMA,
     AE_MOVIE_BLEND_VIVID_LIGHT
-} aeMovieBlendMode;
+} ae_blend_mode_t;
 
 typedef enum
 {

@@ -32,7 +32,7 @@ typedef struct aeMovieRenderMesh
     /**
     @brief One of AE blend modes.
     */
-    aeMovieBlendMode blend_mode;
+    ae_blend_mode_t blend_mode;
 
     /**
     @brief Type of the resource associated with the mesh.
@@ -88,9 +88,18 @@ typedef struct aeMovieRenderMesh
     /**
     @brief Pointer to a user-provided track matte structure.
 
-    Contains track matte layer data, specifically aeMovieRenderMesh.
+    Contains track matte layer data.
     */
     ae_voidptr_t track_matte_data;
+
+    const ae_viewport_t * viewport;
+
+    /**
+    @brief Pointer to a user-provided shader structure.
+
+    Contains shader layer data.
+    */
+    ae_voidptr_t shader_data;
 
     /**
     @brief Pointer to a user-provided node structure.
@@ -98,8 +107,6 @@ typedef struct aeMovieRenderMesh
     Contains data for track matte, slot, socket etc.
     */
     ae_voidptr_t element_data;
-
-    ae_voidptr_t shader_data;
 } aeMovieRenderMesh;
 
 typedef struct aeMovieNode aeMovieNode;
@@ -615,7 +622,7 @@ ae_voidptr_t ae_get_movie_composition_camera_data( const aeMovieComposition * _c
 @param [out] _polygon Socket shape.
 @return TRUE if found.
 */
-ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _composition, const ae_char_t * _slotName, const aeMoviePolygon ** _polygon );
+ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _composition, const ae_char_t * _slotName, const ae_polygon_t ** _polygon );
 
 // sockets
 /// @}

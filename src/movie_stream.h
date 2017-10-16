@@ -119,7 +119,7 @@ static void ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )
     *_str = str;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_polygon( aeMovieStream * _stream, aeMoviePolygon * _polygon )
+static void ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _polygon )
 {
     ae_uint32_t point_count = READZ( _stream );
 
@@ -138,7 +138,7 @@ static void ae_magic_read_polygon( aeMovieStream * _stream, aeMoviePolygon * _po
     _polygon->points = (const ae_vector2_t *)points;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_viewport( aeMovieStream * _stream, aeMovieViewport * _viewport )
+static void ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport )
 {
     READ( _stream, _viewport->begin_x );
     READ( _stream, _viewport->begin_y );
@@ -146,7 +146,7 @@ static void ae_magic_read_viewport( aeMovieStream * _stream, aeMovieViewport * _
     READ( _stream, _viewport->end_y );
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_read_mesh( aeMovieStream * _stream, aeMovieMesh * _mesh )
+static void ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh )
 {
     ae_uint32_t vertex_count = READZ( _stream );
 

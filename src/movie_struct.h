@@ -35,6 +35,22 @@
 #	include "movie/movie_node.h"
 
 //////////////////////////////////////////////////////////////////////////
+#	define AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT (AE_MOVIE_BEZIER_WARP_GRID * AE_MOVIE_BEZIER_WARP_GRID)
+#	define AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT ((AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1) * 6)
+
+#	ifndef AE_MOVIE_BEZIER_WARP_GRID
+#	define AE_MOVIE_BEZIER_WARP_GRID 19U
+#	endif
+
+static const ae_float_t ae_movie_bezier_warp_grid_invf = (1.f / (ae_float_t)(AE_MOVIE_BEZIER_WARP_GRID - 1));
+
+typedef struct
+{
+    ae_vector2_t corners[4];
+    ae_vector2_t beziers[8];
+
+} aeMovieBezierWarp;
+//////////////////////////////////////////////////////////////////////////
 struct aeMovieInstance
 {
     ae_uint32_t hashmask[5];
@@ -98,6 +114,8 @@ struct aeMovieNode
     struct aeMovieNode * relative_node;
     struct aeMovieNode * track_matte_node;
 
+    const ae_viewport_t * viewport;
+
     const aeMovieSubComposition * subcomposition;
 
     ae_float_t start_time;
@@ -126,7 +144,7 @@ struct aeMovieNode
     ae_float_t g;
     ae_float_t b;
 
-    aeMovieBlendMode blend_mode;
+    ae_blend_mode_t blend_mode;
 
     ae_voidptr_t camera_data;
     ae_voidptr_t element_data;
@@ -267,6 +285,7 @@ struct aeMovieLayerData
     const aeMovieLayerColorVertex * color_vertex;    
     const aeMovieLayerPolygon * polygon;
     const aeMovieLayerShader * shader;
+    const aeMovieLayerViewport * viewport;
 
     const aeMovieResource * resource;
     const aeMovieCompositionData * sub_composition_data;
@@ -298,9 +317,9 @@ struct aeMovieLayerTimeremap
 struct aeMovieLayerMesh
 {
     ae_bool_t immutable;
-    aeMovieMesh immutable_mesh;
+    ae_mesh_t immutable_mesh;
 
-    const aeMovieMesh * meshes;
+    const ae_mesh_t * meshes;
 
 };
 //////////////////////////////////////////////////////////////////////////
@@ -380,12 +399,18 @@ struct aeMovieLayerShader
 
 };
 //////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerViewport
+{
+    ae_viewport_t viewport;
+
+};
+//////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerPolygon
 {
     ae_bool_t immutable;
-    aeMoviePolygon immutable_polygon;
+    ae_polygon_t immutable_polygon;
 
-    const aeMoviePolygon * polygons;
+    const ae_polygon_t * polygons;
 
 };
 //////////////////////////////////////////////////////////////////////////

@@ -60,7 +60,7 @@ static ae_uint32_t __inc_composition_update_revision( const aeMovieComposition *
     return update_revision;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_mesh_vertices( const aeMovieMesh * _mesh, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+static void __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
     _render->vertexCount = _mesh->vertex_count;
     _render->indexCount = _mesh->index_count;
@@ -106,7 +106,7 @@ static void __make_layer_sprite_vertices( const aeMovieInstance * _instance, ae_
 //////////////////////////////////////////////////////////////////////////
 static void __make_layer_mesh_vertices( const aeMovieLayerMesh * _layerMesh, ae_uint32_t _frame, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
-    const aeMovieMesh * mesh = (_layerMesh->immutable == AE_TRUE) ? &_layerMesh->immutable_mesh : (_layerMesh->meshes + _frame);
+    const ae_mesh_t * mesh = (_layerMesh->immutable == AE_TRUE) ? &_layerMesh->immutable_mesh : (_layerMesh->meshes + _frame);
 
     __make_mesh_vertices( mesh, _matrix, _render );
 }
@@ -291,6 +291,8 @@ static void __compute_movie_node( const aeMovieComposition * _composition, const
     _render->camera_data = _node->camera_data;
     _render->element_data = _node->element_data;
     _render->shader_data = _node->shader_data;
+
+    _render->viewport = _node->viewport;
 
     if( _node->track_matte_node != AE_NULL && _node->track_matte_node->active == AE_TRUE )
     {
@@ -1264,7 +1266,7 @@ static void __setup_movie_node_time( aeMovieNode * _nodes, ae_uint32_t * _iterat
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, ae_uint32_t * _iterator, const aeMovieCompositionData * _compositionData, const aeMovieNode * _parent, aeMovieBlendMode _blendMode )
+static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, ae_uint32_t * _iterator, const aeMovieCompositionData * _compositionData, const aeMovieNode * _parent, ae_blend_mode_t _blendMode )
 {
     (void)_parent; //TODO
 
@@ -1285,7 +1287,7 @@ static void __setup_movie_node_blend_mode( aeMovieNode * _nodes, ae_uint32_t * _
             node->blend_mode = layer->blend_mode;
         }
 
-        aeMovieBlendMode composition_blend_mode = AE_MOVIE_BLEND_NORMAL;
+        ae_blend_mode_t composition_blend_mode = AE_MOVIE_BLEND_NORMAL;
 
         if( layer->sub_composition_data != AE_NULL )
         {
@@ -1376,6 +1378,47 @@ static void __setup_movie_node_camera( aeMovieComposition * _composition )
 
     uint32_t node_camera_iterator = 0;
     __setup_movie_node_camera2( _composition, &node_camera_iterator, composition_data, AE_NULL );
+}
+//////////////////////////////////////////////////////////////////////////
+static void __setup_movie_node_viewport2( aeMovieComposition * _composition, uint32_t * _iterator, const aeMovieCompositionData * _compositionData, const ae_viewport_t * _viewport )
+{
+    const aeMovieLayerData *it_layer = _compositionData->layers;
+    const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
+    for( ; it_layer != it_layer_end; ++it_layer )
+    {
+        const aeMovieLayerData * layer = it_layer;
+
+        aeMovieNode * node = _composition->nodes + ((*_iterator)++);
+
+        if( layer->viewport != AE_NULL )
+        {
+            node->viewport = &layer->viewport->viewport;
+        }
+        else
+        {
+            node->viewport = _viewport;
+        }
+
+        switch( layer->type )
+        {
+        case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+        case AE_MOVIE_LAYER_TYPE_MOVIE:
+            {
+                __setup_movie_node_viewport2( _composition, _iterator, layer->sub_composition_data, node->viewport );
+            }break;
+        default:
+            {
+            }break;
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+static void __setup_movie_node_viewport( aeMovieComposition * _composition )
+{
+    const aeMovieCompositionData * composition_data = _composition->composition_data;
+
+    uint32_t node_camera_iterator = 0;
+    __setup_movie_node_viewport2( _composition, &node_camera_iterator, composition_data, AE_NULL );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __setup_movie_node_matrix2( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition )
@@ -1679,6 +1722,8 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 
     __setup_movie_node_matrix( composition );
 
+    __setup_movie_node_viewport( composition );
+
     __setup_movie_composition_active( composition );
 
     ae_uint32_t node_track_matte_iterator = 0;
@@ -1814,11 +1859,11 @@ static ae_uint32_t __mesh_max_vertex_count( const aeMovieLayerMesh * _mesh, ae_u
 
     ae_uint32_t max_vertex_count = 0U;
 
-    const aeMovieMesh * it_mesh = _mesh->meshes;
-    const aeMovieMesh * it_mesh_end = _mesh->meshes + _count;
+    const ae_mesh_t * it_mesh = _mesh->meshes;
+    const ae_mesh_t * it_mesh_end = _mesh->meshes + _count;
     for( ; it_mesh != it_mesh_end; ++it_mesh )
     {
-        const aeMovieMesh * mesh = it_mesh;
+        const ae_mesh_t * mesh = it_mesh;
 
         if( max_vertex_count < mesh->vertex_count )
         {
@@ -1838,11 +1883,11 @@ static ae_uint32_t __mesh_max_index_count( const aeMovieLayerMesh * _mesh, ae_ui
 
     ae_uint32_t max_index_count = 0U;
 
-    const aeMovieMesh * it_mesh = _mesh->meshes;
-    const aeMovieMesh * it_mesh_end = _mesh->meshes + _count;
+    const ae_mesh_t * it_mesh = _mesh->meshes;
+    const ae_mesh_t * it_mesh_end = _mesh->meshes + _count;
     for( ; it_mesh != it_mesh_end; ++it_mesh )
     {
-        const aeMovieMesh * mesh = it_mesh;
+        const ae_mesh_t * mesh = it_mesh;
 
         if( max_index_count < mesh->index_count )
         {
@@ -1863,7 +1908,7 @@ static ae_uint32_t __resource_sequence_images_max_vertex_count( const aeMovieRes
     {
         const aeMovieResourceImage * image = *it_image;
 
-        const aeMovieMesh * mesh = image->mesh;
+        const ae_mesh_t * mesh = image->mesh;
 
         if( mesh == AE_NULL )
         {
@@ -1894,7 +1939,7 @@ static ae_uint32_t __resource_sequence_images_max_index_count( const aeMovieReso
     {
         const aeMovieResourceImage * image = *it_image;
 
-        const aeMovieMesh * mesh = image->mesh;
+        const ae_mesh_t * mesh = image->mesh;
 
         if( mesh == AE_NULL )
         {
@@ -2023,7 +2068,7 @@ void ae_calculate_movie_composition_render_info( const aeMovieComposition * _com
                 }
                 else if( resource_image->mesh != AE_NULL )
                 {
-                    const aeMovieMesh * mesh = resource_image->mesh;
+                    const ae_mesh_t * mesh = resource_image->mesh;
 
                     _info->max_vertex_count += mesh->vertex_count;
                     _info->max_index_count += mesh->index_count;
@@ -3268,7 +3313,7 @@ ae_voidptr_t ae_get_movie_composition_camera_data( const aeMovieComposition * _c
     return _composition->camera_data;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _composition, const ae_char_t * _slotName, const aeMoviePolygon ** _polygon )
+ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _composition, const ae_char_t * _slotName, const ae_polygon_t ** _polygon )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;
 
