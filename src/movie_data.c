@@ -535,6 +535,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
     _layer->color_vertex = AE_NULL;
     _layer->polygon = AE_NULL;
     _layer->shader = AE_NULL;
+    _layer->viewport = AE_NULL;
 
     for( ;; )
     {
