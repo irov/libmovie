@@ -155,68 +155,49 @@ static ae_float_t __get_movie_transformation_property_interpolate( ae_constvoidp
     return data;
 }
 //////////////////////////////////////////////////////////////////////////
-#	define AE_INTERPOLATE_PROPERTY( Transformation, Name, OutName )\
-	OutName = (Transformation->timeline == AE_NULL || Transformation->timeline->Name == AE_NULL) ? Transformation->immutable.Name : __get_movie_transformation_property_interpolate(\
-		Transformation->timeline->Name,\
-		_index, _t )
-//////////////////////////////////////////////////////////////////////////
-#	define AE_FIXED_PROPERTY( Transformation, Name, Index, OutName)\
-	OutName = (Transformation->timeline == AE_NULL || Transformation->timeline->Name == AE_NULL) ? Transformation->immutable.Name : __get_movie_transformation_property(\
-		Transformation->timeline->Name,\
-		_index + Index )
-//////////////////////////////////////////////////////////////////////////
 static void __ae_movie_make_layer_transformation2d_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation2D * _transformation )
 {
     ae_vector2_t anchor_point;
+    anchor_point[0] = _transformation->immutable.anchor_point_x;
+    anchor_point[1] = _transformation->immutable.anchor_point_y;
+
     ae_vector2_t position;
+    position[0] = _transformation->immutable.position_x;
+    position[1] = _transformation->immutable.position_y;
+
     ae_vector2_t scale;
-    ae_quaternion_t quaternion;
-
-    ae_uint32_t _index = 0U;
-
-    AE_FIXED_PROPERTY( _transformation, anchor_point_x, 0, anchor_point[0] );
-    AE_FIXED_PROPERTY( _transformation, anchor_point_y, 0, anchor_point[1] );
-
-    AE_FIXED_PROPERTY( _transformation, position_x, 0, position[0] );
-    AE_FIXED_PROPERTY( _transformation, position_y, 0, position[1] );
-
-    AE_FIXED_PROPERTY( _transformation, scale_x, 0, scale[0] );
-    AE_FIXED_PROPERTY( _transformation, scale_y, 0, scale[1] );
-
-    quaternion[0] = 0.f;
-    quaternion[1] = 0.f;
-
-    AE_FIXED_PROPERTY( _transformation, quaternion_z, 0, quaternion[2] );
-    AE_FIXED_PROPERTY( _transformation, quaternion_w, 0, quaternion[3] );
-
-    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
+    scale[0] = _transformation->immutable.scale_x;
+    scale[1] = _transformation->immutable.scale_y;
+    
+    ae_quaternionzw_t quaternionzw;
+    quaternionzw[0] = _transformation->immutable.quaternion_z;
+    quaternionzw[1] = _transformation->immutable.quaternion_w;
+        
+    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternionzw );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_make_layer_transformation3d_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation3D * _transformation )
 {
     ae_vector3_t anchor_point;
+    anchor_point[0] = _transformation->immutable.anchor_point_x;
+    anchor_point[1] = _transformation->immutable.anchor_point_y;
+    anchor_point[2] = _transformation->immutable.anchor_point_z;
+
     ae_vector3_t position;
+    position[0] = _transformation->immutable.position_x;
+    position[1] = _transformation->immutable.position_y;
+    position[2] = _transformation->immutable.position_z;
+
     ae_vector3_t scale;
+    scale[0] = _transformation->immutable.scale_x;
+    scale[1] = _transformation->immutable.scale_y;
+    scale[2] = _transformation->immutable.scale_z;
+
     ae_quaternion_t quaternion;
-
-    ae_uint32_t _index = 0U;
-
-    AE_FIXED_PROPERTY( _transformation, anchor_point_x, 0, anchor_point[0] );
-    AE_FIXED_PROPERTY( _transformation, anchor_point_y, 0, anchor_point[1] );
-    AE_FIXED_PROPERTY( _transformation, anchor_point_z, 0, anchor_point[2] );
-
-    AE_FIXED_PROPERTY( _transformation, position_x, 0, position[0] );
-    AE_FIXED_PROPERTY( _transformation, position_y, 0, position[1] );
-    AE_FIXED_PROPERTY( _transformation, position_z, 0, position[2] );
-
-    AE_FIXED_PROPERTY( _transformation, scale_x, 0, scale[0] );
-    AE_FIXED_PROPERTY( _transformation, scale_y, 0, scale[1] );
-    AE_FIXED_PROPERTY( _transformation, scale_z, 0, scale[2] );
-
-    AE_FIXED_PROPERTY( _transformation, quaternion_x, 0, quaternion[0] );
-    AE_FIXED_PROPERTY( _transformation, quaternion_y, 0, quaternion[1] );
-    AE_FIXED_PROPERTY( _transformation, quaternion_z, 0, quaternion[2] );
-    AE_FIXED_PROPERTY( _transformation, quaternion_w, 0, quaternion[3] );
+    quaternion[0] = _transformation->immutable.quaternion_x;
+    quaternion[1] = _transformation->immutable.quaternion_y;
+    quaternion[2] = _transformation->immutable.quaternion_z;
+    quaternion[3] = _transformation->immutable.quaternion_w;
     
     ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
 }
@@ -298,6 +279,16 @@ static void __movie_make_layer_transformation_fixed_immutable( ae_matrix4_t _out
 
     ae_copy_m4( _out, _transformation->immutable_matrix );
 }
+//////////////////////////////////////////////////////////////////////////
+#	define AE_INTERPOLATE_PROPERTY( Transformation, Name, OutName )\
+	OutName = (Transformation->timeline == AE_NULL || Transformation->timeline->Name == AE_NULL) ? Transformation->immutable.Name : __get_movie_transformation_property_interpolate(\
+		Transformation->timeline->Name,\
+		_index, _t )
+//////////////////////////////////////////////////////////////////////////
+#	define AE_FIXED_PROPERTY( Transformation, Name, Index, OutName)\
+	OutName = (Transformation->timeline == AE_NULL || Transformation->timeline->Name == AE_NULL) ? Transformation->immutable.Name : __get_movie_transformation_property(\
+		Transformation->timeline->Name,\
+		_index + Index )
 //////////////////////////////////////////////////////////////////////////
 static void __movie_make_layer_transformation2d_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
