@@ -125,32 +125,40 @@ static ae_float_t __bezier_point( ae_float_t a, ae_float_t b, ae_float_t c, ae_f
 //////////////////////////////////////////////////////////////////////////
 static ae_float_t __bezier_warp_x( const aeMovieBezierWarp * _bezierWarp, ae_float_t _u, ae_float_t _v )
 {
-    const ae_vector2_t * c = _bezierWarp->corners;
-    const ae_vector2_t * b = _bezierWarp->beziers;
+    const ae_vector2_t * corners = _bezierWarp->corners;
+    const ae_vector2_t * beziers = _bezierWarp->beziers;
 
-    ae_float_t bx = __bezier_point( c[0][0], b[0][0], b[7][0], c[3][0], _v );
-    ae_float_t ex = __bezier_point( c[1][0], b[3][0], b[4][0], c[2][0], _v );
+    ae_float_t x0 = beziers[0][0] + beziers[1][0] - corners[0][0];
+    ae_float_t x1 = beziers[2][0] + beziers[3][0] - corners[1][0];
+    ae_float_t x2 = beziers[4][0] + beziers[5][0] - corners[2][0];
+    ae_float_t x3 = beziers[6][0] + beziers[7][0] - corners[3][0];
 
-    ae_float_t mx0 = (b[1][0] - b[6][0]) * (1.f - _v) + b[6][0];
-    ae_float_t mx1 = (b[2][0] - b[5][0]) * (1.f - _v) + b[5][0];
+    ae_float_t bu0x = __bezier_point( corners[0][0], beziers[0][0], beziers[7][0], corners[3][0], _v );
+    ae_float_t bu1x = __bezier_point( beziers[1][0], x0, x3, beziers[6][0], _v );
+    ae_float_t bu2x = __bezier_point( beziers[2][0], x1, x2, beziers[5][0], _v );
+    ae_float_t bu3x = __bezier_point( corners[1][0], beziers[3][0], beziers[4][0], corners[2][0], _v );
 
-    ae_float_t x = __bezier_point( bx, mx0, mx1, ex, _u );
+    ae_float_t x = __bezier_point( bu0x, bu1x, bu2x, bu3x, _u );
 
     return x;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_float_t __bezier_warp_y( const aeMovieBezierWarp * _bezierWarp, ae_float_t _u, ae_float_t _v )
 {
-    const ae_vector2_t * c = _bezierWarp->corners;
-    const ae_vector2_t * b = _bezierWarp->beziers;
+    const ae_vector2_t * corners = _bezierWarp->corners;
+    const ae_vector2_t * beziers = _bezierWarp->beziers;
 
-    ae_float_t by = __bezier_point( c[0][1], b[0][1], b[7][1], c[3][1], _v );
-    ae_float_t ey = __bezier_point( c[1][1], b[3][1], b[4][1], c[2][1], _v );
+    ae_float_t x0 = beziers[0][1] + beziers[1][1] - corners[0][1];
+    ae_float_t x1 = beziers[2][1] + beziers[3][1] - corners[1][1];
+    ae_float_t x2 = beziers[4][1] + beziers[5][1] - corners[2][1];
+    ae_float_t x3 = beziers[6][1] + beziers[7][1] - corners[3][1];
 
-    ae_float_t my0 = (b[1][1] - b[6][1]) * (1.f - _v) + b[6][1];
-    ae_float_t my1 = (b[2][1] - b[5][1]) * (1.f - _v) + b[5][1];
+    ae_float_t bu0x = __bezier_point( corners[0][1], beziers[0][1], beziers[7][1], corners[3][1], _v );
+    ae_float_t bu1x = __bezier_point( beziers[1][1], x0, x3, beziers[6][1], _v );
+    ae_float_t bu2x = __bezier_point( beziers[2][1], x1, x2, beziers[5][1], _v );
+    ae_float_t bu3x = __bezier_point( corners[1][1], beziers[3][1], beziers[4][1], corners[2][1], _v );
 
-    ae_float_t y = __bezier_point( by, my0, my1, ey, _u );
+    ae_float_t y = __bezier_point( bu0x, bu1x, bu2x, bu3x, _u );
 
     return y;
 }
