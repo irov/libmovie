@@ -129,7 +129,7 @@ typedef enum
     AE_MOVIE_NODE_UPDATE_RESUME,
     AE_MOVIE_NODE_UPDATE_END,
     __AE_MOVIE_NODE_UPDATE_STATES__,
-} aeMovieNodeUpdateState;
+} aeMovieNodeUpdateEnum;
 
 typedef struct aeMovieCameraProviderCallbackData
 {
@@ -200,9 +200,10 @@ typedef struct aeMovieNodeDeleterCallbackData
 typedef struct aeMovieNodeUpdateCallbackData
 {
     ae_voidptr_t element;
-    ae_uint8_t type;
+    aeMovieLayerTypeEnum type;
+
     ae_bool_t loop;
-    ae_uint8_t state;
+    aeMovieNodeUpdateEnum state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
@@ -214,10 +215,10 @@ typedef struct aeMovieNodeUpdateCallbackData
 
 typedef struct aeMovieTrackMatteProviderCallbackData
 {
-    ae_voidptr_t node_element;
-    ae_uint8_t type;
+    ae_voidptr_t element;
+    aeMovieLayerTypeEnum type;
+
     ae_bool_t loop;
-    ae_uint8_t state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
@@ -232,9 +233,10 @@ typedef struct aeMovieTrackMatteProviderCallbackData
 typedef struct aeMovieTrackMatteUpdateCallbackData
 {
     ae_voidptr_t element;
-    ae_uint8_t type;
+    aeMovieLayerTypeEnum type;
+
     ae_bool_t loop;
-    ae_uint8_t state;
+    aeMovieNodeUpdateEnum state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
@@ -250,7 +252,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 typedef struct aeMovieTrackMatteDeleterCallbackData
 {
     ae_voidptr_t element;
-    ae_uint8_t type;
+    aeMovieLayerTypeEnum type;
 
 } aeMovieTrackMatteDeleterCallbackData;
 
@@ -262,7 +264,7 @@ typedef struct aeMovieShaderProviderCallbackData
     ae_string_t shader_vertex;
     ae_string_t shader_fragment;
 
-    ae_uint8_t parameter_count;
+    ae_uint32_t parameter_count;
     ae_string_t parameter_names[32];
     ae_string_t parameter_uniforms[32];
     ae_uint8_t parameter_types[32];
@@ -272,11 +274,11 @@ typedef struct aeMovieShaderPropertyUpdateCallbackData
 {
     ae_voidptr_t element;
 
-    ae_uint8_t index;
+    ae_uint32_t index;
 
     ae_string_t name;
     ae_string_t uniform;
-    ae_uint8_t type;
+    aeMovieShaderParameterTypeEnum type;
 
     ae_float_t color_r;
     ae_float_t color_g;
@@ -327,12 +329,12 @@ typedef enum
     AE_MOVIE_SUB_COMPOSITION_END,
     AE_MOVIE_SUB_COMPOSITION_LOOP_END,
     __AE_MOVIE_COMPOSITION_STATES__
-} aeMovieCompositionStateFlag;
+} aeMovieCompositionStateEnum;
 
 typedef struct aeMovieCompositionStateCallbackData
 {
     /// @brief New composition state.
-    ae_uint8_t state;
+    aeMovieCompositionStateEnum state;
 
     /// @brief Sub-composition ???.
     const aeMovieSubComposition * subcomposition;
@@ -529,14 +531,14 @@ const ae_char_t * ae_get_movie_composition_name( const aeMovieComposition * _com
 @param [in] _composition Composition.
 @return Position.
 */
-float ae_get_movie_composition_time( const aeMovieComposition * _composition );
+ae_float_t ae_get_movie_composition_time( const aeMovieComposition * _composition );
 
 /**
 @brief Get composition duration in milliseconds.
 @param [in] _composition Composition.
 @return Duration.
 */
-float ae_get_movie_composition_duration( const aeMovieComposition * _composition );
+ae_float_t ae_get_movie_composition_duration( const aeMovieComposition * _composition );
 
 /**
 @brief Get composition loop area in milliseconds.
@@ -796,7 +798,7 @@ void ae_set_movie_sub_composition_time( const aeMovieComposition * _composition,
 @param [in] _subcomposition Sub-composition.
 @return Time.
 */
-float ae_get_movie_sub_composition_time( const aeMovieSubComposition * _subcomposition );
+ae_float_t ae_get_movie_sub_composition_time( const aeMovieSubComposition * _subcomposition );
 
 /**
 @brief Set whether a sub-composition is looped or not.

@@ -56,6 +56,6 @@ ae_float_t ae_linerp_c( const ae_color_t _c1, const ae_color_t _c2, ae_float_t _
 
 ae_float_t ae_tof_c( const ae_color_t _c );
 
-void ae_multiply_tetragon_uv4_v2( float * _out, const ae_vector2_t * _uv, const float * _p );
+void ae_multiply_tetragon_uv4_v2( ae_float_t * _out, const ae_vector2_t * _uv, const ae_float_t * _p );
 
 #	endif

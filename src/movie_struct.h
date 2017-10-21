@@ -43,13 +43,25 @@
 #	endif
 
 static const ae_float_t ae_movie_bezier_warp_grid_invf = (1.f / (ae_float_t)(AE_MOVIE_BEZIER_WARP_GRID - 1));
-
-typedef struct
+//////////////////////////////////////////////////////////////////////////
+typedef struct aeMovieBezierWarp
 {
     ae_vector2_t corners[4];
     ae_vector2_t beziers[8];
 
 } aeMovieBezierWarp;
+//////////////////////////////////////////////////////////////////////////
+typedef struct aeMovieLayerExtensions
+{
+    const aeMovieLayerTimeremap * timeremap;
+    const aeMovieLayerMesh * mesh;
+    const aeMovieLayerBezierWarp * bezier_warp;
+    const aeMovieLayerColorVertex * color_vertex;
+    const aeMovieLayerPolygon * polygon;
+    const aeMovieLayerShader * shader;
+    const aeMovieLayerViewport * viewport;
+
+} aeMovieLayerExtensions;
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieInstance
 {
@@ -68,6 +80,8 @@ struct aeMovieInstance
 
     ae_vector2_t bezier_warp_uv[AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT];
     ae_uint16_t bezier_warp_indices[AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT];
+
+    aeMovieLayerExtensions layer_extensions_default;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieStream
@@ -279,13 +293,7 @@ struct aeMovieLayerData
 
     ae_uint32_t frame_count;
 
-    const aeMovieLayerTimeremap * timeremap;
-    const aeMovieLayerMesh * mesh;
-    const aeMovieLayerBezierWarp * bezier_warp;
-    const aeMovieLayerColorVertex * color_vertex;    
-    const aeMovieLayerPolygon * polygon;
-    const aeMovieLayerShader * shader;
-    const aeMovieLayerViewport * viewport;
+    const aeMovieLayerExtensions * extensions;
 
     const aeMovieResource * resource;
     const aeMovieCompositionData * sub_composition_data;
@@ -330,6 +338,8 @@ struct aeMovieLayerBezierWarp
 
     const aeMovieBezierWarp * bezier_warps;
 
+    ae_uint32_t quality;
+
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMoviePropertyValue
@@ -361,10 +371,11 @@ struct aeMovieLayerColorVertex
     const struct aeMoviePropertyColor * property_color;
 
 };
+//////////////////////////////////////////////////////////////////////////
 #	define AE_MOVIE_SHADER_PARAMETER_BASE()\
     ae_string_t name;\
     ae_string_t uniform;\
-    ae_uint8_t type
+    aeMovieShaderParameterTypeEnum type
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerShaderParameter
 {
@@ -394,7 +405,7 @@ struct aeMovieLayerShader
     ae_string_t shader_vertex;
     ae_string_t shader_fragment;
 
-    ae_uint8_t parameter_count;
+    ae_uint32_t parameter_count;
     const struct aeMovieLayerShaderParameter ** parameters;
 
 };

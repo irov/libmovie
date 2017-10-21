@@ -180,6 +180,14 @@ aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie
     __ae_movie_instance_setup_bezier_warp_uv( instance );
     __ae_movie_instance_setup_bezier_warp_indices( instance );
 
+    instance->layer_extensions_default.timeremap = AE_NULL;
+    instance->layer_extensions_default.mesh = AE_NULL;
+    instance->layer_extensions_default.bezier_warp = AE_NULL;
+    instance->layer_extensions_default.color_vertex = AE_NULL;
+    instance->layer_extensions_default.polygon = AE_NULL;
+    instance->layer_extensions_default.shader = AE_NULL;
+    instance->layer_extensions_default.viewport = AE_NULL;
+
     return instance;
 }
 //////////////////////////////////////////////////////////////////////////

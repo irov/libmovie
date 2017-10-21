@@ -49,7 +49,7 @@ typedef struct aeMovieResourceVideo
     AE_MOVIE_RESOURCE_BASE();
 
     ae_string_t path;
-    ae_uint8_t codec;
+    ae_uint32_t codec;
 
     ae_float_t width;
     ae_float_t height;
@@ -65,7 +65,7 @@ typedef struct aeMovieResourceSound
     AE_MOVIE_RESOURCE_BASE();
 
     ae_string_t path;
-    ae_uint8_t codec;
+    ae_uint32_t codec;
 
     ae_float_t duration;
 
@@ -76,7 +76,7 @@ typedef struct aeMovieResourceImage
     AE_MOVIE_RESOURCE_BASE();
 
     ae_string_t path;
-    ae_uint8_t codec;
+    ae_uint32_t codec;
 
     ae_bool_t premultiplied;
 
@@ -108,7 +108,7 @@ typedef struct aeMovieResourceParticle
     AE_MOVIE_RESOURCE_BASE();
 
     ae_string_t path;
-    ae_uint8_t codec;
+    ae_uint32_t codec;
 
 } aeMovieResourceParticle;
 

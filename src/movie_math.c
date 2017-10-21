@@ -433,47 +433,49 @@ ae_float_t ae_tof_c( const ae_color_t _c )
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __line_from_two_point_v2( float * _line, float _ax, float _ay, float _bx, float _by )
+static void __line_from_two_point_v2( ae_float_t * _line, ae_float_t _ax, ae_float_t _ay, ae_float_t _bx, ae_float_t _by )
 {
     _line[0] = _ay - _by;
     _line[1] = _bx - _ax;
     _line[2] = _ax * _by - _bx * _ay;
 }
 //////////////////////////////////////////////////////////////////////////
-static float __line_dot( float _a, float _b, float _c, float _d )
+static ae_float_t __line_dot( ae_float_t _a, ae_float_t _b, ae_float_t _c, ae_float_t _d )
 {
-    return _a * _d - _c * _b;
+    ae_float_t dot = _a * _d - _c * _b;
+
+    return dot;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __line_intersect_v2_np( float * _out, const float * _l1, const float * _l2 )
+static void __line_intersect_v2_np( ae_float_t * _out, const ae_float_t * _l1, const ae_float_t * _l2 )
 {
-    float zn = __line_dot( _l1[0], _l1[1], _l2[0], _l2[1] );
+    ae_float_t zn = __line_dot( _l1[0], _l1[1], _l2[0], _l2[1] );
 
     _out[0] = -__line_dot( _l1[2], _l1[1], _l2[2], _l2[1] ) / zn;
     _out[1] = -__line_dot( _l1[0], _l1[2], _l2[0], _l2[2] ) / zn;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_multiply_tetragon_uv4_v2( float * _out, const ae_vector2_t * _uv, const float * _p )
+void ae_multiply_tetragon_uv4_v2( ae_float_t * _out, const ae_vector2_t * _uv, const ae_float_t * _p )
 {
-    const float * A = _uv[0];
-    const float * B = _uv[1];
-    const float * C = _uv[2];
-    const float * D = _uv[3];
+    const ae_float_t * A = _uv[0];
+    const ae_float_t * B = _uv[1];
+    const ae_float_t * C = _uv[2];
+    const ae_float_t * D = _uv[3];
 
-    const float ABx = A[0] + (B[0] - A[0]) * _p[0];
-    const float ABy = A[1] + (B[1] - A[1]) * _p[0];
-    const float DCx = D[0] + (C[0] - D[0]) * _p[0];
-    const float DCy = D[1] + (C[1] - D[1]) * _p[0];
+    const ae_float_t ABx = A[0] + (B[0] - A[0]) * _p[0];
+    const ae_float_t ABy = A[1] + (B[1] - A[1]) * _p[0];
+    const ae_float_t DCx = D[0] + (C[0] - D[0]) * _p[0];
+    const ae_float_t DCy = D[1] + (C[1] - D[1]) * _p[0];
 
-    const float ADx = A[0] + (D[0] - A[0]) * _p[1];
-    const float ADy = A[1] + (D[1] - A[1]) * _p[1];
-    const float BCx = B[0] + (C[0] - B[0]) * _p[1];
-    const float BCy = B[1] + (C[1] - B[1]) * _p[1];
+    const ae_float_t ADx = A[0] + (D[0] - A[0]) * _p[1];
+    const ae_float_t ADy = A[1] + (D[1] - A[1]) * _p[1];
+    const ae_float_t BCx = B[0] + (C[0] - B[0]) * _p[1];
+    const ae_float_t BCy = B[1] + (C[1] - B[1]) * _p[1];
 
-    float uv_l1[3];
+    ae_float_t uv_l1[3];
     __line_from_two_point_v2( uv_l1, ABx, ABy, DCx, DCy );
 
-    float uv_l2[3];
+    ae_float_t uv_l2[3];
     __line_from_two_point_v2( uv_l2, ADx, ADy, BCx, BCy );
 
     __line_intersect_v2_np( _out, uv_l1, uv_l2 );

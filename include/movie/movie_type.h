@@ -124,8 +124,14 @@ typedef enum
     AE_MOVIE_RESOURCE_SLOT = 10
 } aeMovieResourceTypeEnum;
 
+typedef enum
+{
+    AE_MOVIE_SHADER_PARAMETER_SLIDER = 3,
+    AE_MOVIE_SHADER_PARAMETER_COLOR = 5
+} aeMovieShaderParameterTypeEnum;
+
 #	define AE_MOVIE_RESOURCE_BASE()\
-	uint8_t type;\
+	aeMovieResourceTypeEnum type;\
 	ae_voidptr_t data
 
 typedef struct aeMovieResource
