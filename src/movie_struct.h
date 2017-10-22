@@ -35,14 +35,10 @@
 #	include "movie/movie_node.h"
 
 //////////////////////////////////////////////////////////////////////////
-#	define AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT (AE_MOVIE_BEZIER_WARP_GRID * AE_MOVIE_BEZIER_WARP_GRID)
-#	define AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT ((AE_MOVIE_BEZIER_WARP_GRID - 1) * (AE_MOVIE_BEZIER_WARP_GRID - 1) * 6)
-
-#	ifndef AE_MOVIE_BEZIER_WARP_GRID
-#	define AE_MOVIE_BEZIER_WARP_GRID 19U
+#	ifndef AE_MOVIE_BEZIER_WARP_BASE_GRID
+#	define AE_MOVIE_BEZIER_WARP_BASE_GRID 7U
 #	endif
 
-static const ae_float_t ae_movie_bezier_warp_grid_invf = (1.f / (ae_float_t)(AE_MOVIE_BEZIER_WARP_GRID - 1));
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieBezierWarp
 {
@@ -63,6 +59,17 @@ typedef struct aeMovieLayerExtensions
 
 } aeMovieLayerExtensions;
 //////////////////////////////////////////////////////////////////////////
+static void __clear_layer_extensions( aeMovieLayerExtensions * _extensions )
+{
+    _extensions->timeremap = AE_NULL;
+    _extensions->mesh = AE_NULL;
+    _extensions->bezier_warp = AE_NULL;
+    _extensions->color_vertex = AE_NULL;
+    _extensions->polygon = AE_NULL;
+    _extensions->shader = AE_NULL;
+    _extensions->viewport = AE_NULL;
+}
+//////////////////////////////////////////////////////////////////////////
 struct aeMovieInstance
 {
     ae_uint32_t hashmask[5];
@@ -78,8 +85,8 @@ struct aeMovieInstance
     ae_vector2_t sprite_uv[4];
     ae_uint16_t sprite_indices[6];
 
-    ae_vector2_t bezier_warp_uv[AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT];
-    ae_uint16_t bezier_warp_indices[AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT];
+    ae_vector2_t * bezier_warp_uv[10];
+    ae_uint16_t * bezier_warp_indices[10];
 
     aeMovieLayerExtensions layer_extensions_default;
 };

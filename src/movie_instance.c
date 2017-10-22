@@ -66,39 +66,55 @@ static void __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, con
     //SILENT
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_instance_setup_bezier_warp_uv( aeMovieInstance * instance )
+static void __instance_setup_bezier_warp( aeMovieInstance * _instance )
 {
-    ae_float_t * bezier_warp_uv = &instance->bezier_warp_uv[0][0];
-
-    ae_uint32_t v = 0;
-    for( ; v != AE_MOVIE_BEZIER_WARP_GRID; ++v )
+    ae_uint32_t i;
+    for( i = 0; i != 10U; ++i )
     {
-        ae_uint32_t u = 0;
-        for( ; u != AE_MOVIE_BEZIER_WARP_GRID; ++u )
-        {
-            *bezier_warp_uv++ = (ae_float_t)u * ae_movie_bezier_warp_grid_invf;
-            *bezier_warp_uv++ = (ae_float_t)v * ae_movie_bezier_warp_grid_invf;
-        }
-    }
-}
-//////////////////////////////////////////////////////////////////////////
-static void __ae_movie_instance_setup_bezier_warp_indices( aeMovieInstance * instance )
-{
-    ae_uint16_t * bezier_warp_indices = instance->bezier_warp_indices;
+        ae_uint32_t line_count = AE_MOVIE_BEZIER_WARP_BASE_GRID + i * 2;
 
-    ae_uint16_t v = 0;
-    for( ; v != AE_MOVIE_BEZIER_WARP_GRID - 1; ++v )
-    {
-        ae_uint16_t u = 0;
-        for( ; u != AE_MOVIE_BEZIER_WARP_GRID - 1; ++u )
+        ae_uint32_t vertex_count = line_count * line_count;        
+        ae_vector2_t * bezier_warp_uv = _instance->memory_alloc_n( _instance->instance_data, sizeof( ae_vector2_t ), vertex_count );
+                
+        ae_vector2_t * bezier_warp_uv_iterator = bezier_warp_uv;
+        
+        ae_float_t grid_invf = 1.f / (ae_float_t)(line_count - 1);
+
+        ae_uint32_t v = 0;
+        for( ; v != line_count; ++v )
         {
-            *bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 0;
-            *bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 0;
-            *bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 1;
-            *bezier_warp_indices++ = u + (v + 0) * AE_MOVIE_BEZIER_WARP_GRID + 1;
-            *bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 0;
-            *bezier_warp_indices++ = u + (v + 1) * AE_MOVIE_BEZIER_WARP_GRID + 1;
+            ae_uint32_t u = 0;
+            for( ; u != line_count; ++u )
+            {
+                ae_vector2_t * uv = bezier_warp_uv_iterator++;
+                (*uv)[0] = (ae_float_t)u * grid_invf;
+                (*uv)[1] = (ae_float_t)v * grid_invf;
+            }
         }
+
+        _instance->bezier_warp_uv[i] = bezier_warp_uv;
+
+        ae_uint32_t index_count = (line_count - 1) * (line_count - 1) * 6;
+        ae_uint16_t * bezier_warp_indices = _instance->memory_alloc_n( _instance->instance_data, sizeof( ae_uint16_t ), index_count );
+
+        ae_uint16_t * bezier_warp_indices_iterator = bezier_warp_indices;
+
+        ae_uint32_t v2 = 0;
+        for( ; v2 != line_count - 1; ++v2 )
+        {
+            ae_uint32_t u2 = 0;
+            for( ; u2 != line_count - 1; ++u2 )
+            {
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0) * line_count + 0;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1) * line_count + 0;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0) * line_count + 1;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0) * line_count + 1;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1) * line_count + 0;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1) * line_count + 1;
+            }
+        }
+        
+        _instance->bezier_warp_indices[i] = bezier_warp_indices;
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -177,16 +193,9 @@ aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie
     *sprite_indices++ = 3;
     *sprite_indices++ = 2;
 
-    __ae_movie_instance_setup_bezier_warp_uv( instance );
-    __ae_movie_instance_setup_bezier_warp_indices( instance );
-
-    instance->layer_extensions_default.timeremap = AE_NULL;
-    instance->layer_extensions_default.mesh = AE_NULL;
-    instance->layer_extensions_default.bezier_warp = AE_NULL;
-    instance->layer_extensions_default.color_vertex = AE_NULL;
-    instance->layer_extensions_default.polygon = AE_NULL;
-    instance->layer_extensions_default.shader = AE_NULL;
-    instance->layer_extensions_default.viewport = AE_NULL;
+    __instance_setup_bezier_warp( instance );
+    
+    __clear_layer_extensions( &instance->layer_extensions_default );
 
     return instance;
 }

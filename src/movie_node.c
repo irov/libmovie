@@ -163,10 +163,44 @@ static ae_float_t __bezier_warp_y( const aeMovieBezierWarp * _bezierWarp, ae_flo
     return y;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieBezierWarp * _bezierWarp, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+static ae_uint32_t __get_bezier_warp_line_count( ae_uint32_t _quality )
 {
-    _render->vertexCount = AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
-    _render->indexCount = AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+    ae_uint32_t line_count = AE_MOVIE_BEZIER_WARP_BASE_GRID + _quality * 2;
+
+    return line_count;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_uint32_t __get_bezier_warp_vertex_count( ae_uint32_t _quality )
+{
+    ae_uint32_t line_count = __get_bezier_warp_line_count( _quality );
+    ae_uint32_t vertex_count = line_count * line_count;
+
+    return vertex_count;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_uint32_t __get_bezier_warp_index_count( ae_uint32_t _quality )
+{
+    ae_uint32_t line_count = __get_bezier_warp_line_count( _quality );
+    ae_uint32_t index_count = (line_count - 1) * (line_count - 1) * 6;
+
+    return index_count;
+}
+//////////////////////////////////////////////////////////////////////////
+static ae_float_t __get_bezier_warp_grid_invf( ae_uint32_t _quality )
+{
+    ae_uint32_t line_count = __get_bezier_warp_line_count( _quality );
+    ae_float_t grid_invf = 1.f / (ae_float_t)(line_count - 1);
+
+    return grid_invf;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, ae_uint32_t _quality, const aeMovieBezierWarp * _bezierWarp, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+{
+    ae_uint32_t line_count = __get_bezier_warp_line_count( _quality );
+    ae_float_t grid_invf = __get_bezier_warp_grid_invf( _quality );
+
+    _render->vertexCount = __get_bezier_warp_vertex_count( _quality );
+    _render->indexCount = __get_bezier_warp_index_count( _quality );
 
     ae_float_t du = 0.f;
     ae_float_t dv = 0.f;
@@ -174,10 +208,10 @@ static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, cons
     ae_vector3_t * positions = _render->position;
 
     ae_uint32_t v = 0;
-    for( ; v != AE_MOVIE_BEZIER_WARP_GRID; ++v )
+    for( ; v != line_count; ++v )
     {
         ae_uint32_t u = 0;
-        for( ; u != AE_MOVIE_BEZIER_WARP_GRID; ++u )
+        for( ; u != line_count; ++u )
         {
             const ae_float_t x = __bezier_warp_x( _bezierWarp, du, dv );
             const ae_float_t y = __bezier_warp_y( _bezierWarp, du, dv );
@@ -188,22 +222,22 @@ static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, cons
 
             ae_mul_v3_v2_m4( *positions++, position, _matrix );
 
-            du += ae_movie_bezier_warp_grid_invf;
+            du += grid_invf;
         }
 
         du = 0.f;
-        dv += ae_movie_bezier_warp_grid_invf;
+        dv += grid_invf;
     }
 
-    _render->uv = _instance->bezier_warp_uv;
-    _render->indices = _instance->bezier_warp_indices;
+    _render->uv = _instance->bezier_warp_uv[_quality];
+    _render->indices = _instance->bezier_warp_indices[_quality];
 }
 //////////////////////////////////////////////////////////////////////////
 static void __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerBezierWarp * _bezierWarp, ae_uint32_t _frame, ae_float_t _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
     if( _bezierWarp->immutable == AE_TRUE )
     {
-        __make_bezier_warp_vertices( _instance, &_bezierWarp->immutable_bezier_warp, _matrix, _render );
+        __make_bezier_warp_vertices( _instance, _bezierWarp->quality, &_bezierWarp->immutable_bezier_warp, _matrix, _render );
     }
     else
     {
@@ -232,7 +266,7 @@ static void __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance
         ae_linerp_f2( bezierWarp.beziers[6], current_beziers[6], next_beziers[6], _t );
         ae_linerp_f2( bezierWarp.beziers[7], current_beziers[7], next_beziers[7], _t );
 
-        __make_bezier_warp_vertices( _instance, &bezierWarp, _matrix, _render );
+        __make_bezier_warp_vertices( _instance, _bezierWarp->quality, &bezierWarp, _matrix, _render );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2013,8 +2047,8 @@ void ae_calculate_movie_composition_render_info( const aeMovieComposition * _com
                 }
                 else if( layer->extensions->bezier_warp != AE_NULL )
                 {
-                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
-                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                    _info->max_vertex_count += __get_bezier_warp_vertex_count( layer->extensions->bezier_warp->quality );
+                    _info->max_index_count += __get_bezier_warp_index_count( layer->extensions->bezier_warp->quality );
                 }
                 else
                 {
@@ -2033,8 +2067,8 @@ void ae_calculate_movie_composition_render_info( const aeMovieComposition * _com
                 }
                 else if( layer->extensions->bezier_warp != AE_NULL )
                 {
-                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
-                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                    _info->max_vertex_count += __get_bezier_warp_vertex_count( layer->extensions->bezier_warp->quality );
+                    _info->max_index_count += __get_bezier_warp_index_count( layer->extensions->bezier_warp->quality );
                 }
                 else
                 {
@@ -2053,8 +2087,8 @@ void ae_calculate_movie_composition_render_info( const aeMovieComposition * _com
                 }
                 else if( layer->extensions->bezier_warp != AE_NULL )
                 {
-                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
-                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                    _info->max_vertex_count += __get_bezier_warp_vertex_count( layer->extensions->bezier_warp->quality );
+                    _info->max_index_count += __get_bezier_warp_index_count( layer->extensions->bezier_warp->quality );
                 }
                 else
                 {
@@ -2073,8 +2107,8 @@ void ae_calculate_movie_composition_render_info( const aeMovieComposition * _com
                 }
                 else if( layer->extensions->bezier_warp != AE_NULL )
                 {
-                    _info->max_vertex_count += AE_MOVIE_BEZIER_WARP_GRID_VERTEX_COUNT;
-                    _info->max_index_count += AE_MOVIE_BEZIER_WARP_GRID_INDICES_COUNT;
+                    _info->max_vertex_count += __get_bezier_warp_vertex_count( layer->extensions->bezier_warp->quality );
+                    _info->max_index_count += __get_bezier_warp_index_count( layer->extensions->bezier_warp->quality );
                 }
                 else if( resource_image->mesh != AE_NULL )
                 {

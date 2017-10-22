@@ -525,12 +525,16 @@ static void __load_movie_property_value( aeMovieStream * _stream, struct aeMovie
 //////////////////////////////////////////////////////////////////////////
 static aeMovieLayerExtensions * __request_extensions( const aeMovieInstance * _instance, aeMovieLayerExtensions * _extensions )
 {
-    if( _extensions == AE_NULL )
+    if( _extensions != AE_NULL )
     {
-        return AE_NEW( _instance, aeMovieLayerExtensions );
+        return _extensions;
     }
+     
+    aeMovieLayerExtensions * extensions = AE_NEW( _instance, aeMovieLayerExtensions );
 
-    return _extensions;
+    __clear_layer_extensions( extensions );
+
+    return extensions;    
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
