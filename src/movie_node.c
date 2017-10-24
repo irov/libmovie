@@ -3203,7 +3203,7 @@ const ae_char_t * ae_get_movie_composition_name( const aeMovieComposition * _com
 {
     const aeMovieCompositionData * composition_data = _composition->composition_data;
 
-    const ae_char_t * name = composition_data->name;
+    const ae_char_t * name = ae_get_movie_composition_data_name( composition_data );
 
     return name;
 }

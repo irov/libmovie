@@ -1706,6 +1706,27 @@ const ae_char_t * ae_get_movie_name( const aeMovieData * _movieData )
     return name;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_has_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name )
+{
+    const aeMovieInstance * instance = _movieData->instance;
+
+    const aeMovieCompositionData * it_composition = _movieData->compositions;
+    const aeMovieCompositionData * it_composition_end = _movieData->compositions + _movieData->composition_count;
+    for( ; it_composition != it_composition_end; ++it_composition )
+    {
+        const aeMovieCompositionData * composition = it_composition;
+
+        if( AE_STRNCMP( instance, composition->name, _name, AE_MOVIE_MAX_COMPOSITION_NAME ) != 0 )
+        {
+            continue;
+        }
+
+        return AE_TRUE;
+    }
+
+    return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name )
 {
     const aeMovieInstance * instance = _movieData->instance;

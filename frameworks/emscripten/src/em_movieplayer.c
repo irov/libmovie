@@ -1163,7 +1163,7 @@ static void __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatteDele
 typedef struct em_movie_composition_t
 {
     aeMovieComposition * composition;
-
+    
     GLuint opengl_vertex_buffer_id;
     GLuint opengl_indices_buffer_id;
     
@@ -1177,9 +1177,9 @@ em_movie_composition_t * em_create_movie_composition( em_player_t * _player, em_
 
     const ae_char_t * movieName = ae_get_movie_name( ae_movie_data );
 
-    const aeMovieCompositionData * movieCompositionData = ae_get_movie_composition_data( ae_movie_data, _name );
+    const aeMovieCompositionData * compositionData = ae_get_movie_composition_data( ae_movie_data, _name );
 
-    if( movieCompositionData == AE_NULL )
+    if( compositionData == AE_NULL )
     {
         emscripten_log( EM_LOG_ERROR, "error get movie '%s' composition data '%s'"
             , movieName
@@ -1208,7 +1208,7 @@ em_movie_composition_t * em_create_movie_composition( em_player_t * _player, em_
     providers.track_matte_update = &__ae_movie_callback_track_matte_update;
     providers.track_matte_deleter = &__ae_movie_callback_track_matte_deleter;
 
-    aeMovieComposition * composition = ae_create_movie_composition( ae_movie_data, movieCompositionData, AE_TRUE, &providers, _player );
+    aeMovieComposition * composition = ae_create_movie_composition( ae_movie_data, compositionData, AE_TRUE, &providers, _player );
 
     if( composition == AE_NULL )
     {
