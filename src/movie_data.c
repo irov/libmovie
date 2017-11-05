@@ -1257,7 +1257,7 @@ aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_mo
     return stream;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_size_t __ae_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _carriage, ae_uint32_t _size )
+static ae_size_t __ae_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size )
 {
     aeMovieStream * stream = (aeMovieStream *)_data;
 
