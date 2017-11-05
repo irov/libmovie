@@ -55,11 +55,9 @@ static ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovieStre
 
     const ae_uint32_t * hashmask = _stream->instance->hashmask;
 
-    for( ae_uint32_t
-        *it = (ae_uint32_t *)timeline,
-        *it_end = (ae_uint32_t *)timeline + zp_data_size / 4;
-        it != it_end;
-        ++it )
+    ae_uint32_t * it_timeline = (ae_uint32_t *)timeline;
+    ae_uint32_t * it_timeline_end = (ae_uint32_t *)timeline + zp_data_size / 4;
+    for( ; it_timeline != it_timeline_end; ++it_timeline )
     {
         ae_uint32_t hashmask_index = hashmask_iterator++ % 5;
 
