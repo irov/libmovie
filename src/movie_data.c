@@ -1526,7 +1526,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                             AE_READ( _stream, uv[3][0] );
                             AE_READ( _stream, uv[3][1] );
 
-                            resource->uv = uv;
+                            resource->uv = (const ae_vector2_t *)uv;
                         }break;
                     case 3:
                         {
