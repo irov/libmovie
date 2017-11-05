@@ -65,12 +65,19 @@ static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidpt
 	memcpy( _dst, _src, _size );
 }
 
-static ae_voidptr_t resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data )
+static ae_voidptr_t __resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data )
 {
 	(void)_resource;
 	(void)_data;
 
 	return AE_NULL;
+}
+
+static void __resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
+{
+    (void)_type;
+    (void)_data;
+    (void)_ud;
 }
 
 int main( int argc, char *argv[] )
@@ -80,7 +87,7 @@ int main( int argc, char *argv[] )
 
 	aeMovieInstance * instance = ae_create_movie_instance( "0e41faff7d430be811df87466106e7a9b36cc3ea", &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, (ae_movie_strncmp_t)AE_NULL, &stdlib_movie_logerror, AE_NULL );
 
-	aeMovieData * movieData = ae_create_movie_data( instance, &resource_provider, AE_NULL, AE_NULL );
+	aeMovieData * movieData = ae_create_movie_data( instance, &__resource_provider, &__resource_deleter, AE_NULL );
 
 	FILE * f = fopen( "ui.aem", "rb" );
 

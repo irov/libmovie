@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#define EX_LOG(x, ...) printf(x, ##__VA_ARGS__)
+void EX_LOG( const char * _format, ... );
 
 //
 // Working structure of our application.
@@ -15,6 +15,7 @@ typedef struct {
 	//
 
 	char license[41];
+    char license_padding[3];
 	char movie_path[256];
 	char comp_name[128];
 
@@ -31,6 +32,7 @@ typedef struct {
 	//
 
 	ae_movie_data_resource_provider_t resource_provider;
+    ae_movie_data_resource_deleter_t resource_deleter;
 	aeMovieCompositionProviders comp_providers;
 } examples_t;
 
@@ -48,6 +50,7 @@ int ex_get_time( void );
 //
 
 ae_voidptr_t ex_callback_resource_provider_empty( const aeMovieResource * _resource, ae_voidptr_t _data );
+void ex_callback_resource_deleter_empty( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud );
 ae_voidptr_t ex_callback_resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data );
 
 //

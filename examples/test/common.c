@@ -10,7 +10,11 @@ User-written callback functions for libmovie and other stuff used in all the exa
 #include <malloc.h>
 #include <memory.h>
 #include <string.h>
+
+#pragma warning(push)
+#pragma warning(disable : 4820)
 #include <time.h>
+#pragma warning(pop)
 
 //
 // Declare working structure of our application.
@@ -21,6 +25,14 @@ examples_t ex;
 //
 // Playform-dependent function implementations.
 //
+
+void EX_LOG( const char * _format, ... )
+{
+    va_list argList;
+    va_start( argList, _format );
+    vprintf( _format, argList );
+    va_end( argList );
+}
 
 //
 // System time in milliseconds.
@@ -83,6 +95,14 @@ ae_voidptr_t ex_callback_resource_provider_empty( const aeMovieResource * _resou
 	EX_LOG( "Resource provider callback.\n" );
 
 	return AE_NULL;
+}
+
+void ex_callback_resource_deleter_empty( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud ) {
+    (void)_type;
+    (void)_data;
+    (void)_ud;
+
+    EX_LOG( "Resource deleter callback.\n" );
 }
 
 //
@@ -347,6 +367,7 @@ void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackDat
 }
 
 ae_voidptr_t ex_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
+    (void)_callbackData;
     (void)_data;
 
     EX_LOG( "Track matte provider callback.\n" );
@@ -400,6 +421,7 @@ void ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData *
 }
 
 void ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
+    (void)_callbackData;
     (void)_data;
 
     EX_LOG( "Track matte deleter callback.\n" );
@@ -518,7 +540,7 @@ void ex_load_movie_data( void ) {
 
 	EX_LOG( "Loading movie data.\n" );
 
-	aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, AE_NULL, AE_NULL );
+	aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
 
 	if( ae_load_movie_data( data, stream ) == AE_MOVIE_FAILED ) {
 		EX_LOG( "...failed.\n" );

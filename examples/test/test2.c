@@ -22,6 +22,7 @@ int main( int argc, char *argv[] ) {
 	//
 
 	ex.resource_provider = &ex_callback_resource_provider;
+    ex.resource_deleter = &ex_callback_resource_deleter_empty;
 
 	//
 	// Load movie data structure, which in particular contains info about all compositions in the movie.

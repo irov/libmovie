@@ -68,10 +68,10 @@ static void __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, con
 //////////////////////////////////////////////////////////////////////////
 static void __instance_setup_bezier_warp( aeMovieInstance * _instance )
 {
-    ae_uint32_t i;
+    ae_uint16_t i;
     for( i = 0; i != 10U; ++i )
     {
-        ae_uint32_t line_count = AE_MOVIE_BEZIER_WARP_BASE_GRID + i * 2;
+        ae_uint16_t line_count = AE_MOVIE_BEZIER_WARP_BASE_GRID + i * 2;
 
         ae_uint32_t vertex_count = line_count * line_count;        
         ae_vector2_t * bezier_warp_uv = _instance->memory_alloc_n( _instance->instance_data, sizeof( ae_vector2_t ), vertex_count );
@@ -94,15 +94,15 @@ static void __instance_setup_bezier_warp( aeMovieInstance * _instance )
 
         _instance->bezier_warp_uv[i] = bezier_warp_uv;
 
-        ae_uint32_t index_count = (line_count - 1) * (line_count - 1) * 6;
+        ae_uint16_t index_count = (line_count - 1) * (line_count - 1) * 6;
         ae_uint16_t * bezier_warp_indices = _instance->memory_alloc_n( _instance->instance_data, sizeof( ae_uint16_t ), index_count );
 
         ae_uint16_t * bezier_warp_indices_iterator = bezier_warp_indices;
 
-        ae_uint32_t v2 = 0;
+        ae_uint16_t v2 = 0;
         for( ; v2 != line_count - 1; ++v2 )
         {
-            ae_uint32_t u2 = 0;
+            ae_uint16_t u2 = 0;
             for( ; u2 != line_count - 1; ++u2 )
             {
                 *bezier_warp_indices_iterator++ = u2 + (v2 + 0) * line_count + 0;
