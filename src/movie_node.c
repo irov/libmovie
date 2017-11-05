@@ -229,7 +229,7 @@ static void __make_bezier_warp_vertices( const aeMovieInstance * _instance, ae_u
         dv += grid_invf;
     }
 
-    _render->uv = _instance->bezier_warp_uv[_quality];
+    _render->uv = (const ae_vector2_t *)_instance->bezier_warp_uv[_quality];
     _render->indices = _instance->bezier_warp_indices[_quality];
 }
 //////////////////////////////////////////////////////////////////////////

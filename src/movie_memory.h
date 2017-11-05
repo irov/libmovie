@@ -34,16 +34,15 @@
 
 #	include "movie_struct.h"
 
+#   ifdef _DEBUG
 //////////////////////////////////////////////////////////////////////////
-#	define AE_NEW(instance, type) ((type *)ae_magic_memory_alloc( instance, #type, sizeof(type)))
-#	define AE_NEWV(instance, doc, size) (ae_magic_memory_alloc( instance, doc, size))
-#	define AE_NEWN(instance, type, n) ((type *)ae_magic_memory_alloc_n(instance, #type, sizeof(type), n))
-#	define AE_DELETE(instance, ptr) (ae_magic_memory_free(instance, #ptr, ptr))
-#	define AE_DELETEN(instance, ptr) (ae_magic_memory_free_n(instance, #ptr, ptr))
+#	define AE_NEW(instance, type) ((type *)__magic_memory_alloc( instance, #type, sizeof(type)))
+#	define AE_NEWV(instance, doc, size) (__magic_memory_alloc( instance, doc, size))
+#	define AE_NEWN(instance, type, n) ((type *)__magic_memory_alloc_n(instance, #type, sizeof(type), n))
+#	define AE_DELETE(instance, ptr) (__magic_memory_free(instance, #ptr, ptr))
+#	define AE_DELETEN(instance, ptr) (__magic_memory_free_n(instance, #ptr, ptr))
 //////////////////////////////////////////////////////////////////////////
-#	define AE_STRNCMP(instance, src, dst, count) (instance->strncmp(instance->instance_data, src, dst, count))
-//////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t ae_magic_memory_alloc( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size )
+inline static ae_voidptr_t __magic_memory_alloc( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size )
 {
     (void)_type;
 
@@ -56,7 +55,7 @@ static ae_voidptr_t ae_magic_memory_alloc( const aeMovieInstance * _instance, co
     return ptr;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t ae_magic_memory_alloc_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size, ae_size_t _count )
+inline static ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size, ae_size_t _count )
 {
     (void)_type;
 
@@ -69,7 +68,7 @@ static ae_voidptr_t ae_magic_memory_alloc_n( const aeMovieInstance * _instance, 
     return ptr;
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+inline static void __magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
     (void)_type;
 #	ifdef AE_MOVIE_MEMORY_INFO
@@ -79,7 +78,7 @@ static void ae_magic_memory_free( const aeMovieInstance * _instance, const ae_ch
     _instance->memory_free( _instance->instance_data, _ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void ae_magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+inline static void __magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
     (void)_type;
 #	ifdef AE_MOVIE_MEMORY_INFO
@@ -89,5 +88,16 @@ static void ae_magic_memory_free_n( const aeMovieInstance * _instance, const ae_
     _instance->memory_free_n( _instance->instance_data, _ptr );
 }
 //////////////////////////////////////////////////////////////////////////
+#   else
+//////////////////////////////////////////////////////////////////////////
+#	define AE_NEW(instance, type) ((type *)instance->memory_alloc( instance->instance_data, sizeof(type) ))
+#	define AE_NEWV(instance, doc, size) (instance->memory_alloc( instance->instance_data, size ))
+#	define AE_NEWN(instance, type, n) ((type *)instance->memory_alloc_n( instance->instance_data, sizeof(type), n ))
+#	define AE_DELETE(instance, ptr) (instance->memory_free( instance->instance_data, ptr))
+#	define AE_DELETEN(instance, ptr) (instance->memory_free_n( instance->instance_data, ptr))
+//////////////////////////////////////////////////////////////////////////
+#   endif
+//////////////////////////////////////////////////////////////////////////
+#	define AE_STRNCMP(instance, src, dst, count) (instance->strncmp(instance->instance_data, src, dst, count))
 
 #	endif
