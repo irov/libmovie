@@ -128,7 +128,8 @@ aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie
     instance->hashmask[3] = 0;
     instance->hashmask[4] = 0;
 
-    for( ae_uint32_t i = 0; i != 41; ++i )
+    ae_uint32_t i = 0;
+    for( ; i != 41; ++i )
     {
         if( _hashkey[i] == '\0' && i != 40 )
         {
