@@ -32,10 +32,6 @@
 //////////////////////////////////////////////////////////////////////////
 static const ae_float_t f_eps = 0.00001f;
 static const ae_float_t f_neps = -0.00001f;
-static const ae_float_t pi = 3.14159265358979323846f;
-static const ae_float_t two_pi = 2.f * 3.14159265358979323846f;
-static const ae_float_t inv_two_pi = 1.f / (2.f * 3.14159265358979323846f);
-static const ae_float_t inv_255 = 1.f / 255.f;
 
 static const ae_float_t table_inv_255[] = {
     0.f / 255.f, 1.f / 255.f, 2.f / 255.f, 3.f / 255.f, 4.f / 255.f, 5.f / 255.f, 6.f / 255.f, 7.f / 255.f, 8.f / 255.f, 9.f / 255.f,
@@ -66,9 +62,6 @@ static const ae_float_t table_inv_255[] = {
     250.f / 255.f, 251.f / 255.f, 252.f / 255.f, 253.f / 255.f, 254.f / 255.f, 255.f / 255.f
 };
 
-//////////////////////////////////////////////////////////////////////////
-#	define EQUAL_F_Z( v ) ((v >= f_neps) && (v <= f_eps))
-#	define EQUAL_F_1( v ) ((v >= 1.f + f_neps) && (v <= 1.f + f_eps))
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_equal_f_z( ae_float_t _a )
 {
