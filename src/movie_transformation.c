@@ -63,7 +63,7 @@ static ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovieStre
 
         ae_uint32_t hash = hashmask[hashmask_index];
 
-        *it ^= hash;
+        *it_timeline ^= hash;
     }
 
     return timeline;
