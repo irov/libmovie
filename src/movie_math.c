@@ -358,20 +358,32 @@ void ae_linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_
     _out[1] = ae_linerp_f1( _in1[1], _in2[1], _t );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_float_t __inverse_sqrtf( ae_float_t number )
+union __inverse_sqrtf_alias_cast_t
 {
-    ae_uint32_t i;
-    ae_float_t x2, y;
-    const ae_float_t threehalfs = 1.5f;
-    const ae_uint32_t magic_number = 0x5F3759DF;
+    ae_float_t raw;
+    ae_uint32_t data;
+};
+//////////////////////////////////////////////////////////////////////////
+static const ae_float_t __inverse_sqrtf_threehalfs = 1.5f;
+static const ae_uint32_t __inverse_sqrtf_magic_number = 0x5F3759DF;
+//////////////////////////////////////////////////////////////////////////
+static ae_float_t __inverse_sqrtf( ae_float_t _number )
+{
+    ae_float_t x2 = _number * 0.5f;
 
-    x2 = number * 0.5f;
-    y = number;
-    i = *(ae_uint32_t *)&y;
-    i = magic_number - (i >> 1);
-    y = *(ae_float_t *)&i;
-    y = y * (threehalfs - (x2 * y * y));
-    y = y * (threehalfs - (x2 * y * y));
+    union __inverse_sqrtf_alias_cast_t i_cast;
+    i_cast.raw = _number;
+    ae_uint32_t i = i_cast.data;
+    
+    i = __inverse_sqrtf_magic_number - (i >> 1);
+
+    union __inverse_sqrtf_alias_cast_t f_cast;
+    f_cast.data = i;
+
+    ae_float_t y = f_cast.raw;
+
+    y = y * (__inverse_sqrtf_threehalfs - (x2 * y * y));
+    y = y * (__inverse_sqrtf_threehalfs - (x2 * y * y));
 
     return y;
 }
