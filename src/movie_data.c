@@ -532,7 +532,7 @@ static aeMovieLayerExtensions * __request_extensions( const aeMovieInstance * _i
      
     aeMovieLayerExtensions * extensions = AE_NEW( _instance, aeMovieLayerExtensions );
 
-    AE_MOVIE_CLEAR_LAYER_EXTENSIONS( extensions );
+    __clear_layer_extensions( extensions );
 
     return extensions;    
 }

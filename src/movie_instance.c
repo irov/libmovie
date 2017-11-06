@@ -196,7 +196,7 @@ aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie
 
     __instance_setup_bezier_warp( instance );
     
-    AE_MOVIE_CLEAR_LAYER_EXTENSIONS( &instance->layer_extensions_default );
+    __clear_layer_extensions( &instance->layer_extensions_default );
 
     return instance;
 }
