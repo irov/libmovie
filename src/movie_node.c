@@ -3234,7 +3234,9 @@ ae_time_t ae_get_movie_composition_time( const aeMovieComposition * _composition
 //////////////////////////////////////////////////////////////////////////
 ae_time_t ae_get_movie_composition_duration( const aeMovieComposition * _composition )
 {
-    ae_float_t duration = ae_get_movie_composition_data_duration( _composition->composition_data );
+	const aeMovieCompositionData * composition_data = _composition->composition_data;
+
+	ae_time_t duration = composition_data->duration;	
 
     return AE_TIME_OUTSCALE( duration );
 }
