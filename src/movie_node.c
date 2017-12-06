@@ -2267,7 +2267,7 @@ static void __notify_stop_nodies( const aeMovieComposition * _composition, const
                 callbackData.element = node->element_data;
                 callbackData.type = layer->type;
                 callbackData.loop = _animation->loop;
-                callbackData.state = AE_MOVIE_NODE_UPDATE_END;
+                callbackData.state = AE_MOVIE_STATE_UPDATE_END;
                 callbackData.offset = 0.f;
                 callbackData.matrix = node->matrix;
                 callbackData.opacity = node->opacity;
@@ -2287,7 +2287,7 @@ static void __notify_stop_nodies( const aeMovieComposition * _composition, const
                 callbackData.element = node->element_data;
                 callbackData.type = layer->type;
                 callbackData.loop = _animation->loop;
-                callbackData.state = AE_MOVIE_NODE_UPDATE_END;
+                callbackData.state = AE_MOVIE_STATE_UPDATE_END;
                 callbackData.offset = 0.f;
                 callbackData.matrix = node->matrix;
                 callbackData.opacity = node->opacity;
@@ -2367,7 +2367,7 @@ static void __notify_pause_nodies( const aeMovieComposition * _composition, cons
                 callbackData.element = node->element_data;
                 callbackData.type = layer->type;
                 callbackData.loop = _animation->loop;
-                callbackData.state = AE_MOVIE_NODE_UPDATE_PAUSE;
+                callbackData.state = AE_MOVIE_STATE_UPDATE_PAUSE;
                 callbackData.offset = node->current_time;
                 callbackData.matrix = node->matrix;
                 callbackData.opacity = node->opacity;
@@ -2385,7 +2385,7 @@ static void __notify_pause_nodies( const aeMovieComposition * _composition, cons
                 callbackData.element = node->element_data;
                 callbackData.type = layer->type;
                 callbackData.loop = _animation->loop;
-                callbackData.state = AE_MOVIE_NODE_UPDATE_PAUSE;
+                callbackData.state = AE_MOVIE_STATE_UPDATE_PAUSE;
                 callbackData.offset = node->current_time;
                 callbackData.matrix = node->matrix;
                 callbackData.opacity = node->opacity;
@@ -2464,7 +2464,7 @@ static void __notify_resume_nodies( const aeMovieComposition * _composition, con
                 callbackData.element = node->element_data;
                 callbackData.type = layer->type;
                 callbackData.loop = _animation->loop;
-                callbackData.state = AE_MOVIE_NODE_UPDATE_RESUME;
+                callbackData.state = AE_MOVIE_STATE_UPDATE_RESUME;
                 callbackData.offset = node->current_time;
                 callbackData.matrix = node->matrix;
                 callbackData.opacity = node->opacity;
@@ -2482,7 +2482,7 @@ static void __notify_resume_nodies( const aeMovieComposition * _composition, con
                 callbackData.element = node->element_data;
                 callbackData.type = layer->type;
                 callbackData.loop = _animation->loop;
-                callbackData.state = AE_MOVIE_NODE_UPDATE_RESUME;
+                callbackData.state = AE_MOVIE_STATE_UPDATE_RESUME;
                 callbackData.offset = node->current_time;
                 callbackData.matrix = node->matrix;
                 callbackData.opacity = node->opacity;
@@ -2588,7 +2588,7 @@ static void __update_movie_composition_node_state( const aeMovieComposition * _c
             callbackData.element = _node->element_data;
             callbackData.type = layer->type;
             callbackData.loop = _loop;
-            callbackData.state = AE_MOVIE_NODE_UPDATE_BEGIN;
+            callbackData.state = AE_MOVIE_STATE_UPDATE_BEGIN;
             callbackData.offset = _node->start_time + _time - _node->in_time;
             callbackData.matrix = _node->matrix;
             callbackData.opacity = _node->opacity;
@@ -2603,7 +2603,7 @@ static void __update_movie_composition_node_state( const aeMovieComposition * _c
             callbackData.element = _node->element_data;
             callbackData.type = layer->type;
             callbackData.loop = _loop;
-            callbackData.state = AE_MOVIE_NODE_UPDATE_UPDATE;
+            callbackData.state = AE_MOVIE_STATE_UPDATE_PROCESS;
             callbackData.offset = 0.f;
             callbackData.matrix = _node->matrix;
             callbackData.opacity = _node->opacity;
@@ -2621,7 +2621,7 @@ static void __update_movie_composition_node_state( const aeMovieComposition * _c
             callbackData.element = _node->element_data;
             callbackData.type = layer->type;
             callbackData.loop = _loop;
-            callbackData.state = AE_MOVIE_NODE_UPDATE_END;
+            callbackData.state = AE_MOVIE_STATE_UPDATE_END;
             callbackData.offset = 0.f;
             callbackData.matrix = _node->matrix;
             callbackData.opacity = _node->opacity;
@@ -2671,7 +2671,7 @@ static void __update_movie_composition_track_matte_state( const aeMovieCompositi
         {
             _node->animate = AE_MOVIE_NODE_ANIMATE_BEGIN;
 
-            callbackData.state = AE_MOVIE_NODE_UPDATE_BEGIN;
+            callbackData.state = AE_MOVIE_STATE_UPDATE_BEGIN;
 
             (*_composition->providers.track_matte_update)(&callbackData, _composition->provider_data);
         }
@@ -2679,7 +2679,7 @@ static void __update_movie_composition_track_matte_state( const aeMovieCompositi
         {
             _node->animate = AE_MOVIE_NODE_ANIMATE_PROCESS;
 
-            callbackData.state = AE_MOVIE_NODE_UPDATE_UPDATE;
+            callbackData.state = AE_MOVIE_STATE_UPDATE_PROCESS;
 
             (*_composition->providers.track_matte_update)(&callbackData, _composition->provider_data);
         }
@@ -2690,7 +2690,7 @@ static void __update_movie_composition_track_matte_state( const aeMovieCompositi
         {
             _node->animate = AE_MOVIE_NODE_ANIMATE_END;
 
-            callbackData.state = AE_MOVIE_NODE_UPDATE_END;
+            callbackData.state = AE_MOVIE_STATE_UPDATE_END;
 
             (*_composition->providers.track_matte_update)(&callbackData, _composition->provider_data);
         }

@@ -123,13 +123,12 @@ typedef struct aeMovieNode aeMovieNode;
 
 typedef enum
 {
-    AE_MOVIE_NODE_UPDATE_BEGIN = 0,
-    AE_MOVIE_NODE_UPDATE_UPDATE,
-    AE_MOVIE_NODE_UPDATE_PAUSE,
-    AE_MOVIE_NODE_UPDATE_RESUME,
-    AE_MOVIE_NODE_UPDATE_END,
-    __AE_MOVIE_NODE_UPDATE_STATES__,
-} aeMovieNodeUpdateEnum;
+    AE_MOVIE_STATE_UPDATE_BEGIN = 0,
+    AE_MOVIE_STATE_UPDATE_PROCESS,
+    AE_MOVIE_STATE_UPDATE_PAUSE,
+    AE_MOVIE_STATE_UPDATE_RESUME,
+    AE_MOVIE_STATE_UPDATE_END
+} aeMovieStateUpdateEnum;
 
 typedef struct aeMovieCameraProviderCallbackData
 {
@@ -203,7 +202,7 @@ typedef struct aeMovieNodeUpdateCallbackData
     aeMovieLayerTypeEnum type;
 
     ae_bool_t loop;
-    aeMovieNodeUpdateEnum state;
+    aeMovieStateUpdateEnum state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
@@ -236,7 +235,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     aeMovieLayerTypeEnum type;
 
     ae_bool_t loop;
-    aeMovieNodeUpdateEnum state;
+    aeMovieStateUpdateEnum state;
     ae_float_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.

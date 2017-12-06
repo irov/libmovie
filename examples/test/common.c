@@ -295,7 +295,7 @@ void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackDat
 
 	switch( _callbackData->state )
 	{
-	case AE_MOVIE_NODE_UPDATE_UPDATE:
+	case AE_MOVIE_STATE_UPDATE_PROCESS:
 		{
 			EX_LOG( " NODE_UPDATE_UPDATE\n" );
 			EX_LOG( " Type:" );
@@ -314,7 +314,7 @@ void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackDat
 
 			break;
 		}
-	case AE_MOVIE_NODE_UPDATE_BEGIN:
+	case AE_MOVIE_STATE_UPDATE_BEGIN:
 		{
 			EX_LOG( " NODE_UPDATE_BEGIN\n" );
 			EX_LOG( " Type:" );
@@ -339,7 +339,7 @@ void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackDat
 
 			break;
 		}
-	case AE_MOVIE_NODE_UPDATE_END:
+	case AE_MOVIE_STATE_UPDATE_END:
 		{
 			EX_LOG( " NODE_UPDATE_END\n" );
 			EX_LOG( " Type:" );
@@ -396,21 +396,21 @@ void ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData *
 	EX_LOG( " State:" );
 
 	switch( _callbackData->state ) {
-	case AE_MOVIE_NODE_UPDATE_BEGIN: {
+	case AE_MOVIE_STATE_UPDATE_BEGIN: {
 			EX_LOG( " NODE_UPDATE_BEGIN\n" );
 
 			// Should update track_matte_data->mesh with callback one.
 
 			break;
 		}
-	case AE_MOVIE_NODE_UPDATE_UPDATE: {
+	case AE_MOVIE_STATE_UPDATE_PROCESS: {
 			EX_LOG( " NODE_UPDATE_UPDATE\n" );
 
 			// Should update track_matte_data->mesh with callback one.
 
 			break;
 		}
-	case AE_MOVIE_NODE_UPDATE_END: {
+	case AE_MOVIE_STATE_UPDATE_END: {
 			EX_LOG( " NODE_UPDATE_END\n" );
 
 			// Do nothing.
