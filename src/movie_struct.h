@@ -111,13 +111,13 @@ struct aeMovieCompositionAnimation
     ae_bool_t interrupt;
     ae_bool_t loop;
 
-    ae_float_t time;
+    ae_time_t time;
 
-    ae_float_t loop_segment_begin;
-    ae_float_t loop_segment_end;
+    ae_time_t loop_segment_begin;
+    ae_time_t loop_segment_end;
 
-    ae_float_t work_area_begin;
-    ae_float_t work_area_end;
+    ae_time_t work_area_begin;
+    ae_time_t work_area_end;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieSubComposition
@@ -246,10 +246,10 @@ struct aeMovieCompositionData
     ae_float_t width;
     ae_float_t height;
 
-    ae_float_t duration;
+    ae_time_t duration;
 
-    ae_float_t frameDuration;
-    ae_float_t frameDurationInv;
+    ae_time_t frameDuration;
+    ae_time_t frameDurationInv;
 
     ae_uint32_t frameCount;
 

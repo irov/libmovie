@@ -55,8 +55,8 @@ typedef struct aeMovieResourceVideo
     ae_float_t height;
 
     ae_uint32_t alpha;
-    ae_float_t frameRate;
-    ae_float_t duration;
+    ae_time_t frameRate;
+    ae_time_t duration;
 
 } aeMovieResourceVideo;
 
@@ -67,7 +67,7 @@ typedef struct aeMovieResourceSound
     ae_string_t path;
     ae_uint32_t codec;
 
-    ae_float_t duration;
+    ae_time_t duration;
 
 } aeMovieResourceSound;
 
@@ -96,7 +96,7 @@ typedef struct aeMovieResourceSequence
 {
     AE_MOVIE_RESOURCE_BASE();
 
-    ae_float_t frameDurationInv;
+    ae_time_t frameDurationInv;
 
     ae_uint32_t image_count;
     const aeMovieResourceImage * const * images;

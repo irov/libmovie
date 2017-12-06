@@ -1798,14 +1798,14 @@ ae_float_t ae_get_movie_composition_data_height( const aeMovieCompositionData * 
     return _compositionData->height;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData )
+ae_time_t ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData )
 {
-    return _compositionData->duration;
+    return AE_TIME_OUTSCALE( _compositionData->duration );
 }
 //////////////////////////////////////////////////////////////////////////
-ae_float_t ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData )
+ae_time_t ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData )
 {
-    return _compositionData->frameDuration;
+    return AE_TIME_OUTSCALE( _compositionData->frameDuration );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionData * _compositionData )
@@ -1813,10 +1813,10 @@ ae_uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionD
     return _compositionData->frameCount;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_float_t * _in, ae_float_t * _out )
+void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_time_t * _in, ae_time_t * _out )
 {
-    *_in = _compositionData->loop_segment[0];
-    *_out = _compositionData->loop_segment[1];
+    *_in = AE_TIME_OUTSCALE( _compositionData->loop_segment[0] );
+    *_out = AE_TIME_OUTSCALE( _compositionData->loop_segment[1] );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _compositionData )

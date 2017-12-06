@@ -33,13 +33,7 @@
 #	include <stdint.h>
 #	include <stddef.h>
 
-#	ifdef _DEBUG
-#	ifndef AE_MOVIE_NO_DEBUG
-#	ifndef AE_MOVIE_DEBUG
-#	define AE_MOVIE_DEBUG
-#	endif
-#	endif
-#	endif
+#   include "movie/movie_config.h"
 
 typedef uint32_t ae_bool_t;
 typedef char ae_char_t;
@@ -49,6 +43,7 @@ typedef uint32_t ae_uint32_t;
 typedef int32_t ae_int32_t;
 typedef size_t ae_size_t;
 typedef float ae_float_t;
+typedef float ae_time_t;
 typedef void * ae_voidptr_t;
 typedef const void * ae_constvoidptr_t;
 typedef ae_uint8_t * ae_byteptr_t;

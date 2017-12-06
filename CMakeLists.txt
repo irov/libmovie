@@ -42,6 +42,7 @@ public
     ${PUBLIC_DIR}/movie_skeleton.h
     ${PUBLIC_DIR}/movie_type.h
     ${PUBLIC_DIR}/movie_typedef.h
+    ${PUBLIC_DIR}/movie_config.h
 )
 
 ADD_FILTER(

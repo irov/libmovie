@@ -224,13 +224,13 @@ ae_float_t ae_get_movie_composition_data_height( const aeMovieCompositionData * 
 @param [in] _compositionData Composition data.
 @return Composition duration in milliseconds.
 */
-ae_float_t ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
+ae_time_t ae_get_movie_composition_data_duration( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
 @return Single frame duration in milliseconds.
 */
-ae_float_t ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData );
+ae_time_t ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _compositionData Composition data.
@@ -244,7 +244,7 @@ ae_uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionD
 @param [out] _in Begin time.
 @param [out] _out End time.
 */
-void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_float_t * _in, ae_float_t * _out );
+void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_time_t * _in, ae_time_t * _out );
 
 /**
 @param [in] _compositionData Composition data.
