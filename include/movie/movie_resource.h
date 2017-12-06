@@ -55,8 +55,8 @@ typedef struct aeMovieResourceVideo
     ae_float_t height;
 
     ae_uint32_t alpha;
-    ae_time_t frameRate;
-    ae_time_t duration;
+    ae_time_t frameRate; //No TIMESCALE
+    ae_time_t duration; //No TIMESCALE
 
 } aeMovieResourceVideo;
 
@@ -67,7 +67,7 @@ typedef struct aeMovieResourceSound
     ae_string_t path;
     ae_uint32_t codec;
 
-    ae_time_t duration;
+    ae_time_t duration; //No TIMESCALE
 
 } aeMovieResourceSound;
 
@@ -96,7 +96,7 @@ typedef struct aeMovieResourceSequence
 {
     AE_MOVIE_RESOURCE_BASE();
 
-    ae_time_t frameDurationInv;
+    ae_time_t frameDurationInv; //No TIMESCALE
 
     ae_uint32_t image_count;
     const aeMovieResourceImage * const * images;
