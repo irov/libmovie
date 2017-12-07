@@ -362,7 +362,7 @@ static void __load_movie_data_composition_camera( aeMovieStream * _stream, aeMov
         camera->name[1] = 'o';
         camera->name[2] = 'n';
         camera->name[3] = 'e';
-        camera->name[4] = 0;
+        camera->name[4] = '\0';
         
         AE_READ( _stream, camera->zoom );
         AE_READ( _stream, camera->fov );
@@ -384,6 +384,8 @@ static void __load_movie_data_composition_camera( aeMovieStream * _stream, aeMov
         camera->immutable.quaternion_y = 0.f;
         camera->immutable.quaternion_z = 0.f;
         camera->immutable.quaternion_w = 1.f;
+
+        camera->timeline = NULL;
     }
     else
     {
