@@ -154,7 +154,7 @@ ae_bool_t ae_has_movie_composition_data( const aeMovieData * _movieData, const a
 @brief Search for composition data by the given name.
 @param [in] _movieData Data.
 @param [in] _name Composition name.
-@return Pointer to the data or NULL if not found.
+@return Pointer to the data or AE_NULL if not found.
 */
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 

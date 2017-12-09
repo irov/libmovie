@@ -393,7 +393,7 @@ void ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _p
 @param [in] _interpolate If TRUE, composition will be interpolated.
 @param [in] providers Set of callbacks which provide data used during playback.
 @param [in] _data Link to the object that will hold the data providers give.
-@return A composition or NULL if failed.
+@return A composition or AE_NULL if failed.
 */
 aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * providers, ae_voidptr_t _data );
 
@@ -577,7 +577,7 @@ ae_bool_t ae_set_movie_composition_slot( const aeMovieComposition * _composition
 @brief Search for a slot by the given name.
 @param [in] _composition Composition.
 @param [in] _slotName Slot name.
-@return Pointer to the slot or NULL if not found.
+@return Pointer to the slot or AE_NULL if not found.
 */
 ae_voidptr_t ae_get_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _slotName );
 
@@ -706,7 +706,7 @@ ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _comp
 @brief Search for a sub-composition by name.
 @param [in] _composition Composition.
 @param [in] _name Name of a sub-composition to search for.
-@return Pointer to the sub-composition or NULL if not found.
+@return Pointer to the sub-composition or AE_NULL if not found.
 */
 const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name );
 

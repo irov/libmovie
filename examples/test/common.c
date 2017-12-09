@@ -193,7 +193,7 @@ ae_voidptr_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackDat
 	EX_LOG( " Width:     %.2f\n", _callbackData->width );
 	EX_LOG( " Height:    %.2f\n", _callbackData->height );
 
-	return NULL;
+	return AE_NULL;
 }
 
 ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
@@ -204,14 +204,14 @@ ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * 
 
 	if( ae_is_movie_layer_data_track_mate( _callbackData->layer ) == AE_TRUE ) {
 		EX_LOG( " Is track matte layer.\n" );
-		return NULL;
+		return AE_NULL;
 	}
 
 	aeMovieLayerTypeEnum layerType = ae_get_movie_layer_data_type( _callbackData->layer );
 
 	EX_LOG( " Layer: '%s'", ae_get_movie_layer_data_name( _callbackData->layer ) );
 
-	if( _callbackData->track_matte_layer == NULL ) {
+	if( _callbackData->track_matte_layer == AE_NULL ) {
 		EX_LOG( " Has track matte: no\n" );
 
 		EX_LOG( " Type:" );
@@ -274,7 +274,7 @@ ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * 
 		}
 	}
 
-	return NULL;
+	return AE_NULL;
 }
 
 void ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
@@ -384,7 +384,7 @@ ae_voidptr_t ex_callback_track_matte_provider( const aeMovieTrackMatteProviderCa
     //			track_matte_data->mesh = *_callbackData->mesh;
     //			return track_matte_data;
 
-    return NULL;
+    return AE_NULL;
 }
 
 
@@ -449,7 +449,7 @@ void ex_callback_composition_state( const aeMovieCompositionStateCallbackData * 
 	// If it references a subcomposition, then we should only work with that.
 	//
 
-	if( _callbackData->subcomposition != NULL ) {
+	if( _callbackData->subcomposition != AE_NULL ) {
 		switch( _callbackData->state ) {
 		case AE_MOVIE_SUB_COMPOSITION_PLAY:
 			EX_LOG( " SUB_COMPOSITION_PLAY\n" );
@@ -615,14 +615,14 @@ void ex_render( void ) {
 	while( ae_compute_movie_mesh( ex.composition, &render_mesh_it, &render_mesh ) == AE_TRUE ) {
 		EX_LOG( "Rendering mesh %i.\n", render_mesh_it );
 
-		//if( render_mesh.camera_data != NULL )
+		//if( render_mesh.camera_data != AE_NULL )
 		//	EX_LOG( " Camera: yes\n" );
 		//else
 		//	EX_LOG( " Camera: no\n" );
 
 		EX_LOG( " Track matte: " );
 
-		if( render_mesh.track_matte_data == NULL ) {
+		if( render_mesh.track_matte_data == AE_NULL ) {
 			//
 			// layer has no track matte
 			//
@@ -741,7 +741,7 @@ void ex_render( void ) {
 
 					ae_voidptr_t track_matte_ref = render_mesh.element_data;
 
-					if( track_matte_ref == NULL )
+					if( track_matte_ref == AE_NULL )
 						break;
 					if( render_mesh.vertexCount == 0 || render_mesh.indexCount == 0 )
 						break;

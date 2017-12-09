@@ -33,7 +33,7 @@ int main( int argc, char *argv[] ) {
 
 	//
 	// Usually we should set composition provider callbacks here,
-	// but for the current example we are using NULL ones.
+	// but for the current example we are using AE_NULL ones.
 	//
 
 	//

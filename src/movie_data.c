@@ -385,7 +385,7 @@ static void __load_movie_data_composition_camera( aeMovieStream * _stream, aeMov
         camera->immutable.quaternion_z = 0.f;
         camera->immutable.quaternion_w = 1.f;
 
-        camera->timeline = NULL;
+        camera->timeline = AE_NULL;
     }
     else
     {
