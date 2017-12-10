@@ -27,7 +27,7 @@ typedef struct aeMovieRenderMesh
     /**
     @brief Renderable type.
     */
-    ae_uint32_t layer_type;
+    aeMovieLayerTypeEnum layer_type;
 
     /**
     @brief One of AE blend modes.
@@ -152,17 +152,20 @@ typedef struct aeMovieCameraProviderCallbackData
 
 typedef struct aeMovieCameraDeleterCallbackData
 {
-    /// @brief Camera name.
-    const ae_char_t * name;
-
     /// @brief Camera element data.
     ae_voidptr_t element;
+
+    /// @brief Camera name.
+    const ae_char_t * name;
 } aeMovieCameraDeleterCallbackData;
 
 typedef struct aeMovieCameraUpdateCallbackData
 {
     /// @brief Camera element data.
     ae_voidptr_t element;
+
+    /// @brief Camera name.
+    const ae_char_t * name;
 
     /// @brief Camera target.
     ae_vector3_t target;

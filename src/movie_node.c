@@ -2789,11 +2789,13 @@ static void __update_movie_camera( const aeMovieComposition * _composition, cons
     }
 
     const aeMovieCompositionData * composition_data = _composition->composition_data;
+    const aeMovieCompositionCamera * camera = composition_data->camera;
 
     ae_bool_t composition_interpolate = _composition->interpolate;
-
+    
     aeMovieCameraUpdateCallbackData callbackData;
     callbackData.element = _composition->camera_data;
+    callbackData.name = camera->name;
     
     ae_float_t frameDurationInv = composition_data->frameDurationInv;
 
