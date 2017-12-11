@@ -196,10 +196,21 @@ const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData
 ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer );
 
 /**
+@brief Get blend mode layer
 @param [in] _layer Layer.
 @return Layer blend mode.
 */
 ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer );
+
+/**
+@brief Get polygon for a socket layer
+@param [in] _layer Layer.
+@param [in] _frame frame of polygon.
+@param [out] _polygon Socket shape.
+@return TRUE if found.
+*/
+ae_bool_t ae_get_movie_layer_data_socket_polygon( const aeMovieLayerData * _layer, ae_uint32_t _frame, const ae_polygon_t ** _polygon );
+
 
 /**
 @param [in] _compositionData Composition data.

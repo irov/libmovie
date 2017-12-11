@@ -47,6 +47,17 @@ typedef struct aeMovieBezierWarp
 
 } aeMovieBezierWarp;
 //////////////////////////////////////////////////////////////////////////
+typedef enum aeMovieLayerExtensionEnum
+{
+    AE_LAYER_EXTENSION_TIMEREMAP = 1,
+    AE_LAYER_EXTENSION_MESH = 2,
+    AE_LAYER_EXTENSION_BEZIERWARP = 3,
+    AE_LAYER_EXTENSION_COLORVERTEX = 4,
+    AE_LAYER_EXTENSION_POLYGON = 5,
+    AE_LAYER_EXTENSION_SHADER = 6,
+    AE_LAYER_EXTENSION_VIEWPORT = 7,
+} aeMovieLayerExtensionEnum;
+//////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieLayerExtensions
 {
     const aeMovieLayerTimeremap * timeremap;

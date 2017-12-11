@@ -35,6 +35,7 @@
 
 #   include "movie/movie_config.h"
 
+typedef void ae_void_t;
 typedef uint32_t ae_bool_t;
 typedef char ae_char_t;
 typedef uint8_t ae_uint8_t;
@@ -121,8 +122,8 @@ typedef enum
 
 typedef enum
 {
-    AE_MOVIE_SHADER_PARAMETER_SLIDER = 3,
-    AE_MOVIE_SHADER_PARAMETER_COLOR = 5
+    AE_MOVIE_EXTENSION_SHADER_PARAMETER_SLIDER = 3,
+    AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR = 5
 } aeMovieShaderParameterTypeEnum;
 
 #	define AE_MOVIE_RESOURCE_BASE()\

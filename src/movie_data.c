@@ -291,7 +291,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
                     switch( parameter_type )
                     {
-                    case AE_MOVIE_SHADER_PARAMETER_SLIDER:
+                    case AE_MOVIE_EXTENSION_SHADER_PARAMETER_SLIDER:
                         {
                             const struct aeMovieLayerShaderParameterSlider * parameter_slider = (const struct aeMovieLayerShaderParameterSlider *)parameter;
 
@@ -299,7 +299,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
 
                             AE_DELETE( instance, parameter_slider->property_value );
                         }break;
-                    case AE_MOVIE_SHADER_PARAMETER_COLOR:
+                    case AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR:
                         {
                             const struct aeMovieLayerShaderParameterColor * parameter_color = (const struct aeMovieLayerShaderParameterColor *)parameter;
 
@@ -568,7 +568,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
         case 0:
             {
             }break;
-        case 1:
+        case AE_LAYER_EXTENSION_TIMEREMAP:
             {
                 aeMovieLayerTimeremap * layer_timeremap = AE_NEW( instance, aeMovieLayerTimeremap );
 
@@ -603,7 +603,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions->timeremap = layer_timeremap;
             }break;
-        case 2:
+        case AE_LAYER_EXTENSION_MESH:
             {
                 aeMovieLayerMesh * layer_mesh = AE_NEW( instance, aeMovieLayerMesh );
 
@@ -655,7 +655,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions->mesh = layer_mesh;
             }break;
-        case 3:
+        case AE_LAYER_EXTENSION_BEZIERWARP:
             {
                 aeMovieLayerBezierWarp * layer_bezier_warp = AE_NEW( instance, aeMovieLayerBezierWarp );
 
@@ -714,7 +714,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions->bezier_warp = layer_bezier_warp;
             }break;
-        case 4:
+        case AE_LAYER_EXTENSION_COLORVERTEX:
             {
                 aeMovieLayerColorVertex * layer_color_vertex = AE_NEW( instance, aeMovieLayerColorVertex );
 
@@ -750,7 +750,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions->color_vertex = layer_color_vertex;
             }break;
-        case 5:
+        case AE_LAYER_EXTENSION_POLYGON:
             {
                 aeMovieLayerPolygon * layer_polygon = AE_NEW( instance, aeMovieLayerPolygon );
                 layer_polygon->immutable = AE_READB( _stream );
@@ -802,8 +802,8 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
                 layer_extensions->polygon = layer_polygon;
-            }
-        case 6:
+            }break;
+        case AE_LAYER_EXTENSION_SHADER:
             {
                 aeMovieLayerShader * layer_shader = AE_NEW( instance, aeMovieLayerShader );
 
@@ -829,7 +829,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                     switch( paramater_type )
                     {
-                    case AE_MOVIE_SHADER_PARAMETER_SLIDER:
+                    case AE_MOVIE_EXTENSION_SHADER_PARAMETER_SLIDER:
                         {
                             struct aeMovieLayerShaderParameterSlider * parameter_slider = AE_NEW( _stream->instance, struct aeMovieLayerShaderParameterSlider );
 
@@ -845,7 +845,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                             *it_parameter = (struct aeMovieLayerShaderParameter *)parameter_slider;
                         }break;
-                    case AE_MOVIE_SHADER_PARAMETER_COLOR:
+                    case AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR:
                         {
                             struct aeMovieLayerShaderParameterColor * parameter_color = AE_NEW( _stream->instance, struct aeMovieLayerShaderParameterColor );
 
@@ -892,7 +892,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions->shader = layer_shader;
             }break;
-        case 7:
+        case AE_LAYER_EXTENSION_VIEWPORT:
             {
                 aeMovieLayerViewport * layer_viewport = AE_NEW( instance, aeMovieLayerViewport );
 
@@ -923,7 +923,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
                 layer_extensions->viewport = layer_viewport;
-            }
+            }break;
         default:
             {
                 return AE_MOVIE_FAILED;
@@ -1783,6 +1783,34 @@ ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _la
 ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer )
 {
     return _layer->blend_mode;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_layer_data_socket_polygon( const aeMovieLayerData * _layerData, ae_uint32_t _frame, const ae_polygon_t ** _polygon )
+{
+#ifdef AE_MOVIE_DEBUG
+    if( _layerData->type != AE_MOVIE_LAYER_TYPE_SOCKET )
+    {
+        return AE_FALSE;
+    }
+
+    if( _frame >= _layerData->frame_count )
+    {
+        return AE_FALSE;
+    }
+#endif
+
+    const aeMovieLayerPolygon * polygon = _layerData->extensions->polygon;
+
+    if( polygon->immutable == AE_TRUE )
+    {
+        *_polygon = &polygon->immutable_polygon;
+    }
+    else
+    {
+        *_polygon = polygon->polygons + _frame;
+    }
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_movie_composition_data_name( const aeMovieCompositionData * _compositionData )

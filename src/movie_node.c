@@ -868,7 +868,7 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
 
         switch( parameter_type )
         {
-        case AE_MOVIE_SHADER_PARAMETER_SLIDER:
+        case AE_MOVIE_EXTENSION_SHADER_PARAMETER_SLIDER:
             {
                 const struct aeMovieLayerShaderParameterSlider * parameter_slider = (const struct aeMovieLayerShaderParameterSlider *)parameter;
                 
@@ -887,7 +887,7 @@ static void __update_movie_composition_node_shader( const aeMovieComposition * _
 
                 (*_composition->providers.shader_property_update)(&callbackData, _composition->provider_data);
             }break;
-        case AE_MOVIE_SHADER_PARAMETER_COLOR:
+        case AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR:
             {                                                                                                                                   
                 const struct aeMovieLayerShaderParameterColor * parameter_color = (const struct aeMovieLayerShaderParameterColor *)parameter;
 
@@ -3398,18 +3398,21 @@ ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _compositi
             continue;
         }
 
-        if( layer->extensions->polygon->immutable == AE_TRUE )
-        {
-            *_polygon = &layer->extensions->polygon->immutable_polygon;
+        const aeMovieLayerPolygon * polygon = layer->extensions->polygon;
 
-            return AE_TRUE;
+        if( polygon->immutable == AE_TRUE )
+        {
+            *_polygon = &polygon->immutable_polygon;
         }
         else
         {
-            ae_uint32_t frame = __compute_movie_node_frame( node, AE_FALSE, AE_NULL );
+            ae_float_t t_frame = 0.f;
+            ae_uint32_t frame = __compute_movie_node_frame( node, AE_FALSE, &t_frame );
 
-            *_polygon = layer->extensions->polygon->polygons + frame;
+            *_polygon = polygon->polygons + frame;
         }
+
+        return AE_TRUE;
     }
 
     return AE_FALSE;
