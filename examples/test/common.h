@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-void EX_LOG( const char * _format, ... );
+ae_void_t EX_LOG( const char * _format, ... );
 
 //
 // Working structure of our application.
@@ -42,7 +42,7 @@ extern examples_t ex;
 // Platform-dependent functions.
 //
 
-int ex_get_time( void );
+int ex_get_time( ae_void_t );
 
 //
 // Callbacks for loading movie resource data (images, videos, sounds etc.)
@@ -50,7 +50,7 @@ int ex_get_time( void );
 //
 
 ae_voidptr_t ex_callback_resource_provider_empty( const aeMovieResource * _resource, ae_voidptr_t _data );
-void ex_callback_resource_deleter_empty( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud );
+ae_void_t ex_callback_resource_deleter_empty( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud );
 ae_voidptr_t ex_callback_resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data );
 
 //
@@ -59,23 +59,23 @@ ae_voidptr_t ex_callback_resource_provider( const aeMovieResource * _resource, a
 
 ae_voidptr_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data );
 ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data );
-void ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data );
-void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data );
+ae_void_t ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data );
+ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data );
 ae_voidptr_t ex_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data );
-void ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data );
-void ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data );
-void ex_callback_composition_event( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data );
-void ex_callback_composition_state( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data );
+ae_void_t ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data );
+ae_void_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data );
+ae_void_t ex_callback_composition_event( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data );
+ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data );
 
 //
 // Miscellaneous & shared functions.
 //
 
-void ex_create_instance( void );
-void ex_load_movie_data( void );
-void ex_set_composition( void );
-void ex_update( int dt );
-void ex_render( void );
+ae_void_t ex_create_instance( ae_void_t );
+ae_void_t ex_load_movie_data( ae_void_t );
+ae_void_t ex_set_composition( ae_void_t );
+ae_void_t ex_update( int dt );
+ae_void_t ex_render( ae_void_t );
 
-void ex_init( const char * license, const char * path, const char * composition );
-void ex_shutdown( void );
+ae_void_t ex_init( const char * license, const char * path, const char * composition );
+ae_void_t ex_shutdown( ae_void_t );

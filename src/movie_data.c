@@ -58,14 +58,14 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_
     return movie;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_delete_mesh_t( const aeMovieInstance * _instance, const ae_mesh_t * _mesh )
+static ae_void_t __ae_delete_mesh_t( const aeMovieInstance * _instance, const ae_mesh_t * _mesh )
 {
     AE_DELETEN( _instance, _mesh->positions );
     AE_DELETEN( _instance, _mesh->uvs );
     AE_DELETEN( _instance, _mesh->indices );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const aeMovieLayerMesh * _layerMesh, ae_uint32_t _count )
+static ae_void_t __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const aeMovieLayerMesh * _layerMesh, ae_uint32_t _count )
 {
     if( _layerMesh->immutable == AE_TRUE )
     {
@@ -86,19 +86,19 @@ static void __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const a
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_delete_property_value( const aeMovieInstance * _instance, const struct aeMoviePropertyValue * _property )
+static ae_void_t __ae_delete_property_value( const aeMovieInstance * _instance, const struct aeMoviePropertyValue * _property )
 {
     AE_DELETEN( _instance, _property->values );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_delete_property_color( const aeMovieInstance * _instance, const struct aeMoviePropertyColor * _property )
+static ae_void_t __ae_delete_property_color( const aeMovieInstance * _instance, const struct aeMoviePropertyColor * _property )
 {
     AE_DELETEN( _instance, _property->colors_r );
     AE_DELETEN( _instance, _property->colors_g );
     AE_DELETEN( _instance, _property->colors_b );
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_delete_movie_data( const aeMovieData * _movieData )
+ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 {
     const aeMovieInstance * instance = _movieData->instance;
 
@@ -349,7 +349,7 @@ void ae_delete_movie_data( const aeMovieData * _movieData )
     AE_DELETE( instance, _movieData );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __load_movie_data_composition_camera( aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
+static ae_void_t __load_movie_data_composition_camera( aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
 {
     aeMovieCompositionCamera * camera = AE_NEW( _stream->instance, aeMovieCompositionCamera );
 
@@ -447,7 +447,7 @@ static ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositio
     return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __load_movie_property_color( aeMovieStream * _stream, struct aeMoviePropertyColor * _property, const aeMovieLayerData * _layer )
+static ae_void_t __load_movie_property_color( aeMovieStream * _stream, struct aeMoviePropertyColor * _property, const aeMovieLayerData * _layer )
 {
     _property->immutable_r = AE_READB( _stream );
 
@@ -504,7 +504,7 @@ static void __load_movie_property_color( aeMovieStream * _stream, struct aeMovie
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __load_movie_property_value( aeMovieStream * _stream, struct aeMoviePropertyValue * _property, const aeMovieLayerData * _layer )
+static ae_void_t __load_movie_property_value( aeMovieStream * _stream, struct aeMoviePropertyValue * _property, const aeMovieLayerData * _layer )
 {
     _property->immutable = AE_READB( _stream );
 
@@ -1296,7 +1296,7 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
     return stream;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_delete_movie_stream( aeMovieStream * _stream )
+ae_void_t ae_delete_movie_stream( aeMovieStream * _stream )
 {
     AE_DELETE( _stream->instance, _stream );
 }
@@ -1843,7 +1843,7 @@ ae_uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionD
     return _compositionData->frameCount;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_time_t * _in, ae_time_t * _out )
+ae_void_t ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_time_t * _in, ae_time_t * _out )
 {
     *_in = AE_TIME_OUTSCALE( _compositionData->loop_segment[0] );
     *_out = AE_TIME_OUTSCALE( _compositionData->loop_segment[1] );

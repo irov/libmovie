@@ -58,7 +58,7 @@ static ae_int32_t __ae_strncmp( ae_voidptr_t _data, const ae_char_t * _src, cons
     return 0;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )
+static ae_void_t __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )
 {
     (void)_data;
     (void)_code;
@@ -66,7 +66,7 @@ static void __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, con
     //SILENT
 }
 //////////////////////////////////////////////////////////////////////////
-static void __instance_setup_bezier_warp( aeMovieInstance * _instance )
+static ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance )
 {
     ae_uint16_t i;
     for( i = 0; i != 10U; ++i )
@@ -201,7 +201,7 @@ aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie
     return instance;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_delete_movie_instance( aeMovieInstance * _instance )
+ae_void_t ae_delete_movie_instance( aeMovieInstance * _instance )
 {
     (*_instance->memory_free)(_instance->instance_data, _instance);
 }

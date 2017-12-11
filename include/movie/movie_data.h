@@ -102,7 +102,7 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_
 @brief Release data.
 @param [in] _movieData Data.
 */
-void ae_delete_movie_data( const aeMovieData * _movieData );
+ae_void_t ae_delete_movie_data( const aeMovieData * _movieData );
 
 /**
 @brief Create a stream to load the data from the given data pointer.
@@ -127,7 +127,7 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
 @brief Release stream.
 @param [in] _stream Stream.
 */
-void ae_delete_movie_stream( aeMovieStream * _stream );
+ae_void_t ae_delete_movie_stream( aeMovieStream * _stream );
 
 /**
 @brief Fills movie data structure and loads resources through provider.
@@ -255,7 +255,7 @@ ae_uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionD
 @param [out] _in Begin time.
 @param [out] _out End time.
 */
-void ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_time_t * _in, ae_time_t * _out );
+ae_void_t ae_get_movie_composition_data_loop_segment( const aeMovieCompositionData * _compositionData, ae_time_t * _in, ae_time_t * _out );
 
 /**
 @param [in] _compositionData Composition data.

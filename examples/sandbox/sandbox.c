@@ -22,21 +22,21 @@ static ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, a
 	return malloc( total );
 }
 //////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
+static ae_void_t stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
 	(void)_data;
 
 	free( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
+static ae_void_t stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
 	(void)_data;
 
 	free( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... )
+static ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... )
 {
 	(void)_data;
 	(void)_code;
@@ -58,7 +58,7 @@ static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t 
 	return s;
 }
 
-static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
+static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
 {
 	(void)_data;
 
@@ -73,7 +73,7 @@ static ae_voidptr_t __resource_provider( const aeMovieResource * _resource, ae_v
 	return AE_NULL;
 }
 
-static void __resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
+static ae_void_t __resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
 {
     (void)_type;
     (void)_data;

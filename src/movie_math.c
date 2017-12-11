@@ -88,14 +88,14 @@ ae_float_t ae_minimax_f_f( ae_float_t _v, ae_float_t _min, ae_float_t _max )
     return (_v > _min) ? ((_v < _max) ? _v : _max) : _min;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
+ae_void_t ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _b[3 * 4 + 0];
     _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _b[3 * 4 + 1];
     _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _b[3 * 4 + 2];
 }
 //////////////////////////////////////////////////////////////////////////
-static void __mul_v4_m4_r( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+static ae_void_t __mul_v4_m4_r( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0];
     _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1];
@@ -103,7 +103,7 @@ static void __mul_v4_m4_r( ae_vector4_t _out, const ae_vector4_t _a, const ae_ma
     _out[3] = _a[3] * _b[3 * 4 + 3];
 }
 //////////////////////////////////////////////////////////////////////////
-static void __mul_v4_m4_rr( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+static ae_void_t __mul_v4_m4_rr( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _a[3] * _b[3 * 4 + 0];
     _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _a[3] * _b[3 * 4 + 1];
@@ -111,7 +111,7 @@ static void __mul_v4_m4_rr( ae_vector4_t _out, const ae_vector4_t _a, const ae_m
     _out[3] = _a[3] * _b[3 * 4 + 3];
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_mul_m4_m4_r( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
+ae_void_t ae_mul_m4_m4_r( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
 {
     __mul_v4_m4_r( _out + 0, _a + 0, _b );
     __mul_v4_m4_r( _out + 4, _a + 4, _b );
@@ -119,7 +119,7 @@ void ae_mul_m4_m4_r( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_
     __mul_v4_m4_rr( _out + 12, _a + 12, _b );
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_ident_m4( ae_matrix4_t _out )
+ae_void_t ae_ident_m4( ae_matrix4_t _out )
 {
     _out[0 * 4 + 0] = 1.f;
     _out[0 * 4 + 1] = 0.f;
@@ -139,7 +139,7 @@ void ae_ident_m4( ae_matrix4_t _out )
     _out[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_copy_m4( ae_matrix4_t _out, const ae_matrix4_t _in )
+ae_void_t ae_copy_m4( ae_matrix4_t _out, const ae_matrix4_t _in )
 {
     *_out++ = *_in++;
     *_out++ = *_in++;
@@ -162,7 +162,7 @@ void ae_copy_m4( ae_matrix4_t _out, const ae_matrix4_t _in )
     *_out++ = *_in++;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
+static ae_void_t __make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quaternion )
 {
     ae_float_t x = _quaternion[0];
     ae_float_t y = _quaternion[1];
@@ -200,7 +200,7 @@ static void __make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion_t _quater
     _m[3 * 4 + 3] = 1.0f;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaternionzw_t _quaternion )
+static ae_void_t __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaternionzw_t _quaternion )
 {
     ae_float_t z = _quaternion[0];
     ae_float_t w = _quaternion[1];
@@ -227,7 +227,7 @@ static void __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaternionzw_t _qu
     _m[3 * 4 + 3] = 1.0f;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale )
+ae_void_t ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale )
 {
     _out[0 * 4 + 0] = _scale[0];
     _out[0 * 4 + 1] = 0.f;
@@ -250,7 +250,7 @@ void ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vector3_t 
     _out[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_transformation3d_m4( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion )
+ae_void_t ae_movie_make_transformation3d_m4( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion )
 {
     ae_matrix4_t mat_scale;
 
@@ -284,7 +284,7 @@ void ae_movie_make_transformation3d_m4( ae_matrix4_t _out, const ae_vector3_t _p
     _out[3 * 4 + 2] += _position[2];
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_transformation2d_m4wq( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale )
+ae_void_t ae_movie_make_transformation2d_m4wq( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale )
 {
     _out[0 * 4 + 0] = _scale[0];
     _out[0 * 4 + 1] = 0.f;
@@ -307,7 +307,7 @@ void ae_movie_make_transformation2d_m4wq( ae_matrix4_t _out, const ae_vector2_t 
     _out[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_transformation2d_m4( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion )
+ae_void_t ae_movie_make_transformation2d_m4( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion )
 {
     ae_matrix4_t mat_base;
 
@@ -345,7 +345,7 @@ ae_float_t ae_linerp_f1( ae_float_t _in1, ae_float_t _in2, ae_float_t _t )
     return _in1 * (1.f - _t) + _in2 * _t;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_t _in2, ae_float_t _t )
+ae_void_t ae_linerp_f2( ae_vector2_t _out, const ae_vector2_t _in1, const ae_vector2_t _in2, ae_float_t _t )
 {
     _out[0] = ae_linerp_f1( _in1[0], _in2[0], _t );
     _out[1] = ae_linerp_f1( _in1[1], _in2[1], _t );
@@ -381,7 +381,7 @@ static ae_float_t __inverse_sqrtf( ae_float_t _number )
     return y;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t )
+ae_void_t ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t )
 {
     ae_float_t inv_t = 1.f - _t;
 
@@ -399,7 +399,7 @@ void ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quater
     _q[3] = w * inv_length;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_linerp_qzw( ae_quaternionzw_t _q, const ae_quaternionzw_t _q1, const ae_quaternionzw_t _q2, ae_float_t _t )
+ae_void_t ae_linerp_qzw( ae_quaternionzw_t _q, const ae_quaternionzw_t _q1, const ae_quaternionzw_t _q2, ae_float_t _t )
 {
     ae_float_t inv_t = 1.f - _t;
 
@@ -430,7 +430,7 @@ ae_float_t ae_tof_c( const ae_color_t _c )
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __line_from_two_point_v2( ae_float_t * _line, ae_float_t _ax, ae_float_t _ay, ae_float_t _bx, ae_float_t _by )
+static ae_void_t __line_from_two_point_v2( ae_float_t * _line, ae_float_t _ax, ae_float_t _ay, ae_float_t _bx, ae_float_t _by )
 {
     _line[0] = _ay - _by;
     _line[1] = _bx - _ax;
@@ -444,7 +444,7 @@ static ae_float_t __line_dot( ae_float_t _a, ae_float_t _b, ae_float_t _c, ae_fl
     return dot;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __line_intersect_v2_np( ae_float_t * _out, const ae_float_t * _l1, const ae_float_t * _l2 )
+static ae_void_t __line_intersect_v2_np( ae_float_t * _out, const ae_float_t * _l1, const ae_float_t * _l2 )
 {
     ae_float_t zn = __line_dot( _l1[0], _l1[1], _l2[0], _l2[1] );
 
@@ -452,7 +452,7 @@ static void __line_intersect_v2_np( ae_float_t * _out, const ae_float_t * _l1, c
     _out[1] = -__line_dot( _l1[0], _l1[2], _l2[0], _l2[2] ) / zn;
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_multiply_tetragon_uv4_v2( ae_float_t * _out, const ae_vector2_t * _uv, const ae_float_t * _p )
+ae_void_t ae_multiply_tetragon_uv4_v2( ae_float_t * _out, const ae_vector2_t * _uv, const ae_float_t * _p )
 {
     const ae_float_t * A = _uv[0];
     const ae_float_t * B = _uv[1];

@@ -26,7 +26,7 @@ examples_t ex;
 // Playform-dependent function implementations.
 //
 
-void EX_LOG( const char * _format, ... )
+ae_void_t EX_LOG( const char * _format, ... )
 {
     va_list argList;
     va_start( argList, _format );
@@ -37,7 +37,7 @@ void EX_LOG( const char * _format, ... )
 //
 // System time in milliseconds.
 //
-int ex_get_time( void ) {
+int ex_get_time( ae_void_t ) {
 	return (int)((double)clock() / CLOCKS_PER_SEC);
 }
 
@@ -52,17 +52,17 @@ static ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, a
 	return malloc( total );
 }
 
-static void stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
+static ae_void_t stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
 	(void)_data;
 	free( (ae_voidptr_t)_ptr );
 }
 
-static void stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
+static ae_void_t stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
 	(void)_data;
 	free( (ae_voidptr_t)_ptr );
 }
 
-static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... ) {
+static ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... ) {
 	(void)_data;
 	(void)_code;
 	va_list argList;
@@ -78,7 +78,7 @@ static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t 
 	return s;
 }
 
-static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) {
+static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) {
 	(void)_data;
 	memcpy( _dst, _src, _size );
 }
@@ -97,7 +97,7 @@ ae_voidptr_t ex_callback_resource_provider_empty( const aeMovieResource * _resou
 	return AE_NULL;
 }
 
-void ex_callback_resource_deleter_empty( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud ) {
+ae_void_t ex_callback_resource_deleter_empty( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud ) {
     (void)_type;
     (void)_data;
     (void)_ud;
@@ -277,7 +277,7 @@ ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * 
 	return AE_NULL;
 }
 
-void ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
+ae_void_t ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;
 
 	EX_LOG( "Node destroyer callback.\n" );
@@ -287,7 +287,7 @@ void ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbac
 	EX_LOG( " Layer type: %i\n", type );
 }
 
-void ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
+ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;
 
 	EX_LOG( "Node update callback.\n" );
@@ -388,7 +388,7 @@ ae_voidptr_t ex_callback_track_matte_provider( const aeMovieTrackMatteProviderCa
 }
 
 
-void ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
+ae_void_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;
 
 	EX_LOG( "Track matte update callback.\n" );
@@ -420,7 +420,7 @@ void ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData *
 	}
 }
 
-void ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
+ae_void_t ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
     (void)_callbackData;
     (void)_data;
 
@@ -428,7 +428,7 @@ void ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData
 }
 
 
-void ex_callback_composition_event( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
+ae_void_t ex_callback_composition_event( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;
 
 	EX_LOG( "Composition event callback.\n" );
@@ -438,7 +438,7 @@ void ex_callback_composition_event( const aeMovieCompositionEventCallbackData * 
 	EX_LOG( " begin: %s\n", _callbackData->begin ? "TRUE" : "FALSE" );
 }
 
-void ex_callback_composition_state( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data ) {
+ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	(void)_data;
 
 	EX_LOG( "Composition state callback.\n" );
@@ -508,7 +508,7 @@ void ex_callback_composition_state( const aeMovieCompositionStateCallbackData * 
 
 //==================================================
 
-void ex_create_instance( void ) {
+ae_void_t ex_create_instance( ae_void_t ) {
 	EX_LOG( "Creating library instance.\n" );
 
 	ex.instance = ae_create_movie_instance( ex.license
@@ -524,7 +524,7 @@ void ex_create_instance( void ) {
 //
 // This loads .AEM into a data structure which your resource manager should have a list of, similar to image or sound cache.
 //
-void ex_load_movie_data( void ) {
+ae_void_t ex_load_movie_data( ae_void_t ) {
 	EX_LOG( "Opening file '%s'.\n", ex.movie_path );
 
 	FILE * f = fopen( ex.movie_path, "rb" );
@@ -563,7 +563,7 @@ void ex_load_movie_data( void ) {
 	ex.data = data;
 }
 
-void ex_set_composition( void ) {
+ae_void_t ex_set_composition( ae_void_t ) {
 	EX_LOG( "Getting data for composition '%s'.\n", ex.comp_name );
 
 	const aeMovieCompositionData * comp_data = ae_get_movie_composition_data( ex.data, ex.comp_name );
@@ -595,7 +595,7 @@ void ex_set_composition( void ) {
 //
 // The update loop.
 //
-void ex_update( int dt ) {
+ae_void_t ex_update( int dt ) {
 	EX_LOG( "\n====== Beginning of frame update =================\n\n" );
 
 	ae_update_movie_composition( ex.composition, (ae_float_t)dt );
@@ -606,7 +606,7 @@ void ex_update( int dt ) {
 //
 // The render loop.
 //
-void ex_render( void ) {
+ae_void_t ex_render( ae_void_t ) {
 	ae_uint32_t render_mesh_it = 0;
 	aeMovieRenderMesh render_mesh;
 
@@ -795,7 +795,7 @@ void ex_render( void ) {
 //
 // Called at the application start.
 //
-void ex_init( const char * license, const char * path, const char * composition ) {
+ae_void_t ex_init( const char * license, const char * path, const char * composition ) {
 	atexit( ex_shutdown );
 
 	//
@@ -816,7 +816,7 @@ void ex_init( const char * license, const char * path, const char * composition 
 //
 // Called at the application exit.
 //
-void ex_shutdown( void ) {
+ae_void_t ex_shutdown( ae_void_t ) {
 	//
 	// Wait for a keypress.
 	//

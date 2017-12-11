@@ -387,7 +387,7 @@ typedef struct aeMovieCompositionProviders
 
 } aeMovieCompositionProviders;
 
-void ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _providers );
+ae_void_t ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _providers );
 
 /**
 @brief Allocate a composition in memory.
@@ -404,7 +404,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 @brief Release a composition from memory.
 @param [in] _composition Composition.
 */
-void ae_delete_movie_composition( const aeMovieComposition * _composition );
+ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition );
 
 /**
 @brief get composition data from composition.
@@ -432,14 +432,14 @@ typedef struct aeMovieCompositionRenderInfo
 @param [in] _composition Composition.
 @return Maximum number of render meshes you will ever get during a full ae_compute_movie_mesh() cycle.
 */
-void ae_calculate_movie_composition_render_info( const aeMovieComposition * _composition, aeMovieCompositionRenderInfo * _info );
+ae_void_t ae_calculate_movie_composition_render_info( const aeMovieComposition * _composition, aeMovieCompositionRenderInfo * _info );
 
 /**
 @brief Set whether a composition is looped or not.
 @param [in] _composition Composition.
 @param [in] _loop If TRUE, playback will be looped.
 */
-void ae_set_movie_composition_loop( const aeMovieComposition * _composition, ae_bool_t _loop );
+ae_void_t ae_set_movie_composition_loop( const aeMovieComposition * _composition, ae_bool_t _loop );
 
 /**
 @param [in] _composition Composition.
@@ -466,39 +466,39 @@ ae_bool_t ae_set_movie_composition_work_area( const aeMovieComposition * _compos
 @brief Restore playback area of a composition to whole-length.
 @param [in] _composition Composition.
 */
-void ae_remove_movie_composition_work_area( const aeMovieComposition * _composition );
+ae_void_t ae_remove_movie_composition_work_area( const aeMovieComposition * _composition );
 
 /**
 @brief Start playback.
 @param [in] _composition Composition.
 @param [in] _time Starting time.
 */
-void ae_play_movie_composition( const aeMovieComposition * _composition, ae_time_t _time );
+ae_void_t ae_play_movie_composition( const aeMovieComposition * _composition, ae_time_t _time );
 
 /**
 @brief Stop playback.
 @param [in] _composition Composition.
 */
-void ae_stop_movie_composition( const aeMovieComposition * _composition );
+ae_void_t ae_stop_movie_composition( const aeMovieComposition * _composition );
 
 /**
 @brief Pause playback.
 @param [in] _composition Composition.
 */
-void ae_pause_movie_composition( const aeMovieComposition * _composition );
+ae_void_t ae_pause_movie_composition( const aeMovieComposition * _composition );
 
 /**
 @brief Resume playback.
 @param [in] _composition Composition.
 */
-void ae_resume_movie_composition( const aeMovieComposition * _composition );
+ae_void_t ae_resume_movie_composition( const aeMovieComposition * _composition );
 
 /**
 @brief Play till the end of the loop area and stop, even if playback is looped.
 @param [in] _composition Composition.
 @param [in] _skip If TRUE, skip to the end of current animation loop.
 */
-void ae_interrupt_movie_composition( const aeMovieComposition * _composition, ae_bool_t _skip );
+ae_void_t ae_interrupt_movie_composition( const aeMovieComposition * _composition, ae_bool_t _skip );
 
 /**
 @param [in] _composition Composition.
@@ -523,7 +523,7 @@ ae_bool_t ae_is_interrupt_movie_composition( const aeMovieComposition * _composi
 @param [in] _composition Composition.
 @param [in] _timing Position.
 */
-void ae_set_movie_composition_time( const aeMovieComposition * _composition, ae_time_t _timing );
+ae_void_t ae_set_movie_composition_time( const aeMovieComposition * _composition, ae_time_t _timing );
 
 
 const ae_char_t * ae_get_movie_composition_name( const aeMovieComposition * _composition );
@@ -548,14 +548,14 @@ ae_time_t ae_get_movie_composition_duration( const aeMovieComposition * _composi
 @param [out] _in Begin time.
 @param [out] _out End time.
 */
-void ae_get_movie_composition_in_out_loop( const aeMovieComposition * _composition, ae_time_t * _in, ae_time_t * _out );
+ae_void_t ae_get_movie_composition_in_out_loop( const aeMovieComposition * _composition, ae_time_t * _in, ae_time_t * _out );
 
 /**
 @brief Update composition nodes and state. Call this from your application update() loop.
 @param [in] _composition Composition.
 @param [in] _timing Time offset since the last update in milliseconds.
 */
-void ae_update_movie_composition( aeMovieComposition * _composition, ae_time_t _timing );
+ae_void_t ae_update_movie_composition( aeMovieComposition * _composition, ae_time_t _timing );
 
 // compositions
 /// @}
@@ -726,7 +726,7 @@ const ae_char_t * ae_get_movie_sub_composition_name( const aeMovieSubComposition
 @param [out] _in Begin time.
 @param [out] _out End time.
 */
-void ae_get_movie_sub_composition_in_out_loop( const aeMovieSubComposition * _subcomposition, ae_time_t * _in, ae_time_t * _out );
+ae_void_t ae_get_movie_sub_composition_in_out_loop( const aeMovieSubComposition * _subcomposition, ae_time_t * _in, ae_time_t * _out );
 
 /**
 @brief Start playback.
@@ -767,7 +767,7 @@ ae_bool_t ae_resume_movie_sub_composition( const aeMovieComposition * _compositi
 @param [in] _subcomposition Sub-composition.
 @param [in] _skip If TRUE, skip to the end of current animation loop.
 */
-void ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip );
+ae_void_t ae_interrupt_movie_sub_composition( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_bool_t _skip );
 
 /**
 @param [in] _subcomposition Sub-composition.
@@ -793,7 +793,7 @@ ae_bool_t ae_is_interrupt_movie_sub_composition( const aeMovieSubComposition * _
 @param [in] _subcomposition Sub-composition.
 @param [in] _timing Position.
 */
-void ae_set_movie_sub_composition_time( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_time_t _timing );
+ae_void_t ae_set_movie_sub_composition_time( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_time_t _timing );
 
 /**
 @brief Get current playback position of a sub-composition in milliseconds.
@@ -807,7 +807,7 @@ ae_time_t ae_get_movie_sub_composition_time( const aeMovieSubComposition * _subc
 @param [in] _subcomposition Sub-composition.
 @param [in] _loop If TRUE, playback will be looped.
 */
-void ae_set_movie_sub_composition_loop( const aeMovieSubComposition * _subcomposition, ae_bool_t _loop );
+ae_void_t ae_set_movie_sub_composition_loop( const aeMovieSubComposition * _subcomposition, ae_bool_t _loop );
 
 /**
 @param [in] _subcomposition Sub-composition.
@@ -830,7 +830,7 @@ ae_bool_t ae_set_movie_sub_composition_work_area( const aeMovieComposition * _co
 @param [in] _composition Composition.
 @param [in] _subcomposition Sub-composition.
 */
-void ae_remove_movie_sub_composition_work_area( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
+ae_void_t ae_remove_movie_sub_composition_work_area( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition );
 
 // subcompositions
 /// @}

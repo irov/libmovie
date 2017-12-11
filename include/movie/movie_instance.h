@@ -78,7 +78,7 @@ aeMovieInstance * ae_create_movie_instance(
 @brief Delete an existing instance.
 @param [in] _instance Instance.
 */
-void ae_delete_movie_instance( aeMovieInstance * _instance );
+ae_void_t ae_delete_movie_instance( aeMovieInstance * _instance );
 
 // instance
 /// @}

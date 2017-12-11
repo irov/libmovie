@@ -169,7 +169,7 @@ ae_bool_t ae_movie_skeleton_add_animation( aeMovieSkeleton * _skeleton, aeMovieC
     return AE_TRUE;
 }
 
-void ae_movie_destroy_skeleton( const aeMovieSkeleton * _skeleton )
+ae_void_t ae_movie_destroy_skeleton( const aeMovieSkeleton * _skeleton )
 {
     AE_DELETE( _skeleton->base->movie_data->instance, _skeleton );
 }

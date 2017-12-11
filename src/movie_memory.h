@@ -68,7 +68,7 @@ inline static ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _inst
     return ptr;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static void __magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+inline static ae_void_t __magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
     (void)_type;
 #	ifdef AE_MOVIE_MEMORY_INFO
@@ -78,7 +78,7 @@ inline static void __magic_memory_free( const aeMovieInstance * _instance, const
     _instance->memory_free( _instance->instance_data, _ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-inline static void __magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+inline static ae_void_t __magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
     (void)_type;
 #	ifdef AE_MOVIE_MEMORY_INFO

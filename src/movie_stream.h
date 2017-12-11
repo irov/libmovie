@@ -50,7 +50,7 @@
 #	define AE_READ_VIEWPORT(stream, ptr) (ae_magic_read_viewport(stream, ptr))
 #	define AE_READ_MESH(stream, ptr) (ae_magic_read_mesh(stream, ptr))
 //////////////////////////////////////////////////////////////////////////
-inline static void ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
+inline static ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
 {
     ae_size_t bytesRead = _stream->memory_read( _stream->read_data, _ptr, _stream->carriage, _size );
 
@@ -89,7 +89,7 @@ inline static ae_uint32_t ae_magic_read_size( aeMovieStream * _stream )
     return size;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static void ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )
+inline static ae_void_t ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )
 {
     ae_uint32_t size = AE_READZ( _stream );
 
@@ -101,7 +101,7 @@ inline static void ae_magic_read_string( aeMovieStream * _stream, ae_string_t * 
     *_str = str;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static void ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _polygon )
+inline static ae_void_t ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _polygon )
 {
     ae_uint32_t point_count = AE_READZ( _stream );
 
@@ -120,7 +120,7 @@ inline static void ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t 
     _polygon->points = (const ae_vector2_t *)points;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static void ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport )
+inline static ae_void_t ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport )
 {
     AE_READ( _stream, _viewport->begin_x );
     AE_READ( _stream, _viewport->begin_y );
@@ -128,7 +128,7 @@ inline static void ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_
     AE_READ( _stream, _viewport->end_y );
 }
 //////////////////////////////////////////////////////////////////////////
-inline static void ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh )
+inline static ae_void_t ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh )
 {
     ae_uint32_t vertex_count = AE_READZ( _stream );
 

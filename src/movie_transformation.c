@@ -153,7 +153,7 @@ static ae_float_t __get_movie_transformation_property_interpolate( ae_constvoidp
     return data;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_make_layer_transformation2d_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation2D * _transformation )
+static ae_void_t __ae_movie_make_layer_transformation2d_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation2D * _transformation )
 {
     ae_vector2_t anchor_point;
     anchor_point[0] = _transformation->immutable.anchor_point_x;
@@ -174,7 +174,7 @@ static void __ae_movie_make_layer_transformation2d_immutable( ae_matrix4_t _out,
     ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternionzw );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_make_layer_transformation3d_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation3D * _transformation )
+static ae_void_t __ae_movie_make_layer_transformation3d_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation3D * _transformation )
 {
     ae_vector3_t anchor_point;
     anchor_point[0] = _transformation->immutable.anchor_point_x;
@@ -279,7 +279,7 @@ static ae_result_t __ae_movie_load_layer_transformation3d( aeMovieStream * _stre
 //////////////////////////////////////////////////////////////////////////
 #	undef AE_MOVIE_STREAM_PROPERTY
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation_interpolate_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+static ae_void_t __make_layer_transformation_interpolate_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     (void)_index;
     (void)_t;
@@ -287,7 +287,7 @@ static void __make_layer_transformation_interpolate_immutable( ae_matrix4_t _out
     ae_copy_m4( _out, *_transformation->immutable_matrix );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation_fixed_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+static ae_void_t __make_layer_transformation_fixed_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
     (void)_index;
 
@@ -304,7 +304,7 @@ static void __make_layer_transformation_fixed_immutable( ae_matrix4_t _out, cons
 		Transformation->timeline->Name,\
 		_index + Index )
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation2d_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+static ae_void_t __make_layer_transformation2d_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
     const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)_transformation;
 
@@ -328,7 +328,7 @@ static void __make_layer_transformation2d_fixed( ae_matrix4_t _out, const aeMovi
     ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation2d_fixed_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+static ae_void_t __make_layer_transformation2d_fixed_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
     const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)_transformation;
 
@@ -348,7 +348,7 @@ static void __make_layer_transformation2d_fixed_wq( ae_matrix4_t _out, const aeM
     ae_movie_make_transformation2d_m4wq( _out, position, anchor_point, scale );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation2d_interpolate_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+static ae_void_t __make_layer_transformation2d_interpolate_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)_transformation;
 
@@ -368,7 +368,7 @@ static void __make_layer_transformation2d_interpolate_wq( ae_matrix4_t _out, con
     ae_movie_make_transformation2d_m4wq( _out, position, anchor_point, scale );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation2d_interpolate_fq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+static ae_void_t __make_layer_transformation2d_interpolate_fq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)_transformation;
 
@@ -392,7 +392,7 @@ static void __make_layer_transformation2d_interpolate_fq( ae_matrix4_t _out, con
     ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation2d_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+static ae_void_t __make_layer_transformation2d_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)_transformation;
 
@@ -423,7 +423,7 @@ static void __make_layer_transformation2d_interpolate( ae_matrix4_t _out, const 
     ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation3d_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+static ae_void_t __make_layer_transformation3d_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
     const aeMovieLayerTransformation3D * transformation3d = (const aeMovieLayerTransformation3D *)_transformation;
 
@@ -452,7 +452,7 @@ static void __make_layer_transformation3d_fixed( ae_matrix4_t _out, const aeMovi
     ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation3d_fixed_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+static ae_void_t __make_layer_transformation3d_fixed_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
     const aeMovieLayerTransformation3D * transformation3d = (const aeMovieLayerTransformation3D *)_transformation;
 
@@ -475,7 +475,7 @@ static void __make_layer_transformation3d_fixed_wq( ae_matrix4_t _out, const aeM
     ae_movie_make_transformation3d_m4wq( _out, position, anchor_point, scale );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation3d_interpolate_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+static ae_void_t __make_layer_transformation3d_interpolate_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     const aeMovieLayerTransformation3D * transformation3d = (const aeMovieLayerTransformation3D *)_transformation;
 
@@ -498,7 +498,7 @@ static void __make_layer_transformation3d_interpolate_wq( ae_matrix4_t _out, con
     ae_movie_make_transformation3d_m4wq( _out, position, anchor_point, scale );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation3d_interpolate_fq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+static ae_void_t __make_layer_transformation3d_interpolate_fq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     const aeMovieLayerTransformation3D * transformation3d = (const aeMovieLayerTransformation3D *)_transformation;
 
@@ -527,7 +527,7 @@ static void __make_layer_transformation3d_interpolate_fq( ae_matrix4_t _out, con
     ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_layer_transformation3d_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+static ae_void_t __make_layer_transformation3d_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     const aeMovieLayerTransformation3D * transformation3d = (const aeMovieLayerTransformation3D *)_transformation;
 
@@ -746,7 +746,7 @@ ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovi
     return result;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __delete_layer_transformation2d( const aeMovieInstance * _instance, const aeMovieLayerTransformation2D * _transformation )
+static ae_void_t __delete_layer_transformation2d( const aeMovieInstance * _instance, const aeMovieLayerTransformation2D * _transformation )
 {
     if( _transformation->timeline != AE_NULL )
     {
@@ -765,7 +765,7 @@ static void __delete_layer_transformation2d( const aeMovieInstance * _instance, 
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __delete_layer_transformation3d( const aeMovieInstance * _instance, const aeMovieLayerTransformation3D * _transformation )
+static ae_void_t __delete_layer_transformation3d( const aeMovieInstance * _instance, const aeMovieLayerTransformation3D * _transformation )
 {
     if( _transformation->timeline != AE_NULL )
     {
@@ -789,7 +789,7 @@ static void __delete_layer_transformation3d( const aeMovieInstance * _instance, 
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
+ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
 {
     AE_DELETEN( _instance, _transformation->timeline_opacity );
 
@@ -808,17 +808,17 @@ void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, co
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_layer_transformation_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+ae_void_t ae_movie_make_layer_transformation_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     (*_transformation->transforamtion_interpolate_matrix)(_out, _transformation, _index, _t);    
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_layer_transformation_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+ae_void_t ae_movie_make_layer_transformation_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
     (*_transformation->transforamtion_fixed_matrix)(_out, _transformation, _index);
 }
 //////////////////////////////////////////////////////////////////////////
-void ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t )
+ae_void_t ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t )
 {
     if( _interpolate == AE_TRUE )
     {
