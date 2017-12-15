@@ -675,6 +675,9 @@ Returns interval on which node is active, i.e. being played, rendered, etc.
 */
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_time_t * _in, ae_time_t * _out );
 
+
+ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable );
+
 /**
 @brief Toggle layer usage.
 @param [in] _composition Composition.

@@ -1352,7 +1352,7 @@ static ae_void_t __setup_movie_node_blend_mode( aeMovieNode * _nodes, ae_uint32_
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t __setup_movie_node_camera2( aeMovieComposition * _composition, ae_uint32_t * _iterator, const aeMovieCompositionData * _compositionData, ae_void_t * _cameraData )
+static ae_void_t __setup_movie_node_camera2( aeMovieComposition * _composition, ae_uint32_t * _iterator, const aeMovieCompositionData * _compositionData, ae_voidptr_t _cameraData )
 {
     const aeMovieLayerData *it_layer = _compositionData->layers;
     const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
@@ -2893,7 +2893,7 @@ static ae_void_t __skip_movie_composition_node( const aeMovieComposition * _comp
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t __update_movie_subcomposition( aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, ae_float_t _timing, aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition )
+static ae_bool_t __update_movie_subcomposition( aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, ae_float_t _timing, aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition )
 {
     ae_uint32_t update_revision = __get_composition_update_revision( _composition );
 
@@ -2924,24 +2924,7 @@ static ae_void_t __update_movie_subcomposition( aeMovieComposition * _compositio
                 _animation->pause = AE_FALSE;
                 _animation->interrupt = AE_FALSE;
 
-                if( _subcomposition == AE_NULL )
-                {
-                    aeMovieCompositionStateCallbackData callbackData;
-                    callbackData.state = AE_MOVIE_COMPOSITION_END;
-                    callbackData.subcomposition = AE_NULL;
-
-                    (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
-                }
-                else
-                {
-                    aeMovieCompositionStateCallbackData callbackData;
-                    callbackData.state = AE_MOVIE_SUB_COMPOSITION_END;
-                    callbackData.subcomposition = _subcomposition;
-
-                    (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
-                }
-
-                return;
+                return AE_TRUE;
             }
             else
             {
@@ -3000,6 +2983,8 @@ static ae_void_t __update_movie_subcomposition( aeMovieComposition * _compositio
     }
 
     __update_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, begin_time, _animation->time );    
+
+    return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_update_movie_composition( aeMovieComposition * _composition, ae_time_t _timing )
@@ -3011,9 +2996,10 @@ ae_void_t ae_update_movie_composition( aeMovieComposition * _composition, ae_tim
     aeMovieCompositionAnimation * animation = _composition->animation;
     const aeMovieCompositionData * composition_data = _composition->composition_data;
 
+    ae_bool_t composition_end = AE_FALSE;
     if( animation->play == AE_TRUE && animation->pause == AE_FALSE )
     {
-        __update_movie_subcomposition( _composition, composition_data, timescale_timing, animation, AE_NULL );
+        composition_end = __update_movie_subcomposition( _composition, composition_data, timescale_timing, animation, AE_NULL );
         __update_movie_camera( _composition, animation );
     }
 
@@ -3032,7 +3018,25 @@ ae_void_t ae_update_movie_composition( aeMovieComposition * _composition, ae_tim
             subcomposition_timing = 0.f;
         }
 
-        __update_movie_subcomposition( _composition, subcomposition->composition_data, subcomposition_timing, subcomposition_animation, subcomposition );
+        ae_bool_t subcomposition_end = __update_movie_subcomposition( _composition, subcomposition->composition_data, subcomposition_timing, subcomposition_animation, subcomposition );
+
+        if( subcomposition_end == AE_TRUE )
+        {
+            aeMovieCompositionStateCallbackData callbackData;
+            callbackData.state = AE_MOVIE_SUB_COMPOSITION_END;
+            callbackData.subcomposition = subcomposition;
+
+            (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+        }
+    }
+
+    if( composition_end == AE_TRUE )
+    {
+        aeMovieCompositionStateCallbackData callbackData;
+        callbackData.state = AE_MOVIE_COMPOSITION_END;
+        callbackData.subcomposition = AE_NULL;
+
+        (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -3555,6 +3559,33 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
     }
 
     return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable )
+{
+    const aeMovieInstance * instance = _composition->movie_data->instance;
+
+    aeMovieNode *it_node = _composition->nodes;
+    aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
+    for( ; it_node != it_node_end; ++it_node )
+    {
+        aeMovieNode * node = it_node;
+
+        const aeMovieLayerData * layer = node->layer;
+
+        if( _type != AE_MOVIE_LAYER_TYPE_ANY
+            && layer->type != _type )
+        {
+            continue;
+        }
+
+        if( AE_STRNCMP( instance, layer->name, _layerName, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+        {
+            continue;
+        }
+
+        node->enable = _enable;
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable )
