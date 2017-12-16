@@ -40,17 +40,13 @@ static ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovieStre
     ae_uint32_t zp_data_size;
     AE_READ( _stream, zp_data_size );
 
-#	ifndef _DEBUG
-    if( zp_data_size % 4 != 0 )
-    {
-        return AE_NULL;
-    }
-#	endif
-
     ae_uint32_t hashmask_iterator;
     AE_READ( _stream, hashmask_iterator );
 
     ae_voidptr_t timeline = AE_NEWV( _stream->instance, _doc, zp_data_size );
+
+    AE_MOVIE_PANIC_MEMORY( timeline, AE_NULL );
+
     AE_READV( _stream, timeline, (ae_size_t)zp_data_size );
 
     const ae_uint32_t * hashmask = _stream->instance->hashmask;
@@ -210,6 +206,7 @@ static ae_void_t __ae_movie_make_layer_transformation3d_immutable( ae_matrix4_t 
 	{\
 		_transformation->immutable.Name = 0.f;\
 		_transformation->timeline->Name = __load_movie_layer_transformation_timeline(_stream, #Name);\
+        AE_RESULT_PANIC_MEMORY(_transformation->timeline->Name);\
 	}
 //////////////////////////////////////////////////////////////////////////
 static ae_result_t __ae_movie_load_layer_transformation2d( aeMovieStream * _stream, ae_uint32_t _mask, aeMovieLayerTransformation2D * _transformation )
@@ -226,9 +223,11 @@ static ae_result_t __ae_movie_load_layer_transformation2d( aeMovieStream * _stre
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
 
-    if( (_transformation->immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_ALL__) == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+    if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
     {
         ae_matrix4_t * immutable_matrix = AE_NEW( _stream->instance, ae_matrix4_t );
+        
+        AE_MOVIE_PANIC_MEMORY( immutable_matrix, AE_MOVIE_INVALID_MEMORY );
 
         __ae_movie_make_layer_transformation2d_immutable( *immutable_matrix, _transformation );
 
@@ -261,9 +260,11 @@ static ae_result_t __ae_movie_load_layer_transformation3d( aeMovieStream * _stre
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
 
-    if( (_transformation->immutable_property_mask & __AE_MOVIE_IMMUTABLE_THREE_D_ALL__) == __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
+    if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
     {
         ae_matrix4_t * immutable_matrix = AE_NEW( _stream->instance, ae_matrix4_t );
+
+        AE_MOVIE_PANIC_MEMORY( immutable_matrix, AE_MOVIE_INVALID_MEMORY );
 
         __ae_movie_make_layer_transformation3d_immutable( *immutable_matrix, _transformation );
 
@@ -589,23 +590,25 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
         aeMovieLayerTransformation2DTimeline * timeline = AE_NULL;
 
-        if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_ALL__) != __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) != AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
         {
             timeline = AE_NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
+
+            AE_RESULT_PANIC_MEMORY( timeline );
         }
         
         transformation2d->timeline = timeline;
 
-        ae_result_t result = __ae_movie_load_layer_transformation2d( _stream, immutable_property_mask, transformation2d );
+        AE_RESULT( __ae_movie_load_layer_transformation2d, (_stream, immutable_property_mask, transformation2d) );
 
-        if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_ALL__) == __AE_MOVIE_IMMUTABLE_TWO_D_ALL__ )
+        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
         {
             transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_immutable;
             transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_immutable;
         }
         else
         {            
-            if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_TWO_D_QUATERNION__) == __AE_MOVIE_IMMUTABLE_TWO_D_QUATERNION__ )
+            if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION )
             {
                 ae_uint32_t _index = 0U;
 
@@ -632,8 +635,6 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
                 transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed;
             }
         }
-
-        return result;
     }
     else
     {
@@ -641,23 +642,25 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
         aeMovieLayerTransformation3DTimeline * timeline = AE_NULL;
 
-        if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_THREE_D_ALL__) != __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
+        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) != AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
         {
             timeline = AE_NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
+
+            AE_RESULT_PANIC_MEMORY( timeline );
         }
 
         transformation3d->timeline = timeline;
 
-        ae_result_t result = __ae_movie_load_layer_transformation3d( _stream, immutable_property_mask, transformation3d );
+        AE_RESULT( __ae_movie_load_layer_transformation3d, (_stream, immutable_property_mask, transformation3d) );
 
-        if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_THREE_D_ALL__) == __AE_MOVIE_IMMUTABLE_THREE_D_ALL__ )
+        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
         {
             transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_immutable;
             transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_immutable;
         }
         else
         {
-            if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_THREE_D_QUATERNION__) == __AE_MOVIE_IMMUTABLE_THREE_D_QUATERNION__ )
+            if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_QUATERNION )
             {
                 ae_uint32_t _index = 0U;
 
@@ -690,9 +693,9 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
                 transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed;
             }
         }
-
-        return result;
     }
+
+    return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
 #	define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
@@ -734,16 +737,18 @@ ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovi
 
     aeMovieCompositionCameraTimeline * timeline = AE_NULL;
 
-    if( (immutable_property_mask & __AE_MOVIE_IMMUTABLE_CAMERA_ALL__) != __AE_MOVIE_IMMUTABLE_CAMERA_ALL__ )
+    if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_CAMERA_ALL) != AE_MOVIE_IMMUTABLE_SUPER_CAMERA_ALL )
     {
         timeline = AE_NEW( _stream->instance, aeMovieCompositionCameraTimeline );
+
+        AE_RESULT_PANIC_MEMORY( timeline );
     }
 
     _camera->timeline = timeline;
 
-    ae_result_t result = __load_camera_transformation_property( _stream, immutable_property_mask, _camera );
+    AE_RESULT( __load_camera_transformation_property, (_stream, immutable_property_mask, _camera) );
 
-    return result;
+    return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_void_t __delete_layer_transformation2d( const aeMovieInstance * _instance, const aeMovieLayerTransformation2D * _transformation )

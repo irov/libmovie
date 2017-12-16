@@ -61,7 +61,6 @@ typedef enum aeMovieLayerParamEnum
 {
     AE_MOVIE_LAYER_PARAM_LOOP = 0x00000008,
     AE_MOVIE_LAYER_PARAM_SWITCH = 0x00000010,
-    __AE_MOVIE_LAYER_PARAM_END__
 } aeMovieLayerParamEnum;
 
 typedef enum aeMovieCompositionFlag
@@ -71,7 +70,6 @@ typedef enum aeMovieCompositionFlag
     AE_MOVIE_COMPOSITION_OFFSET_POINT = 0x00000004,
     AE_MOVIE_COMPOSITION_BOUNDS = 0x00000008,
     AE_MOVIE_COMPOSITION_CAMERA = 0x00000010,
-    __AE_MOVIE_COMPOSITION_FLAGS__
 } aeMovieCompositionFlag;
 
 // data_types

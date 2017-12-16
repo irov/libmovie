@@ -443,4 +443,8 @@ struct aeMovieLayerPolygon
 
 };
 //////////////////////////////////////////////////////////////////////////
+#define AE_RESULT( Function, Args ) { ae_result_t result = (Function) Args; if( result != AE_MOVIE_SUCCESSFUL ) {return result;}}
+#define AE_SUCCESSFUL( Function, Args ) { ae_bool_t successful = (Function) Args; if( successful == AE_FALSE ) {return AE_FALSE;}}
+#define AE_RESULT_PANIC_MEMORY( Memory ) AE_MOVIE_PANIC_MEMORY( Memory, AE_MOVIE_INVALID_MEMORY )
+//////////////////////////////////////////////////////////////////////////
 #	endif

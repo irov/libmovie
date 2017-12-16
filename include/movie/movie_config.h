@@ -38,6 +38,17 @@
 #	endif
 #	endif
 
+#   ifdef _DEBUG
+#	ifndef AE_MOVIE_DONT_PANIC
+#	define AE_MOVIE_PANIC
+#	define AE_MOVIE_PANIC_MEMORY(Memory, Result) {if(Memory == AE_NULL) return Result;}
+#	endif
+#	endif
+
+#   ifndef AE_MOVIE_PANIC
+#   define AE_MOVIE_PANIC_MEMORY(Memory, Result)
+#   endif
+
 #   ifndef AE_TIME_DEFINE
 #   define AE_TIME_SECOND
 #   endif

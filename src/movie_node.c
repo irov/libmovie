@@ -43,7 +43,6 @@ typedef enum
     AE_MOVIE_NODE_ANIMATE_BEGIN,
     AE_MOVIE_NODE_ANIMATE_PROCESS,
     AE_MOVIE_NODE_ANIMATE_END,
-    __AE_MOVIE_NODE_ANIMATE_STATES__
 } aeMovieNodeAnimationStateEnum;
 //////////////////////////////////////////////////////////////////////////
 static ae_uint32_t __get_composition_update_revision( const aeMovieComposition * _composition )
@@ -1118,6 +1117,8 @@ static ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _compositio
 
                 aeMovieCompositionAnimation * animation = AE_NEW( _composition->movie_data->instance, aeMovieCompositionAnimation );
 
+                AE_MOVIE_PANIC_MEMORY( animation, AE_FALSE );
+
                 animation->play = AE_FALSE;
                 animation->pause = AE_FALSE;
                 animation->interrupt = AE_FALSE;
@@ -1155,6 +1156,8 @@ static ae_bool_t __setup_movie_subcomposition( aeMovieComposition * _composition
     ae_uint32_t subcomposition_count = __get_movie_subcomposition_count( _composition );
 
     aeMovieSubComposition * subcompositions = AE_NEWN( _composition->movie_data->instance, aeMovieSubComposition, subcomposition_count );
+
+    AE_MOVIE_PANIC_MEMORY( subcompositions, AE_FALSE );
 
     ae_uint32_t node_iterator = 0;
     ae_uint32_t subcomposition_iterator = 0;
@@ -1715,10 +1718,14 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 {
     aeMovieComposition * composition = AE_NEW( _movieData->instance, aeMovieComposition );
 
+    AE_MOVIE_PANIC_MEMORY( composition, AE_NULL );
+
     composition->movie_data = _movieData;
     composition->composition_data = _compositionData;
 
     aeMovieCompositionAnimation * animation = AE_NEW( _movieData->instance, aeMovieCompositionAnimation );
+
+    AE_MOVIE_PANIC_MEMORY( animation, AE_NULL );
 
     animation->play = AE_FALSE;
     animation->pause = AE_FALSE;
@@ -1732,16 +1739,26 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
     animation->work_area_end = _compositionData->duration;
 
     composition->animation = animation;
+    
+    ae_uint32_t * update_revision = AE_NEW( _movieData->instance, ae_uint32_t );
 
-    composition->update_revision = AE_NEW( _movieData->instance, ae_uint32_t );
-    *composition->update_revision = 0;
+    AE_MOVIE_PANIC_MEMORY( update_revision, AE_NULL );
+
+    *update_revision = 0;
+
+    composition->update_revision = update_revision;
 
     composition->interpolate = _interpolate;
 
     ae_uint32_t node_count = __get_movie_composition_data_node_count( _compositionData );
 
     composition->node_count = node_count;
-    composition->nodes = AE_NEWN( _movieData->instance, aeMovieNode, node_count );
+    
+    aeMovieNode * nodes = AE_NEWN( _movieData->instance, aeMovieNode, node_count );
+
+    AE_MOVIE_PANIC_MEMORY( nodes, AE_NULL );
+
+    composition->nodes = nodes;
 
     composition->providers = *providers;
     composition->provider_data = _data;

@@ -542,7 +542,7 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
 	aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
 
-	if( ae_load_movie_data( data, stream ) == AE_MOVIE_FAILED ) {
+    if( ae_load_movie_data( data, stream ) != AE_MOVIE_SUCCESSFUL ) {
 		EX_LOG( "...failed.\n" );
 
 		ae_delete_movie_data( data );

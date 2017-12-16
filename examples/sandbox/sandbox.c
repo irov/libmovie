@@ -102,7 +102,7 @@ int main( int argc, char *argv[] )
 	//stream.memory_copy = &memory_copy;
 	//stream.data = f;
 
-	if( ae_load_movie_data( movieData, stream ) == AE_MOVIE_FAILED )
+	if( ae_load_movie_data( movieData, stream ) != AE_MOVIE_SUCCESSFUL )
 	{
 		return 0;
 	}

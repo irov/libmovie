@@ -54,7 +54,7 @@ typedef enum
     AE_ERROR_UNSUPPORT,
     AE_ERROR_ERROR,
     AE_ERROR_INTERNAL,
-    AE_ERROR_CRITICAL
+    AE_ERROR_CRITICAL,
 } aeMovieErrorCode;
 
 typedef void( *ae_movie_logger_t )(ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ...);

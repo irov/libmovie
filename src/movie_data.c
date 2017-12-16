@@ -41,6 +41,8 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_
 {
     aeMovieData * movie = AE_NEW( _instance, aeMovieData );
 
+    AE_MOVIE_PANIC_MEMORY( movie, AE_NULL );
+
     movie->instance = _instance;
 
     movie->name = "";
@@ -349,20 +351,27 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
     AE_DELETE( instance, _movieData );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t __load_movie_data_composition_camera( aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
+static ae_result_t __load_movie_data_composition_camera( aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
 {
     aeMovieCompositionCamera * camera = AE_NEW( _stream->instance, aeMovieCompositionCamera );
+
+    AE_RESULT_PANIC_MEMORY( camera );
 
     ae_bool_t export_camera = AE_READB( _stream );
 
     if( export_camera == AE_FALSE )
     {
-        camera->name = AE_NEWN( _stream->instance, ae_char_t, 5 );
-        camera->name[0] = 'N';
-        camera->name[1] = 'o';
-        camera->name[2] = 'n';
-        camera->name[3] = 'e';
-        camera->name[4] = '\0';
+        ae_char_t * camera_name = AE_NEWN( _stream->instance, ae_char_t, 5 );
+
+        AE_RESULT_PANIC_MEMORY( camera_name );
+
+        camera_name[0] = 'N';
+        camera_name[1] = 'o';
+        camera_name[2] = 'n';
+        camera_name[3] = 'e';
+        camera_name[4] = '\0';
+
+        camera->name = camera_name;
         
         AE_READ( _stream, camera->zoom );
         AE_READ( _stream, camera->fov );
@@ -370,7 +379,7 @@ static ae_void_t __load_movie_data_composition_camera( aeMovieStream * _stream, 
         ae_float_t width = _compositionData->width;
         ae_float_t height = _compositionData->height;
 
-        camera->immutable_property_mask = __AE_MOVIE_IMMUTABLE_CAMERA_ALL__;
+        camera->immutable_property_mask = AE_MOVIE_IMMUTABLE_SUPER_CAMERA_ALL;
 
         camera->immutable.position_x = width * 0.5f;
         camera->immutable.position_y = height * 0.5f;
@@ -394,10 +403,12 @@ static ae_void_t __load_movie_data_composition_camera( aeMovieStream * _stream, 
         AE_READ( _stream, camera->zoom );
         AE_READ( _stream, camera->fov );
 
-        ae_movie_load_camera_transformation( _stream, camera );
+        AE_RESULT( ae_movie_load_camera_transformation, (_stream, camera) );
     }
 
     _compositionData->camera = camera;
+
+    return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_uint32_t __find_movie_data_composition_layer_position_by_index( const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layers, ae_uint32_t _index )
@@ -429,12 +440,12 @@ static ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositio
 
         if( layer_position == (ae_uint32_t)-1 )
         {
-            return AE_MOVIE_FAILED;
+            return AE_MOVIE_INVALID_DATA;
         }
 
         if( layer_position + 1 >= _compositionData->layer_count )
         {
-            return AE_MOVIE_FAILED;
+            return AE_MOVIE_INVALID_DATA;
         }
 
         _layer->track_matte_layer = _compositionData->layers + layer_position + 1;
@@ -447,7 +458,7 @@ static ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositio
     return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t __load_movie_property_color( aeMovieStream * _stream, struct aeMoviePropertyColor * _property, const aeMovieLayerData * _layer )
+static ae_result_t __load_movie_property_color( aeMovieStream * _stream, struct aeMoviePropertyColor * _property, const aeMovieLayerData * _layer )
 {
     _property->immutable_r = AE_READB( _stream );
 
@@ -462,6 +473,9 @@ static ae_void_t __load_movie_property_color( aeMovieStream * _stream, struct ae
         _property->immutable_color_r = 1.f;
 
         ae_color_t * colors_r = AE_NEWN( _stream->instance, ae_color_t, _layer->frame_count );
+
+        AE_RESULT_PANIC_MEMORY( colors_r );
+
         AE_READN( _stream, colors_r, _layer->frame_count );
 
         _property->colors_r = colors_r;
@@ -480,6 +494,9 @@ static ae_void_t __load_movie_property_color( aeMovieStream * _stream, struct ae
         _property->immutable_color_g = 1.f;
 
         ae_color_t * colors_g = AE_NEWN( _stream->instance, ae_color_t, _layer->frame_count );
+        
+        AE_RESULT_PANIC_MEMORY( colors_g );
+
         AE_READN( _stream, colors_g, _layer->frame_count );
 
         _property->colors_g = colors_g;
@@ -498,13 +515,18 @@ static ae_void_t __load_movie_property_color( aeMovieStream * _stream, struct ae
         _property->immutable_color_b = 1.f;
 
         ae_color_t * colors_b = AE_NEWN( _stream->instance, ae_color_t, _layer->frame_count );
+
+        AE_RESULT_PANIC_MEMORY( colors_b );
+
         AE_READN( _stream, colors_b, _layer->frame_count );
 
         _property->colors_b = colors_b;
     }
+
+    return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t __load_movie_property_value( aeMovieStream * _stream, struct aeMoviePropertyValue * _property, const aeMovieLayerData * _layer )
+static ae_result_t __load_movie_property_value( aeMovieStream * _stream, struct aeMoviePropertyValue * _property, const aeMovieLayerData * _layer )
 {
     _property->immutable = AE_READB( _stream );
 
@@ -519,10 +541,15 @@ static ae_void_t __load_movie_property_value( aeMovieStream * _stream, struct ae
         _property->immutable_value = 0.f;
 
         ae_float_t * values = AE_NEWN( _stream->instance, ae_float_t, _layer->frame_count );
+        
+        AE_RESULT_PANIC_MEMORY( values );
+
         AE_READN( _stream, values, _layer->frame_count );
 
         _property->values = values;
     }
+
+    return AE_MOVIE_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
 static aeMovieLayerExtensions * __request_extensions( const aeMovieInstance * _instance, aeMovieLayerExtensions * _extensions )
@@ -533,6 +560,8 @@ static aeMovieLayerExtensions * __request_extensions( const aeMovieInstance * _i
     }
      
     aeMovieLayerExtensions * extensions = AE_NEW( _instance, aeMovieLayerExtensions );
+
+    AE_MOVIE_PANIC_MEMORY( extensions, AE_NULL );
 
     __clear_layer_extensions( extensions );
 
@@ -572,7 +601,12 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
             {
                 aeMovieLayerTimeremap * layer_timeremap = AE_NEW( instance, aeMovieLayerTimeremap );
 
+                AE_RESULT_PANIC_MEMORY( layer_timeremap );
+
                 ae_float_t * times = AE_NEWN( instance, ae_float_t, _layer->frame_count );
+
+                AE_RESULT_PANIC_MEMORY( times );
+
                 AE_READN( _stream, times, _layer->frame_count );
 
                 layer_timeremap->times = times;
@@ -589,7 +623,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }break;
                     }
 
@@ -601,11 +635,15 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
                 layer_extensions->timeremap = layer_timeremap;
             }break;
         case AE_LAYER_EXTENSION_MESH:
             {
                 aeMovieLayerMesh * layer_mesh = AE_NEW( instance, aeMovieLayerMesh );
+
+                AE_RESULT_PANIC_MEMORY( layer_mesh );
 
                 layer_mesh->immutable = AE_READB( _stream );
 
@@ -618,6 +656,8 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                 else
                 {
                     ae_mesh_t * meshes = AE_NEWN( instance, ae_mesh_t, _layer->frame_count );
+
+                    AE_RESULT_PANIC_MEMORY( meshes );
 
                     ae_mesh_t * it_mesh = meshes;
                     ae_mesh_t * it_mesh_end = meshes + _layer->frame_count;
@@ -641,7 +681,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }break;
                     }
 
@@ -653,11 +693,15 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
                 layer_extensions->mesh = layer_mesh;
             }break;
         case AE_LAYER_EXTENSION_BEZIERWARP:
             {
                 aeMovieLayerBezierWarp * layer_bezier_warp = AE_NEW( instance, aeMovieLayerBezierWarp );
+
+                AE_RESULT_PANIC_MEMORY( layer_bezier_warp );
 
                 layer_bezier_warp->immutable = AE_READB( _stream );
 
@@ -671,6 +715,8 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                 else
                 {
                     aeMovieBezierWarp * bezier_warps = AE_NEWN( instance, aeMovieBezierWarp, _layer->frame_count );
+
+                    AE_RESULT_PANIC_MEMORY( bezier_warps );
 
                     aeMovieBezierWarp * it_bezier_warp = bezier_warps;
                     aeMovieBezierWarp * it_bezier_warp_end = bezier_warps + _layer->frame_count;
@@ -700,7 +746,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }break;
                     }
 
@@ -712,15 +758,21 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
                 layer_extensions->bezier_warp = layer_bezier_warp;
             }break;
         case AE_LAYER_EXTENSION_COLORVERTEX:
             {
                 aeMovieLayerColorVertex * layer_color_vertex = AE_NEW( instance, aeMovieLayerColorVertex );
 
+                AE_RESULT_PANIC_MEMORY( layer_color_vertex );
+
                 struct aeMoviePropertyColor * property_color = AE_NEW( instance, struct aeMoviePropertyColor );
 
-                __load_movie_property_color( _stream, property_color, _layer );
+                AE_RESULT_PANIC_MEMORY( property_color );
+
+                AE_RESULT( __load_movie_property_color, (_stream, property_color, _layer) );
 
                 layer_color_vertex->property_color = property_color;
 
@@ -736,7 +788,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }break;
                     }
 
@@ -748,11 +800,16 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
                 layer_extensions->color_vertex = layer_color_vertex;
             }break;
         case AE_LAYER_EXTENSION_POLYGON:
             {
                 aeMovieLayerPolygon * layer_polygon = AE_NEW( instance, aeMovieLayerPolygon );
+
+                AE_RESULT_PANIC_MEMORY( layer_polygon );
+
                 layer_polygon->immutable = AE_READB( _stream );
 
                 if( layer_polygon->immutable == AE_TRUE )
@@ -766,6 +823,8 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                     ae_uint32_t polygon_count = AE_READZ( _stream );
 
                     ae_polygon_t * polygons = AE_NEWN( instance, ae_polygon_t, polygon_count );
+
+                    AE_RESULT_PANIC_MEMORY( polygons );
 
                     ae_polygon_t * it_polygon = polygons;
                     ae_polygon_t * it_polygon_end = polygons + polygon_count;
@@ -789,7 +848,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }break;
                     }
 
@@ -801,11 +860,15 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                 
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
                 layer_extensions->polygon = layer_polygon;
             }break;
         case AE_LAYER_EXTENSION_SHADER:
             {
                 aeMovieLayerShader * layer_shader = AE_NEW( instance, aeMovieLayerShader );
+
+                AE_RESULT_PANIC_MEMORY( layer_shader );
 
                 AE_READ_STRING( _stream, layer_shader->name );
                 AE_READ( _stream, layer_shader->version );
@@ -816,6 +879,8 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                 layer_shader->parameter_count = AE_READZ( _stream );
                 
                 const struct aeMovieLayerShaderParameter ** parameters = AE_NEWN( _stream->instance, const struct aeMovieLayerShaderParameter *, layer_shader->parameter_count );
+
+                AE_RESULT_PANIC_MEMORY( parameters );
 
                 const struct aeMovieLayerShaderParameter ** it_parameter = parameters;
                 const struct aeMovieLayerShaderParameter ** it_parameter_end = parameters + layer_shader->parameter_count;
@@ -833,13 +898,17 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         {
                             struct aeMovieLayerShaderParameterSlider * parameter_slider = AE_NEW( _stream->instance, struct aeMovieLayerShaderParameterSlider );
 
+                            AE_RESULT_PANIC_MEMORY( parameter_slider );
+
                             parameter_slider->type = paramater_type;
                             AE_READ_STRING( _stream, parameter_slider->name );                                                        
                             AE_READ_STRING( _stream, parameter_slider->uniform );
 
                             struct aeMoviePropertyValue * property_value = AE_NEW( _stream->instance, struct aeMoviePropertyValue );
 
-                            __load_movie_property_value( _stream, property_value, _layer );
+                            AE_RESULT_PANIC_MEMORY( property_value );
+
+                            AE_RESULT( __load_movie_property_value, (_stream, property_value, _layer) );
 
                             parameter_slider->property_value = property_value;
 
@@ -849,13 +918,17 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         {
                             struct aeMovieLayerShaderParameterColor * parameter_color = AE_NEW( _stream->instance, struct aeMovieLayerShaderParameterColor );
 
+                            AE_RESULT_PANIC_MEMORY( parameter_color );
+
                             parameter_color->type = paramater_type;
                             AE_READ_STRING( _stream, parameter_color->name );
                             AE_READ_STRING( _stream, parameter_color->uniform );
 
                             struct aeMoviePropertyColor * property_color = AE_NEW( _stream->instance, struct aeMoviePropertyColor );
 
-                            __load_movie_property_color( _stream, property_color, _layer );
+                            AE_RESULT_PANIC_MEMORY( property_color );
+
+                            AE_RESULT( __load_movie_property_color, (_stream, property_color, _layer) );
 
                             parameter_color->property_color = property_color;
 
@@ -878,7 +951,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }break;
                     }
 
@@ -890,11 +963,15 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
                 layer_extensions->shader = layer_shader;
             }break;
         case AE_LAYER_EXTENSION_VIEWPORT:
             {
                 aeMovieLayerViewport * layer_viewport = AE_NEW( instance, aeMovieLayerViewport );
+
+                AE_RESULT_PANIC_MEMORY( layer_viewport );
 
                 ae_magic_read_viewport( _stream, &layer_viewport->viewport );
 
@@ -910,7 +987,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }break;
                     }
 
@@ -922,11 +999,13 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
 
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
                 layer_extensions->viewport = layer_viewport;
             }break;
         default:
             {
-                return AE_MOVIE_FAILED;
+                return AE_MOVIE_INVALID_STREAM;
             }break;
         }
 
@@ -1007,16 +1086,17 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
     if( _layer->threeD == AE_FALSE )
     {
         transformation = (aeMovieLayerTransformation *)AE_NEW( instance, aeMovieLayerTransformation2D );
+
+        AE_RESULT_PANIC_MEMORY( transformation );
     }
     else
     {
         transformation = (aeMovieLayerTransformation *)AE_NEW( instance, aeMovieLayerTransformation3D );
+
+        AE_RESULT_PANIC_MEMORY( transformation );
     }
 
-    if( ae_movie_load_layer_transformation( _stream, transformation, _layer->threeD ) == AE_MOVIE_FAILED )
-    {
-        return AE_MOVIE_FAILED;
-    }
+    AE_RESULT( ae_movie_load_layer_transformation, (_stream, transformation, _layer->threeD) );
 
     _layer->transformation = transformation;
 
@@ -1084,7 +1164,7 @@ static ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, cons
             }break;
         default:
             {
-                return AE_MOVIE_FAILED;
+                return AE_MOVIE_INVALID_DATA;
             }break;
         }
     }
@@ -1102,10 +1182,7 @@ static ae_result_t __load_movie_data_composition_layers( const aeMovieData * _mo
 
         layer->composition_data = _compositionData;
 
-        if( __load_movie_data_layer( _movieData, _compositions, _stream, _compositionData, layer ) == AE_MOVIE_FAILED )
-        {
-            return AE_MOVIE_FAILED;
-        }
+        AE_RESULT( __load_movie_data_layer, (_movieData, _compositions, _stream, _compositionData, layer) );
     }
 
     return AE_MOVIE_SUCCESSFUL;
@@ -1119,10 +1196,7 @@ static ae_result_t __setup_movie_data_composition_layers( const aeMovieCompositi
     {
         aeMovieLayerData * layer = it_layer;
 
-        if( __setup_movie_data_layer_track_matte( _compositionData, _layers, layer ) == AE_MOVIE_FAILED )
-        {
-            return AE_MOVIE_FAILED;
-        }
+        AE_RESULT( __setup_movie_data_layer_track_matte, (_compositionData, _layers, layer) );
     }
 
     return AE_MOVIE_SUCCESSFUL;
@@ -1190,13 +1264,13 @@ static ae_result_t __load_movie_data_composition( const aeMovieData * _movieData
             }break;
         case 5:
             {
-                __load_movie_data_composition_camera( _stream, _compositionData );
+                AE_RESULT( __load_movie_data_composition_camera, ( _stream, _compositionData ) );
 
                 _compositionData->flags |= AE_MOVIE_COMPOSITION_CAMERA;
             }break;
         default:
             {
-                return AE_MOVIE_FAILED;
+                return AE_MOVIE_INVALID_STREAM;
             }break;
         };
 
@@ -1211,15 +1285,11 @@ static ae_result_t __load_movie_data_composition( const aeMovieData * _movieData
     _compositionData->layer_count = layer_count;
     aeMovieLayerData * layers = AE_NEWN( instance, aeMovieLayerData, layer_count );
 
-    if( __load_movie_data_composition_layers( _movieData, _compositions, layers, _stream, _compositionData ) == AE_MOVIE_FAILED )
-    {
-        return AE_MOVIE_FAILED;
-    }
+    AE_RESULT_PANIC_MEMORY( layers );
 
-    if( __setup_movie_data_composition_layers( _compositionData, layers ) == AE_MOVIE_FAILED )
-    {
-        return AE_MOVIE_FAILED;
-    }
+    AE_RESULT( __load_movie_data_composition_layers, (_movieData, _compositions, layers, _stream, _compositionData) );
+
+    AE_RESULT( __setup_movie_data_composition_layers, (_compositionData, layers) );   
 
     _compositionData->layers = layers;
 
@@ -1246,6 +1316,8 @@ aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_mo
 #	endif
 
     aeMovieStream * stream = AE_NEW( _instance, aeMovieStream );
+
+    AE_MOVIE_PANIC_MEMORY( stream, AE_NULL );
 
     stream->instance = _instance;
     stream->memory_read = _read;
@@ -1283,6 +1355,8 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
 #	endif
 
     aeMovieStream * stream = AE_NEW( _instance, aeMovieStream );
+
+    AE_MOVIE_PANIC_MEMORY( stream, AE_NULL );
 
     stream->instance = _instance;
     stream->memory_read = __ae_read_buffer;
@@ -1350,6 +1424,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     _movieData->resource_count = resource_count;
     const aeMovieResource ** resources = AE_NEWN( instance, const aeMovieResource *, resource_count );
 
+    AE_RESULT_PANIC_MEMORY( resources );
+
     const aeMovieResource ** it_resource = resources;
     const aeMovieResource ** it_resource_end = resources + resource_count;
     for( ; it_resource != it_resource_end; ++it_resource )
@@ -1366,6 +1442,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         case AE_MOVIE_RESOURCE_SOLID:
             {
                 aeMovieResourceSolid * resource = AE_NEW( instance, aeMovieResourceSolid );
+
+                AE_RESULT_PANIC_MEMORY( resource );
 
                 AE_READ( _stream, resource->width );
                 AE_READ( _stream, resource->height );
@@ -1385,7 +1463,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }
                     }
 
@@ -1403,6 +1481,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         case AE_MOVIE_RESOURCE_VIDEO:
             {
                 aeMovieResourceVideo * resource = AE_NEW( instance, aeMovieResourceVideo );
+
+                AE_RESULT_PANIC_MEMORY( resource );
 
                 AE_READ_STRING( _stream, resource->path );
                 AE_READ( _stream, resource->codec );
@@ -1429,7 +1509,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }
                     }
 
@@ -1448,6 +1528,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
             {
                 aeMovieResourceSound * resource = AE_NEW( instance, aeMovieResourceSound );
 
+                AE_RESULT_PANIC_MEMORY( resource );
+
                 AE_READ_STRING( _stream, resource->path );
                 AE_READ( _stream, resource->codec );
 
@@ -1465,7 +1547,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }
                     }
 
@@ -1483,6 +1565,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         case AE_MOVIE_RESOURCE_IMAGE:
             {
                 aeMovieResourceImage * resource = AE_NEW( instance, aeMovieResourceImage );
+
+                AE_RESULT_PANIC_MEMORY( resource );
 
                 AE_READ_STRING( _stream, resource->path );
                 AE_READ( _stream, resource->codec );
@@ -1519,6 +1603,9 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     case 2:
                         {
                             ae_vector2_t * uv = AE_NEWN( instance, ae_vector2_t, 4 );
+
+                            AE_RESULT_PANIC_MEMORY( uv );
+
                             AE_READ( _stream, uv[0][0] );
                             AE_READ( _stream, uv[0][1] );
                             AE_READ( _stream, uv[1][0] );
@@ -1533,13 +1620,16 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     case 3:
                         {
                             ae_mesh_t * mesh = AE_NEW( instance, ae_mesh_t );
+
+                            AE_RESULT_PANIC_MEMORY( mesh );
+
                             AE_READ_MESH( _stream, mesh );
 
                             resource->mesh = mesh;
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }
                     }
 
@@ -1558,12 +1648,16 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
             {
                 aeMovieResourceSequence * resource = AE_NEW( instance, aeMovieResourceSequence );
 
+                AE_RESULT_PANIC_MEMORY( resource );
+
                 AE_READ( _stream, resource->frameDurationInv );
 
                 ae_uint32_t image_count = AE_READZ( _stream );
 
                 resource->image_count = image_count;
                 const aeMovieResourceImage ** images = AE_NEWN( instance, const aeMovieResourceImage *, image_count );
+
+                AE_RESULT_PANIC_MEMORY( images );
 
                 const aeMovieResourceImage ** it_image = images;
                 const aeMovieResourceImage ** it_image_end = images + image_count;
@@ -1588,7 +1682,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }
                     }
 
@@ -1607,6 +1701,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
             {
                 aeMovieResourceParticle * resource = AE_NEW( instance, aeMovieResourceParticle );
 
+                AE_RESULT_PANIC_MEMORY( resource );
+
                 AE_READ_STRING( _stream, resource->path );
                 AE_READ( _stream, resource->codec );
 
@@ -1622,7 +1718,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }
                     }
 
@@ -1641,6 +1737,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
             {
                 aeMovieResourceSlot * resource = AE_NEW( instance, aeMovieResourceSlot );
 
+                AE_RESULT_PANIC_MEMORY( resource );
+
                 AE_READ( _stream, resource->width );
                 AE_READ( _stream, resource->height );
 
@@ -1656,7 +1754,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                         }break;
                     default:
                         {
-                            return AE_MOVIE_FAILED;
+                            return AE_MOVIE_INVALID_STREAM;
                         }
                     }
 
@@ -1673,7 +1771,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
             }break;
         default:
             {
-                return AE_MOVIE_FAILED;
+                return AE_MOVIE_INVALID_STREAM;
             }break;
         }
     }
@@ -1686,14 +1784,13 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
     aeMovieCompositionData * compositions = AE_NEWN( instance, aeMovieCompositionData, composition_count );
 
+    AE_RESULT_PANIC_MEMORY( compositions );
+
     aeMovieCompositionData * it_composition = compositions;
     aeMovieCompositionData * it_composition_end = compositions + composition_count;
     for( ; it_composition != it_composition_end; ++it_composition )
     {
-        if( __load_movie_data_composition( _movieData, compositions, _stream, it_composition ) == AE_MOVIE_FAILED )
-        {
-            return AE_MOVIE_FAILED;
-        }
+        AE_RESULT( __load_movie_data_composition, (_movieData, compositions, _stream, it_composition) );
     }
 
     _movieData->compositions = compositions;

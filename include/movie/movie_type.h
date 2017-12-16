@@ -117,13 +117,13 @@ typedef enum
     AE_MOVIE_RESOURCE_IMAGE = 7,
     AE_MOVIE_RESOURCE_SEQUENCE = 8,
     AE_MOVIE_RESOURCE_PARTICLE = 9,
-    AE_MOVIE_RESOURCE_SLOT = 10
+    AE_MOVIE_RESOURCE_SLOT = 10,
 } aeMovieResourceTypeEnum;
 
 typedef enum
 {
     AE_MOVIE_EXTENSION_SHADER_PARAMETER_SLIDER = 3,
-    AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR = 5
+    AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR = 5,
 } aeMovieShaderParameterTypeEnum;
 
 #	define AE_MOVIE_RESOURCE_BASE()\
@@ -173,16 +173,18 @@ typedef enum
     AE_MOVIE_BLEND_SOFT_LIGHT,
     AE_MOVIE_BLEND_STENCIL_ALPHA,
     AE_MOVIE_BLEND_STENCIL_LUMA,
-    AE_MOVIE_BLEND_VIVID_LIGHT
+    AE_MOVIE_BLEND_VIVID_LIGHT,
 } ae_blend_mode_t;
 
 typedef enum
 {
     AE_MOVIE_SUCCESSFUL = 0,
-    AE_MOVIE_FAILED = -1,
     AE_MOVIE_INVALID_MAGIC = -2,
     AE_MOVIE_INVALID_VERSION = -3,
     AE_MOVIE_INVALID_HASH = -4,
+    AE_MOVIE_INVALID_STREAM = -5,
+    AE_MOVIE_INVALID_DATA = -6,
+    AE_MOVIE_INVALID_MEMORY = -7,
 } ae_result_t;
 
 typedef void( *ae_movie_stream_memory_info_t )(ae_voidptr_t _data, const ae_char_t * _buff, ae_size_t _size);

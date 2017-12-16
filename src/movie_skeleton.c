@@ -81,6 +81,8 @@ aeMovieSkeleton * ae_movie_create_skeleton( aeMovieComposition * _base )
 
     aeMovieSkeleton * skeleton = AE_NEW( instance, aeMovieSkeleton );
 
+    AE_MOVIE_PANIC_MEMORY( skeleton, AE_NULL );
+
     skeleton->base = _base;
 
     ae_uint32_t i = 0;
