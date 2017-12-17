@@ -45,7 +45,11 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_
 
     movie->instance = _instance;
 
-    movie->name = "";
+    movie->name = AE_NEWN( _instance, ae_char_t, 1U );
+
+    AE_MOVIE_PANIC_MEMORY( movie->name, AE_NULL );
+
+    movie->name[0] = '\0';
 
     movie->resource_provider = _provider;
     movie->resource_deleter = _deleter;
