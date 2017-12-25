@@ -70,7 +70,7 @@ typedef struct aeMovieLayerExtensions
 
 } aeMovieLayerExtensions;
 //////////////////////////////////////////////////////////////////////////
-inline static void __clear_layer_extensions( aeMovieLayerExtensions * _extensions )
+AE_INLINE void __clear_layer_extensions( aeMovieLayerExtensions * _extensions )
 {
     _extensions->timeremap = AE_NULL;
     _extensions->mesh = AE_NULL;
@@ -160,6 +160,7 @@ struct aeMovieNode
     ae_bool_t active;
     ae_bool_t ignore;
     ae_bool_t enable;
+    ae_bool_t incessantly;
 
     ae_uint32_t animate;
 
@@ -319,6 +320,7 @@ struct aeMovieLayerData
     ae_uint32_t parent_index;
 
     ae_bool_t reverse_time;
+    ae_bool_t trimmed_time;
     ae_float_t start_time;
     ae_float_t in_time;
     ae_float_t out_time;
@@ -443,8 +445,8 @@ struct aeMovieLayerPolygon
 
 };
 //////////////////////////////////////////////////////////////////////////
-#define AE_RESULT( Function, Args ) { ae_result_t result = (Function) Args; if( result != AE_MOVIE_SUCCESSFUL ) {return result;}}
+#define AE_RESULT( Function, Args ) { ae_result_t result = (Function) Args; if( result != AE_RESULT_SUCCESSFUL ) { return result;}}
 #define AE_SUCCESSFUL( Function, Args ) { ae_bool_t successful = (Function) Args; if( successful == AE_FALSE ) {return AE_FALSE;}}
-#define AE_RESULT_PANIC_MEMORY( Memory ) AE_MOVIE_PANIC_MEMORY( Memory, AE_MOVIE_INVALID_MEMORY )
+#define AE_RESULT_PANIC_MEMORY( Memory ) AE_MOVIE_PANIC_MEMORY( Memory, AE_RESULT_INVALID_MEMORY )
 //////////////////////////////////////////////////////////////////////////
 #	endif

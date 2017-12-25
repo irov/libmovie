@@ -41,45 +41,45 @@ int ex_get_time( ae_void_t ) {
 	return (int)((double)clock() / CLOCKS_PER_SEC);
 }
 
-static ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
-	(void)_data;
+AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
+    AE_UNUSED( _data );
 	return malloc( _size );
 }
 
-static ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count ) {
-	(void)_data;
+AE_CALLBACK ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count ) {
+    AE_UNUSED( _data );
 	ae_uint32_t total = _size * _count;
 	return malloc( total );
 }
 
-static ae_void_t stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
-	(void)_data;
+AE_CALLBACK ae_void_t stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
+    AE_UNUSED( _data );
 	free( (ae_voidptr_t)_ptr );
 }
 
-static ae_void_t stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
-	(void)_data;
+AE_CALLBACK ae_void_t stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
+    AE_UNUSED( _data );
 	free( (ae_voidptr_t)_ptr );
 }
 
-static ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... ) {
-	(void)_data;
-	(void)_code;
+AE_CALLBACK ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... ) {
+    AE_UNUSED( _data );
+    AE_UNUSED( _code );
 	va_list argList;
 	va_start( argList, _format );
 	vprintf( _format, argList );
 	va_end( argList );
 }
 
-static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size ) {
-    (void)_carriage;
+AE_CALLBACK ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size ) {
+    AE_UNUSED( _carriage );
 	FILE * f = (FILE *)_data;
 	ae_size_t s = fread( _buff, 1, _size, f );
 	return s;
 }
 
-static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) {
-	(void)_data;
+AE_CALLBACK ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) {
+    AE_UNUSED( _data );
 	memcpy( _dst, _src, _size );
 }
 
@@ -89,8 +89,8 @@ static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_v
 // Empty callback.
 //
 ae_voidptr_t ex_callback_resource_provider_empty( const aeMovieResource * _resource, ae_voidptr_t _data ) {
-	(void)_resource;
-	(void)_data;
+    AE_UNUSED( _resource );
+    AE_UNUSED( _data );
 
 	EX_LOG( "Resource provider callback.\n" );
 
@@ -98,9 +98,9 @@ ae_voidptr_t ex_callback_resource_provider_empty( const aeMovieResource * _resou
 }
 
 ae_void_t ex_callback_resource_deleter_empty( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud ) {
-    (void)_type;
-    (void)_data;
-    (void)_ud;
+    AE_UNUSED( _type );
+    AE_UNUSED( _data );
+    AE_UNUSED( _ud );
 
     EX_LOG( "Resource deleter callback.\n" );
 }
@@ -115,7 +115,7 @@ ae_voidptr_t ex_callback_resource_provider( const aeMovieResource * _resource, a
 	// This would be our examples_t object if we used it here.
 	//
 
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Resource provider callback.\n" );
 
@@ -181,7 +181,7 @@ ae_voidptr_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackDat
 	// This would be our examples_t object if we used it here.
 	//
 
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Camera provider callback.\n" );
 
@@ -197,7 +197,7 @@ ae_voidptr_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackDat
 }
 
 ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Node provider callback.\n" );
 
@@ -278,7 +278,7 @@ ae_voidptr_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * 
 }
 
 ae_void_t ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Node destroyer callback.\n" );
 
@@ -288,7 +288,7 @@ ae_void_t ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _ca
 }
 
 ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Node update callback.\n" );
 	EX_LOG( " State:" );
@@ -367,8 +367,8 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
 }
 
 ae_voidptr_t ex_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
-    (void)_callbackData;
-    (void)_data;
+    AE_UNUSED( _callbackData );
+    AE_UNUSED( _data );
 
     EX_LOG( "Track matte provider callback.\n" );
 
@@ -389,7 +389,7 @@ ae_voidptr_t ex_callback_track_matte_provider( const aeMovieTrackMatteProviderCa
 
 
 ae_void_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Track matte update callback.\n" );
 
@@ -421,15 +421,15 @@ ae_void_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackD
 }
 
 ae_void_t ex_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
-    (void)_callbackData;
-    (void)_data;
+    AE_UNUSED( _callbackData );
+    AE_UNUSED( _data );
 
     EX_LOG( "Track matte deleter callback.\n" );
 }
 
 
 ae_void_t ex_callback_composition_event( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Composition event callback.\n" );
 
@@ -439,7 +439,7 @@ ae_void_t ex_callback_composition_event( const aeMovieCompositionEventCallbackDa
 }
 
 ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data ) {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	EX_LOG( "Composition state callback.\n" );
 
@@ -542,7 +542,7 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
 	aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
 
-    if( ae_load_movie_data( data, stream ) != AE_MOVIE_SUCCESSFUL ) {
+    if( ae_load_movie_data( data, stream ) != AE_RESULT_SUCCESSFUL ) {
 		EX_LOG( "...failed.\n" );
 
 		ae_delete_movie_data( data );

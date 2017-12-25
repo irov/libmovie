@@ -6,40 +6,40 @@
 #	include <memory.h>
 
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size )
+AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size )
 {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	return malloc( _size );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count )
+AE_CALLBACK ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count )
 {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	ae_uint32_t total = _size * _count;
 
 	return malloc( total );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
+AE_CALLBACK ae_void_t stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	free( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
+AE_CALLBACK ae_void_t stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	free( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... )
+AE_CALLBACK ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... )
 {
-	(void)_data;
-	(void)_code;
+    AE_UNUSED( _data );
+    AE_UNUSED( _code );
 
 	va_list argList;
 
@@ -48,9 +48,10 @@ static ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _co
 	va_end( argList );
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size )
+AE_CALLBACK ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size )
 {
-    (void)_carriage;
+    AE_UNUSED( _carriage );
+
 	FILE * f = (FILE *)_data;
 
 	ae_size_t s = fread( _buff, 1, _size, f );
@@ -58,32 +59,32 @@ static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t 
 	return s;
 }
 
-static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
+AE_CALLBACK ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
 {
-	(void)_data;
+    AE_UNUSED( _data );
 
 	memcpy( _dst, _src, _size );
 }
 
-static ae_voidptr_t __resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data )
+AE_CALLBACK ae_voidptr_t __resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data )
 {
-	(void)_resource;
-	(void)_data;
+    AE_UNUSED( _resource );
+    AE_UNUSED( _data );
 
 	return AE_NULL;
 }
 
-static ae_void_t __resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
+AE_CALLBACK ae_void_t __resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
 {
-    (void)_type;
-    (void)_data;
-    (void)_ud;
+    AE_UNUSED( _type );
+    AE_UNUSED( _data );
+    AE_UNUSED( _ud );
 }
 
 int main( int argc, char *argv[] )
 {
-	(void)argc;
-	(void)argv;
+    AE_UNUSED( argc );
+    AE_UNUSED( argv );
 
 	aeMovieInstance * instance = ae_create_movie_instance( "0e41faff7d430be811df87466106e7a9b36cc3ea", &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, (ae_movie_strncmp_t)AE_NULL, &stdlib_movie_logerror, AE_NULL );
 
@@ -102,7 +103,7 @@ int main( int argc, char *argv[] )
 	//stream.memory_copy = &memory_copy;
 	//stream.data = f;
 
-	if( ae_load_movie_data( movieData, stream ) != AE_MOVIE_SUCCESSFUL )
+	if( ae_load_movie_data( movieData, stream ) != AE_RESULT_SUCCESSFUL )
 	{
 		return 0;
 	}

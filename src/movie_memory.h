@@ -42,22 +42,22 @@
 #	define AE_DELETE(instance, ptr) (__magic_memory_free(instance, #ptr, ptr))
 #	define AE_DELETEN(instance, ptr) (__magic_memory_free_n(instance, #ptr, ptr))
 //////////////////////////////////////////////////////////////////////////
-inline static ae_voidptr_t __magic_memory_alloc( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size )
+AE_INLINE ae_voidptr_t __magic_memory_alloc( const aeMovieInstance * _instance, const ae_char_t * _doc, ae_size_t _size )
 {
-    (void)_type;
+    AE_UNUSED( _doc );
 
     ae_voidptr_t ptr = _instance->memory_alloc( _instance->instance_data, _size );
-        
+
 #	ifdef AE_MOVIE_MEMORY_INFO
-    _instance->logger( _instance->instance_data, AE_ERROR_MEMORY, "alloc type '%s' ptr '%p' size '%d'\n", _type, ptr, (ae_uint32_t)_size );
+    _instance->logger( _instance->instance_data, AE_ERROR_MEMORY, "alloc type '%s' ptr '%p' size '%d'\n", _doc, ptr, (ae_uint32_t)_size );
 #   endif
 
     return ptr;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size, ae_size_t _count )
+AE_INLINE ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size, ae_size_t _count )
 {
-    (void)_type;
+    AE_UNUSED( _type );
 
     ae_voidptr_t ptr = _instance->memory_alloc_n( _instance->instance_data, _size, _count );
 
@@ -68,9 +68,9 @@ inline static ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _inst
     return ptr;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static ae_void_t __magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+AE_INLINE ae_void_t __magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
-    (void)_type;
+    AE_UNUSED( _type );
 #	ifdef AE_MOVIE_MEMORY_INFO
     _instance->logger( _instance->instance_data, AE_ERROR_MEMORY, "free type '%s' ptr '%p'\n", _type, _ptr );
 #   endif
@@ -78,9 +78,9 @@ inline static ae_void_t __magic_memory_free( const aeMovieInstance * _instance, 
     _instance->memory_free( _instance->instance_data, _ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-inline static ae_void_t __magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+AE_INLINE ae_void_t __magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
-    (void)_type;
+    AE_UNUSED( _type );
 #	ifdef AE_MOVIE_MEMORY_INFO
     _instance->logger( _instance->instance_data, AE_ERROR_MEMORY, "free n type '%s' ptr '%p'\n", _type, _ptr );
 #   endif

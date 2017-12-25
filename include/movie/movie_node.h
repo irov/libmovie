@@ -180,6 +180,9 @@ typedef struct aeMovieCameraUpdateCallbackData
 typedef struct aeMovieNodeProviderCallbackData
 {
     const aeMovieLayerData * layer;
+    
+    /// @brief if node incessantly timeline
+    ae_bool_t incessantly;
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;

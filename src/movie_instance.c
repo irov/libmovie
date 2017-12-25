@@ -32,9 +32,9 @@
 #	include "movie_struct.h"
 
 //////////////////////////////////////////////////////////////////////////
-static ae_int32_t __ae_strncmp( ae_voidptr_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count )
+AE_CALLBACK ae_int32_t __ae_strncmp( ae_voidptr_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count )
 {
-    (void)_data;
+    AE_UNUSED( _data );
 
     for( ; _count > 0; _src++, _dst++, --_count )
     {
@@ -58,15 +58,15 @@ static ae_int32_t __ae_strncmp( ae_voidptr_t _data, const ae_char_t * _src, cons
     return 0;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )
+AE_CALLBACK ae_void_t __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )
 {
-    (void)_data;
-    (void)_code;
-    (void)_message;
+    AE_UNUSED( _data );
+    AE_UNUSED( _code );
+    AE_UNUSED( _message );
     //SILENT
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance )
+AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance )
 {
     ae_uint16_t i;
     for( i = 0; i != 10U; ++i )
@@ -105,12 +105,12 @@ static ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance )
             ae_uint16_t u2 = 0;
             for( ; u2 != line_count - 1; ++u2 )
             {
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 0) * line_count + 0;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 1) * line_count + 0;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 0) * line_count + 1;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 0) * line_count + 1;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 1) * line_count + 0;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 1) * line_count + 1;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * line_count + 0U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * line_count + 0U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * line_count + 1U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * line_count + 1U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * line_count + 0U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * line_count + 1U;
             }
         }
         

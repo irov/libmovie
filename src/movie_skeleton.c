@@ -32,8 +32,10 @@
 #	include "movie_memory.h"
 #	include "movie_math.h"
 #	include "movie_struct.h"
+#	include "movie_debug.h"
 
-static ae_bool_t __test_movie_skeleton_base( aeMovieComposition * _base )
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_bool_t __test_movie_skeleton_base( aeMovieComposition * _base )
 {
     ae_float_t duration = _base->composition_data->duration;
 
@@ -64,7 +66,7 @@ static ae_bool_t __test_movie_skeleton_base( aeMovieComposition * _base )
 
     return AE_TRUE;
 }
-
+//////////////////////////////////////////////////////////////////////////
 aeMovieSkeleton * ae_movie_create_skeleton( aeMovieComposition * _base )
 {
     if( _base == AE_NULL )
@@ -93,8 +95,8 @@ aeMovieSkeleton * ae_movie_create_skeleton( aeMovieComposition * _base )
 
     return skeleton;
 }
-
-static ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _base, aeMovieComposition * _animation )
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _base, aeMovieComposition * _animation )
 {
     if( _base->node_count != _animation->node_count )
     {
@@ -128,8 +130,8 @@ static ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _base, ae
 
     return AE_TRUE;
 }
-
-static ae_uint32_t __movie_skeleton_find_free_animation_place( aeMovieSkeleton * _skeleton )
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_uint32_t __movie_skeleton_find_free_animation_place( aeMovieSkeleton * _skeleton )
 {
     ae_uint32_t i = 0;
     for( ; i != 8; ++i )

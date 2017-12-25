@@ -11,6 +11,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall /WX")
+  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4710") #function not inlined 
+  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4738") #storing 32-bit float result in memory, possible loss of performance
 endif()
 
 OPTION(LIBMOVIE_EXTERNAL_BUILD  "LIBMOVIE_EXTERNAL_BUILD"  OFF)
@@ -42,7 +44,7 @@ public
     ${PUBLIC_DIR}/movie_skeleton.h
     ${PUBLIC_DIR}/movie_type.h
     ${PUBLIC_DIR}/movie_typedef.h
-    ${PUBLIC_DIR}/movie_config.h
+    ${PUBLIC_DIR}/movie_config.h    
 )
 
 ADD_FILTER(
@@ -54,10 +56,12 @@ source
     ${SOURCE_DIR}/movie_memory.h
     ${SOURCE_DIR}/movie_node.c
     ${SOURCE_DIR}/movie_skeleton.c
+    ${SOURCE_DIR}/movie_stream.c
     ${SOURCE_DIR}/movie_stream.h
     ${SOURCE_DIR}/movie_struct.h
     ${SOURCE_DIR}/movie_transformation.c
     ${SOURCE_DIR}/movie_transformation.h
+    ${SOURCE_DIR}/movie_debug.h
 )
 
 INCLUDE_DIRECTORIES( ${PROJECT_NAME} include ) 

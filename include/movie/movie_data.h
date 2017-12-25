@@ -43,6 +43,7 @@ typedef enum aeMovieLayerTypeEnum
 {
     AE_MOVIE_LAYER_TYPE_ANY = 0,
     AE_MOVIE_LAYER_TYPE_MOVIE = 1,
+    AE_MOVIE_LAYER_TYPE_TEXT = 5,
     AE_MOVIE_LAYER_TYPE_EVENT = 7,
     AE_MOVIE_LAYER_TYPE_SOCKET = 8,
     AE_MOVIE_LAYER_TYPE_SHAPE = 9,
@@ -59,6 +60,8 @@ typedef enum aeMovieLayerTypeEnum
 
 typedef enum aeMovieLayerParamEnum
 {
+    AE_MOVIE_LAYER_PARAM_HORIZONTAL_CENTER = 0x00000002,
+    AE_MOVIE_LAYER_PARAM_VERTICAL_CENTER = 0x00000004,
     AE_MOVIE_LAYER_PARAM_LOOP = 0x00000008,
     AE_MOVIE_LAYER_PARAM_SWITCH = 0x00000010,
 } aeMovieLayerParamEnum;
@@ -131,13 +134,29 @@ ae_void_t ae_delete_movie_stream( aeMovieStream * _stream );
 @brief Fills movie data structure and loads resources through provider.
 @param [in] _movieData Data structure to fill.
 @param [in] _stream Object to load from.
-@param [in] _provider See \link #ae_movie_data_resource_provider_t resource provider\endlink.
-@param [in] _data Object which will hold the resource reference after loading.
+@return TRUE if successful.
+*/
+ae_result_t ae_check_movie_data( aeMovieStream * _stream );
+
+/**
+@brief get result string info
+@param [in] _result code
+@return string info.
+*/
+const ae_char_t * ae_get_result_string_info( ae_result_t _result );
+
+/**
+@brief Fills movie data structure and loads resources through provider.
+@param [in] _movieData Data structure to fill.
+@param [in] _stream Object to load from.
 @return TRUE if successful.
 */
 ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream );
 
-
+/**
+@param [in] _movieData Data.
+@return NAME movie data
+*/
 const ae_char_t * ae_get_movie_name( const aeMovieData * _movieData );
 
 /**
@@ -180,6 +199,12 @@ ae_bool_t ae_is_movie_layer_data_track_mate( const aeMovieLayerData * _layer );
 */
 ae_bool_t ae_is_movie_layer_data_threeD( const aeMovieLayerData * _layer );
 
+/**
+@param [in] _layer Layer.
+@param [in] _param param.
+@return TRUE if the layer has this param.
+*/
+ae_bool_t ae_has_movie_layer_data_param( const aeMovieLayerData * _layer, ae_uint32_t _param );
 
 /**
 @param [in] _layer Layer.
@@ -199,6 +224,14 @@ ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _la
 @return Layer blend mode.
 */
 ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer );
+
+
+/**
+@brief Get stretch layer
+@param [in] _layer Layer.
+@return stretch.
+*/
+ae_float_t ae_get_movie_layer_data_stretch( const aeMovieLayerData * _layer );
 
 /**
 @brief Get polygon for a socket layer

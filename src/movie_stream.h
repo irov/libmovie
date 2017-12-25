@@ -34,30 +34,36 @@
 
 #	include "movie_memory.h"
 #	include "movie_struct.h"
+#	include "movie_debug.h"
 
 #	include <stddef.h>
 
 //////////////////////////////////////////////////////////////////////////
 #	define AE_READ(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#	define AE_READF(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#	define AE_READF2(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#	define AE_READF3(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#	define AE_READF4(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
 #	define AE_READV(stream, value, size) ae_magic_read_value(stream, value, size)
 #	define AE_READN(stream, ptr, n) ae_magic_read_value(stream, ptr, sizeof(*ptr) * n)
 //////////////////////////////////////////////////////////////////////////
 #	define AE_READB(stream) ae_magic_read_bool(stream)
 #	define AE_READZ(stream) ae_magic_read_size(stream)
+#	define AE_READ8(stream) ae_magic_read_8(stream)
 //////////////////////////////////////////////////////////////////////////
 #	define AE_READ_STRING(stream, ptr) AE_RESULT(ae_magic_read_string, (stream, &ptr))
 #	define AE_READ_POLYGON(stream, ptr) AE_RESULT(ae_magic_read_polygon, (stream, ptr))
 #	define AE_READ_VIEWPORT(stream, ptr) ae_magic_read_viewport, (stream, ptr)
 #	define AE_READ_MESH(stream, ptr) AE_RESULT(ae_magic_read_mesh, (stream, ptr))
 //////////////////////////////////////////////////////////////////////////
-inline static ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
+AE_INLINE ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
 {
     ae_size_t bytesRead = _stream->memory_read( _stream->read_data, _ptr, _stream->carriage, _size );
 
     _stream->carriage += bytesRead;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
+AE_INLINE ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
 {
     ae_uint8_t value;
     AE_READ( _stream, value );
@@ -65,122 +71,18 @@ inline static ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
     return value;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static ae_uint32_t ae_magic_read_size( aeMovieStream * _stream )
+AE_INLINE ae_uint32_t ae_magic_read_8( aeMovieStream * _stream )
 {
-    ae_uint8_t size255;
-    AE_READ( _stream, size255 );
+    ae_uint8_t value;
+    AE_READ( _stream, value );
 
-    if( size255 != 255 )
-    {
-        return (ae_uint32_t)size255;
-    }
-
-    ae_uint16_t size65535;
-    AE_READ( _stream, size65535 );
-
-    if( size65535 != 65535 )
-    {
-        return (ae_uint32_t)size65535;
-    }
-
-    ae_uint32_t size;
-    AE_READ( _stream, size );
-
-    return size;
+    return (ae_uint32_t)value;
 }
 //////////////////////////////////////////////////////////////////////////
-inline static ae_result_t ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )
-{
-    ae_uint32_t size = AE_READZ( _stream );
-
-    ae_string_t buffer = AE_NEWN( _stream->instance, ae_char_t, size + 1U );
-
-    AE_RESULT_PANIC_MEMORY( buffer );
-
-    AE_READN( _stream, buffer, size );
-
-    buffer[size] = '\0';
-
-    *_str = buffer;
-
-    return AE_MOVIE_SUCCESSFUL;
-}
-//////////////////////////////////////////////////////////////////////////
-inline static ae_result_t ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _polygon )
-{
-    ae_uint32_t point_count = AE_READZ( _stream );
-
-    _polygon->point_count = point_count;
-
-    if( point_count == 0 )
-    {
-        _polygon->points = AE_NULL;
-
-        return AE_MOVIE_SUCCESSFUL;
-    }
-
-    ae_vector2_t * points = AE_NEWN( _stream->instance, ae_vector2_t, point_count );
-
-    AE_RESULT_PANIC_MEMORY( points );
-
-    AE_READN( _stream, points, point_count );
-
-    _polygon->points = (const ae_vector2_t *)points;
-
-    return AE_MOVIE_SUCCESSFUL;
-}
-//////////////////////////////////////////////////////////////////////////
-inline static ae_void_t ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport )
-{
-    AE_READ( _stream, _viewport->begin_x );
-    AE_READ( _stream, _viewport->begin_y );
-    AE_READ( _stream, _viewport->end_x );
-    AE_READ( _stream, _viewport->end_y );
-}
-//////////////////////////////////////////////////////////////////////////
-inline static ae_result_t ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh )
-{
-    ae_uint32_t vertex_count = AE_READZ( _stream );
-
-    if( vertex_count == 0 || vertex_count > AE_MOVIE_MAX_VERTICES )
-    {
-        _mesh->vertex_count = 0;
-        _mesh->index_count = 0;
-
-        _mesh->positions = AE_NULL;
-        _mesh->uvs = AE_NULL;
-        _mesh->indices = AE_NULL;
-
-        return AE_MOVIE_SUCCESSFUL;
-    }
-
-    ae_uint32_t indices_count = AE_READZ( _stream );
-
-    _mesh->vertex_count = vertex_count;
-    _mesh->index_count = indices_count;
-
-    ae_vector2_t * positions = AE_NEWN( _stream->instance, ae_vector2_t, vertex_count );
-
-    AE_RESULT_PANIC_MEMORY( positions );
-
-    AE_READN( _stream, positions, vertex_count );
-    _mesh->positions = (const ae_vector2_t *)positions;
-
-    ae_vector2_t * uvs = AE_NEWN( _stream->instance, ae_vector2_t, vertex_count );
-
-    AE_RESULT_PANIC_MEMORY( uvs );
-
-    AE_READN( _stream, uvs, vertex_count );
-    _mesh->uvs = (const ae_vector2_t *)uvs;
-
-    ae_uint16_t * indices = AE_NEWN( _stream->instance, ae_uint16_t, indices_count );
-
-    AE_RESULT_PANIC_MEMORY( indices );
-
-    AE_READN( _stream, indices, indices_count );
-    _mesh->indices = indices;
-
-    return AE_MOVIE_SUCCESSFUL;
-}
+ae_uint32_t ae_magic_read_size( aeMovieStream * _stream );
+ae_result_t ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str );
+ae_result_t ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _polygon );
+ae_void_t ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport );
+ae_result_t ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh );
 //////////////////////////////////////////////////////////////////////////
 #	endif

@@ -10,8 +10,8 @@ No resource or node providers.
 #include "common.h"
 
 int main( int argc, char *argv[] ) {
-    (void)argc;
-    (void)argv;
+    AE_UNUSED( argc );
+    AE_UNUSED( argv );
 	//
 	// Initialize library instance, movie & composition names.
 	//

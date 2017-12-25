@@ -110,6 +110,9 @@ typedef struct aeMovieResourceParticle
     ae_string_t path;
     ae_uint32_t codec;
 
+    ae_uint32_t image_count;
+    const aeMovieResourceImage * const * images;
+
 } aeMovieResourceParticle;
 
 typedef struct aeMovieResourceSlot

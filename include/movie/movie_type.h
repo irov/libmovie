@@ -178,13 +178,13 @@ typedef enum
 
 typedef enum
 {
-    AE_MOVIE_SUCCESSFUL = 0,
-    AE_MOVIE_INVALID_MAGIC = -2,
-    AE_MOVIE_INVALID_VERSION = -3,
-    AE_MOVIE_INVALID_HASH = -4,
-    AE_MOVIE_INVALID_STREAM = -5,
-    AE_MOVIE_INVALID_DATA = -6,
-    AE_MOVIE_INVALID_MEMORY = -7,
+    AE_RESULT_SUCCESSFUL = 0,
+    AE_RESULT_INVALID_MAGIC = -2,
+    AE_RESULT_INVALID_VERSION = -3,
+    AE_RESULT_INVALID_HASH = -4,
+    AE_RESULT_INVALID_STREAM = -5,
+    AE_RESULT_INVALID_DATA = -6,
+    AE_RESULT_INVALID_MEMORY = -7,
 } ae_result_t;
 
 typedef void( *ae_movie_stream_memory_info_t )(ae_voidptr_t _data, const ae_char_t * _buff, ae_size_t _size);

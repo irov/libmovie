@@ -27,33 +27,30 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_CONFIG_H_
-#define MOVIE_CONFIG_H_
+#ifndef MOVIE_DEBUG_H_
+#define MOVIE_DEBUG_H_
 
-#	ifdef _DEBUG
-#	ifndef AE_MOVIE_NO_DEBUG
-#	ifndef AE_MOVIE_DEBUG
-#	define AE_MOVIE_DEBUG
-#	endif
-#	endif
-#	endif
+#   include "movie/movie_type.h"
 
-#   ifndef AE_TIME_DEFINE
-#   define AE_TIME_SECOND
+AE_INLINE ae_void_t __ae_break_point( ae_void_t )
+{
+    //Breakpoint
+    ae_uint32_t breakpoint_this;
+    (ae_void_t)breakpoint_this;
+}
+
+#   ifdef AE_MOVIE_DEBUG
+#   define AE_RETURN_ERROR_RESULT(Result) __ae_break_point(); return Result
+#   else
+#   define AE_RETURN_ERROR_RESULT(Result) return Result
 #   endif
 
-#   ifdef AE_TIME_SECOND
-#   define AE_TIME_OUTSCALE( T ) (T)
-#   define AE_TIME_INSCALE( T ) (T)
-#   elif AE_TIME_MILLISECOND
-#   define AE_TIME_OUTSCALE( T ) (T * 1000.f)
-#   define AE_TIME_INSCALE( T ) (T * 0.001f)
+
+
+#   ifdef AE_MOVIE_DEBUG
+#	define AE_MOVIE_PANIC_MEMORY(Memory, Result) {if(Memory == AE_NULL) {__ae_break_point(); return Result;}}
+#   else
+#   define AE_MOVIE_PANIC_MEMORY(Memory, Result)
 #   endif
-
-#   define AE_INLINE inline
-#   define AE_CALLBACK static
-#   define AE_INTERNAL inline static
-
-#   define AE_UNUSED(Var) ((ae_void_t)Var)
 
 #endif
