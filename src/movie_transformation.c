@@ -35,6 +35,8 @@
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovieStream * _stream, const ae_char_t * _doc )
 {
+    AE_UNUSED( _doc );
+
     ae_uint32_t zp_data_size ;
     AE_READ( _stream, zp_data_size );
 
@@ -57,7 +59,7 @@ AE_INTERNAL ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovi
 
         ae_uint32_t hash = hashmask[hashmask_index];
 
-        *it_timeline += hash;
+        *it_timeline ^= hash;
     }
 
     return timeline;

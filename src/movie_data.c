@@ -1245,6 +1245,19 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
     _compositionData->loop_segment[0] = 0.f;
     _compositionData->loop_segment[1] = _compositionData->duration;
 
+    _compositionData->anchor_point[0] = 0.f;
+    _compositionData->anchor_point[1] = 0.f;
+    _compositionData->anchor_point[2] = 0.f;
+
+    _compositionData->offset_point[0] = 0.f;
+    _compositionData->offset_point[1] = 0.f;
+    _compositionData->offset_point[2] = 0.f;
+
+    _compositionData->bounds[0] = 0.f;
+    _compositionData->bounds[1] = 0.f;
+    _compositionData->bounds[2] = 0.f;
+    _compositionData->bounds[3] = 0.f;
+
     _compositionData->camera = AE_NULL;
 
     for( ;; )
@@ -1459,6 +1472,10 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result )
     case AE_RESULT_INVALID_HASH:
         {
             return "invalid hash";
+        }break;
+    case AE_RESULT_INVALID_STREAM:
+        {
+            return "invalid stream";
         }break;
     case AE_RESULT_INVALID_DATA:
         {
