@@ -70,7 +70,7 @@ typedef struct aeMovieLayerExtensions
 
 } aeMovieLayerExtensions;
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE void __clear_layer_extensions( aeMovieLayerExtensions * _extensions )
+AE_INTERNAL void __clear_layer_extensions( aeMovieLayerExtensions * _extensions )
 {
     _extensions->timeremap = AE_NULL;
     _extensions->mesh = AE_NULL;
