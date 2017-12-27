@@ -42,7 +42,7 @@
 #	define AE_DELETE(instance, ptr) (__magic_memory_free(instance, #ptr, ptr))
 #	define AE_DELETEN(instance, ptr) (__magic_memory_free_n(instance, #ptr, ptr))
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE ae_voidptr_t __magic_memory_alloc( const aeMovieInstance * _instance, const ae_char_t * _doc, ae_size_t _size )
+AE_INTERNAL ae_voidptr_t __magic_memory_alloc( const aeMovieInstance * _instance, const ae_char_t * _doc, ae_size_t _size )
 {
     AE_UNUSED( _doc );
 
@@ -55,7 +55,7 @@ AE_INLINE ae_voidptr_t __magic_memory_alloc( const aeMovieInstance * _instance, 
     return ptr;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size, ae_size_t _count )
+AE_INTERNAL ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_size_t _size, ae_size_t _count )
 {
     AE_UNUSED( _type );
 
@@ -68,7 +68,7 @@ AE_INLINE ae_voidptr_t __magic_memory_alloc_n( const aeMovieInstance * _instance
     return ptr;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE ae_void_t __magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+AE_INTERNAL ae_void_t __magic_memory_free( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
     AE_UNUSED( _type );
 #	ifdef AE_MOVIE_MEMORY_INFO
@@ -78,7 +78,7 @@ AE_INLINE ae_void_t __magic_memory_free( const aeMovieInstance * _instance, cons
     _instance->memory_free( _instance->instance_data, _ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE ae_void_t __magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
+AE_INTERNAL ae_void_t __magic_memory_free_n( const aeMovieInstance * _instance, const ae_char_t * _type, ae_constvoidptr_t _ptr )
 {
     AE_UNUSED( _type );
 #	ifdef AE_MOVIE_MEMORY_INFO

@@ -50,7 +50,6 @@
 #   define AE_TIME_INSCALE( T ) (T * 0.001f)
 #   endif
 
-#   define AE_INLINE inline
 #   define AE_CALLBACK static
 #   define AE_INTERNAL inline static
 

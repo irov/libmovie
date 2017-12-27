@@ -32,7 +32,7 @@
 
 #   include "movie/movie_type.h"
 
-AE_INLINE ae_void_t __ae_break_point( ae_void_t )
+AE_INTERNAL ae_void_t __ae_break_point( ae_void_t )
 {
     //Breakpoint
     ae_uint32_t breakpoint_this;

@@ -56,14 +56,14 @@
 #	define AE_READ_VIEWPORT(stream, ptr) ae_magic_read_viewport, (stream, ptr)
 #	define AE_READ_MESH(stream, ptr) AE_RESULT(ae_magic_read_mesh, (stream, ptr))
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
+AE_INTERNAL ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
 {
     ae_size_t bytesRead = _stream->memory_read( _stream->read_data, _ptr, _stream->carriage, _size );
 
     _stream->carriage += bytesRead;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
+AE_INTERNAL ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
 {
     ae_uint8_t value;
     AE_READ( _stream, value );
@@ -71,7 +71,7 @@ AE_INLINE ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
     return value;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INLINE ae_uint32_t ae_magic_read_8( aeMovieStream * _stream )
+AE_INTERNAL ae_uint32_t ae_magic_read_8( aeMovieStream * _stream )
 {
     ae_uint8_t value;
     AE_READ( _stream, value );
