@@ -18,8 +18,8 @@ public:
     const aeMovieData * getData() const { return _data; }
 
 protected:
-    static void * callbackResourceProvider( const aeMovieResource * _resource, void * _data );    
-    static void callbackResourceDeleter( aeMovieResourceTypeEnum _type, void * _data, void * _ud );
+    static void * callbackResourceProvider( const aeMovieResource * _resource, ae_voidptr_t _data );
+    static void callbackResourceDeleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud );
 
     cocos2d::Ref * createImage( const std::string & path, int width, int height );
 

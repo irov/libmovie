@@ -23,7 +23,7 @@ typedef struct aeMovieCameraProviderCallbackData
 } aeMovieCameraProviderCallbackData;
 */
 // TODO
-void * AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbackData * _callbackData, void * _data )
+ae_voidptr_t AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
 	CCLOG("CALL: camera provider");
 /*
@@ -80,7 +80,7 @@ typedef struct aeMovieNodeProviderCallbackData
 	const aeMovieLayerData * trackmatteLayer;
 } aeMovieNodeProviderCallbackData;
 */
-void * AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackData * _callbackData, void * _data ) {
+ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: node provider");
 
     ae_bool_t is_track_matte = ae_is_movie_layer_data_track_mate( _callbackData->layer );
@@ -171,7 +171,7 @@ typedef struct aeMovieNodeDestroyCallbackData
 	aeMovieLayerTypeEnum type;
 } aeMovieNodeDestroyCallbackData;
 */
-void AEMovie::callbackNodeDeleter( const aeMovieNodeDeleterCallbackData * _callbackData, void * _data ) {
+void AEMovie::callbackNodeDeleter( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: node destroyer");
 }
 
@@ -187,16 +187,16 @@ typedef struct aeMovieNodeUpdateCallbackData
 	float opacity;
 } aeMovieNodeUpdateCallbackData;
 */
-void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbackData, void * _data ) {
+void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: node update");
 
 //	AEMovie *movie = static_cast<AEMovie *>(_data);
 
 	switch (_callbackData->state)
 	{
-		case AE_MOVIE_NODE_UPDATE_UPDATE:
+		case AE_MOVIE_STATE_UPDATE_PROCESS:
 		{
-			CCLOG("NODE_UPDATE_UPDATE");
+			CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
 
 			switch (_callbackData->type) {
 				case AE_MOVIE_LAYER_TYPE_PARTICLE:
@@ -221,9 +221,9 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 
 			break;
 		}
-		case AE_MOVIE_NODE_UPDATE_BEGIN:
+		case AE_MOVIE_STATE_UPDATE_BEGIN:
 		{
-			CCLOG("NODE_UPDATE_BEGIN");
+			CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
 
 			switch (_callbackData->type)
 			{
@@ -259,9 +259,9 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 
 			break;
 		}
-		case AE_MOVIE_NODE_UPDATE_END:
+		case AE_MOVIE_STATE_UPDATE_END:
 		{
-			CCLOG("NODE_UPDATE_END");
+			CCLOG("AE_MOVIE_STATE_UPDATE_END");
 
 			switch (_callbackData->type)
 			{
@@ -288,7 +288,7 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 	}
 }
 
-void * AEMovie::callbackCompositionTrackMatteProvider( const aeMovieTrackMatteProviderCallbackData * _callbackData, void * _data ) {
+ae_voidptr_t AEMovie::callbackCompositionTrackMatteProvider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
     
     AEMovie *movie = static_cast<AEMovie *>(_data);
 
@@ -316,14 +316,14 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 	void * track_matte_data;
 } aeMovieTrackMatteUpdateCallbackData;
 */
-void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdateCallbackData * _callbackData, void * _data ) {
+void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: composition track matte update");
 
 	AEMovie *movie = static_cast<AEMovie *>(_data);
 
 	switch (_callbackData->state) {
-		case AE_MOVIE_NODE_UPDATE_BEGIN: {
-			CCLOG("NODE_UPDATE_BEGIN");
+		case AE_MOVIE_STATE_UPDATE_BEGIN: {
+			CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
 			
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
 			tmData->setMatrix(_callbackData->matrix);
@@ -331,8 +331,8 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 
 			break;
 		}
-		case AE_MOVIE_NODE_UPDATE_UPDATE: {
-			CCLOG("NODE_UPDATE_UPDATE");
+		case AE_MOVIE_STATE_UPDATE_PROCESS: {
+			CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
 
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
 			tmData->setMatrix(_callbackData->matrix);
@@ -340,7 +340,7 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 
 			break;
 		}
-		case AE_MOVIE_NODE_UPDATE_END: {
+		case AE_MOVIE_STATE_UPDATE_END: {
 			CCLOG("NODE_UPDATE_END");
 /*
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
@@ -365,7 +365,7 @@ typedef struct aeMovieCompositionEventCallbackData
 	ae_bool_t begin;
 } aeMovieCompositionEventCallbackData;
 */
-void AEMovie::callbackCompositionEvent( const aeMovieCompositionEventCallbackData * _callbackData, void * _data ) {
+void AEMovie::callbackCompositionEvent( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: composition event");
 }
 
@@ -391,7 +391,7 @@ typedef struct aeMovieCompositionStateCallbackData
 	const ae_char_t * subcomposition;
 } aeMovieCompositionStateCallbackData;
 */
-void AEMovie::callbackCompositionState( const aeMovieCompositionStateCallbackData * _callbackData, void * _data ) {
+void AEMovie::callbackCompositionState( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: composition state");
 
 	if (_callbackData->subcomposition != nullptr)
@@ -652,7 +652,7 @@ void AEMovie::setTime(float t) {
 	CCLOG("Set time to: %.2f sec.", _time);
 
 	ae_stop_movie_composition( _composition );
-	ae_play_movie_composition( _composition, _time * 1000.f);
+	ae_play_movie_composition( _composition, _time );
 //	onPlayEvent((int)AEMovie::EventType::PLAYING);
 
 /*
@@ -668,7 +668,7 @@ void AEMovie::play() {
 
 	resume();
 
-	ae_play_movie_composition( _composition, _time * 1000.f);
+	ae_play_movie_composition( _composition, _time );
 
 	//
 	// run subcomposition (start playing it in a loop just once for test)
@@ -758,7 +758,7 @@ void AEMovie::update(float delta) {
 	if (ae_is_play_movie_composition(_composition) == AE_FALSE)
 		return;
 
-	ae_update_movie_composition( _composition, delta * 1000.f);
+	ae_update_movie_composition( _composition, delta );
 
 //	float t = ae_get_movie_composition_time(_composition);
 

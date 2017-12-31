@@ -9,28 +9,28 @@ AEMovieCache * AEMovieCache::s_sharedInstance = nullptr;
 
 //===============================================
 
-static void * stdlib_movie_alloc( void * _data, size_t _size ) {
+static ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
     (void)_data;
     return malloc( _size );
 }
 
-static void * stdlib_movie_alloc_n( void * _data, size_t _size, size_t _count ) {
+static ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count ) {
     (void)_data;
-    uint32_t total = _size * _count;
+    ae_size_t total = _size * _count;
     return malloc( total );
 }
 
-static void stdlib_movie_free( void * _data, const void * _ptr ) {
+static void stdlib_movie_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
     (void)_data;
     free( (void *)_ptr );
 }
 
-static void stdlib_movie_free_n( void * _data, const void * _ptr ) {
+static void stdlib_movie_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr ) {
     (void)_data;
     free( (void *)_ptr );
 }
 
-static void stdlib_movie_logerror( void * _data, aeMovieErrorCode _code, const char * _format, ... ) {
+static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... ) {
     char dst[2048];
     (void)_data;
     (void)_code;

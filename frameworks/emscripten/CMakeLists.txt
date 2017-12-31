@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(em_libmovie)
+project(em_movie)
 include_directories( ${PROJECT_NAME} ${EMSCRIPTEN_DIR}/system/include)
 include_directories( ${PROJECT_NAME} ../../include)
 set(CMAKE_C_FLAGS  "-s EXPORT_NAME=\"'AEMovie'\" -s MODULARIZE=1 \

@@ -78,14 +78,14 @@ CC_CONSTRUCTOR_ACCESS:
     virtual bool initWithData( const AEMovieData * data );
 
 protected:
-    static void * callbackCameraProvider( const aeMovieCameraProviderCallbackData * _callbackData, void * _data );
-    static void * callbackNodeProvider( const aeMovieNodeProviderCallbackData * _callbackData, void * _data );
-    static void callbackNodeDeleter( const aeMovieNodeDeleterCallbackData * _callbackData, void * _data );
-    static void callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbackData, void * _data );
-    static void * callbackCompositionTrackMatteProvider( const aeMovieTrackMatteProviderCallbackData * _callbackData, void * _data );
-    static void callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdateCallbackData * _callbackData, void * _data );
-    static void callbackCompositionEvent( const aeMovieCompositionEventCallbackData * _callbackData, void * _data );
-    static void callbackCompositionState( const aeMovieCompositionStateCallbackData * _callbackData, void * _data );
+    static ae_voidptr_t callbackCameraProvider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data );
+    static ae_voidptr_t callbackNodeProvider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data );
+    static void callbackNodeDeleter( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data );
+    static void callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data );
+    static ae_voidptr_t callbackCompositionTrackMatteProvider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data );
+    static void callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data );
+    static void callbackCompositionEvent( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data );
+    static void callbackCompositionState( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data );
 
 protected:
     void addCamera( const std::string & name, cocos2d::Camera * camera );

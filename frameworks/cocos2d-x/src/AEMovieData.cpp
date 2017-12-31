@@ -11,20 +11,25 @@ using namespace cocos2d::experimental;
 
 //===============================================
 
-static size_t read_file( void * _data, void * _buff, size_t _carriage, uint32_t _size ) {
-    (void)_carriage;
-    BundleReader * reader = static_cast<BundleReader *>(_data);
-    return reader->read( _buff, 1, _size );
-}
+namespace Detail
+{
+	static ae_size_t read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size ) {
+		(void)_carriage;
+		BundleReader * reader = static_cast<BundleReader *>(_data);
+		ssize_t rs = reader->read( _buff, 1, _size );
 
-static void memory_copy( void * _data, const void * _src, void * _dst, size_t _size ) {
-    (void)_data;
-    memcpy( _dst, _src, _size );
+		return (ae_size_t)rs;
+	}
+
+	static void memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) {
+		(void)_data;
+		memcpy( _dst, _src, _size );
+	}
 }
 
 //===============================================
 
-void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, void * _data ) {
+void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, ae_voidptr_t _data ) {
     CCLOG( "CALL: resource provider" );
 
     AEMovieData *data = static_cast<AEMovieData *>(_data);
@@ -82,7 +87,7 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
     return nullptr;
 }
 
-void AEMovieData::callbackResourceDeleter( aeMovieResourceTypeEnum _type, void * _data, void * _ud )
+void AEMovieData::callbackResourceDeleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
 {
     (void)_type;
     (void)_data;
@@ -136,14 +141,14 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
     BundleReader reader;
     reader.init( (char *)(data.getBytes()), data.getSize() );
 
-    _data = ae_create_movie_data( instance, &callbackResourceProvider, &callbackResourceDeleter, this );
-    aeMovieStream * stream = ae_create_movie_stream( instance, &read_file, &memory_copy, &reader );
+    _data = ae_create_movie_data( instance, &AEMovieData::callbackResourceProvider, &AEMovieData::callbackResourceDeleter, this );
+    aeMovieStream * stream = ae_create_movie_stream( instance, &Detail::read_file, &Detail::memory_copy, &reader );
     int r = ae_load_movie_data( _data, stream );
     ae_delete_movie_stream( stream );
 
     //	data.clear();
 
-    if( r == AE_MOVIE_FAILED )
+    if( r != AE_RESULT_SUCCESSFUL )
     {
         CCLOG( "Failed to load movie data." );
         return false;
