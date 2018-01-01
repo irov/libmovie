@@ -15,7 +15,7 @@ int main( int argc, char *argv[] ) {
 	// Initialize library instance, movie & composition names.
 	//
 
-	ex_init( "f86464bbdebf0fe3e684b03ec263d049d079e6f1", "../../../examples/resources/ui/ui.aem", "LOBBY" );
+	ex_init( ex_example_license_hash, ex_example_movie_path, ex_example_composition_name );
 
 	//
 	// Set pointer to resource loader callback.
@@ -55,6 +55,12 @@ int main( int argc, char *argv[] ) {
 	//
 
 	EX_LOG("The movie composition, resources & nodes have loaded successfully. See further examples.\n");
+
+	//
+	// Shutdown.
+	//
+
+	ex_shutdown();
 
 	return 0;
 }

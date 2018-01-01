@@ -16,7 +16,7 @@ int main( int argc, char *argv[] ) {
 	// Initialize library instance, movie & composition names.
 	//
 
-	ex_init( "f86464bbdebf0fe3e684b03ec263d049d079e6f1", "../../examples/resources/ui/ui.aem", "LOBBY" );
+	ex_init( ex_example_license_hash, ex_example_movie_path, ex_example_composition_name );
 
 	//
 	// Set pointer to resource loader callback.
@@ -56,14 +56,13 @@ int main( int argc, char *argv[] ) {
 
 	EX_LOG("The movie is playing in loop now. Press Ctrl-C to break...\n");
 
-	ae_set_movie_composition_loop(ex.composition, AE_TRUE);
 	ae_play_movie_composition(ex.composition, 0.f);
 
-	int last = ex_get_time();
+	ae_float_t last = ex_get_time();
 
-	while ( 1 ) {
-		int t = ex_get_time();
-		int dt = t - last;
+	while( ae_is_play_movie_composition( ex.composition ) == AE_TRUE ) {
+		ae_float_t t = ex_get_time();
+		ae_float_t dt = t - last;
 		last = t;
 
 		ex_update(dt);
@@ -71,8 +70,10 @@ int main( int argc, char *argv[] ) {
 	}
 
 	//
-	// Never gets here.
+	// Shutdown.
 	//
+
+	ex_shutdown();
 
 	return 0;
 }

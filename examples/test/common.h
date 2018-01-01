@@ -3,6 +3,11 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+static const ae_char_t * ex_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
+static const ae_char_t * ex_example_movie_path = "../../examples/resources/Knight/Knight.aem";
+static const ae_char_t * ex_example_composition_name = "Knight";
+
+
 ae_void_t EX_LOG( const char * _format, ... );
 
 //
@@ -14,10 +19,10 @@ typedef struct {
 	// Movie parameters.
 	//
 
-	char license[41];
-    char license_padding[3];
-	char movie_path[256];
-	char comp_name[128];
+	ae_char_t license[41];
+	ae_char_t license_padding[3];
+	ae_char_t movie_path[256];
+	ae_char_t comp_name[128];
 
 	//
 	// Current working objects
@@ -42,7 +47,7 @@ extern examples_t ex;
 // Platform-dependent functions.
 //
 
-int ex_get_time( ae_void_t );
+ae_float_t ex_get_time( ae_void_t );
 
 //
 // Callbacks for loading movie resource data (images, videos, sounds etc.)
@@ -74,8 +79,8 @@ ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackDa
 ae_void_t ex_create_instance( ae_void_t );
 ae_void_t ex_load_movie_data( ae_void_t );
 ae_void_t ex_set_composition( ae_void_t );
-ae_void_t ex_update( int dt );
+ae_void_t ex_update( ae_float_t dt );
 ae_void_t ex_render( ae_void_t );
 
-ae_void_t ex_init( const char * license, const char * path, const char * composition );
+ae_void_t ex_init( const ae_char_t * license, const ae_char_t * path, const ae_char_t * composition );
 ae_void_t ex_shutdown( ae_void_t );

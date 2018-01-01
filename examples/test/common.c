@@ -37,8 +37,9 @@ ae_void_t EX_LOG( const char * _format, ... )
 //
 // System time in milliseconds.
 //
-int ex_get_time( ae_void_t ) {
-	return (int)((double)clock() / CLOCKS_PER_SEC);
+ae_float_t ex_get_time( ae_void_t ) {
+	clock_t c = clock();
+	return (float)c / (float)CLOCKS_PER_SEC;
 }
 
 AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
@@ -542,7 +543,9 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
 	aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
 
-    if( ae_load_movie_data( data, stream ) != AE_RESULT_SUCCESSFUL ) {
+	ae_result_t result_load_movie_data = ae_load_movie_data( data, stream );
+
+    if( result_load_movie_data != AE_RESULT_SUCCESSFUL ) {
 		EX_LOG( "...failed.\n" );
 
 		ae_delete_movie_data( data );
@@ -595,10 +598,11 @@ ae_void_t ex_set_composition( ae_void_t ) {
 //
 // The update loop.
 //
-ae_void_t ex_update( int dt ) {
+ae_void_t ex_update( ae_float_t dt ) {
 	EX_LOG( "\n====== Beginning of frame update =================\n\n" );
+	EX_LOG( "dt: %f", dt );
 
-	ae_update_movie_composition( ex.composition, (ae_float_t)dt );
+	ae_update_movie_composition( ex.composition, dt );
 
 	EX_LOG( "\n====== End of frame update =======================\n\n" );
 }
@@ -795,9 +799,7 @@ ae_void_t ex_render( ae_void_t ) {
 //
 // Called at the application start.
 //
-ae_void_t ex_init( const char * license, const char * path, const char * composition ) {
-	atexit( ex_shutdown );
-
+ae_void_t ex_init( const ae_char_t * license, const ae_char_t * path, const ae_char_t * composition ) {
 	//
 	// Set source file & composition name.
 	//
@@ -832,10 +834,12 @@ ae_void_t ex_shutdown( ae_void_t ) {
 	if( ex.data ) {
 		EX_LOG( "Deleting movie data.\n" );
 		ae_delete_movie_data( ex.data );
+		ex.data = AE_NULL;
 	}
 
 	if( ex.instance ) {
 		EX_LOG( "Deleting library instance.\n" );
 		ae_delete_movie_instance( ex.instance );
+		ex.instance = AE_NULL;
 	}
 }
