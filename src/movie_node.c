@@ -3502,24 +3502,26 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, ae_uin
     {
         const aeMovieNode * node = _composition->nodes + iterator;
 
-        if( node->active == AE_FALSE )
+        if( node->enable == AE_FALSE )
         {
             continue;
         }
 
-        if( node->enable == AE_FALSE )
+        if( node->track_matte_node != AE_NULL && node->track_matte_node->active == AE_FALSE )
         {
             continue;
         }
 
         const aeMovieLayerData * layer = node->layer;
 
-        if( layer->renderable == AE_FALSE )
+        ae_bool_t loop = ae_has_movie_layer_data_param( layer, AE_MOVIE_LAYER_PARAM_LOOP );
+
+        if( node->active == AE_FALSE && loop == AE_FALSE )
         {
             continue;
         }
-
-        if( node->track_matte_node != AE_NULL && node->track_matte_node->active == AE_FALSE )
+        
+        if( layer->renderable == AE_FALSE )
         {
             continue;
         }
