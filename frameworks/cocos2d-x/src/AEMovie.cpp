@@ -40,17 +40,6 @@ using namespace cocos2d::experimental;
 
 //===============================================
 
-/*
-typedef struct aeMovieCameraProviderCallbackData
-{	
-	const ae_char_t * name;
-	ae_vector3_ptr_t position;
-	ae_vector3_ptr_t direction;
-	float fov;
-	float width;
-	float height;
-} aeMovieCameraProviderCallbackData;
-*/
 // TODO
 ae_voidptr_t AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
@@ -82,33 +71,6 @@ ae_voidptr_t AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbac
 	return nullptr;
 }
 
-/*
-typedef enum aeMovieLayerTypeEnum
-{
-	AE_MOVIE_LAYER_TYPE_ANY = 0,
-	AE_MOVIE_LAYER_TYPE_MOVIE = 1,
-	AE_MOVIE_LAYER_TYPE_EVENT = 7,
-	AE_MOVIE_LAYER_TYPE_SOCKET = 8,
-	AE_MOVIE_LAYER_TYPE_SHAPE = 9,
-	AE_MOVIE_LAYER_TYPE_SLOT = 11,
-	AE_MOVIE_LAYER_TYPE_NULL = 12,
-	AE_MOVIE_LAYER_TYPE_SOLID = 14,
-	AE_MOVIE_LAYER_TYPE_SEQUENCE = 15,
-	AE_MOVIE_LAYER_TYPE_VIDEO = 16,
-	AE_MOVIE_LAYER_TYPE_SOUND = 17,
-	AE_MOVIE_LAYER_TYPE_PARTICLE = 18,
-	AE_MOVIE_LAYER_TYPE_IMAGE = 20,
-	AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
-} aeMovieLayerTypeEnum;
-
-typedef struct aeMovieNodeProviderCallbackData
-{
-	const aeMovieLayerData * layer;
-	ae_matrix4_ptr_t matrix; 
-	float opacity;
-	const aeMovieLayerData * trackmatteLayer;
-} aeMovieNodeProviderCallbackData;
-*/
 ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: node provider");
 
@@ -193,29 +155,10 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 	return nullptr;
 }
 
-/*
-typedef struct aeMovieNodeDestroyCallbackData
-{
-	void * element;
-	aeMovieLayerTypeEnum type;
-} aeMovieNodeDestroyCallbackData;
-*/
 void AEMovie::callbackNodeDeleter( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: node destroyer");
 }
 
-/*
-typedef struct aeMovieNodeUpdateCallbackData
-{
-	void * element;
-    aeMovieLayerTypeEnum type;
-	ae_bool_t loop;
-	aeMovieNodeUpdateState state;
-	float offset;
-	ae_matrix4_ptr_t matrix;
-	float opacity;
-} aeMovieNodeUpdateCallbackData;
-*/
 void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: node update");
 
@@ -332,19 +275,6 @@ ae_voidptr_t AEMovie::callbackCompositionTrackMatteProvider( const aeMovieTrackM
     return tmData;
 }
 
-/*
-typedef struct aeMovieTrackMatteUpdateCallbackData
-{
-	void * element;
-    aeMovieLayerTypeEnum type;
-	ae_bool_t loop;
-	aeMovieNodeUpdateState state;
-	float offset;
-	ae_matrix4_ptr_t matrix;
-	aeMovieRenderMesh * mesh;
-	void * track_matte_data;
-} aeMovieTrackMatteUpdateCallbackData;
-*/
 void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: composition track matte update");
 
@@ -384,42 +314,10 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 	}
 }
 
-/*
-typedef struct aeMovieCompositionEventCallbackData
-{
-	void * element;
-	const ae_char_t * name;
-	ae_matrix4_ptr_t matrix;
-	float opacity;
-	ae_bool_t begin;
-} aeMovieCompositionEventCallbackData;
-*/
 void AEMovie::callbackCompositionEvent( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: composition event");
 }
 
-/*
-typedef enum
-{
-	AE_MOVIE_COMPOSITION_PLAY,
-	AE_MOVIE_COMPOSITION_STOP,
-	AE_MOVIE_COMPOSITION_INTERRUPT,
-	AE_MOVIE_COMPOSITION_END,
-	AE_MOVIE_COMPOSITION_LOOP_END,
-	AE_MOVIE_SUB_COMPOSITION_PLAY,
-	AE_MOVIE_SUB_COMPOSITION_STOP,
-	AE_MOVIE_SUB_COMPOSITION_INTERRUPT,
-	AE_MOVIE_SUB_COMPOSITION_END,
-	AE_MOVIE_SUB_COMPOSITION_LOOP_END,
-	__AE_MOVIE_COMPOSITION_STATES__
-} aeMovieCompositionStateFlag;
-
-typedef struct aeMovieCompositionStateCallbackData
-{
-	aeMovieCompositionStateFlag state;
-	const ae_char_t * subcomposition;
-} aeMovieCompositionStateCallbackData;
-*/
 void AEMovie::callbackCompositionState( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data ) {
 	CCLOG("CALL: composition state");
 
@@ -432,8 +330,6 @@ void AEMovie::callbackCompositionState( const aeMovieCompositionStateCallbackDat
 		movie->stop();
 	}
 }
-
-//===============================================
 
 void AEMovie::addCamera(const std::string & name, Camera *camera) {
 	TMapCamera::iterator it = _cameras.find(name);
@@ -490,8 +386,6 @@ void AEMovie::addTrackMatteNode(AETrackMatteNode * node) {
 void AEMovie::addTrackMatteData(AETrackMatteData * data) {
 	_trackMatteDatas.push_back(data);
 }
-
-//===============================================
 
 AEMovie * AEMovie::create(const std::string & path, const std::string & name) {
 	AEMovie * ret = new (std::nothrow) AEMovie();
