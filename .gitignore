@@ -3,3 +3,5 @@ dependencies/
 solutions/
 build_temp/
 docs/
+*.sublime-project
+*.sublime-workspace
