@@ -38,9 +38,8 @@ typedef struct aeMovieResourceSolid
 
     ae_float_t width;
     ae_float_t height;
-    ae_float_t r;
-    ae_float_t g;
-    ae_float_t b;
+
+    ae_color_t color;
 
 } aeMovieResourceSolid;
 

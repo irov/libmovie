@@ -119,7 +119,7 @@ static const ae_float_t table_inv_255[] = {
     250.f / 255.f, 251.f / 255.f, 252.f / 255.f, 253.f / 255.f, 254.f / 255.f, 255.f / 255.f
 };
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t ae_linerp_c( const ae_color_t _c1, const ae_color_t _c2, ae_float_t _t )
+AE_INTERNAL ae_float_t ae_linerp_c( const ae_color8_t _c1, const ae_color8_t _c2, ae_float_t _t )
 {
     ae_float_t c1f = table_inv_255[_c1];
     ae_float_t c2f = table_inv_255[_c2];
@@ -129,7 +129,7 @@ AE_INTERNAL ae_float_t ae_linerp_c( const ae_color_t _c1, const ae_color_t _c2, 
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t ae_tof_c( const ae_color_t _c )
+AE_INTERNAL ae_float_t ae_tof_c( const ae_color8_t _c )
 {
     ae_float_t cf = table_inv_255[_c];
 

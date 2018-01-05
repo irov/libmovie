@@ -688,7 +688,7 @@ ae_void_t ex_render( ae_void_t ) {
 					EX_LOG( "Mesh info:\n" );
 					EX_LOG( " Vertex count = %i\n", render_mesh.vertexCount );
 					EX_LOG( " Index count = %i\n", render_mesh.indexCount );
-					EX_LOG( " Color: %.2f %.2f %.2f %.2f\n", render_mesh.r, render_mesh.g, render_mesh.b, render_mesh.a );
+					EX_LOG( " Color: %.2f %.2f %.2f %.2f\n", render_mesh.color.r, render_mesh.color.g, render_mesh.color.b, render_mesh.opacity );
 					EX_LOG( " Blend func: %i\n", render_mesh.blend_mode );
 
 					//
@@ -753,7 +753,7 @@ ae_void_t ex_render( ae_void_t ) {
 					EX_LOG( "Mesh info:\n" );
 					EX_LOG( " Vertex count = %i\n", render_mesh.vertexCount );
 					EX_LOG( " Index count = %i\n", render_mesh.indexCount );
-					EX_LOG( " Color: %.2f %.2f %.2f %.2f\n", render_mesh.r, render_mesh.g, render_mesh.b, render_mesh.a );
+					EX_LOG( " Color: %.2f %.2f %.2f %.2f\n", render_mesh.color.r, render_mesh.color.g, render_mesh.color.b, render_mesh.opacity );
 					EX_LOG( " Blend func: %i\n", render_mesh.blend_mode );
 
 					//

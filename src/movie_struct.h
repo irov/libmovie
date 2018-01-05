@@ -167,15 +167,11 @@ struct aeMovieNode
     ae_uint32_t update_revision;
     ae_matrix4_t matrix;
 
+    ae_color_t composition_color;
     ae_float_t composition_opactity;
+       
+    ae_color_t color;
     ae_float_t opacity;
-
-    ae_float_t composition_r;
-    ae_float_t composition_g;
-    ae_float_t composition_b;
-    ae_float_t r;
-    ae_float_t g;
-    ae_float_t b;
 
     ae_blend_mode_t blend_mode;
 
@@ -381,9 +377,9 @@ struct aeMoviePropertyColor
     ae_float_t immutable_color_g;
     ae_float_t immutable_color_b;
 
-    const ae_color_t * colors_r;
-    const ae_color_t * colors_g;
-    const ae_color_t * colors_b;
+    const ae_color8_t * colors_r;
+    const ae_color8_t * colors_g;
+    const ae_color8_t * colors_b;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerColorVertex

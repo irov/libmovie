@@ -74,10 +74,8 @@ typedef struct aeMovieRenderMesh
     @brief Usually used as a multiplier.
     @{
     */
-    ae_float_t r;
-    ae_float_t g;
-    ae_float_t b;
-    ae_float_t a;
+    ae_color_t color;
+    ae_float_t opacity;
     /// @}
 
     /**
@@ -187,6 +185,10 @@ typedef struct aeMovieNodeProviderCallbackData
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
 
+    
+    /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
+
     /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
 
@@ -215,6 +217,9 @@ typedef struct aeMovieNodeUpdateCallbackData
     ae_matrix4_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
+
+    /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
 } aeMovieNodeUpdateCallbackData;
 
@@ -228,6 +233,9 @@ typedef struct aeMovieTrackMatteProviderCallbackData
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
+
+    /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
@@ -246,6 +254,9 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
+
+    /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
@@ -285,9 +296,7 @@ typedef struct aeMovieShaderPropertyUpdateCallbackData
     ae_string_t uniform;
     aeMovieShaderParameterTypeEnum type;
 
-    ae_float_t color_r;
-    ae_float_t color_g;
-    ae_float_t color_b;
+    ae_color_t color;
 
     ae_float_t value;
 } aeMovieShaderPropertyUpdateCallbackData;
@@ -310,6 +319,9 @@ typedef struct aeMovieCompositionEventCallbackData
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
+
+    /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;

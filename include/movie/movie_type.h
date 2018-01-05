@@ -66,7 +66,14 @@ static const ae_bool_t AE_TRUE = 1;
 static const ae_bool_t AE_FALSE = 0;
 static const ae_voidptr_t AE_NULL = 0;
 
-typedef ae_uint8_t ae_color_t;
+typedef ae_uint8_t ae_color8_t;
+
+typedef struct
+{
+    ae_float_t r;
+    ae_float_t g;
+    ae_float_t b;
+} ae_color_t;
 
 typedef struct
 {

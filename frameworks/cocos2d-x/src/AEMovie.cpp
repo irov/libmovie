@@ -804,7 +804,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					CCLOG("mesh info:");
 					CCLOG(" vertex count = %i", renderMesh.vertexCount);
 					CCLOG(" index count = %i", renderMesh.indexCount);
-					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.a);
+					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
 					CCLOG(" blendfunc: %i", renderMesh.blend_mode);
 
 					_renderDatas.push_back(AERenderData());
@@ -824,13 +824,13 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						V3F_C4B_T2F &v = renderData.vertices[i];
 
 						v.vertices = Vec3(p[0], p[1], p[2]);
-						v.colors = Color4B(Color4F(renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.a));
+						v.colors = Color4B(Color4F(renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity));
 						v.texCoords = Tex2F(uv[0], uv[1]);
 
 						CCLOG(" vertex %i:", i);
 						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
 						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
-						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.a);
+						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
 					}
 
 					TrianglesCommand::Triangles triangles;
@@ -951,7 +951,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					CCLOG("mesh info:");
 					CCLOG(" vertex count = %i", renderMesh.vertexCount);
 					CCLOG(" index count = %i", renderMesh.indexCount);
-					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.a);
+					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
 					CCLOG(" blendfunc: %i", renderMesh.blend_mode);
 
 					_renderDatas.push_back(AERenderData());
@@ -1014,14 +1014,14 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						V3F_C4B_T2F &v = renderData.vertices[i];
 
 						v.vertices = Vec3(p[0], p[1], p[2]);
-						v.colors = Color4B(Color4F(renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.a));
+						v.colors = Color4B(Color4F(renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity));
 						v.texCoords = Tex2F(uv[0], uv[1]);
 
 					#if COCOS2D_DEBUG > 0
 						CCLOG(" vertex %i:", i);
 						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
 						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
-						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.a);
+						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
 
 						float a = clip[0].dot(Vec3(1.f, v.vertices.x, v.vertices.y));
 						float b = clip[1].dot(Vec3(1.f, v.vertices.x, v.vertices.y));

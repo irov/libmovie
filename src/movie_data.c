@@ -479,7 +479,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
     {
         _property->immutable_color_r = 1.f;
 
-        ae_color_t * colors_r = AE_NEWN( _stream->instance, ae_color_t, _layer->frame_count );
+        ae_color8_t * colors_r = AE_NEWN( _stream->instance, ae_color8_t, _layer->frame_count );
 
         AE_RESULT_PANIC_MEMORY( colors_r );
 
@@ -500,7 +500,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
     {
         _property->immutable_color_g = 1.f;
 
-        ae_color_t * colors_g = AE_NEWN( _stream->instance, ae_color_t, _layer->frame_count );
+        ae_color8_t * colors_g = AE_NEWN( _stream->instance, ae_color8_t, _layer->frame_count );
         
         AE_RESULT_PANIC_MEMORY( colors_g );
 
@@ -521,7 +521,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
     {
         _property->immutable_color_b = 1.f;
 
-        ae_color_t * colors_b = AE_NEWN( _stream->instance, ae_color_t, _layer->frame_count );
+        ae_color8_t * colors_b = AE_NEWN( _stream->instance, ae_color8_t, _layer->frame_count );
 
         AE_RESULT_PANIC_MEMORY( colors_b );
 
@@ -1535,9 +1535,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
                 AE_READF( _stream, resource->width );
                 AE_READF( _stream, resource->height );
-                AE_READF( _stream, resource->r );
-                AE_READF( _stream, resource->g );
-                AE_READF( _stream, resource->b );
+                AE_READ_COLOR( _stream, &resource->color );
 
                 for( ;;)
                 {
