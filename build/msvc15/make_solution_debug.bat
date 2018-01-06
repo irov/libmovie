@@ -1,7 +1,7 @@
 @echo off
 
-set "CONFIGURATION=Release"
-set "SOLUTION_DIR=solutions\libmovie_msvc15_release"
+set "CONFIGURATION=Debug"
+set "SOLUTION_DIR=..\solutions\libmovie_msvc15_debug"
 
 @pushd ..
 @mkdir %SOLUTION_DIR%
