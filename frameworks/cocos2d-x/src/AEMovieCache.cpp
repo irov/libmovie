@@ -77,14 +77,7 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
 //===============================================
 
 AEMovieCache::AEMovieCache() {
-    _instance = ae_create_movie_instance( "f86464bbdebf0fe3e684b03ec263d049d079e6f1"
-        , &stdlib_movie_alloc
-        , &stdlib_movie_alloc_n
-        , &stdlib_movie_free
-        , &stdlib_movie_free_n
-        , (ae_movie_strncmp_t)AE_NULL
-        , &stdlib_movie_logerror
-        , AE_NULL );
+    _instance = nullptr;
 }
 
 AEMovieCache::~AEMovieCache() {
@@ -92,6 +85,27 @@ AEMovieCache::~AEMovieCache() {
         CCLOG( "Deleting movie instance." );
         ae_delete_movie_instance( _instance );
     }
+}
+
+bool AEMovieCache::initialize( const char * _hash )
+{
+    aeMovieInstance * instance = ae_create_movie_instance( _hash
+        , &stdlib_movie_alloc
+        , &stdlib_movie_alloc_n
+        , &stdlib_movie_free
+        , &stdlib_movie_free_n
+        , (ae_movie_strncmp_t)AE_NULL
+        , &stdlib_movie_logerror
+        , AE_NULL );
+
+    if( instance == AE_NULL )
+    {
+        return false;
+    }
+
+    _instance = instance;
+
+    return true;
 }
 
 AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::string & name ) {
