@@ -3073,7 +3073,7 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( aeMovieComposition * _compo
                     else
                     {
                         aeMovieCompositionStateCallbackData callbackData;
-                        callbackData.state = AE_MOVIE_SUB_COMPOSITION_LOOP_END;
+                        callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
                         callbackData.subcomposition = _subcomposition;
 
                         (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
@@ -3130,7 +3130,7 @@ ae_void_t ae_update_movie_composition( aeMovieComposition * _composition, ae_tim
         if( subcomposition_end == AE_TRUE )
         {
             aeMovieCompositionStateCallbackData callbackData;
-            callbackData.state = AE_MOVIE_SUB_COMPOSITION_END;
+            callbackData.state = AE_MOVIE_COMPOSITION_END;
             callbackData.subcomposition = subcomposition;
 
             (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
@@ -3845,7 +3845,7 @@ ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition
 
     aeMovieCompositionStateCallbackData callbackData;
 
-    callbackData.state = AE_MOVIE_SUB_COMPOSITION_STOP;
+    callbackData.state = AE_MOVIE_COMPOSITION_STOP;
     callbackData.subcomposition = _subcomposition;
 
     (_composition->providers.composition_state)(&callbackData, _composition->provider_data);
@@ -3873,7 +3873,7 @@ ae_bool_t ae_pause_movie_sub_composition( const aeMovieComposition * _compositio
 
     aeMovieCompositionStateCallbackData callbackData;
 
-    callbackData.state = AE_MOVIE_SUB_COMPOSITION_PAUSE;
+    callbackData.state = AE_MOVIE_COMPOSITION_PAUSE;
     callbackData.subcomposition = _subcomposition;
 
     (_composition->providers.composition_state)(&callbackData, _composition->provider_data);
@@ -3901,7 +3901,7 @@ ae_bool_t ae_resume_movie_sub_composition( const aeMovieComposition * _compositi
 
     aeMovieCompositionStateCallbackData callbackData;
 
-    callbackData.state = AE_MOVIE_SUB_COMPOSITION_RESUME;
+    callbackData.state = AE_MOVIE_COMPOSITION_RESUME;
     callbackData.subcomposition = _subcomposition;
 
     (_composition->providers.composition_state)(&callbackData, _composition->provider_data);
@@ -3943,7 +3943,7 @@ ae_void_t ae_interrupt_movie_sub_composition( const aeMovieComposition * _compos
 
     aeMovieCompositionStateCallbackData callbackData;
 
-    callbackData.state = AE_MOVIE_SUB_COMPOSITION_INTERRUPT;
+    callbackData.state = AE_MOVIE_COMPOSITION_INTERRUPT;
     callbackData.subcomposition = _subcomposition;
 
     (_composition->providers.composition_state)(&callbackData, _composition->provider_data);
