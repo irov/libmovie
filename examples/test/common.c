@@ -7,14 +7,20 @@ User-written callback functions for libmovie and other stuff used in all the exa
 */
 
 #include "common.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include <memory.h>
 #include <string.h>
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)
+#endif
+
 #include <time.h>
+
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 //
 // Declare working structure of our application.
@@ -72,7 +78,7 @@ AE_CALLBACK ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCod
 	va_end( argList );
 }
 
-AE_CALLBACK ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size ) {
+AE_CALLBACK ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size ) {
     AE_UNUSED( _carriage );
 	FILE * f = (FILE *)_data;
 	ae_size_t s = fread( _buff, 1, _size, f );
@@ -296,6 +302,29 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
 
 	switch( _callbackData->state )
 	{
+    case AE_MOVIE_STATE_UPDATE_BEGIN:
+        {
+            EX_LOG( " NODE_UPDATE_BEGIN\n" );
+            EX_LOG( " Type:" );
+            
+            switch( _callbackData->type )
+            {
+                case AE_MOVIE_LAYER_TYPE_VIDEO:
+                    EX_LOG( " video\n" );
+                    break;
+                case AE_MOVIE_LAYER_TYPE_SOUND:
+                    //                    ex_sound_node_t *sound_node = (ex_sound_node_t *)_callbackData->element;
+                    
+                    EX_LOG( " sound\n" );
+                    //                    EX_LOG("  name: '%s'\n", sound_node->sound->path);
+                    EX_LOG( "  offset: %.2f seconds\n", _callbackData->offset * 0.001f );
+                    
+                    break;
+                default:
+                    EX_LOG( " other\n" );
+                    break;
+            }
+        }break;
 	case AE_MOVIE_STATE_UPDATE_PROCESS:
 		{
 			EX_LOG( " NODE_UPDATE_UPDATE\n" );
@@ -312,34 +341,13 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
 				EX_LOG( " other\n" );
 				break;
 			}
-
-			break;
-		}
-	case AE_MOVIE_STATE_UPDATE_BEGIN:
-		{
-			EX_LOG( " NODE_UPDATE_BEGIN\n" );
-			EX_LOG( " Type:" );
-
-			switch( _callbackData->type )
-			{
-			case AE_MOVIE_LAYER_TYPE_VIDEO:
-				EX_LOG( " video\n" );
-				break;
-			case AE_MOVIE_LAYER_TYPE_SOUND:
-				//					ex_sound_node_t *sound_node = (ex_sound_node_t *)_callbackData->element;
-
-				EX_LOG( " sound\n" );
-				//					EX_LOG("  name: '%s'\n", sound_node->sound->path);
-				EX_LOG( "  offset: %.2f seconds\n", _callbackData->offset * 0.001f );
-
-				break;
-			default:
-				EX_LOG( " other\n" );
-				break;
-			}
-
-			break;
-		}
+		}break;
+    case AE_MOVIE_STATE_UPDATE_PAUSE:
+        {
+        }break;
+    case AE_MOVIE_STATE_UPDATE_RESUME:
+        {
+        }break;
 	case AE_MOVIE_STATE_UPDATE_END:
 		{
 			EX_LOG( " NODE_UPDATE_END\n" );
@@ -361,9 +369,7 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
 				EX_LOG( " other\n" );
 				break;
 			}
-
-			break;
-		}
+		}break;
 	}
 }
 
@@ -396,28 +402,38 @@ ae_void_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackD
 
 	EX_LOG( " State:" );
 
-	switch( _callbackData->state ) {
-	case AE_MOVIE_STATE_UPDATE_BEGIN: {
+	switch( _callbackData->state )
+    {
+	case AE_MOVIE_STATE_UPDATE_BEGIN:
+        {
 			EX_LOG( " NODE_UPDATE_BEGIN\n" );
 
 			// Should update track_matte_data->mesh with callback one.
-
-			break;
-		}
-	case AE_MOVIE_STATE_UPDATE_PROCESS: {
+		}break;
+	case AE_MOVIE_STATE_UPDATE_PROCESS:
+        {
 			EX_LOG( " NODE_UPDATE_UPDATE\n" );
 
 			// Should update track_matte_data->mesh with callback one.
-
-			break;
-		}
-	case AE_MOVIE_STATE_UPDATE_END: {
+		}break;
+    case AE_MOVIE_STATE_UPDATE_PAUSE:
+        {
+            EX_LOG( " NODE_UPDATE_PAUSE\n" );
+            
+            // Should update track_matte_data->mesh with callback one.
+        }break;
+    case AE_MOVIE_STATE_UPDATE_RESUME:
+        {
+            EX_LOG( " NODE_UPDATE_RESUME\n" );
+            
+            // Should update track_matte_data->mesh with callback one.
+        }break;
+	case AE_MOVIE_STATE_UPDATE_END:
+        {
 			EX_LOG( " NODE_UPDATE_END\n" );
 
 			// Do nothing.
-
-			break;
-		}
+		}break;
 	}
 }
 
@@ -504,7 +520,7 @@ ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackDa
 	case AE_MOVIE_COMPOSITION_LOOP_END:
 		EX_LOG( " COMPOSITION_LOOP_END\n" );
 		break;
-	}
+    }
 }
 
 //==================================================
@@ -721,7 +737,23 @@ ae_void_t ex_render( ae_void_t ) {
 					EX_LOG( "submovie\n" );
 					break;
 				}
-			}
+                case AE_MOVIE_LAYER_TYPE_TEXT: {
+                    //Empty
+                    break;
+                }
+                case AE_MOVIE_LAYER_TYPE_EVENT: {
+                    //Empty
+                    break;
+                }
+                case AE_MOVIE_LAYER_TYPE_SOCKET: {
+                    //Empty
+                    break;
+                }
+                case AE_MOVIE_LAYER_TYPE_NULL: {
+                    //Empty
+                    break;
+                }
+            }
 		}
 		else {
 			//
@@ -734,60 +766,80 @@ ae_void_t ex_render( ae_void_t ) {
 
 			switch( render_mesh.layer_type )
 			{
-			case AE_MOVIE_LAYER_TYPE_IMAGE:
-				{
-					EX_LOG( "image\n" );
-
-					//
-					// Reference to track matte descriptor (which usually contains just a texture pointer)
-					// is in render_mesh.element_data.
-					//
-
-					ae_voidptr_t track_matte_ref = render_mesh.element_data;
-
-					if( track_matte_ref == AE_NULL )
-						break;
-					if( render_mesh.vertexCount == 0 || render_mesh.indexCount == 0 )
-						break;
-
-					EX_LOG( "Mesh info:\n" );
-					EX_LOG( " Vertex count = %i\n", render_mesh.vertexCount );
-					EX_LOG( " Index count = %i\n", render_mesh.indexCount );
-					EX_LOG( " Color: %.2f %.2f %.2f %.2f\n", render_mesh.color.r, render_mesh.color.g, render_mesh.color.b, render_mesh.opacity );
-					EX_LOG( " Blend func: %i\n", render_mesh.blend_mode );
-
-					//
-					// Mesh image pointer is in render_mesh.resource_data.
-					// It comes from the source layer and was set in
-					// resource provider callback previously.
-					//
-
-					//
-					// Track matte data (which contains aeMovieRenderMesh of the masking layer)
-					// is in render_mesh.track_matte_data.
-					//
-
-					//ae_voidptr_t track_matte_data = render_mesh.track_matte_data;
-					//					const aeMovieRenderMesh * track_matte_render_mesh = &track_matte_data->render_mesh;
-
-										//
-										// Track matte image pointer is in track_matte_render_mesh.resource_data.
-										// It was set in node provider callback previously.
-										//
-
-					//					if (track_matte_render_mesh.vertexCount == 0 || track_matte_render_mesh.indexCount == 0)
-					//						break;
-
-										//
-										// From here on you can use track matte mesh & texture to mask the main mesh rendering
-										// in any way you want (multitexturing with reprojected UVs, multipass etc.).
-										//
-
-										// Render here using the main mesh & track matte data.
-
-					break;
-				}
-			}
+                case AE_MOVIE_LAYER_TYPE_ANY:
+                case AE_MOVIE_LAYER_TYPE_MOVIE:
+                case AE_MOVIE_LAYER_TYPE_TEXT:
+                case AE_MOVIE_LAYER_TYPE_EVENT:
+                case AE_MOVIE_LAYER_TYPE_SOCKET:
+                case AE_MOVIE_LAYER_TYPE_SHAPE:
+                case AE_MOVIE_LAYER_TYPE_SLOT:
+                case AE_MOVIE_LAYER_TYPE_NULL:
+                case AE_MOVIE_LAYER_TYPE_SOLID:
+                case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+                case AE_MOVIE_LAYER_TYPE_VIDEO:
+                case AE_MOVIE_LAYER_TYPE_SOUND:
+                case AE_MOVIE_LAYER_TYPE_PARTICLE: {
+                    //Empty
+                    break;
+                }
+                case AE_MOVIE_LAYER_TYPE_IMAGE:
+                {
+                    EX_LOG( "image\n" );
+                    
+                    //
+                    // Reference to track matte descriptor (which usually contains just a texture pointer)
+                    // is in render_mesh.element_data.
+                    //
+                    
+                    ae_voidptr_t track_matte_ref = render_mesh.element_data;
+                    
+                    if( track_matte_ref == AE_NULL )
+                        break;
+                    if( render_mesh.vertexCount == 0 || render_mesh.indexCount == 0 )
+                        break;
+                    
+                    EX_LOG( "Mesh info:\n" );
+                    EX_LOG( " Vertex count = %i\n", render_mesh.vertexCount );
+                    EX_LOG( " Index count = %i\n", render_mesh.indexCount );
+                    EX_LOG( " Color: %.2f %.2f %.2f %.2f\n", render_mesh.color.r, render_mesh.color.g, render_mesh.color.b, render_mesh.opacity );
+                    EX_LOG( " Blend func: %i\n", render_mesh.blend_mode );
+                    
+                    //
+                    // Mesh image pointer is in render_mesh.resource_data.
+                    // It comes from the source layer and was set in
+                    // resource provider callback previously.
+                    //
+                    
+                    //
+                    // Track matte data (which contains aeMovieRenderMesh of the masking layer)
+                    // is in render_mesh.track_matte_data.
+                    //
+                    
+                    //ae_voidptr_t track_matte_data = render_mesh.track_matte_data;
+                    //                    const aeMovieRenderMesh * track_matte_render_mesh = &track_matte_data->render_mesh;
+                    
+                    //
+                    // Track matte image pointer is in track_matte_render_mesh.resource_data.
+                    // It was set in node provider callback previously.
+                    //
+                    
+                    //                    if (track_matte_render_mesh.vertexCount == 0 || track_matte_render_mesh.indexCount == 0)
+                    //                        break;
+                    
+                    //
+                    // From here on you can use track matte mesh & texture to mask the main mesh rendering
+                    // in any way you want (multitexturing with reprojected UVs, multipass etc.).
+                    //
+                    
+                    // Render here using the main mesh & track matte data.
+                    
+                    break;
+                }
+                case AE_MOVIE_LAYER_TYPE_SUB_MOVIE: {
+                    //Empty
+                    break;
+                }
+            }
 		}
 
 		EX_LOG( "\n" );
