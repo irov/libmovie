@@ -2,6 +2,20 @@ cmake_minimum_required(VERSION 3.9)
 
 project(cc_movie)
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall /WX")
+  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4710") #function not inlined 
+  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4738") #storing 32-bit float result in memory, possible loss of performance
+endif()
+
 set(cc_movie_dependencies ../../dependencies)
 
 include_directories( ${PROJECT_NAME} ../../include)
@@ -14,9 +28,10 @@ INCLUDE_DIRECTORIES( cocos2dx ${cc_movie_dependencies}/cocos2d-x/external/glfw3/
 INCLUDE_DIRECTORIES( cocos2dx ${cc_movie_dependencies}/cocos2d-x/external/win32-specific/gles/include/OGLES )
 
 ADD_DEFINITIONS(-DCC_STATIC)
-ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251 /wd4273")
+if( MSVC )
+  ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
+endif()
 
 file(GLOB cc_player_headers src/*.h)
 file(GLOB cc_player_sources src/*.cpp)
