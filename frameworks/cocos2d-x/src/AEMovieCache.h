@@ -30,8 +30,8 @@
 #ifndef __AEMovieCacheEx_H__
 #define __AEMovieCacheEx_H__
 
-#include "movie/movie.hpp"
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
+
 #include "AEMovieData.h"
 
 NS_CC_EXT_BEGIN;

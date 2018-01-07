@@ -30,7 +30,7 @@
 #ifndef __AERenderDataEx_H__
 #define __AERenderDataEx_H__
 
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
 
 NS_CC_EXT_BEGIN;
 

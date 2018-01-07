@@ -27,7 +27,6 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-//#include "cocos2d.h"
 #include "AEMovie.h"
 
 NS_CC_EXT_BEGIN;

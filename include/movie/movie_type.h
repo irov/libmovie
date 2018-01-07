@@ -43,6 +43,7 @@ typedef uint16_t ae_uint16_t;
 typedef uint32_t ae_uint32_t;
 typedef int32_t ae_int32_t;
 typedef size_t ae_size_t;
+typedef int32_t ae_enum_t;
 typedef float ae_float_t;
 typedef float ae_time_t;
 typedef void * ae_voidptr_t;

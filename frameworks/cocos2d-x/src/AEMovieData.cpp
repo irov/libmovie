@@ -27,10 +27,10 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#include "cocos2d.h"
-#include "3d/CCBundleReader.h"
-#include "extensions/cocos-ext.h"
-#include "audio/include/AudioEngine.h"
+//#include "cocos2d.h"
+//#include "extensions/cocos-ext.h"
+//#include "audio/include/AudioEngine.h"
+#include "AEMovieData.h"
 #include "AEMovie.h"
 
 NS_CC_EXT_BEGIN;
@@ -188,6 +188,9 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
 }
 
 Ref *AEMovieData::createImage( const std::string & path, int width, int height ) {
+    AE_UNUSED( width );
+    AE_UNUSED( height );
+
     std::string fileName = _path + path;
     std::replace( fileName.begin(), fileName.end(), '\\', '/' );
     CCLOG( "createImage fileName = %s", fileName.c_str() );

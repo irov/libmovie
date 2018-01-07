@@ -30,7 +30,7 @@
 #ifndef __AESlotNodeEx_H__
 #define __AESlotNodeEx_H__
 
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
 
 NS_CC_EXT_BEGIN;
 

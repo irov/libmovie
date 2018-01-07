@@ -27,8 +27,9 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#include "cocos2d.h"
-#include "audio/include/AudioEngine.h"
+//#include "cocos2d.h"
+//#include "audio/include/AudioEngine.h"
+#include "AESoundNode.h"
 #include "AEMovie.h"
 
 NS_CC_EXT_BEGIN;
@@ -84,6 +85,8 @@ void AESoundNode::setTime( float t ) {
 }
 
 void AESoundNode::updateTimeCallback( float dt ) {
+    AE_UNUSED( dt );
+
     Scheduler* const scheduler( Director::getInstance()->getScheduler() );
 
     if( _audioId == AudioEngine::INVALID_AUDIO_ID ) {

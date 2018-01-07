@@ -30,15 +30,7 @@
 #ifndef __AEMovieEx_H__
 #define __AEMovieEx_H__
 
-#include "cocos/2d/CCNode.h"
-#include "cocos/2d/CCDrawNode.h"
-#include "cocos/2d/CCCamera.h"
-#include "cocos/renderer/CCRenderer.h"
-#include "cocos/renderer/CCGLProgramState.h"
-#include "extensions/ExtensionMacros.h"
-#include "extensions/ExtensionExport.h"
-
-#include "movie/movie.hpp"
+#include "AEConfig.h"
 
 #include "AESound.h"
 #include "AESoundNode.h"

@@ -30,7 +30,8 @@
 #ifndef __AEMovieDataEx_H__
 #define __AEMovieDataEx_H__
 
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
+
 #include "AESound.h"
 
 NS_CC_EXT_BEGIN;

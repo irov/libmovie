@@ -27,11 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-//#include "cocos2d.h"
-//#include "extensions/cocos-ext.h"
 #include "AEMovie.h"
-#include "audio/include/AudioEngine.h"
-#include "renderer/CCGLProgramCache.h"
+//#include "renderer/CCGLProgramCache.h"
 
 NS_CC_EXT_BEGIN;
 
@@ -43,6 +40,9 @@ using namespace cocos2d::experimental;
 // TODO
 ae_voidptr_t AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
+    AE_UNUSED( _callbackData );
+    AE_UNUSED( _data );
+
 	CCLOG("CALL: camera provider");
 /*
 	AEMovie *movie = static_cast<AEMovie *>(_data);
@@ -181,11 +181,16 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 }
 
 void AEMovie::callbackNodeDeleter( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data ) {
+    AE_UNUSED( _callbackData );
+    AE_UNUSED( _data );
+    
 	CCLOG("CALL: node destroyer");
 }
 
 void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
-	CCLOG("CALL: node update");
+    AE_UNUSED( _data );
+
+    CCLOG("CALL: node update");
 
 //	AEMovie *movie = static_cast<AEMovie *>(_data);
 
@@ -378,6 +383,8 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 }
 
 void AEMovie::callbackCompositionEvent( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
+    AE_UNUSED( _callbackData );
+    AE_UNUSED( _data );
 	CCLOG("CALL: composition event");
 }
 
