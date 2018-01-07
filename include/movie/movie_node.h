@@ -119,6 +119,14 @@ typedef struct aeMovieNode aeMovieNode;
 @{
 */
 
+/*
+ case AE_MOVIE_STATE_UPDATE_BEGIN:
+ case AE_MOVIE_STATE_UPDATE_PROCESS:
+ case AE_MOVIE_STATE_UPDATE_PAUSE:
+ case AE_MOVIE_STATE_UPDATE_RESUME:
+ case AE_MOVIE_STATE_UPDATE_END:
+ */
+
 typedef enum
 {
     AE_MOVIE_STATE_UPDATE_BEGIN = 0,

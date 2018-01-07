@@ -91,6 +91,18 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 		CCLOG(" No track matte.");
 
 		switch( layerType ) {
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SOLID:
+            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_IMAGE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                break;
 			case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
 				auto slotNode = AESlotNode::create();
@@ -105,11 +117,11 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 //				movie->addChild(slotNode);
 
 				return slotNode;
-			}
+			}break;
 			case AE_MOVIE_LAYER_TYPE_VIDEO: {
 				CCLOG(" Video:");
-				break;
-			}
+				
+			}break;
 			case AE_MOVIE_LAYER_TYPE_SOUND: {
 				AESound *sound = static_cast<AESound *>(ae_get_movie_layer_data_resource_data(_callbackData->layer));
 				
@@ -126,14 +138,27 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 				CCLOG(" node ptr: %i", soundNode);
 
 				return soundNode;
-			}
+			}break;
 		}
 	}
 	else {
 		CCLOG(" Has track matte.");
 
 		switch( layerType ) {
-			case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SLOT:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SOLID:
+            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+            case AE_MOVIE_LAYER_TYPE_VIDEO:
+            case AE_MOVIE_LAYER_TYPE_SOUND:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                break;
+            case AE_MOVIE_LAYER_TYPE_SHAPE:
 				CCLOG(" Shape:");
 				break;
 			case AE_MOVIE_LAYER_TYPE_IMAGE:
@@ -166,11 +191,73 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 
 	switch (_callbackData->state)
 	{
+        case AE_MOVIE_STATE_UPDATE_BEGIN:
+        {
+            CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
+            
+            switch (_callbackData->type)
+            {
+                case AE_MOVIE_LAYER_TYPE_MOVIE:
+                case AE_MOVIE_LAYER_TYPE_TEXT:
+                case AE_MOVIE_LAYER_TYPE_EVENT:
+                case AE_MOVIE_LAYER_TYPE_SOCKET:
+                case AE_MOVIE_LAYER_TYPE_SHAPE:
+                case AE_MOVIE_LAYER_TYPE_SLOT:
+                case AE_MOVIE_LAYER_TYPE_NULL:
+                case AE_MOVIE_LAYER_TYPE_SOLID:
+                case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+                case AE_MOVIE_LAYER_TYPE_PARTICLE:
+                case AE_MOVIE_LAYER_TYPE_IMAGE:
+                case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                    break;
+                case AE_MOVIE_LAYER_TYPE_VIDEO:
+                    CCLOG(" Video:");
+                    break;
+                case AE_MOVIE_LAYER_TYPE_SOUND:
+                    AESoundNode *soundNode = static_cast<AESoundNode *>(_callbackData->element);
+                    
+                    CCLOG("  node ptr: %i", soundNode);
+                    CCLOG(" Sound:");
+                    CCLOG("  sound ptr: %i", soundNode->getSound());
+                    CCLOG("  name: '%s'", soundNode->getSound()->getPath());
+                    CCLOG("  offset: %.2f sec", _callbackData->offset * 0.001f);
+                    
+                    int id = soundNode->getAudioId();
+                    
+                    // FIXME: maybe don't stop, just set time instead
+                    if (id != AudioEngine::INVALID_AUDIO_ID) {
+                        AudioEngine::stop(id);
+                    }
+                    
+                    id = AudioEngine::play2d(soundNode->getSound()->getPath());
+                    
+                    CCLOG("  node audio id: %i", id);
+                    CCLOG("  node audio state: %i", AudioEngine::getState(id));
+                    
+                    soundNode->setAudioId(id);
+                    soundNode->setTime(_callbackData->offset * 0.001f);
+                    
+                    break;
+            }
+        }break;
 		case AE_MOVIE_STATE_UPDATE_PROCESS:
 		{
 			CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
 
 			switch (_callbackData->type) {
+                case AE_MOVIE_LAYER_TYPE_MOVIE:
+                case AE_MOVIE_LAYER_TYPE_TEXT:
+                case AE_MOVIE_LAYER_TYPE_EVENT:
+                case AE_MOVIE_LAYER_TYPE_SOCKET:
+                case AE_MOVIE_LAYER_TYPE_SHAPE:
+                case AE_MOVIE_LAYER_TYPE_NULL:
+                case AE_MOVIE_LAYER_TYPE_SOLID:
+                case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+                case AE_MOVIE_LAYER_TYPE_VIDEO:
+                case AE_MOVIE_LAYER_TYPE_SOUND:
+                case AE_MOVIE_LAYER_TYPE_IMAGE:
+                case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                    break;
 				case AE_MOVIE_LAYER_TYPE_PARTICLE:
 					CCLOG(" Particle:");
 					break;
@@ -190,53 +277,30 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 
 					break;
 			}
-
-			break;
-		}
-		case AE_MOVIE_STATE_UPDATE_BEGIN:
-		{
-			CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
-
-			switch (_callbackData->type)
-			{
-				case AE_MOVIE_LAYER_TYPE_VIDEO:
-					CCLOG(" Video:");
-					break;
-				case AE_MOVIE_LAYER_TYPE_SOUND:
-					AESoundNode *soundNode = static_cast<AESoundNode *>(_callbackData->element);
-
-					CCLOG("  node ptr: %i", soundNode);
-					CCLOG(" Sound:");
-					CCLOG("  sound ptr: %i", soundNode->getSound());
-					CCLOG("  name: '%s'", soundNode->getSound()->getPath());
-					CCLOG("  offset: %.2f sec", _callbackData->offset * 0.001f);
-
-					int id = soundNode->getAudioId();
-
-					// FIXME: maybe don't stop, just set time instead
-					if (id != AudioEngine::INVALID_AUDIO_ID) {
-						AudioEngine::stop(id);
-					}
-
-					id = AudioEngine::play2d(soundNode->getSound()->getPath());
-
-					CCLOG("  node audio id: %i", id);
-					CCLOG("  node audio state: %i", AudioEngine::getState(id));
-
-					soundNode->setAudioId(id);
-					soundNode->setTime(_callbackData->offset * 0.001f);
-
-					break;
-			}
-
-			break;
-		}
+		}break;
+        case AE_MOVIE_STATE_UPDATE_PAUSE:
+            break;
+        case AE_MOVIE_STATE_UPDATE_RESUME:
+            break;
 		case AE_MOVIE_STATE_UPDATE_END:
 		{
 			CCLOG("AE_MOVIE_STATE_UPDATE_END");
 
 			switch (_callbackData->type)
 			{
+                case AE_MOVIE_LAYER_TYPE_MOVIE:
+                case AE_MOVIE_LAYER_TYPE_TEXT:
+                case AE_MOVIE_LAYER_TYPE_EVENT:
+                case AE_MOVIE_LAYER_TYPE_SOCKET:
+                case AE_MOVIE_LAYER_TYPE_SHAPE:
+                case AE_MOVIE_LAYER_TYPE_SLOT:
+                case AE_MOVIE_LAYER_TYPE_NULL:
+                case AE_MOVIE_LAYER_TYPE_SOLID:
+                case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+                case AE_MOVIE_LAYER_TYPE_PARTICLE:
+                case AE_MOVIE_LAYER_TYPE_IMAGE:
+                case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                    break;
 				case AE_MOVIE_LAYER_TYPE_VIDEO:
 					CCLOG(" Video:");
 					break;
@@ -254,9 +318,7 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 
 					break;
 			}
-
-			break;
-		}
+		}break;
 	}
 }
 
@@ -279,6 +341,7 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 	CCLOG("CALL: composition track matte update");
 
 	AEMovie *movie = static_cast<AEMovie *>(_data);
+    AE_UNUSED(movie);
 
 	switch (_callbackData->state) {
 		case AE_MOVIE_STATE_UPDATE_BEGIN: {
@@ -287,18 +350,19 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
 			tmData->setMatrix(_callbackData->matrix);
 			tmData->setRenderMesh(*_callbackData->mesh);
-
-			break;
-		}
+			
+		}break;
 		case AE_MOVIE_STATE_UPDATE_PROCESS: {
 			CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
 
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
 			tmData->setMatrix(_callbackData->matrix);
 			tmData->setRenderMesh(*_callbackData->mesh);
-
-			break;
-		}
+			
+		}break;
+        case AE_MOVIE_STATE_UPDATE_PAUSE:
+        case AE_MOVIE_STATE_UPDATE_RESUME:
+            break;
 		case AE_MOVIE_STATE_UPDATE_END: {
 			CCLOG("NODE_UPDATE_END");
 /*
@@ -309,8 +373,7 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 
 			CC_SAFE_RELEASE(tmData);
 */
-			break;
-		}
+		}break;
 	}
 }
 
@@ -401,14 +464,13 @@ AEMovie * AEMovie::create(const std::string & path, const std::string & name) {
 }
 
 AEMovie::AEMovie()
-: _movieData(nullptr)
+: _normalGPS(nullptr)
+, _trackMatteGPS(nullptr)
+, _movieData(nullptr)
 , _composition(nullptr)
-//,_isPlayingSubComposition(false)
-, _duration(0.f)
 , _time(0.f)
+, _duration(0.f)
 , _eventCallback(nullptr)
-,_normalGPS(nullptr)
-,_trackMatteGPS(nullptr)
 {
 #ifdef AE_MOVIE_DEBUG_DRAW
 	_debugDrawNode = DrawNode::create();
@@ -758,11 +820,11 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 			switch( renderMesh.layer_type )
 			{
-				case AE_MOVIE_LAYER_TYPE_ANY:
-				{
-					CCLOG("Layer type: any.");
-					break;
-				}
+                case AE_MOVIE_LAYER_TYPE_TEXT:
+                case AE_MOVIE_LAYER_TYPE_EVENT:
+                case AE_MOVIE_LAYER_TYPE_SOCKET:
+                case AE_MOVIE_LAYER_TYPE_NULL:
+                    break;
 				case AE_MOVIE_LAYER_TYPE_MOVIE:
 				{
 					CCLOG("Layer type: movie.");
@@ -937,6 +999,20 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 			switch( renderMesh.layer_type )
 			{
+                case AE_MOVIE_LAYER_TYPE_MOVIE:
+                case AE_MOVIE_LAYER_TYPE_TEXT:
+                case AE_MOVIE_LAYER_TYPE_EVENT:
+                case AE_MOVIE_LAYER_TYPE_SOCKET:
+                case AE_MOVIE_LAYER_TYPE_SHAPE:
+                case AE_MOVIE_LAYER_TYPE_SLOT:
+                case AE_MOVIE_LAYER_TYPE_NULL:
+                case AE_MOVIE_LAYER_TYPE_SOLID:
+                case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+                case AE_MOVIE_LAYER_TYPE_VIDEO:
+                case AE_MOVIE_LAYER_TYPE_SOUND:
+                case AE_MOVIE_LAYER_TYPE_PARTICLE:
+                case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                    break;
 				case AE_MOVIE_LAYER_TYPE_IMAGE:
 				{
 					CCLOG("Layer type: image.");

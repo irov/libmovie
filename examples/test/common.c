@@ -653,11 +653,6 @@ ae_void_t ex_render( ae_void_t ) {
 
 			switch( render_mesh.layer_type )
 			{
-			case AE_MOVIE_LAYER_TYPE_ANY:
-				{
-					EX_LOG( "any\n" );
-					break;
-				}
 			case AE_MOVIE_LAYER_TYPE_MOVIE:
 				{
 					EX_LOG( "movie\n" );
@@ -766,7 +761,6 @@ ae_void_t ex_render( ae_void_t ) {
 
 			switch( render_mesh.layer_type )
 			{
-                case AE_MOVIE_LAYER_TYPE_ANY:
                 case AE_MOVIE_LAYER_TYPE_MOVIE:
                 case AE_MOVIE_LAYER_TYPE_TEXT:
                 case AE_MOVIE_LAYER_TYPE_EVENT:
@@ -780,8 +774,7 @@ ae_void_t ex_render( ae_void_t ) {
                 case AE_MOVIE_LAYER_TYPE_SOUND:
                 case AE_MOVIE_LAYER_TYPE_PARTICLE: {
                     //Empty
-                    break;
-                }
+                }break;
                 case AE_MOVIE_LAYER_TYPE_IMAGE:
                 {
                     EX_LOG( "image\n" );
@@ -833,12 +826,10 @@ ae_void_t ex_render( ae_void_t ) {
                     
                     // Render here using the main mesh & track matte data.
                     
-                    break;
-                }
+                }break;
                 case AE_MOVIE_LAYER_TYPE_SUB_MOVIE: {
-                    //Empty
-                    break;
-                }
+                    //Empty                    
+                }break;
             }
 		}
 
