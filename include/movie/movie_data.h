@@ -40,8 +40,7 @@
 */
 
 typedef enum aeMovieLayerTypeEnum
-{
-    AE_MOVIE_LAYER_TYPE_ANY = 0,
+{    
     AE_MOVIE_LAYER_TYPE_MOVIE = 1,
     AE_MOVIE_LAYER_TYPE_TEXT = 5,
     AE_MOVIE_LAYER_TYPE_EVENT = 7,
@@ -57,6 +56,12 @@ typedef enum aeMovieLayerTypeEnum
     AE_MOVIE_LAYER_TYPE_IMAGE = 20,
     AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 } aeMovieLayerTypeEnum;
+
+typedef enum aeMovieLayerTypeExEnum
+{
+    AE_MOVIE_LAYER_TYPE_ANY = 0,
+} aeMovieLayerTypeExEnum;
+
 
 typedef enum aeMovieLayerParamEnum
 {

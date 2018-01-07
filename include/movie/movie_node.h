@@ -668,7 +668,7 @@ uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition
 @param [in] _type Node type.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type );
+ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type );
 
 /**
 @brief Get node active time range in milliseconds.
@@ -680,10 +680,10 @@ Returns interval on which node is active, i.e. being played, rendered, etc.
 @param [out] _out End time.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_time_t * _in, ae_time_t * _out );
+ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_time_t * _in, ae_time_t * _out );
 
 
-ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable );
+ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_bool_t _enable );
 
 /**
 @brief Toggle layer usage.
@@ -693,7 +693,7 @@ ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _com
 @param [in] _enable If TRUE, enable usage.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable );
+ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_bool_t _enable );
 
 /**
 @brief Query whether the given node is active or not.
@@ -703,7 +703,7 @@ ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _comp
 @param [out] _enable TRUE if enabled.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t * _enable );
+ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_bool_t * _enable );
 
 // compositions
 /// @}

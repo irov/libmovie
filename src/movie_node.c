@@ -3607,7 +3607,7 @@ ae_uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composit
     return count;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type )
+ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -3636,7 +3636,7 @@ ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_time_t * _in, ae_time_t * _out )
+ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_time_t * _in, ae_time_t * _out )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -3668,7 +3668,7 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable )
+ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_bool_t _enable )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -3695,7 +3695,7 @@ ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _com
     }
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable )
+ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_bool_t _enable )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -3726,7 +3726,7 @@ ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _comp
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t * _enable )
+ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_uint32_t _type, ae_bool_t * _enable )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;
 

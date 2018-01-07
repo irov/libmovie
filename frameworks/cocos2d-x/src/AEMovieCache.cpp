@@ -68,7 +68,7 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
 
     va_start( argList, _format );
     //	vprintf( _format, argList );
-    _vsnprintf( (char *)dst, sizeof( dst ), _format, argList );
+    vsnprintf( (char *)dst, sizeof( dst ), _format, argList );
     va_end( argList );
 
     CCLOG( dst );
