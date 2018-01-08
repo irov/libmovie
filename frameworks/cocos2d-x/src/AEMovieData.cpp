@@ -165,7 +165,7 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
     if( data.isNull() )
     {
         CCLOG( "'%s' not found.", fullPath.c_str() );
-        return nullptr;
+        return false;
     }
 
     BundleReader reader;
