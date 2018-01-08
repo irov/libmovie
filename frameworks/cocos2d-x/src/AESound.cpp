@@ -27,8 +27,9 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#include "cocos2d.h"
-#include "audio/include/AudioEngine.h"
+//#include "cocos2d.h"
+//#include "audio/include/AudioEngine.h"
+#include "AESound.h"
 #include "AEMovie.h"
 
 NS_CC_EXT_BEGIN;

@@ -1,6 +1,6 @@
 #	include "movie/movie.h"
 
-#	include <malloc.h>
+#	include <stdlib.h>
 #	include <stdio.h>
 #	include <stdarg.h>
 #	include <memory.h>
@@ -48,7 +48,7 @@ AE_CALLBACK ae_void_t stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCod
 	va_end( argList );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_CALLBACK ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_uint32_t _size )
+AE_CALLBACK ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size )
 {
     AE_UNUSED( _carriage );
 

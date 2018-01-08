@@ -30,8 +30,8 @@
 #ifndef __AEMovieCacheEx_H__
 #define __AEMovieCacheEx_H__
 
-#include "movie/movie.hpp"
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
+
 #include "AEMovieData.h"
 
 NS_CC_EXT_BEGIN;
@@ -43,6 +43,7 @@ NS_CC_EXT_BEGIN;
 class CC_DLL AEMovieCache : public cocos2d::Ref
 {
 public:
+    bool initialize( const char * _hash );
     AEMovieData * addMovie( const std::string & path, const std::string & name );
 
     void removeUnusedMovies();

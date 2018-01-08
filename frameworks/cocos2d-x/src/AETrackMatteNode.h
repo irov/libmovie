@@ -30,7 +30,7 @@
 #ifndef __AETrackMatteNodeEx_H__
 #define __AETrackMatteNodeEx_H__
 
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
 
 NS_CC_EXT_BEGIN;
 

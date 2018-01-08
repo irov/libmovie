@@ -30,9 +30,11 @@
 #ifndef __AESoundNodeEx_H__
 #define __AESoundNodeEx_H__
 
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
 
 NS_CC_EXT_BEGIN;
+
+class AESound;
 
 // sound node inside composition
 // TODO: later create an abstract class for all AEM nodes

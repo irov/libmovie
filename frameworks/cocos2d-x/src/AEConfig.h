@@ -27,54 +27,21 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-//#include "cocos2d.h"
-//#include "audio/include/AudioEngine.h"
-#include "AESlotNode.h"
-#include "AEMovie.h"
+#pragma once
 
-NS_CC_EXT_BEGIN;
-
-USING_NS_CC;
-
-AESlotNode * AESlotNode::create() {
-    AESlotNode * ret = new (std::nothrow) AESlotNode();
-
-    if( ret && ret->init() ) {
-        ret->autorelease();
-        return ret;
-    }
-
-    CC_SAFE_DELETE( ret );
-
-    return nullptr;
-}
-
-AESlotNode::AESlotNode()
-{
-    CCLOG( "AESlotNode::AESlotNode()" );
-
-#ifdef AE_SLOTNODE_DEBUG_DRAW
-    _debugDrawNode = DrawNode::create();
-    addChild( _debugDrawNode );
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)
 #endif
-}
 
-AESlotNode::~AESlotNode() {
-    CCLOG( "AESlotNode::~AESlotNode()" );
-}
+#include "cocos/cocos2d.h"
+#include "audio/include/AudioEngine.h"
+#include "3d/CCBundleReader.h"
+#include "extensions/ExtensionMacros.h"
+#include "extensions/ExtensionExport.h"
 
-bool AESlotNode::init() {
-    CCLOG( "AESlotNode::init()" );
-    return true;
-}
-
-void AESlotNode::draw( Renderer *renderer, const Mat4 &transform, uint32_t flags ) {
-    AE_UNUSED( renderer );
-    AE_UNUSED( transform );
-    AE_UNUSED( flags );
-#ifdef AE_SLOTNODE_DEBUG_DRAW
-    _debugDrawNode->clear();
-    _debugDrawNode->drawRect( Vec2( 0.f, 0.f ), Vec2( 100.f, 100.f ), Color4F::WHITE );
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif
-}
-NS_CC_EXT_END;
+
+#include "movie/movie.hpp"

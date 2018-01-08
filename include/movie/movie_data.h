@@ -39,9 +39,25 @@
 @{
 */
 
+/*
+ case AE_MOVIE_LAYER_TYPE_MOVIE:
+ case AE_MOVIE_LAYER_TYPE_TEXT:
+ case AE_MOVIE_LAYER_TYPE_EVENT:
+ case AE_MOVIE_LAYER_TYPE_SOCKET:
+ case AE_MOVIE_LAYER_TYPE_SHAPE:
+ case AE_MOVIE_LAYER_TYPE_SLOT:
+ case AE_MOVIE_LAYER_TYPE_NULL:
+ case AE_MOVIE_LAYER_TYPE_SOLID:
+ case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+ case AE_MOVIE_LAYER_TYPE_VIDEO:
+ case AE_MOVIE_LAYER_TYPE_SOUND:
+ case AE_MOVIE_LAYER_TYPE_PARTICLE:
+ case AE_MOVIE_LAYER_TYPE_IMAGE:
+ case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+ */
+
 typedef enum aeMovieLayerTypeEnum
-{
-    AE_MOVIE_LAYER_TYPE_ANY = 0,
+{    
     AE_MOVIE_LAYER_TYPE_MOVIE = 1,
     AE_MOVIE_LAYER_TYPE_TEXT = 5,
     AE_MOVIE_LAYER_TYPE_EVENT = 7,
@@ -57,6 +73,12 @@ typedef enum aeMovieLayerTypeEnum
     AE_MOVIE_LAYER_TYPE_IMAGE = 20,
     AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 } aeMovieLayerTypeEnum;
+
+typedef enum aeMovieLayerTypeExEnum
+{
+    AE_MOVIE_LAYER_TYPE_ANY = 0,
+} aeMovieLayerTypeExEnum;
+
 
 typedef enum aeMovieLayerParamEnum
 {

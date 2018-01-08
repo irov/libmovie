@@ -27,10 +27,10 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#include "cocos2d.h"
-#include "3d/CCBundleReader.h"
-#include "extensions/cocos-ext.h"
-#include "audio/include/AudioEngine.h"
+//#include "cocos2d.h"
+//#include "extensions/cocos-ext.h"
+//#include "audio/include/AudioEngine.h"
+#include "AEMovieData.h"
 #include "AEMovie.h"
 
 NS_CC_EXT_BEGIN;
@@ -100,7 +100,8 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
     case AE_MOVIE_RESOURCE_SLOT:
         {
             const aeMovieResourceSlot * r = (const aeMovieResourceSlot *)_resource;
-
+            AE_UNUSED(r);
+            
             CCLOG( "Resource type: slot." );
             CCLOG( " width  = %i", r->width );
             CCLOG( " height = %i", r->height );
@@ -187,6 +188,9 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
 }
 
 Ref *AEMovieData::createImage( const std::string & path, int width, int height ) {
+    AE_UNUSED( width );
+    AE_UNUSED( height );
+
     std::string fileName = _path + path;
     std::replace( fileName.begin(), fileName.end(), '\\', '/' );
     CCLOG( "createImage fileName = %s", fileName.c_str() );

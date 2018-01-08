@@ -27,7 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#include "audio/include/AudioEngine.h"
+//#include "audio/include/AudioEngine.h"
+#include "AETrackMatteData.h"
 #include "AEMovie.h"
 
 NS_CC_EXT_BEGIN;

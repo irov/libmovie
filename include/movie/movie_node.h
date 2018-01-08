@@ -74,10 +74,8 @@ typedef struct aeMovieRenderMesh
     @brief Usually used as a multiplier.
     @{
     */
-    ae_float_t r;
-    ae_float_t g;
-    ae_float_t b;
-    ae_float_t a;
+    ae_color_t color;
+    ae_float_t opacity;
     /// @}
 
     /**
@@ -120,6 +118,14 @@ typedef struct aeMovieNode aeMovieNode;
 @addtogroup compositions
 @{
 */
+
+/*
+ case AE_MOVIE_STATE_UPDATE_BEGIN:
+ case AE_MOVIE_STATE_UPDATE_PROCESS:
+ case AE_MOVIE_STATE_UPDATE_PAUSE:
+ case AE_MOVIE_STATE_UPDATE_RESUME:
+ case AE_MOVIE_STATE_UPDATE_END:
+ */
 
 typedef enum
 {
@@ -187,6 +193,10 @@ typedef struct aeMovieNodeProviderCallbackData
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
 
+    
+    /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
+
     /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
 
@@ -215,6 +225,9 @@ typedef struct aeMovieNodeUpdateCallbackData
     ae_matrix4_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
+
+    /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
 } aeMovieNodeUpdateCallbackData;
 
@@ -228,6 +241,9 @@ typedef struct aeMovieTrackMatteProviderCallbackData
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
+
+    /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
@@ -246,6 +262,9 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
+
+    /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
@@ -285,9 +304,7 @@ typedef struct aeMovieShaderPropertyUpdateCallbackData
     ae_string_t uniform;
     aeMovieShaderParameterTypeEnum type;
 
-    ae_float_t color_r;
-    ae_float_t color_g;
-    ae_float_t color_b;
+    ae_color_t color;
 
     ae_float_t value;
 } aeMovieShaderPropertyUpdateCallbackData;
@@ -312,6 +329,9 @@ typedef struct aeMovieCompositionEventCallbackData
     ae_matrix4_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
+    ae_color_t color;
+
+    /// @brief Value from 0.0 to 1.0.
     ae_float_t opacity;
 
     ae_bool_t begin;
@@ -326,13 +346,6 @@ typedef enum
     AE_MOVIE_COMPOSITION_INTERRUPT,
     AE_MOVIE_COMPOSITION_END,
     AE_MOVIE_COMPOSITION_LOOP_END,
-    AE_MOVIE_SUB_COMPOSITION_PLAY,
-    AE_MOVIE_SUB_COMPOSITION_STOP,
-    AE_MOVIE_SUB_COMPOSITION_PAUSE,
-    AE_MOVIE_SUB_COMPOSITION_RESUME,
-    AE_MOVIE_SUB_COMPOSITION_INTERRUPT,
-    AE_MOVIE_SUB_COMPOSITION_END,
-    AE_MOVIE_SUB_COMPOSITION_LOOP_END,
 } aeMovieCompositionStateEnum;
 
 typedef struct aeMovieCompositionStateCallbackData
@@ -663,7 +676,7 @@ uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composition
 @param [in] _type Node type.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type );
+ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_enum_t _type );
 
 /**
 @brief Get node active time range in milliseconds.
@@ -675,10 +688,10 @@ Returns interval on which node is active, i.e. being played, rendered, etc.
 @param [out] _out End time.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_time_t * _in, ae_time_t * _out );
+ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_enum_t _type, ae_time_t * _in, ae_time_t * _out );
 
 
-ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable );
+ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_enum_t _type, ae_bool_t _enable );
 
 /**
 @brief Toggle layer usage.
@@ -688,7 +701,7 @@ ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _com
 @param [in] _enable If TRUE, enable usage.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable );
+ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_enum_t _type, ae_bool_t _enable );
 
 /**
 @brief Query whether the given node is active or not.
@@ -698,7 +711,7 @@ ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _comp
 @param [out] _enable TRUE if enabled.
 @return TRUE if the node is found.
 */
-ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t * _enable );
+ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_enum_t _type, ae_bool_t * _enable );
 
 // compositions
 /// @}

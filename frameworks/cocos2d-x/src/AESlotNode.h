@@ -30,7 +30,7 @@
 #ifndef __AESlotNodeEx_H__
 #define __AESlotNodeEx_H__
 
-#include "extensions/ExtensionMacros.h"
+#include "AEConfig.h"
 
 NS_CC_EXT_BEGIN;
 
@@ -48,7 +48,7 @@ CC_CONSTRUCTOR_ACCESS:
     AESlotNode();
     virtual ~AESlotNode();
 
-    virtual bool init();
+    bool init() override;
 
 protected:
 #ifdef AE_SLOTNODE_DEBUG_DRAW

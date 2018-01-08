@@ -43,6 +43,7 @@ typedef uint16_t ae_uint16_t;
 typedef uint32_t ae_uint32_t;
 typedef int32_t ae_int32_t;
 typedef size_t ae_size_t;
+typedef int32_t ae_enum_t;
 typedef float ae_float_t;
 typedef float ae_time_t;
 typedef void * ae_voidptr_t;
@@ -66,7 +67,14 @@ static const ae_bool_t AE_TRUE = 1;
 static const ae_bool_t AE_FALSE = 0;
 static const ae_voidptr_t AE_NULL = 0;
 
-typedef ae_uint8_t ae_color_t;
+typedef ae_uint8_t ae_color8_t;
+
+typedef struct
+{
+    ae_float_t r;
+    ae_float_t g;
+    ae_float_t b;
+} ae_color_t;
 
 typedef struct
 {
