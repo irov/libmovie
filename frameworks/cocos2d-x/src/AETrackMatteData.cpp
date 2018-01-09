@@ -49,11 +49,11 @@ AETrackMatteData * AETrackMatteData::create() {
 }
 
 AETrackMatteData::AETrackMatteData() {
-    CCLOG( "AETrackMatteData::AETrackMatteData()" );
+    //XCODE COMPILE COMMENT: CCLOG( "AETrackMatteData::AETrackMatteData()" );
 }
 
 AETrackMatteData::~AETrackMatteData() {
-    CCLOG( "AETrackMatteData::~AETrackMatteData()" );
+    //XCODE COMPILE COMMENT: CCLOG( "AETrackMatteData::~AETrackMatteData()" );
 }
 
 NS_CC_EXT_END;

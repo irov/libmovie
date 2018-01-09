@@ -43,18 +43,18 @@ ae_voidptr_t AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbac
     AE_UNUSED( _callbackData );
     AE_UNUSED( _data );
 
-	CCLOG("CALL: camera provider");
+	//XCODE COMPILE COMMENT: CCLOG("CALL: camera provider");
 /*
 	AEMovie *movie = static_cast<AEMovie *>(_data);
 
 	Camera *c = movie->getCamera(_callbackData->name);
 
 	if (c != nullptr) {
-		CCLOG("Camera '%s' found.", _callbackData->name);
+		//XCODE COMPILE COMMENT: CCLOG("Camera '%s' found.", _callbackData->name);
 		return c;
 	}
 
-	CCLOG("Creating new camera '%s'.", _callbackData->name);
+	//XCODE COMPILE COMMENT: CCLOG("Creating new camera '%s'.", _callbackData->name);
 */
 /*
 	auto camera = Camera::createPerspective(_callbackData->fov, _callbackData->width / _callbackData->height, 1.f, 1000.f);
@@ -72,7 +72,7 @@ ae_voidptr_t AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbac
 }
 
 ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data ) {
-	CCLOG("CALL: node provider");
+	//XCODE COMPILE COMMENT: CCLOG("CALL: node provider");
 
     ae_bool_t is_track_matte = ae_is_movie_layer_data_track_mate( _callbackData->layer );
 
@@ -84,11 +84,11 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
     aeMovieLayerTypeEnum layerType = ae_get_movie_layer_data_type( _callbackData->layer );
     const char * layerName = ae_get_movie_layer_data_name( _callbackData->layer );
 	
-	CCLOG("Layer type: %i", layerType);
-	CCLOG("Layer name: '%s'", layerName);
+	//XCODE COMPILE COMMENT: CCLOG("Layer type: %i", layerType);
+	//XCODE COMPILE COMMENT: CCLOG("Layer name: '%s'", layerName);
 
 	if( _callbackData->track_matte_layer == nullptr ) {
-		CCLOG(" No track matte.");
+		//XCODE COMPILE COMMENT: CCLOG(" No track matte.");
 
 		switch( layerType ) {
             case AE_MOVIE_LAYER_TYPE_MOVIE:
@@ -112,22 +112,22 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 
 				movie->addSlotNode(layerName, slotNode);
 
-				CCLOG(" Slot:");
-				CCLOG("  node ptr: %i", slotNode);
+				//XCODE COMPILE COMMENT: CCLOG(" Slot:");
+				//XCODE COMPILE COMMENT: CCLOG("  node ptr: %i", slotNode);
 //				movie->addChild(slotNode);
 
 				return slotNode;
 			}break;
 			case AE_MOVIE_LAYER_TYPE_VIDEO: {
-				CCLOG(" Video:");
+				//XCODE COMPILE COMMENT: CCLOG(" Video:");
 				
 			}break;
 			case AE_MOVIE_LAYER_TYPE_SOUND: {
 				AESound *sound = static_cast<AESound *>(ae_get_movie_layer_data_resource_data(_callbackData->layer));
 				
-				CCLOG(" Sound:");
-				CCLOG("  name: '%s'", sound->getPath().c_str());
-				CCLOG("  sound ptr: %i",  sound);
+				//XCODE COMPILE COMMENT: CCLOG(" Sound:");
+				//XCODE COMPILE COMMENT: CCLOG("  name: '%s'", sound->getPath().c_str());
+				//XCODE COMPILE COMMENT: CCLOG("  sound ptr: %i",  sound);
 
 				// FIXME: wrap into separate method
 				auto soundNode = AESoundNode::create(sound);
@@ -135,14 +135,14 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 
 				movie->addSoundNode(soundNode);
 
-				CCLOG(" node ptr: %i", soundNode);
+				//XCODE COMPILE COMMENT: CCLOG(" node ptr: %i", soundNode);
 
 				return soundNode;
 			}break;
 		}
 	}
 	else {
-		CCLOG(" Has track matte.");
+		//XCODE COMPILE COMMENT: CCLOG(" Has track matte.");
 
 		switch( layerType ) {
             case AE_MOVIE_LAYER_TYPE_MOVIE:
@@ -159,7 +159,7 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
             case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                 break;
             case AE_MOVIE_LAYER_TYPE_SHAPE:
-				CCLOG(" Shape:");
+				//XCODE COMPILE COMMENT: CCLOG(" Shape:");
 				break;
 			case AE_MOVIE_LAYER_TYPE_IMAGE:
                 Texture2D *texture = static_cast<Texture2D *>(ae_get_movie_layer_data_resource_data( _callbackData->track_matte_layer ));
@@ -170,8 +170,8 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 
 				movie->addTrackMatteNode(trackMatteNode);
 
-				CCLOG(" Image:");
-				CCLOG("  node ptr: %i", trackMatteNode);
+				//XCODE COMPILE COMMENT: CCLOG(" Image:");
+				//XCODE COMPILE COMMENT: CCLOG("  node ptr: %i", trackMatteNode);
 
 				return trackMatteNode;
 		}
@@ -184,13 +184,13 @@ void AEMovie::callbackNodeDeleter( const aeMovieNodeDeleterCallbackData * _callb
     AE_UNUSED( _callbackData );
     AE_UNUSED( _data );
     
-	CCLOG("CALL: node destroyer");
+	//XCODE COMPILE COMMENT: CCLOG("CALL: node destroyer");
 }
 
 void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
     AE_UNUSED( _data );
 
-    CCLOG("CALL: node update");
+    //XCODE COMPILE COMMENT: CCLOG("CALL: node update");
 
 //	AEMovie *movie = static_cast<AEMovie *>(_data);
 
@@ -198,7 +198,7 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 	{
         case AE_MOVIE_STATE_UPDATE_BEGIN:
         {
-            CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
+            //XCODE COMPILE COMMENT: CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
             
             switch (_callbackData->type)
             {
@@ -216,16 +216,16 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
                 case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                     break;
                 case AE_MOVIE_LAYER_TYPE_VIDEO:
-                    CCLOG(" Video:");
+                    //XCODE COMPILE COMMENT: CCLOG(" Video:");
                     break;
                 case AE_MOVIE_LAYER_TYPE_SOUND:
                     AESoundNode *soundNode = static_cast<AESoundNode *>(_callbackData->element);
                     
-                    CCLOG("  node ptr: %i", soundNode);
-                    CCLOG(" Sound:");
-                    CCLOG("  sound ptr: %i", soundNode->getSound());
-                    CCLOG("  name: '%s'", soundNode->getSound()->getPath());
-                    CCLOG("  offset: %.2f sec", _callbackData->offset * 0.001f);
+                    //XCODE COMPILE COMMENT: CCLOG("  node ptr: %i", soundNode);
+                    //XCODE COMPILE COMMENT: CCLOG(" Sound:");
+                    //XCODE COMPILE COMMENT: CCLOG("  sound ptr: %i", soundNode->getSound());
+                    //XCODE COMPILE COMMENT: CCLOG("  name: '%s'", soundNode->getSound()->getPath());
+                    //XCODE COMPILE COMMENT: CCLOG("  offset: %.2f sec", _callbackData->offset * 0.001f);
                     
                     int id = soundNode->getAudioId();
                     
@@ -236,8 +236,8 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
                     
                     id = AudioEngine::play2d(soundNode->getSound()->getPath());
                     
-                    CCLOG("  node audio id: %i", id);
-                    CCLOG("  node audio state: %i", AudioEngine::getState(id));
+                    //XCODE COMPILE COMMENT: CCLOG("  node audio id: %i", id);
+                    //XCODE COMPILE COMMENT: CCLOG("  node audio state: %i", AudioEngine::getState(id));
                     
                     soundNode->setAudioId(id);
                     soundNode->setTime(_callbackData->offset * 0.001f);
@@ -247,7 +247,7 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
         }break;
 		case AE_MOVIE_STATE_UPDATE_PROCESS:
 		{
-			CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
+			//XCODE COMPILE COMMENT: CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
 
 			switch (_callbackData->type) {
                 case AE_MOVIE_LAYER_TYPE_MOVIE:
@@ -264,20 +264,20 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
                 case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                     break;
 				case AE_MOVIE_LAYER_TYPE_PARTICLE:
-					CCLOG(" Particle:");
+					//XCODE COMPILE COMMENT: CCLOG(" Particle:");
 					break;
 				case AE_MOVIE_LAYER_TYPE_SLOT:
-					CCLOG(" Slot:");
+					//XCODE COMPILE COMMENT: CCLOG(" Slot:");
 
 					AESlotNode *slotNode = static_cast<AESlotNode *>(_callbackData->element);
 					slotNode->setAdditionalTransform(Mat4(_callbackData->matrix));
 
 					#if COCOS2D_DEBUG > 0
 					const float *f = _callbackData->matrix;
-					CCLOG("f0: %.2f %.2f %.2f %.2f", f[0], f[1], f[2], f[3]);
-					CCLOG("f1: %.2f %.2f %.2f %.2f", f[4], f[5], f[6], f[7]);
-					CCLOG("f2: %.2f %.2f %.2f %.2f", f[8], f[9], f[10], f[11]);
-					CCLOG("f3: %.2f %.2f %.2f %.2f", f[12], f[13], f[14], f[15]);
+					//XCODE COMPILE COMMENT: CCLOG("f0: %.2f %.2f %.2f %.2f", f[0], f[1], f[2], f[3]);
+					//XCODE COMPILE COMMENT: CCLOG("f1: %.2f %.2f %.2f %.2f", f[4], f[5], f[6], f[7]);
+					//XCODE COMPILE COMMENT: CCLOG("f2: %.2f %.2f %.2f %.2f", f[8], f[9], f[10], f[11]);
+					//XCODE COMPILE COMMENT: CCLOG("f3: %.2f %.2f %.2f %.2f", f[12], f[13], f[14], f[15]);
 					#endif
 
 					break;
@@ -289,7 +289,7 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
             break;
 		case AE_MOVIE_STATE_UPDATE_END:
 		{
-			CCLOG("AE_MOVIE_STATE_UPDATE_END");
+			//XCODE COMPILE COMMENT: CCLOG("AE_MOVIE_STATE_UPDATE_END");
 
 			switch (_callbackData->type)
 			{
@@ -307,14 +307,14 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
                 case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                     break;
 				case AE_MOVIE_LAYER_TYPE_VIDEO:
-					CCLOG(" Video:");
+					//XCODE COMPILE COMMENT: CCLOG(" Video:");
 					break;
 				case AE_MOVIE_LAYER_TYPE_SOUND:
 					AESoundNode *soundNode = static_cast<AESoundNode *>(_callbackData->element);
-					CCLOG("  node ptr: %i", soundNode);
+					//XCODE COMPILE COMMENT: CCLOG("  node ptr: %i", soundNode);
 
-					CCLOG(" Sound:");
-					CCLOG("  name: '%s'", soundNode->getSound()->getPath());
+					//XCODE COMPILE COMMENT: CCLOG(" Sound:");
+					//XCODE COMPILE COMMENT: CCLOG("  name: '%s'", soundNode->getSound()->getPath());
 
 					AudioEngine::stop(soundNode->getAudioId());
 
@@ -343,14 +343,14 @@ ae_voidptr_t AEMovie::callbackCompositionTrackMatteProvider( const aeMovieTrackM
 }
 
 void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data ) {
-	CCLOG("CALL: composition track matte update");
+	//XCODE COMPILE COMMENT: CCLOG("CALL: composition track matte update");
 
 	AEMovie *movie = static_cast<AEMovie *>(_data);
     AE_UNUSED(movie);
 
 	switch (_callbackData->state) {
 		case AE_MOVIE_STATE_UPDATE_BEGIN: {
-			CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
+			//XCODE COMPILE COMMENT: CCLOG("AE_MOVIE_STATE_UPDATE_BEGIN");
 			
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
 			tmData->setMatrix(_callbackData->matrix);
@@ -358,7 +358,7 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 			
 		}break;
 		case AE_MOVIE_STATE_UPDATE_PROCESS: {
-			CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
+			//XCODE COMPILE COMMENT: CCLOG("AE_MOVIE_STATE_UPDATE_PROCESS");
 
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
 			tmData->setMatrix(_callbackData->matrix);
@@ -369,12 +369,12 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
         case AE_MOVIE_STATE_UPDATE_RESUME:
             break;
 		case AE_MOVIE_STATE_UPDATE_END: {
-			CCLOG("NODE_UPDATE_END");
+			//XCODE COMPILE COMMENT: CCLOG("NODE_UPDATE_END");
 /*
 			AETrackMatteData * tmData = static_cast<AETrackMatteData *>(_callbackData->track_matte_data);
 
 			if (tmData == nullptr)
-				CCLOG("WTF data NULL");
+				//XCODE COMPILE COMMENT: CCLOG("WTF data NULL");
 
 			CC_SAFE_RELEASE(tmData);
 */
@@ -385,11 +385,11 @@ void AEMovie::callbackCompositionTrackMatteUpdate( const aeMovieTrackMatteUpdate
 void AEMovie::callbackCompositionEvent( const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data ) {
     AE_UNUSED( _callbackData );
     AE_UNUSED( _data );
-	CCLOG("CALL: composition event");
+	//XCODE COMPILE COMMENT: CCLOG("CALL: composition event");
 }
 
 void AEMovie::callbackCompositionState( const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data ) {
-	CCLOG("CALL: composition state");
+	//XCODE COMPILE COMMENT: CCLOG("CALL: composition state");
 
 	if (_callbackData->subcomposition != nullptr)
 		return;
@@ -405,7 +405,7 @@ void AEMovie::addCamera(const std::string & name, Camera *camera) {
 	TMapCamera::iterator it = _cameras.find(name);
 
 	if (it != _cameras.end()) {
-		CCLOG("addCamera(): camera '%s' already exists.", name);
+		//XCODE COMPILE COMMENT: CCLOG("addCamera(): camera '%s' already exists.", name);
 		return;
 	}
 
@@ -416,7 +416,7 @@ Camera *AEMovie::getCamera(const std::string & name) {
 	TMapCamera::iterator it = _cameras.find(name);
 
 	if (it == _cameras.end()) {
-		CCLOG("getCamera(): camera '%s' does not exist.", name);
+		//XCODE COMPILE COMMENT: CCLOG("getCamera(): camera '%s' does not exist.", name);
 		return nullptr;
 	}
 
@@ -431,7 +431,7 @@ void AEMovie::addSlotNode(const std::string& name, AESlotNode *node) {
 	TMapSlotNode::iterator it = _slotNodes.find(name);
 
 	if (it != _slotNodes.end()) {
-		CCLOG("addSlotNode(): node '%s' already exists.", name);
+		//XCODE COMPILE COMMENT: CCLOG("addSlotNode(): node '%s' already exists.", name);
 		return;
 	}
 
@@ -442,7 +442,7 @@ AESlotNode *AEMovie::getSlotNode(const std::string & name) {
 	TMapSlotNode::iterator it = _slotNodes.find(name);
 
 	if (it == _slotNodes.end()) {
-		CCLOG("getSlotNode(): node '%s' does not exist.", name);
+		//XCODE COMPILE COMMENT: CCLOG("getSlotNode(): node '%s' does not exist.", name);
 		return nullptr;
 	}
 
@@ -488,7 +488,7 @@ AEMovie::AEMovie()
 AEMovie::~AEMovie()
 {
 	if (_composition != nullptr) {
-		CCLOG("Deleting movie composition.");
+		//XCODE COMPILE COMMENT: CCLOG("Deleting movie composition.");
 		ae_delete_movie_composition(_composition );
 		_composition = nullptr;
 	}
@@ -561,13 +561,13 @@ void AEMovie::setComposition(const std::string & name)
 {
     if (name.empty())
     {
-        CCLOG("Called AEMovie::setComposition with blank composition name.");
+        //XCODE COMPILE COMMENT: CCLOG("Called AEMovie::setComposition with blank composition name.");
         return;
     }
 
     if (!_movieData)
     {
-        CCLOG("Called AEMovie::setComposition with NULL movie data.");
+        //XCODE COMPILE COMMENT: CCLOG("Called AEMovie::setComposition with NULL movie data.");
         return;
     }
 
@@ -577,7 +577,7 @@ void AEMovie::setComposition(const std::string & name)
 
 	if( compositionData == AE_NULL )
 	{
-		CCLOG("Composition '%s' not found.", name.c_str());
+		//XCODE COMPILE COMMENT: CCLOG("Composition '%s' not found.", name.c_str());
 		return;
 	}
 
@@ -585,13 +585,13 @@ void AEMovie::setComposition(const std::string & name)
 	
     _duration = composition_duration;
 
-	CCLOG("Composition: '%s'", name.c_str());
-	CCLOG(" width: %.2f", compositionData->width);
-	CCLOG(" height: %.2f", compositionData->height);
-	CCLOG(" duration: %.2f sec", _duration);
-	CCLOG(" anchor point: %.2f %.2f %.2f", compositionData->anchor_point[0], compositionData->anchor_point[1], compositionData->anchor_point[2]);
-	CCLOG(" offset point: %.2f %.2f %.2f", compositionData->offset_point[0], compositionData->offset_point[1], compositionData->offset_point[2]);
-	CCLOG(" bounds: %.2f %.2f %.2f %.2f", compositionData->bounds[0], compositionData->bounds[1], compositionData->bounds[2], compositionData->bounds[3]);
+	//XCODE COMPILE COMMENT: CCLOG("Composition: '%s'", name.c_str());
+	//XCODE COMPILE COMMENT: CCLOG(" width: %.2f", compositionData->width);
+	//XCODE COMPILE COMMENT: CCLOG(" height: %.2f", compositionData->height);
+	//XCODE COMPILE COMMENT: CCLOG(" duration: %.2f sec", _duration);
+	//XCODE COMPILE COMMENT: CCLOG(" anchor point: %.2f %.2f %.2f", compositionData->anchor_point[0], compositionData->anchor_point[1], compositionData->anchor_point[2]);
+	//XCODE COMPILE COMMENT: CCLOG(" offset point: %.2f %.2f %.2f", compositionData->offset_point[0], compositionData->offset_point[1], compositionData->offset_point[2]);
+	//XCODE COMPILE COMMENT: CCLOG(" bounds: %.2f %.2f %.2f %.2f", compositionData->bounds[0], compositionData->bounds[1], compositionData->bounds[2], compositionData->bounds[3]);
 
 	// free the previous one
 	if (_composition) {
@@ -615,7 +615,7 @@ void AEMovie::setComposition(const std::string & name)
 
 	if (_composition == nullptr)
 	{
-		CCLOG("Failed to create composition.");
+		//XCODE COMPILE COMMENT: CCLOG("Failed to create composition.");
 		return;
 	}
 
@@ -641,7 +641,7 @@ void AEMovie::setTime(float t) {
 	_time = t;
 	onPlayEvent((int)AEMovie::EventType::TIME_CHANGED);
 
-	CCLOG("Set time to: %.2f sec.", _time);
+	//XCODE COMPILE COMMENT: CCLOG("Set time to: %.2f sec.", _time);
 
 	ae_stop_movie_composition( _composition );
 	ae_play_movie_composition( _composition, _time );
@@ -656,7 +656,7 @@ void AEMovie::setTime(float t) {
 }
 
 void AEMovie::play() {
-	CCLOG("AEMOVIEPLAY");
+	//XCODE COMPILE COMMENT: CCLOG("AEMOVIEPLAY");
 
 	resume();
 
@@ -683,7 +683,7 @@ void AEMovie::play() {
 }
 
 void AEMovie::stop() {
-	CCLOG("AEMOVIESTOP");	
+	//XCODE COMPILE COMMENT: CCLOG("AEMOVIESTOP");	
 
 	_time = 0.f;
 	onPlayEvent((int)AEMovie::EventType::TIME_CHANGED);
@@ -697,13 +697,13 @@ void AEMovie::stop() {
 }
 
 void AEMovie::interrupt(bool skip) {
-	CCLOG("AEMOVIEINTERRUPT");	
+	//XCODE COMPILE COMMENT: CCLOG("AEMOVIEINTERRUPT");	
 
     ae_interrupt_movie_composition( _composition, skip );
 }
 
 void AEMovie::pause() {
-	CCLOG("AEMOVIEPAUSE");	
+	//XCODE COMPILE COMMENT: CCLOG("AEMOVIEPAUSE");	
 
 	Node::pause();
 
@@ -715,7 +715,7 @@ void AEMovie::pause() {
 }
 
 void AEMovie::resume() {
-	CCLOG("AEMOVIERESUME");
+	//XCODE COMPILE COMMENT: CCLOG("AEMOVIERESUME");
 
 	Node::resume();
 
@@ -757,7 +757,7 @@ void AEMovie::update(float delta) {
 	_time += delta;
 	onPlayEvent((int)AEMovie::EventType::TIME_CHANGED);
 
-	CCLOG("Composition time mark is %.2f sec.", _time);
+	//XCODE COMPILE COMMENT: CCLOG("Composition time mark is %.2f sec.", _time);
 }
 
 static void calc_uv_clip_vectors( const Vec2 & _a, const Vec2 & _b, const Vec2 & _c, const Vec2 & _auv, const Vec2 & _buv, const Vec2 & _cuv, Vec3 * _out) {
@@ -804,18 +804,18 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 	uint32_t renderMeshIt = 0;
 	aeMovieRenderMesh renderMesh;
 
-	CCLOG("AEMovie::Draw(): BEGIN");
+	//XCODE COMPILE COMMENT: CCLOG("AEMovie::Draw(): BEGIN");
 
 	while( ae_compute_movie_mesh( _composition, &renderMeshIt, &renderMesh ) == AE_TRUE )
 	{	
 		// TODO: pre-cache mesh data
-		CCLOG( "Rendering mesh %i.", renderMeshIt );
+		//XCODE COMPILE COMMENT: CCLOG( "Rendering mesh %i.", renderMeshIt );
 
 		if( renderMesh.camera_data != nullptr ) {
-			CCLOG("Has camera.");
+			//XCODE COMPILE COMMENT: CCLOG("Has camera.");
 		}
 		else {
-			CCLOG("No camera.");
+			//XCODE COMPILE COMMENT: CCLOG("No camera.");
 		}
 
 		if( renderMesh.track_matte_data == nullptr ) {
@@ -823,7 +823,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 			// layer has no track matte
 			//
 
-			CCLOG("No track matte.");
+			//XCODE COMPILE COMMENT: CCLOG("No track matte.");
 
 			switch( renderMesh.layer_type )
 			{
@@ -834,20 +834,20 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
                     break;
 				case AE_MOVIE_LAYER_TYPE_MOVIE:
 				{
-					CCLOG("Layer type: movie.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: movie.");
 					break;
 				}
 				case AE_MOVIE_LAYER_TYPE_SHAPE:
 				{
-					CCLOG("Layer type: shape.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: shape.");
 					break;
 				}
 				case AE_MOVIE_LAYER_TYPE_SLOT:
 				{
-					CCLOG("Layer type: slot.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: slot.");
 
 					AESlotNode * slotNode = static_cast<AESlotNode *>(renderMesh.element_data);
-					CCLOG(" node ptr: %i", (int)slotNode);
+					//XCODE COMPILE COMMENT: CCLOG(" node ptr: %i", (int)slotNode);
 
 					// render it & children
 					slotNode->visit(renderer, transform, flags);
@@ -856,25 +856,25 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 				}
 				case AE_MOVIE_LAYER_TYPE_SOLID:
 				{
-					CCLOG("Layer type: solid.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: solid.");
 					break;
 				}
 				case AE_MOVIE_LAYER_TYPE_SEQUENCE:
 				case AE_MOVIE_LAYER_TYPE_IMAGE:
 				{
-					if (renderMesh.layer_type == AE_MOVIE_LAYER_TYPE_SEQUENCE)
-						CCLOG("Layer type: sequence.");
-					else
-						CCLOG("Layer type: image.");
+					//XCODE COMPILE COMMENT: if (renderMesh.layer_type == AE_MOVIE_LAYER_TYPE_SEQUENCE)
+						//XCODE COMPILE COMMENT: CCLOG("Layer type: sequence.");
+					//XCODE COMPILE COMMENT: else
+						//XCODE COMPILE COMMENT: CCLOG("Layer type: image.");
 
 					if (renderMesh.vertexCount == 0 || renderMesh.indexCount == 0)
 						break;
 
-					CCLOG("mesh info:");
-					CCLOG(" vertex count = %i", renderMesh.vertexCount);
-					CCLOG(" index count = %i", renderMesh.indexCount);
-					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
-					CCLOG(" blendfunc: %i", renderMesh.blend_mode);
+					//XCODE COMPILE COMMENT: CCLOG("mesh info:");
+					//XCODE COMPILE COMMENT: CCLOG(" vertex count = %i", renderMesh.vertexCount);
+					//XCODE COMPILE COMMENT: CCLOG(" index count = %i", renderMesh.indexCount);
+					//XCODE COMPILE COMMENT: CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+					//XCODE COMPILE COMMENT: CCLOG(" blendfunc: %i", renderMesh.blend_mode);
 
 					_renderDatas.push_back(AERenderData());
 					AERenderData & renderData = _renderDatas.back();
@@ -896,10 +896,10 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						v.colors = Color4B(Color4F(renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity));
 						v.texCoords = Tex2F(uv[0], uv[1]);
 
-						CCLOG(" vertex %i:", i);
-						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
-						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
-						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+						//XCODE COMPILE COMMENT: CCLOG(" vertex %i:", i);
+						//XCODE COMPILE COMMENT: CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
+						//XCODE COMPILE COMMENT: CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
+						//XCODE COMPILE COMMENT: CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
 					}
 
 					TrianglesCommand::Triangles triangles;
@@ -917,7 +917,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 					#if COCOS2D_DEBUG > 0
 					for (i = 0; i < triangles.indexCount; i++) {
-						CCLOG(" index %i = %i", i, triangles.indices[i]);
+						//XCODE COMPILE COMMENT: CCLOG(" index %i = %i", i, triangles.indices[i]);
 					}
 					#endif
 
@@ -935,21 +935,21 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 							break;
 					}
 
-//					CCLOG(" resource type: %i", (int)renderMesh.resource_type);
-//					CCLOG(" resource data: %i", (int)renderMesh.resource_data);
+//					//XCODE COMPILE COMMENT: CCLOG(" resource type: %i", (int)renderMesh.resource_type);
+//					//XCODE COMPILE COMMENT: CCLOG(" resource data: %i", (int)renderMesh.resource_data);
 
 					Texture2D * texture = static_cast<Texture2D *>(renderMesh.resource_data);
 
 					#if COCOS2D_DEBUG > 0
 					const Texture2D::PixelFormatInfo & pfi = Texture2D::getPixelFormatInfoMap().at(texture->getPixelFormat());
 
-					CCLOG(" Texture: '%s'", texture->getDescription().c_str());
-					CCLOG("  internal format: 0x%x", pfi.internalFormat);
-					CCLOG("  format: 0x%x", pfi.format);
-					CCLOG("  type: 0x%x", pfi.type);
-					CCLOG("  bpp: %i", pfi.bpp);
-					CCLOG("  compressed: %i", pfi.compressed);
-					CCLOG("  alpha: %i", pfi.alpha);
+					//XCODE COMPILE COMMENT: CCLOG(" Texture: '%s'", texture->getDescription().c_str());
+					//XCODE COMPILE COMMENT: CCLOG("  internal format: 0x%x", pfi.internalFormat);
+					//XCODE COMPILE COMMENT: CCLOG("  format: 0x%x", pfi.format);
+					//XCODE COMPILE COMMENT: CCLOG("  type: 0x%x", pfi.type);
+					//XCODE COMPILE COMMENT: CCLOG("  bpp: %i", pfi.bpp);
+					//XCODE COMPILE COMMENT: CCLOG("  compressed: %i", pfi.compressed);
+					//XCODE COMPILE COMMENT: CCLOG("  alpha: %i", pfi.alpha);
 					#endif
 
 					// don't do this because cocos binds the trianglesCommand.texture as CC_Texture0
@@ -977,22 +977,22 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 				}
 				case AE_MOVIE_LAYER_TYPE_VIDEO:
 				{
-					CCLOG("Layer type: video.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: video.");
 					break;
 				}
 				case AE_MOVIE_LAYER_TYPE_SOUND:
 				{
-					CCLOG("Layer type: sound.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: sound.");
 					break;
 				}
 				case AE_MOVIE_LAYER_TYPE_PARTICLE:
 				{
-					CCLOG("Layer type: particle.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: particle.");
 					break;
 				}
 				case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
 				{
-					CCLOG("Layer type: submovie.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: submovie.");
 					break;
 				}
 			}
@@ -1002,7 +1002,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 			// layer has track matte
 			//
 
-			CCLOG("Has track matte.");
+			//XCODE COMPILE COMMENT: CCLOG("Has track matte.");
 
 			switch( renderMesh.layer_type )
 			{
@@ -1022,7 +1022,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
                     break;
 				case AE_MOVIE_LAYER_TYPE_IMAGE:
 				{
-					CCLOG("Layer type: image.");
+					//XCODE COMPILE COMMENT: CCLOG("Layer type: image.");
 
 					const AETrackMatteNode * trackMatteNode = static_cast<const AETrackMatteNode *>(renderMesh.element_data);
 
@@ -1031,11 +1031,11 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					if (renderMesh.vertexCount == 0 || renderMesh.indexCount == 0)
 						break;
 
-					CCLOG("mesh info:");
-					CCLOG(" vertex count = %i", renderMesh.vertexCount);
-					CCLOG(" index count = %i", renderMesh.indexCount);
-					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
-					CCLOG(" blendfunc: %i", renderMesh.blend_mode);
+					//XCODE COMPILE COMMENT: CCLOG("mesh info:");
+					//XCODE COMPILE COMMENT: CCLOG(" vertex count = %i", renderMesh.vertexCount);
+					//XCODE COMPILE COMMENT: CCLOG(" index count = %i", renderMesh.indexCount);
+					//XCODE COMPILE COMMENT: CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+					//XCODE COMPILE COMMENT: CCLOG(" blendfunc: %i", renderMesh.blend_mode);
 
 					_renderDatas.push_back(AERenderData());
 					AERenderData & renderData = _renderDatas.back();
@@ -1046,23 +1046,23 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 /*
 					#if COCOS2D_DEBUG > 0
 					const float *f = tmMatrix.m;
-					CCLOG(" tmMatrix:");
-					CCLOG("  f0: %.2f %.2f %.2f %.2f", f[0], f[1], f[2], f[3]);
-					CCLOG("  f1: %.2f %.2f %.2f %.2f", f[4], f[5], f[6], f[7]);
-					CCLOG("  f2: %.2f %.2f %.2f %.2f", f[8], f[9], f[10], f[11]);
-					CCLOG("  f3: %.2f %.2f %.2f %.2f", f[12], f[13], f[14], f[15]);
+					//XCODE COMPILE COMMENT: CCLOG(" tmMatrix:");
+					//XCODE COMPILE COMMENT: CCLOG("  f0: %.2f %.2f %.2f %.2f", f[0], f[1], f[2], f[3]);
+					//XCODE COMPILE COMMENT: CCLOG("  f1: %.2f %.2f %.2f %.2f", f[4], f[5], f[6], f[7]);
+					//XCODE COMPILE COMMENT: CCLOG("  f2: %.2f %.2f %.2f %.2f", f[8], f[9], f[10], f[11]);
+					//XCODE COMPILE COMMENT: CCLOG("  f3: %.2f %.2f %.2f %.2f", f[12], f[13], f[14], f[15]);
 					#endif
 */
 					if (tmRenderMesh.vertexCount == 0 || tmRenderMesh.indexCount == 0)
 						break;
 
-					CCLOG("tm mesh info:");
-					CCLOG(" position[0]: %.2f %.2f", tmRenderMesh.position[0][0], tmRenderMesh.position[0][1]);
-					CCLOG(" position[1]: %.2f %.2f", tmRenderMesh.position[1][0], tmRenderMesh.position[1][1]);
-					CCLOG(" position[2]: %.2f %.2f", tmRenderMesh.position[2][0], tmRenderMesh.position[2][1]);
-					CCLOG(" uv[0]: %.2f %.2f", tmRenderMesh.uv[0][0], tmRenderMesh.uv[0][1]);
-					CCLOG(" uv[1]: %.2f %.2f", tmRenderMesh.uv[1][0], tmRenderMesh.uv[1][1]);
-					CCLOG(" uv[2]: %.2f %.2f", tmRenderMesh.uv[2][0], tmRenderMesh.uv[2][1]);
+					//XCODE COMPILE COMMENT: CCLOG("tm mesh info:");
+					//XCODE COMPILE COMMENT: CCLOG(" position[0]: %.2f %.2f", tmRenderMesh.position[0][0], tmRenderMesh.position[0][1]);
+					//XCODE COMPILE COMMENT: CCLOG(" position[1]: %.2f %.2f", tmRenderMesh.position[1][0], tmRenderMesh.position[1][1]);
+					//XCODE COMPILE COMMENT: CCLOG(" position[2]: %.2f %.2f", tmRenderMesh.position[2][0], tmRenderMesh.position[2][1]);
+					//XCODE COMPILE COMMENT: CCLOG(" uv[0]: %.2f %.2f", tmRenderMesh.uv[0][0], tmRenderMesh.uv[0][1]);
+					//XCODE COMPILE COMMENT: CCLOG(" uv[1]: %.2f %.2f", tmRenderMesh.uv[1][0], tmRenderMesh.uv[1][1]);
+					//XCODE COMPILE COMMENT: CCLOG(" uv[2]: %.2f %.2f", tmRenderMesh.uv[2][0], tmRenderMesh.uv[2][1]);
 
 					Vec3 clip[4];
 					Vec3 pos[3] = {
@@ -1101,10 +1101,10 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						v.texCoords = Tex2F(uv[0], uv[1]);
 
 					#if COCOS2D_DEBUG > 0
-						CCLOG(" vertex %i:", i);
-						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
-						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
-						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+						//XCODE COMPILE COMMENT: CCLOG(" vertex %i:", i);
+						//XCODE COMPILE COMMENT: CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
+						//XCODE COMPILE COMMENT: CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
+						//XCODE COMPILE COMMENT: CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
 
 						float a = clip[0].dot(Vec3(1.f, v.vertices.x, v.vertices.y));
 						float b = clip[1].dot(Vec3(1.f, v.vertices.x, v.vertices.y));
@@ -1112,7 +1112,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 							clip[2].dot(Vec3(1.f, a, b)),
 							clip[3].dot(Vec3(1.f, a, b)));
 
-						CCLOG("  tmUV     = %.2f %.2f", tmUV.x, tmUV.y);
+						//XCODE COMPILE COMMENT: CCLOG("  tmUV     = %.2f %.2f", tmUV.x, tmUV.y);
 					#endif
 					}
 
@@ -1131,7 +1131,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 					#if COCOS2D_DEBUG > 0
 					for (i = 0; i < triangles.indexCount; i++) {
-						CCLOG(" index %i = %i", i, triangles.indices[i]);
+						//XCODE COMPILE COMMENT: CCLOG(" index %i = %i", i, triangles.indices[i]);
 					}
 					#endif
 
@@ -1148,8 +1148,8 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 							blendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
 					}
 
-//					CCLOG(" resource type: %i", (int)renderMesh.resource_type);
-//					CCLOG(" resource data: %i", (int)renderMesh.resource_data);
+//					//XCODE COMPILE COMMENT: CCLOG(" resource type: %i", (int)renderMesh.resource_type);
+//					//XCODE COMPILE COMMENT: CCLOG(" resource data: %i", (int)renderMesh.resource_data);
 
 					Texture2D * texture = static_cast<Texture2D *>(renderMesh.resource_data);
 					Texture2D * tmTexture = static_cast<Texture2D *>(tmRenderMesh.resource_data);
@@ -1182,10 +1182,10 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 			}
 		}
 
-		CCLOG("");
+		//XCODE COMPILE COMMENT: CCLOG("");
 	}
 
-	CCLOG("AEMovie::Draw(): END");
+	//XCODE COMPILE COMMENT: CCLOG("AEMovie::Draw(): END");
 }
 
 NS_CC_EXT_END;

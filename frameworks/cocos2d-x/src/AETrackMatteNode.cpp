@@ -53,7 +53,7 @@ AETrackMatteNode * AETrackMatteNode::createFromTexture( Texture2D * texture ) {
 AETrackMatteNode::AETrackMatteNode()
     : _texture( nullptr )
 {
-    CCLOG( "AETrackMatteNode::AETrackMatteNode()" );
+    //XCODE COMPILE COMMENT: CCLOG( "AETrackMatteNode::AETrackMatteNode()" );
 
     //#ifdef AE_SLOTNODE_DEBUG_DRAW
     //	_debugDrawNode = DrawNode::create();
@@ -62,7 +62,7 @@ AETrackMatteNode::AETrackMatteNode()
 }
 
 AETrackMatteNode::~AETrackMatteNode() {
-    CCLOG( "AETrackMatteNode::~AETrackMatteNode()" );
+    //XCODE COMPILE COMMENT: CCLOG( "AETrackMatteNode::~AETrackMatteNode()" );
 }
 
 /*

@@ -59,7 +59,7 @@ namespace Detail
 //===============================================
 
 void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, ae_voidptr_t _data ) {
-    CCLOG( "CALL: resource provider" );
+    //XCODE COMPILE COMMENT: CCLOG( "CALL: resource provider" );
 
     AEMovieData *data = static_cast<AEMovieData *>(_data);
 
@@ -69,10 +69,10 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
         {
             const aeMovieResourceImage * r = (const aeMovieResourceImage *)_resource;
 
-            CCLOG( "Resource type: image." );
-            CCLOG( " path        = '%s'", r->path );
-            CCLOG( " trim_width  = %i", (int)r->trim_width );
-            CCLOG( " trim_height = %i", (int)r->trim_height );
+            //XCODE COMPILE COMMENT: CCLOG( "Resource type: image." );
+            //XCODE COMPILE COMMENT: CCLOG( " path        = '%s'", r->path );
+            //XCODE COMPILE COMMENT: CCLOG( " trim_width  = %i", (int)r->trim_width );
+            //XCODE COMPILE COMMENT: CCLOG( " trim_height = %i", (int)r->trim_height );
 
             Ref * ref = data->createImage( r->path, (int)r->trim_width, (int)r->trim_height );
             return ref;
@@ -81,7 +81,7 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
         {
             //			const aeMovieResourceVideo * r = (const aeMovieResourceVideo *)_resource;
 
-            CCLOG( "Resource type: video." );
+            //XCODE COMPILE COMMENT: CCLOG( "Resource type: video." );
 
             //			Ref * rr = data->createResourceVideo( r );
             //			return rr;
@@ -91,8 +91,8 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
         {
             const aeMovieResourceSound * r = (const aeMovieResourceSound *)_resource;
 
-            CCLOG( "Resource type: sound." );
-            CCLOG( " path        = '%s'", r->path );
+            //XCODE COMPILE COMMENT: CCLOG( "Resource type: sound." );
+            //XCODE COMPILE COMMENT: CCLOG( " path        = '%s'", r->path );
 
             AESound *sound = data->createSound( r->path );
             return sound;
@@ -102,14 +102,14 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
             const aeMovieResourceSlot * r = (const aeMovieResourceSlot *)_resource;
             AE_UNUSED(r);
             
-            CCLOG( "Resource type: slot." );
-            CCLOG( " width  = %i", r->width );
-            CCLOG( " height = %i", r->height );
+            //XCODE COMPILE COMMENT: CCLOG( "Resource type: slot." );
+            //XCODE COMPILE COMMENT: CCLOG( " width  = %i", r->width );
+            //XCODE COMPILE COMMENT: CCLOG( " height = %i", r->height );
             break;
         }
     default:
         {
-            CCLOG( "Resource type: other." );
+            //XCODE COMPILE COMMENT: CCLOG( "Resource type: other." );
             break;
         }
     }
@@ -134,7 +134,7 @@ AEMovieData::AEMovieData()
 AEMovieData::~AEMovieData()
 {
     if( _data ) {
-        CCLOG( "Deleting movie data." );
+        //XCODE COMPILE COMMENT: CCLOG( "Deleting movie data." );
         ae_delete_movie_data( _data );
         //		_data = nullptr;
     }
@@ -149,7 +149,7 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
 {
     if( path.empty() || name.empty() )
     {
-        CCLOG( "AEMovieData::initWithFile(): blank resource filename." );
+        //XCODE COMPILE COMMENT: CCLOG( "AEMovieData::initWithFile(): blank resource filename." );
         return false;
     }
 
@@ -158,13 +158,13 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
     std::string relPath = _path + name + ".aem";
     std::string fullPath = FileUtils::getInstance()->fullPathForFilename( relPath );
 
-    CCLOG( "Initializing with file '%s'.", fullPath.c_str() );
+    //XCODE COMPILE COMMENT: CCLOG( "Initializing with file '%s'.", fullPath.c_str() );
 
     Data data = FileUtils::getInstance()->getDataFromFile( fullPath );
 
     if( data.isNull() )
     {
-        CCLOG( "'%s' not found.", fullPath.c_str() );
+        //XCODE COMPILE COMMENT: CCLOG( "'%s' not found.", fullPath.c_str() );
         return false;
     }
 
@@ -180,7 +180,7 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
 
     if( r != AE_RESULT_SUCCESSFUL )
     {
-        CCLOG( "Failed to load movie data." );
+        //XCODE COMPILE COMMENT: CCLOG( "Failed to load movie data." );
         return false;
     }
 
@@ -193,7 +193,7 @@ Ref *AEMovieData::createImage( const std::string & path, int width, int height )
 
     std::string fileName = _path + path;
     std::replace( fileName.begin(), fileName.end(), '\\', '/' );
-    CCLOG( "createImage fileName = %s", fileName.c_str() );
+    //XCODE COMPILE COMMENT: CCLOG( "createImage fileName = %s", fileName.c_str() );
 
     Texture2D *texture = Director::getInstance()->getTextureCache()->addImage( fileName );
 

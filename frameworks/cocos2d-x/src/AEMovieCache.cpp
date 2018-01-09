@@ -70,7 +70,7 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
     vsnprintf( (char *)dst, sizeof( dst ), _format, argList );
     va_end( argList );
 
-    CCLOG( dst );
+    //XCODE COMPILE COMMENT: CCLOG( dst );
 }
 
 //===============================================
@@ -81,7 +81,7 @@ AEMovieCache::AEMovieCache() {
 
 AEMovieCache::~AEMovieCache() {
     if( _instance != nullptr ) {
-        CCLOG( "Deleting movie instance." );
+        //XCODE COMPILE COMMENT: CCLOG( "Deleting movie instance." );
         ae_delete_movie_instance( _instance );
     }
 }
@@ -133,7 +133,7 @@ void AEMovieCache::removeUnusedMovies() {
         AEMovieData *data = it->second;
 
         if( data->getReferenceCount() == 1 ) {
-            CCLOG( "AEMovieCache::removeUnusedMovies(): '%s'", it->first.c_str() );
+            //XCODE COMPILE COMMENT: CCLOG( "AEMovieCache::removeUnusedMovies(): '%s'", it->first.c_str() );
             it = _movies.erase( it );
         }
         else {

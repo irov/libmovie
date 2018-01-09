@@ -50,11 +50,11 @@ AESound * AESound::create( const std::string & path ) {
 }
 
 AESound::AESound() {
-    CCLOG( "AESound::AESound()" );
+    //XCODE COMPILE COMMENT: CCLOG( "AESound::AESound()" );
 }
 
 AESound::~AESound() {
-    CCLOG( "AESound::~AESound()" );
+    //XCODE COMPILE COMMENT: CCLOG( "AESound::~AESound()" );
 }
 
 NS_CC_EXT_END;
