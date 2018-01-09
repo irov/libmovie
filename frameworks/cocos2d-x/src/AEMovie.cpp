@@ -105,7 +105,7 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
                 break;
 			case AE_MOVIE_LAYER_TYPE_SLOT:
 			{
-				auto slotNode = AESlotNode::create();
+				AESlotNode * slotNode = AESlotNode::create();
 				slotNode->retain();
 				//slotNode->setName(layerName);
 				slotNode->setAdditionalTransform(Mat4(_callbackData->matrix));
@@ -113,7 +113,7 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 				movie->addSlotNode(layerName, slotNode);
 
 				CCLOG(" Slot:");
-				CCLOG("  node ptr: %i", slotNode);
+				CCLOG("  node ptr: %p", slotNode);
 //				movie->addChild(slotNode);
 
 				return slotNode;
@@ -127,7 +127,7 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 				
 				CCLOG(" Sound:");
 				CCLOG("  name: '%s'", sound->getPath().c_str());
-				CCLOG("  sound ptr: %i",  sound);
+				CCLOG("  sound ptr: %p",  sound);
 
 				// FIXME: wrap into separate method
 				auto soundNode = AESoundNode::create(sound);
@@ -135,7 +135,7 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 
 				movie->addSoundNode(soundNode);
 
-				CCLOG(" node ptr: %i", soundNode);
+				CCLOG(" node ptr: %p", soundNode);
 
 				return soundNode;
 			}break;
@@ -164,14 +164,14 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 			case AE_MOVIE_LAYER_TYPE_IMAGE:
                 Texture2D *texture = static_cast<Texture2D *>(ae_get_movie_layer_data_resource_data( _callbackData->track_matte_layer ));
 
-				auto trackMatteNode = AETrackMatteNode::createFromTexture(texture);
+				AETrackMatteNode * trackMatteNode = AETrackMatteNode::createFromTexture(texture);
 				trackMatteNode->retain();
 				//trackMatteNode->setName(layerName);
 
 				movie->addTrackMatteNode(trackMatteNode);
 
 				CCLOG(" Image:");
-				CCLOG("  node ptr: %i", trackMatteNode);
+				CCLOG("  node ptr: %p", trackMatteNode);
 
 				return trackMatteNode;
 		}
@@ -221,11 +221,11 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
                 case AE_MOVIE_LAYER_TYPE_SOUND:
                     AESoundNode *soundNode = static_cast<AESoundNode *>(_callbackData->element);
                     
-                    CCLOG("  node ptr: %i", soundNode);
+                    CCLOG("  node ptr: %p", soundNode);
                     CCLOG(" Sound:");
-                    CCLOG("  sound ptr: %i", soundNode->getSound());
-                    CCLOG("  name: '%s'", soundNode->getSound()->getPath());
-                    CCLOG("  offset: %.2f sec", _callbackData->offset * 0.001f);
+                    CCLOG("  sound ptr: %p", soundNode->getSound());
+                    CCLOG("  name: '%s'", soundNode->getSound()->getPath().c_str());
+                    CCLOG("  offset: %.2f sec", _callbackData->offset);
                     
                     int id = soundNode->getAudioId();
                     
@@ -240,7 +240,7 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
                     CCLOG("  node audio state: %i", AudioEngine::getState(id));
                     
                     soundNode->setAudioId(id);
-                    soundNode->setTime(_callbackData->offset * 0.001f);
+                    soundNode->setTime(_callbackData->offset);
                     
                     break;
             }
@@ -311,12 +311,13 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
 					break;
 				case AE_MOVIE_LAYER_TYPE_SOUND:
 					AESoundNode *soundNode = static_cast<AESoundNode *>(_callbackData->element);
-					CCLOG("  node ptr: %i", soundNode);
+					CCLOG("  node ptr: %p", soundNode);
 
 					CCLOG(" Sound:");
-					CCLOG("  name: '%s'", soundNode->getSound()->getPath());
+					CCLOG("  name: '%s'", soundNode->getSound()->getPath().c_str());
 
-					AudioEngine::stop(soundNode->getAudioId());
+                    int audioId = soundNode->getAudioId();
+					AudioEngine::stop(audioId);
 
 					// TODO: rework into soundNode->stop() etc.
 					soundNode->setAudioId(AudioEngine::INVALID_AUDIO_ID);
@@ -405,7 +406,7 @@ void AEMovie::addCamera(const std::string & name, Camera *camera) {
 	TMapCamera::iterator it = _cameras.find(name);
 
 	if (it != _cameras.end()) {
-		CCLOG("addCamera(): camera '%s' already exists.", name);
+		CCLOG("addCamera(): camera '%s' already exists.", name.c_str());
 		return;
 	}
 
@@ -416,7 +417,7 @@ Camera *AEMovie::getCamera(const std::string & name) {
 	TMapCamera::iterator it = _cameras.find(name);
 
 	if (it == _cameras.end()) {
-		CCLOG("getCamera(): camera '%s' does not exist.", name);
+		CCLOG("getCamera(): camera '%s' does not exist.", name.c_str());
 		return nullptr;
 	}
 
@@ -431,7 +432,7 @@ void AEMovie::addSlotNode(const std::string& name, AESlotNode *node) {
 	TMapSlotNode::iterator it = _slotNodes.find(name);
 
 	if (it != _slotNodes.end()) {
-		CCLOG("addSlotNode(): node '%s' already exists.", name);
+		CCLOG("addSlotNode(): node '%s' already exists.", name.c_str());
 		return;
 	}
 
@@ -442,7 +443,7 @@ AESlotNode *AEMovie::getSlotNode(const std::string & name) {
 	TMapSlotNode::iterator it = _slotNodes.find(name);
 
 	if (it == _slotNodes.end()) {
-		CCLOG("getSlotNode(): node '%s' does not exist.", name);
+		CCLOG("getSlotNode(): node '%s' does not exist.", name.c_str());
 		return nullptr;
 	}
 
@@ -586,12 +587,9 @@ void AEMovie::setComposition(const std::string & name)
     _duration = composition_duration;
 
 	CCLOG("Composition: '%s'", name.c_str());
-	CCLOG(" width: %.2f", compositionData->width);
-	CCLOG(" height: %.2f", compositionData->height);
+	CCLOG(" width: %.2f", ae_get_movie_composition_data_width(compositionData));
+	CCLOG(" height: %.2f", ae_get_movie_composition_data_height(compositionData));
 	CCLOG(" duration: %.2f sec", _duration);
-	CCLOG(" anchor point: %.2f %.2f %.2f", compositionData->anchor_point[0], compositionData->anchor_point[1], compositionData->anchor_point[2]);
-	CCLOG(" offset point: %.2f %.2f %.2f", compositionData->offset_point[0], compositionData->offset_point[1], compositionData->offset_point[2]);
-	CCLOG(" bounds: %.2f %.2f %.2f %.2f", compositionData->bounds[0], compositionData->bounds[1], compositionData->bounds[2], compositionData->bounds[3]);
 
 	// free the previous one
 	if (_composition) {
@@ -847,7 +845,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					CCLOG("Layer type: slot.");
 
 					AESlotNode * slotNode = static_cast<AESlotNode *>(renderMesh.element_data);
-					CCLOG(" node ptr: %i", (int)slotNode);
+					CCLOG(" node ptr: %p", slotNode);
 
 					// render it & children
 					slotNode->visit(renderer, transform, flags);
@@ -873,7 +871,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					CCLOG("mesh info:");
 					CCLOG(" vertex count = %i", renderMesh.vertexCount);
 					CCLOG(" index count = %i", renderMesh.indexCount);
-					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
 					CCLOG(" blendfunc: %i", renderMesh.blend_mode);
 
 					_renderDatas.push_back(AERenderData());
@@ -898,8 +896,8 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 						CCLOG(" vertex %i:", i);
 						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
-						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
-						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1]);
+						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
 					}
 
 					TrianglesCommand::Triangles triangles;
@@ -1034,7 +1032,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					CCLOG("mesh info:");
 					CCLOG(" vertex count = %i", renderMesh.vertexCount);
 					CCLOG(" index count = %i", renderMesh.indexCount);
-					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
 					CCLOG(" blendfunc: %i", renderMesh.blend_mode);
 
 					_renderDatas.push_back(AERenderData());
@@ -1103,8 +1101,8 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					#if COCOS2D_DEBUG > 0
 						CCLOG(" vertex %i:", i);
 						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
-						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1], uv[2]);
-						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.r, renderMesh.g, renderMesh.b, renderMesh.opacity);
+						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1]);
+						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
 
 						float a = clip[0].dot(Vec3(1.f, v.vertices.x, v.vertices.y));
 						float b = clip[1].dot(Vec3(1.f, v.vertices.x, v.vertices.y));

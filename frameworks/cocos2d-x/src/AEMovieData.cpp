@@ -103,8 +103,8 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
             AE_UNUSED(r);
             
             CCLOG( "Resource type: slot." );
-            CCLOG( " width  = %i", r->width );
-            CCLOG( " height = %i", r->height );
+            CCLOG( " width  = %f", r->width );
+            CCLOG( " height = %f", r->height );
             break;
         }
     default:

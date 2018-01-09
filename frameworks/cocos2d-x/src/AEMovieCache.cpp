@@ -70,7 +70,7 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
     vsnprintf( (char *)dst, sizeof( dst ), _format, argList );
     va_end( argList );
 
-    CCLOG( dst );
+    CCLOG( "%.2048s", dst );
 }
 
 //===============================================
