@@ -85,6 +85,10 @@
 		B23AB6D22005071900E839DB /* movie_stream.c in Sources */ = {isa = PBXBuildFile; fileRef = B23AB6C22005071900E839DB /* movie_stream.c */; };
 		B23AB6D32005071900E839DB /* movie_transformation.c in Sources */ = {isa = PBXBuildFile; fileRef = B23AB6C52005071900E839DB /* movie_transformation.c */; };
 		B23AB6D42005071900E839DB /* movie_transformation.c in Sources */ = {isa = PBXBuildFile; fileRef = B23AB6C52005071900E839DB /* movie_transformation.c */; };
+		B23AB6DE2005203900E839DB /* knight.plist in Resources */ = {isa = PBXBuildFile; fileRef = B23AB6DB2005203900E839DB /* knight.plist */; };
+		B23AB6DF2005203900E839DB /* knight.plist in Resources */ = {isa = PBXBuildFile; fileRef = B23AB6DB2005203900E839DB /* knight.plist */; };
+		B23AB6E02005203900E839DB /* knight.png in Resources */ = {isa = PBXBuildFile; fileRef = B23AB6DD2005203900E839DB /* knight.png */; };
+		B23AB6E12005203900E839DB /* knight.png in Resources */ = {isa = PBXBuildFile; fileRef = B23AB6DD2005203900E839DB /* knight.png */; };
 		BF171245129291EC00B8313A /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF170DB012928DE900B8313A /* OpenGLES.framework */; };
 		BF1712471292920000B8313A /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BF170DB412928DE900B8313A /* libz.dylib */; };
 		BF1C47F01293687400B63C5D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1C47EA1293683800B63C5D /* QuartzCore.framework */; };
@@ -227,6 +231,8 @@
 		B23AB6C42005071900E839DB /* movie_struct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = movie_struct.h; sourceTree = "<group>"; };
 		B23AB6C52005071900E839DB /* movie_transformation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = movie_transformation.c; sourceTree = "<group>"; };
 		B23AB6C62005071900E839DB /* movie_transformation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = movie_transformation.h; sourceTree = "<group>"; };
+		B23AB6DB2005203900E839DB /* knight.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = knight.plist; sourceTree = "<group>"; };
+		B23AB6DD2005203900E839DB /* knight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = knight.png; sourceTree = "<group>"; };
 		BF170DB012928DE900B8313A /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		BF170DB412928DE900B8313A /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		BF1C47EA1293683800B63C5D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -361,6 +367,8 @@
 		46880B7519C43A67006E1F66 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				B23AB6DB2005203900E839DB /* knight.plist */,
+				B23AB6DD2005203900E839DB /* knight.png */,
 				B23AB6A42004F5A800E839DB /* AEM */,
 				B23AB6A12004F51200E839DB /* Shaders */,
 			);
@@ -452,7 +460,8 @@
 				B23AB65B2004F16B00E839DB /* AETrackMatteNode.cpp */,
 				B23AB65C2004F16B00E839DB /* AETrackMatteNode.h */,
 			);
-			path = AEMovie;
+			name = AEMovie;
+			path = "../../../../frameworks/cocos2d-x/src";
 			sourceTree = "<group>";
 		};
 		B23AB6AE2005034800E839DB /* movie */ = {
@@ -605,7 +614,9 @@
 				5087E77D17EB970100C73F5D /* Default-568h@2x.png in Resources */,
 				5087E78517EB970100C73F5D /* Icon-72.png in Resources */,
 				521A8E6519F0C34300D177D7 /* Default-736h@3x.png in Resources */,
+				B23AB6DE2005203900E839DB /* knight.plist in Resources */,
 				50EF62A317ECD613001EB2F8 /* Icon-50.png in Resources */,
+				B23AB6E02005203900E839DB /* knight.png in Resources */,
 				5087E78017EB970100C73F5D /* Icon-114.png in Resources */,
 				50EF62A217ECD613001EB2F8 /* Icon-29.png in Resources */,
 				50EF629617ECD46A001EB2F8 /* Icon-40.png in Resources */,
@@ -625,6 +636,8 @@
 				B23AB6A62004F5A900E839DB /* AEM in Resources */,
 				B23AB6A32004F51200E839DB /* Shaders in Resources */,
 				503AE0F817EB97AB00D1A890 /* Icon.icns in Resources */,
+				B23AB6DF2005203900E839DB /* knight.plist in Resources */,
+				B23AB6E12005203900E839DB /* knight.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

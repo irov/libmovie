@@ -145,45 +145,45 @@ AEMovieData::~AEMovieData()
         CC_SAFE_RELEASE( *soundIt );
 }
 
-bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & filepath )
+bool AEMovieData::initWithFileAndFramesFolder( aeMovieInstance * instance, const std::string & filepath, const std::string & framesFolder )
 {
-    if( filepath.empty() )
-    {
-        //XCODE COMPILE COMMENT: CCLOG( "AEMovieData::initWithFile(): blank resource filename." );
-        return false;
-    }
-
-    std::string fullPath = FileUtils::getInstance()->fullPathForFilename( filepath );
-
-    //XCODE COMPILE COMMENT: CCLOG( "Initializing with file '%s'.", fullPath.c_str() );
-
-    Data data = FileUtils::getInstance()->getDataFromFile( fullPath );
-
-    if( data.isNull() )
-    {
-        //XCODE COMPILE COMMENT: CCLOG( "'%s' not found.", fullPath.c_str() );
-        return false;
-    }
-
-	_path = fullPath.substr(0, fullPath.find_last_of('/') + 1);
-
-    BundleReader reader;
-    reader.init( (char *)(data.getBytes()), data.getSize() );
-
-    _data = ae_create_movie_data( instance, &AEMovieData::callbackResourceProvider, &AEMovieData::callbackResourceDeleter, this );
-    aeMovieStream * stream = ae_create_movie_stream( instance, &Detail::read_file, &Detail::memory_copy, &reader );
-    int r = ae_load_movie_data( _data, stream );
-    ae_delete_movie_stream( stream );
-
-    //	data.clear();
-
-    if( r != AE_RESULT_SUCCESSFUL )
-    {
-        //XCODE COMPILE COMMENT: CCLOG( "Failed to load movie data." );
-        return false;
-    }
-
-    return true;
+	if( filepath.empty() )
+	{
+		//XCODE COMPILE COMMENT: CCLOG( "AEMovieData::initWithFile(): blank resource filename." );
+		return false;
+	}
+	
+	std::string fullPath = FileUtils::getInstance()->fullPathForFilename( filepath );
+	
+	//XCODE COMPILE COMMENT: CCLOG( "Initializing with file '%s'.", fullPath.c_str() );
+	
+	Data data = FileUtils::getInstance()->getDataFromFile( fullPath );
+	
+	if( data.isNull() )
+	{
+		//XCODE COMPILE COMMENT: CCLOG( "'%s' not found.", fullPath.c_str() );
+		return false;
+	}
+	
+	_path = framesFolder;
+	
+	BundleReader reader;
+	reader.init( (char *)(data.getBytes()), data.getSize() );
+	
+	_data = ae_create_movie_data( instance, &AEMovieData::callbackResourceProvider, &AEMovieData::callbackResourceDeleter, this );
+	aeMovieStream * stream = ae_create_movie_stream( instance, &Detail::read_file, &Detail::memory_copy, &reader );
+	int r = ae_load_movie_data( _data, stream );
+	ae_delete_movie_stream( stream );
+	
+	//	data.clear();
+	
+	if( r != AE_RESULT_SUCCESSFUL )
+	{
+		//XCODE COMPILE COMMENT: CCLOG( "Failed to load movie data." );
+		return false;
+	}
+	
+	return true;
 }
 
 Ref *AEMovieData::createImage( const std::string & path, int width, int height ) {
@@ -194,17 +194,30 @@ Ref *AEMovieData::createImage( const std::string & path, int width, int height )
     std::replace( fileName.begin(), fileName.end(), '\\', '/' );
     //XCODE COMPILE COMMENT: CCLOG( "createImage fileName = %s", fileName.c_str() );
 
-    Texture2D *texture = Director::getInstance()->getTextureCache()->addImage( fileName );
+	SpriteFrame* frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(fileName);
+	if(frame)
+	{
+		return frame;
+	}
+    else
+	{
+		frame = SpriteFrame::create(fileName, Rect::ZERO);
+		SpriteFrameCache::getInstance()->addSpriteFrame(frame, fileName);
+//		texture = Director::getInstance()->getTextureCache()->addImage( fileName );
+	}
+	
+//	if(texture)
+//	{
+//		Texture2D::TexParams tp;
+//		tp.magFilter = GL_LINEAR;
+//		tp.minFilter = GL_LINEAR;
+//		tp.wrapS = GL_CLAMP_TO_EDGE;
+//		tp.wrapT = GL_CLAMP_TO_EDGE;
+//
+//		texture->setTexParameters( tp );
+//	}
 
-    Texture2D::TexParams tp;
-    tp.magFilter = GL_LINEAR;
-    tp.minFilter = GL_LINEAR;
-    tp.wrapS = GL_CLAMP_TO_EDGE;
-    tp.wrapT = GL_CLAMP_TO_EDGE;
-
-    texture->setTexParameters( tp );
-
-    return texture;
+    return frame;
 }
 
 AESound *AEMovieData::createSound( const std::string & path ) {

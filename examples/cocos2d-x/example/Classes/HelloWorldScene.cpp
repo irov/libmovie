@@ -2,7 +2,6 @@
 #include "SimpleAudioEngine.h"
 
 #include "AEMovieCache.h"
-#include "AEMovie.h"
 #include "movie_hash.h"
 
 USING_NS_CC;
@@ -34,14 +33,30 @@ bool HelloWorld::init()
 	extension::AEMovieCache::getInstance()->initialize(ex_example_license_hash);
 
 	Size designSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
+	
+//	addMovie(extension::AEMovie::create("AEM/Knight/Knight.aem"),
+//			 Point(designSize.width / 4, designSize.height / 2));
+//
+//	addMovie(extension::AEMovie::createWithFramesFolder("AEM/Knight/Knight.aem", "AEM/Knight/Knight/"),
+//			 Point(designSize.width / 4 * 3, designSize.height / 2));
+	
+	addMovie(extension::AEMovie::createWithPlist("AEM/Knight/Knight.aem", "knight.plist"),
+			 Point(designSize.width / 4 * 3, designSize.height / 2));
+	
+	addChild(Sprite::createWithSpriteFrameName("images/Sprite_Player_body.png"));
+	
+    return true;
+}
 
-	auto movie = extension::AEMovie::create("AEM/Knight/Knight.aem");
-	movie->setPosition(Point(designSize/2));
+void HelloWorld::addMovie(extension::AEMovie* movie, const cocos2d::Point& position)
+{
+	movie->setPosition(position);
 	movie->setAnchorPoint(Point::ANCHOR_MIDDLE);
 	
 	movie->setComposition("Knight");
 	movie->play();
 	
+	Size designSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
 	Size targetSize = designSize;
 	Size movieSize = movie->getContentSize();
 	float f = targetSize.height / movieSize.height;
@@ -51,8 +66,6 @@ bool HelloWorld::init()
 	movie->setScaleZ(f);
 	
 	addChild(movie);
-	
-    return true;
 }
 
 

@@ -44,7 +44,8 @@ class CC_DLL AEMovieCache : public cocos2d::Ref
 {
 public:
     bool initialize( const char * _hash );
-    AEMovieData * addMovie( const std::string & filepath );
+	AEMovieData * addMovie( const std::string & filePath, const std::string & framesFoldes );
+	AEMovieData * addMovieWithPlist( const std::string & filePath, const std::string & plistPath );
 
     void removeUnusedMovies();
 

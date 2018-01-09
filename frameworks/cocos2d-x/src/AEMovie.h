@@ -43,7 +43,7 @@
 
 NS_CC_EXT_BEGIN;
 
-#define AE_MOVIE_DEBUG_DRAW
+#define AE_MOVIE_DEBUG_DRAW 1
 
 //
 // the movie player
@@ -62,7 +62,11 @@ public:
     };
 
     // the only function to create new nodes
-    static AEMovie * create( const std::string & filepath );
+	static AEMovie * create( const std::string & filePath );
+	
+	static AEMovie * createWithFramesFolder( const std::string & filePath, const std::string & framesFoldes );
+	
+	static AEMovie * createWithPlist( const std::string & filePath, const std::string & plistPath );
 
     // select composition inside the movie
     void setComposition( const std::string & name );
@@ -95,7 +99,9 @@ CC_CONSTRUCTOR_ACCESS:
     AEMovie();
     virtual ~AEMovie();
 
-    virtual bool initWithFile( const std::string & filepath );
+    virtual bool initWithFile( const std::string & filePath );
+	virtual bool initWithFileAndFramesFolder( const std::string & filePath, const std::string & framesFoldes );
+	virtual bool initWithPlist( const std::string & filePath, const std::string & plistPath );
     virtual bool initWithData( const AEMovieData * data );
 
 protected:
