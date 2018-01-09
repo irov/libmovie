@@ -214,7 +214,7 @@ AESound *AEMovieData::createSound( const std::string & path ) {
 
     //	AudioEngine::preload(path);
 
-    auto sound = AESound::create( fileName );
+    AESound * sound = AESound::create( fileName );
     sound->retain();
 
     _sounds.push_back( sound );

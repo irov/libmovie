@@ -57,7 +57,7 @@ ae_voidptr_t AEMovie::callbackCameraProvider( const aeMovieCameraProviderCallbac
 	CCLOG("Creating new camera '%s'.", _callbackData->name);
 */
 /*
-	auto camera = Camera::createPerspective(_callbackData->fov, _callbackData->width / _callbackData->height, 1.f, 1000.f);
+	Camera* camera = Camera::createPerspective(_callbackData->fov, _callbackData->width / _callbackData->height, 1.f, 1000.f);
 	camera->retain();
 	camera->setPosition3D(Vec3(_callbackData->position));
 	camera->lookAt(Vec3(_callbackData->direction));
@@ -130,7 +130,7 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 				CCLOG("  sound ptr: %p",  sound);
 
 				// FIXME: wrap into separate method
-				auto soundNode = AESoundNode::create(sound);
+                AESoundNode * soundNode = AESoundNode::create(sound);
 				soundNode->retain();
 
 				movie->addSoundNode(soundNode);
@@ -333,7 +333,7 @@ ae_voidptr_t AEMovie::callbackCompositionTrackMatteProvider( const aeMovieTrackM
     AEMovie *movie = static_cast<AEMovie *>(_data);
 
     // FIXME: count track matte on load & use a vector of simple structs instead
-    auto tmData = AETrackMatteData::create();
+    AETrackMatteData * tmData = AETrackMatteData::create();
     tmData->retain();
     tmData->setMatrix( _callbackData->matrix );
     tmData->setRenderMesh( *_callbackData->mesh );
@@ -538,9 +538,9 @@ bool AEMovie::initWithData(const AEMovieData * data)
 */
 
 	// get pre-cached shaders
-	auto pc = GLProgramCache::getInstance();
-	auto p1 = pc->getGLProgram("AEM_Normal");
-	auto p2 = pc->getGLProgram("AEM_TrackMatte");
+    GLProgramCache* pc = GLProgramCache::getInstance();
+    GLProgram * p1 = pc->getGLProgram("AEM_Normal");
+    GLProgram * p2 = pc->getGLProgram("AEM_TrackMatte");
 
 	// create or get cached GL states for them
 	_normalGPS = GLProgramState::getOrCreateWithGLProgram(p1);
@@ -787,7 +787,7 @@ static void calc_uv_clip_vectors( const Vec2 & _a, const Vec2 & _b, const Vec2 &
 
 void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) {
 #ifdef AE_MOVIE_DEBUG_DRAW
-	auto size = getContentSize();
+    const Size& size = getContentSize();
 
 	_debugDrawNode->clear();
 	_debugDrawNode->drawRect(Vec2(0.f, 0.f), Vec2(size.width, size.height), Color4F::WHITE);

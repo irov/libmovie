@@ -111,10 +111,10 @@ AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::strin
     std::string folder = path + name + "/";
     std::string relPath = folder + name + ".aem";
 
-    auto it = _movies.find( relPath );
+    MapAEMovieData::iterator it_found = _movies.find( relPath );
 
-    if( it != _movies.end() ) {
-        return it->second;
+    if( it_found != _movies.end() ) {
+        return it_found->second;
     }
 
     AEMovieData * data = new (std::nothrow) AEMovieData();
@@ -129,7 +129,10 @@ AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::strin
 }
 
 void AEMovieCache::removeUnusedMovies() {
-    for( auto it = _movies.cbegin(); it != _movies.cend(); ) {
+    for( MapAEMovieData::iterator
+        it = _movies.begin(),
+        it_end = _movies.end();
+        it != it_end; ) {
         AEMovieData *data = it->second;
 
         if( data->getReferenceCount() == 1 ) {
