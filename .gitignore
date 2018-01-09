@@ -5,3 +5,11 @@ build_temp/
 docs/
 *.sublime-project
 *.sublime-workspace
+
+examples/cocos2d-x/build/
+examples/cocos2d-x/example/cocos2d/
+examples/cocos2d-x/example/cocos2dx.zip
+examples/cocos2d-x/example/Classes/movie/
+examples/cocos2d-x/example/Classes/AEMovie/
+examples/cocos2d-x/example/proj.ios_mac/LibMovieCocos.xcodeproj/project.xcworkspace
+examples/cocos2d-x/example/proj.ios_mac/LibMovieCocos.xcodeproj/xcuserdata
