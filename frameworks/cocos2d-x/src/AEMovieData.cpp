@@ -145,18 +145,15 @@ AEMovieData::~AEMovieData()
         CC_SAFE_RELEASE( *soundIt );
 }
 
-bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & path, const std::string & name )
+bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & filepath )
 {
-    if( path.empty() || name.empty() )
+    if( filepath.empty() )
     {
         //XCODE COMPILE COMMENT: CCLOG( "AEMovieData::initWithFile(): blank resource filename." );
         return false;
     }
 
-    // get full path for the .aem file
-    _path = path + name + "/";
-    std::string relPath = _path + name + ".aem";
-    std::string fullPath = FileUtils::getInstance()->fullPathForFilename( relPath );
+    std::string fullPath = FileUtils::getInstance()->fullPathForFilename( filepath );
 
     //XCODE COMPILE COMMENT: CCLOG( "Initializing with file '%s'.", fullPath.c_str() );
 
@@ -167,6 +164,8 @@ bool AEMovieData::initWithFile( aeMovieInstance * instance, const std::string & 
         //XCODE COMPILE COMMENT: CCLOG( "'%s' not found.", fullPath.c_str() );
         return false;
     }
+
+	_path = fullPath.substr(0, fullPath.find_last_of('/') + 1);
 
     BundleReader reader;
     reader.init( (char *)(data.getBytes()), data.getSize() );

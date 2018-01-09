@@ -457,10 +457,10 @@ void AEMovie::addTrackMatteData(AETrackMatteData * data) {
 	_trackMatteDatas.push_back(data);
 }
 
-AEMovie * AEMovie::create(const std::string & path, const std::string & name) {
+AEMovie * AEMovie::create(const std::string & filepath) {
 	AEMovie * ret = new (std::nothrow) AEMovie();
 
-	if (ret && ret->initWithFile(path, name)) {
+	if (ret && ret->initWithFile(filepath)) {
 		ret->autorelease();
 		return ret;
 	}
@@ -518,10 +518,10 @@ AEMovie::~AEMovie()
 */
 }
 
-bool AEMovie::initWithFile(const std::string & path, const std::string & name)
+bool AEMovie::initWithFile(const std::string & filepath)
 {
 	// FIXME: move cache to the Director
-	AEMovieData * data = AEMovieCache::getInstance()->addMovie(path, name);
+	AEMovieData * data = AEMovieCache::getInstance()->addMovie(filepath);
 	return initWithData(data);
 }
 

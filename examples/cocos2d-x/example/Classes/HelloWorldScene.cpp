@@ -1,8 +1,8 @@
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
 
-#include "AEMovie/AEMovieCache.h"
-#include "AEMovie/AEMovie.h"
+#include "AEMovieCache.h"
+#include "AEMovie.h"
 #include "movie_hash.h"
 
 USING_NS_CC;
@@ -35,7 +35,7 @@ bool HelloWorld::init()
 
 	Size designSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
 
-	auto movie = extension::AEMovie::create("AEM/", "Knight");
+	auto movie = extension::AEMovie::create("AEM/Knight/Knight.aem");
 	movie->setPosition(Point(designSize/2));
 	movie->setAnchorPoint(Point::ANCHOR_MIDDLE);
 	

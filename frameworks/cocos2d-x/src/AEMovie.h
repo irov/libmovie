@@ -62,7 +62,7 @@ public:
     };
 
     // the only function to create new nodes
-    static AEMovie * create( const std::string & path, const std::string & name );
+    static AEMovie * create( const std::string & filepath );
 
     // select composition inside the movie
     void setComposition( const std::string & name );
@@ -95,7 +95,7 @@ CC_CONSTRUCTOR_ACCESS:
     AEMovie();
     virtual ~AEMovie();
 
-    virtual bool initWithFile( const std::string & path, const std::string & name );
+    virtual bool initWithFile( const std::string & filepath );
     virtual bool initWithData( const AEMovieData * data );
 
 protected:

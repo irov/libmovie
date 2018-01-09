@@ -107,11 +107,8 @@ bool AEMovieCache::initialize( const char * _hash )
     return true;
 }
 
-AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::string & name ) {
-    std::string folder = path + name + "/";
-    std::string relPath = folder + name + ".aem";
-
-    auto it = _movies.find( relPath );
+AEMovieData * AEMovieCache::addMovie( const std::string & filepath ) {
+    auto it = _movies.find( filepath );
 
     if( it != _movies.end() ) {
         return it->second;
@@ -119,8 +116,8 @@ AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::strin
 
     AEMovieData * data = new (std::nothrow) AEMovieData();
 
-    if( data && data->initWithFile( _instance, path, name ) ) {
-        _movies.insert( relPath, data );
+    if( data && data->initWithFile( _instance, filepath ) ) {
+        _movies.insert( filepath, data );
         data->release();
         return data;
     }

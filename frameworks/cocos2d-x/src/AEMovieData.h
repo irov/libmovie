@@ -43,7 +43,7 @@ public:
     virtual ~AEMovieData();
 
     // path must end with '/'
-    virtual bool initWithFile( aeMovieInstance * instance, const std::string & path, const std::string & name );
+    virtual bool initWithFile( aeMovieInstance * instance, const std::string & filepath );
 
     const aeMovieData * getData() const { return _data; }
 
