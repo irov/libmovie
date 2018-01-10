@@ -201,21 +201,22 @@ Ref *AEMovieData::createImage( const std::string & path, int width, int height )
 	}
     else
 	{
-		frame = SpriteFrame::create(fileName, Rect::ZERO);
-		SpriteFrameCache::getInstance()->addSpriteFrame(frame, fileName);
-//		texture = Director::getInstance()->getTextureCache()->addImage( fileName );
+		auto texture = Director::getInstance()->getTextureCache()->addImage(fileName);
+		if(texture)
+		{
+			Rect rect;
+			rect.size = texture->getContentSizeInPixels();
+			frame = SpriteFrame::createWithTexture(texture, rect);
+			SpriteFrameCache::getInstance()->addSpriteFrame(frame, fileName);
+			
+			Texture2D::TexParams tp;
+			tp.magFilter = GL_LINEAR;
+			tp.minFilter = GL_LINEAR;
+			tp.wrapS = GL_CLAMP_TO_EDGE;
+			tp.wrapT = GL_CLAMP_TO_EDGE;
+			texture->setTexParameters( tp );
+		}
 	}
-	
-//	if(texture)
-//	{
-//		Texture2D::TexParams tp;
-//		tp.magFilter = GL_LINEAR;
-//		tp.minFilter = GL_LINEAR;
-//		tp.wrapS = GL_CLAMP_TO_EDGE;
-//		tp.wrapT = GL_CLAMP_TO_EDGE;
-//
-//		texture->setTexParameters( tp );
-//	}
 
     return frame;
 }

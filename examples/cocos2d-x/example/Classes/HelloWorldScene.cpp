@@ -33,17 +33,25 @@ bool HelloWorld::init()
 	extension::AEMovieCache::getInstance()->initialize(ex_example_license_hash);
 
 	Size designSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
+
+	const bool usePlist = true;
 	
-//	addMovie(extension::AEMovie::create("AEM/Knight/Knight.aem"),
-//			 Point(designSize.width / 4, designSize.height / 2));
-//
-//	addMovie(extension::AEMovie::createWithFramesFolder("AEM/Knight/Knight.aem", "AEM/Knight/Knight/"),
-//			 Point(designSize.width / 4 * 3, designSize.height / 2));
-	
-	addMovie(extension::AEMovie::createWithPlist("AEM/Knight/Knight.aem", "knight.plist"),
-			 Point(designSize.width / 4 * 3, designSize.height / 2));
-	
-	addChild(Sprite::createWithSpriteFrameName("images/Sprite_Player_body.png"));
+	if(usePlist)
+	{
+		addMovie(extension::AEMovie::createWithPlist("AEM/Knight/Knight.aem", "knight.plist"),
+				 Point(designSize.width / 4, designSize.height / 2));
+		
+		addMovie(extension::AEMovie::createWithPlist("AEM/Knight/Knight.aem", "knight.plist"),
+				 Point(designSize.width / 4 * 3, designSize.height / 2));
+	}
+	else
+	{
+		addMovie(extension::AEMovie::create("AEM/Knight/Knight.aem"),
+				 Point(designSize.width / 4, designSize.height / 2));
+		
+		addMovie(extension::AEMovie::createWithFramesFolder("AEM/Knight/Knight.aem", "AEM/Knight/"),
+				 Point(designSize.width / 4 * 3, designSize.height / 2));
+	}
 	
     return true;
 }
