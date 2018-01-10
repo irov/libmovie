@@ -58,11 +58,11 @@ AESoundNode::AESoundNode()
     : _sound( nullptr )
     , _audioId( AudioEngine::INVALID_AUDIO_ID )
 {
-    //XCODE COMPILE COMMENT: CCLOG( "AESoundNode::AESoundNode()" );
+    CCLOG( "AESoundNode::AESoundNode()" );
 }
 
 AESoundNode::~AESoundNode() {
-    //XCODE COMPILE COMMENT: CCLOG( "AESoundNode::~AESoundNode()" );
+    CCLOG( "AESoundNode::~AESoundNode()" );
     AudioEngine::stop( _audioId );
 }
 

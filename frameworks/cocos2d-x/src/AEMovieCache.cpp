@@ -81,7 +81,7 @@ AEMovieCache::AEMovieCache() {
 
 AEMovieCache::~AEMovieCache() {
     if( _instance != nullptr ) {
-        //XCODE COMPILE COMMENT: CCLOG( "Deleting movie instance." );
+        CCLOG( "Deleting movie instance." );
         ae_delete_movie_instance( _instance );
     }
 }
@@ -143,7 +143,7 @@ void AEMovieCache::removeUnusedMovies() {
         AEMovieData *data = it->second;
 
         if( data->getReferenceCount() == 1 ) {
-            //XCODE COMPILE COMMENT: CCLOG( "AEMovieCache::removeUnusedMovies(): '%s'", it->first.c_str() );
+            CCLOG( "AEMovieCache::removeUnusedMovies(): '%s'", it->first.c_str() );
             it = _movies.erase( it );
         }
         else {

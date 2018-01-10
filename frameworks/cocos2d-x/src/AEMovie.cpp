@@ -226,7 +226,7 @@ void AEMovie::callbackNodeUpdate( const aeMovieNodeUpdateCallbackData * _callbac
                     CCLOG("  sound ptr: %p", soundNode->getSound());
                     CCLOG("  name: '%s'", soundNode->getSound()->getPath().c_str());
                     CCLOG("  offset: %.2f sec", _callbackData->offset);
-					
+                    
                     int id = soundNode->getAudioId();
                     
                     // FIXME: maybe don't stop, just set time instead
@@ -458,41 +458,18 @@ void AEMovie::addTrackMatteData(AETrackMatteData * data) {
 	_trackMatteDatas.push_back(data);
 }
 
-AEMovie * AEMovie::create(const std::string & filepath) {
+AEMovie * AEMovie::create(const std::string & path, const std::string & name) {
 	AEMovie * ret = new (std::nothrow) AEMovie();
 
-	if (ret && ret->initWithFile(filepath)) {
+	if (ret && ret->initWithFile(path, name)) {
 		ret->autorelease();
 		return ret;
 	}
-	CC_SAFE_DELETE(ret);
+
+       	CC_SAFE_DELETE(ret);
+
 	return nullptr;
 }
-
-AEMovie * AEMovie::createWithFramesFolder( const std::string & filepath, const std::string & framesFoldes )
-{
-	AEMovie * ret = new (std::nothrow) AEMovie();
-	
-	if (ret && ret->initWithFileAndFramesFolder(filepath, framesFoldes)) {
-		ret->autorelease();
-		return ret;
-	}
-	CC_SAFE_DELETE(ret);
-	return nullptr;
-}
-
-AEMovie * AEMovie::createWithPlist( const std::string & filePath, const std::string & plistPath )
-{
-	AEMovie * ret = new (std::nothrow) AEMovie();
-	
-	if (ret && ret->initWithPlist(filePath, plistPath)) {
-		ret->autorelease();
-		return ret;
-	}
-	CC_SAFE_DELETE(ret);
-	return nullptr;
-}
-
 
 AEMovie::AEMovie()
 : _normalGPS(nullptr)
@@ -542,30 +519,10 @@ AEMovie::~AEMovie()
 */
 }
 
-bool AEMovie::initWithFile(const std::string & filepath)
-{
-	auto k = filepath.find_last_of('/');
-	if( k != std::string::npos )
-	{
-		std::string framesFolder = filepath.substr(0, k + 1);
-		return initWithFileAndFramesFolder(filepath, framesFolder);
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool AEMovie::initWithFileAndFramesFolder(const std::string & filePath, const std::string & framesFoldes)
+bool AEMovie::initWithFile(const std::string & path, const std::string & name)
 {
 	// FIXME: move cache to the Director
-	AEMovieData * data = AEMovieCache::getInstance()->addMovie(filePath, framesFoldes);
-	return initWithData(data);
-}
-
-bool AEMovie::initWithPlist( const std::string & filePath, const std::string & plistPath )
-{
-	AEMovieData * data = AEMovieCache::getInstance()->addMovieWithPlist(filePath, plistPath);
+	AEMovieData * data = AEMovieCache::getInstance()->addMovie(path, name);
 	return initWithData(data);
 }
 
@@ -724,7 +681,7 @@ void AEMovie::play() {
 }
 
 void AEMovie::stop() {
-	CCLOG("AEMOVIESTOP");
+	CCLOG("AEMOVIESTOP");	
 
 	_time = 0.f;
 	onPlayEvent((int)AEMovie::EventType::TIME_CHANGED);
@@ -738,13 +695,13 @@ void AEMovie::stop() {
 }
 
 void AEMovie::interrupt(bool skip) {
-	CCLOG("AEMOVIEINTERRUPT");
+	CCLOG("AEMOVIEINTERRUPT");	
 
     ae_interrupt_movie_composition( _composition, skip );
 }
 
 void AEMovie::pause() {
-	CCLOG("AEMOVIEPAUSE");
+	CCLOG("AEMOVIEPAUSE");	
 
 	Node::pause();
 
@@ -911,7 +868,6 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					if (renderMesh.vertexCount == 0 || renderMesh.indexCount == 0)
 						break;
 
-					SpriteFrame * spriteFrame = static_cast<SpriteFrame *>(renderMesh.resource_data);
 					CCLOG("mesh info:");
 					CCLOG(" vertex count = %i", renderMesh.vertexCount);
 					CCLOG(" index count = %i", renderMesh.indexCount);
@@ -940,58 +896,10 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 						CCLOG(" vertex %i:", i);
 						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
-						//CCLOG("  uv       = %.2f %.2f", uv[0], uv[1]);
+						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1]);
 						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
 					}
-					
-					auto atlasWidth = spriteFrame->getTexture()->getPixelsWide();
-					auto atlasHeight = spriteFrame->getTexture()->getPixelsHigh();
-					auto rectInPixels = spriteFrame->getRect();
-					auto rectRotated = spriteFrame->isRotated();
-					
-					float rw = rectInPixels.size.width;
-					float rh = rectInPixels.size.height;
-					if (rectRotated)
-						std::swap(rw, rh);
 
-					//TODO: use flip
-//					if ((!rectRotated && _flippedX) || (rectRotated && _flippedY))
-//					{
-//						std::swap(left, right);
-//					}
-//
-//					if ((!rectRotated && _flippedY) || (rectRotated && _flippedX))
-//					{
-//						std::swap(top, bottom);
-//					}
-					
-					float left    = rectInPixels.origin.x / atlasWidth;
-					float right   = (rectInPixels.origin.x + rw) / atlasWidth;
-					float top     = rectInPixels.origin.y / atlasHeight;
-					float bottom  = (rectInPixels.origin.y + rh) / atlasHeight;
-					if (rectRotated)
-					{
-						renderData.vertices[0].texCoords.u = right;
-						renderData.vertices[0].texCoords.v = top;
-						renderData.vertices[1].texCoords.u = right;
-						renderData.vertices[1].texCoords.v = bottom;
-						renderData.vertices[2].texCoords.u = left;
-						renderData.vertices[2].texCoords.v = bottom;
-						renderData.vertices[3].texCoords.u = left;
-						renderData.vertices[3].texCoords.v = top;
-					}
-					else
-					{
-						renderData.vertices[0].texCoords.u = left;
-						renderData.vertices[0].texCoords.v = top;
-						renderData.vertices[1].texCoords.u = right;
-						renderData.vertices[1].texCoords.v = top;
-						renderData.vertices[2].texCoords.u = right;
-						renderData.vertices[2].texCoords.v = bottom;
-						renderData.vertices[3].texCoords.u = left;
-						renderData.vertices[3].texCoords.v = bottom;
-					}
-					
 					TrianglesCommand::Triangles triangles;
 					triangles.verts = renderData.vertices.data();
 					triangles.vertCount = renderMesh.vertexCount;
@@ -1028,11 +936,9 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 //					CCLOG(" resource type: %i", (int)renderMesh.resource_type);
 //					CCLOG(" resource data: %i", (int)renderMesh.resource_data);
 
-					
-					
+					Texture2D * texture = static_cast<Texture2D *>(renderMesh.resource_data);
 
 					#if COCOS2D_DEBUG > 0
-					Texture2D* texture = spriteFrame->getTexture();
 					const Texture2D::PixelFormatInfo & pfi = Texture2D::getPixelFormatInfoMap().at(texture->getPixelFormat());
 
 					CCLOG(" Texture: '%s'", texture->getDescription().c_str());
@@ -1056,7 +962,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 					renderData.trianglesCommand.init(
 						_globalZOrder,
-						spriteFrame->getTexture(),
+						texture,
 						getGLProgramState(),
 						blendFunc,
 						triangles,

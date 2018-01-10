@@ -51,7 +51,7 @@ AESlotNode * AESlotNode::create() {
 
 AESlotNode::AESlotNode()
 {
-    //XCODE COMPILE COMMENT: CCLOG( "AESlotNode::AESlotNode()" );
+    CCLOG( "AESlotNode::AESlotNode()" );
 
 #ifdef AE_SLOTNODE_DEBUG_DRAW
     _debugDrawNode = DrawNode::create();
@@ -60,11 +60,11 @@ AESlotNode::AESlotNode()
 }
 
 AESlotNode::~AESlotNode() {
-    //XCODE COMPILE COMMENT: CCLOG( "AESlotNode::~AESlotNode()" );
+    CCLOG( "AESlotNode::~AESlotNode()" );
 }
 
 bool AESlotNode::init() {
-    //XCODE COMPILE COMMENT: CCLOG( "AESlotNode::init()" );
+    CCLOG( "AESlotNode::init()" );
     return true;
 }
 
