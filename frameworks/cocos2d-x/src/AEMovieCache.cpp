@@ -70,7 +70,7 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
     vsnprintf( (char *)dst, sizeof( dst ), _format, argList );
     va_end( argList );
 
-    //XCODE COMPILE COMMENT: CCLOG( dst );
+    CCLOG( "%.2048s", dst );
 }
 
 //===============================================
@@ -108,7 +108,7 @@ bool AEMovieCache::initialize( const char * _hash )
 }
 
 AEMovieData * AEMovieCache::addMovie( const std::string & filepath, const std::string & framesFoldes ) {
-    auto it = _movies.find( filepath );
+    MapAEMovieData::iterator it = _movies.find( filepath );
 
     if( it != _movies.end() ) {
         return it->second;
@@ -136,7 +136,10 @@ AEMovieData * AEMovieCache::addMovieWithPlist( const std::string & filePath, con
 }
 
 void AEMovieCache::removeUnusedMovies() {
-    for( auto it = _movies.cbegin(); it != _movies.cend(); ) {
+    for( MapAEMovieData::iterator
+        it = _movies.begin(),
+        it_end = _movies.end();
+        it != it_end; ) {
         AEMovieData *data = it->second;
 
         if( data->getReferenceCount() == 1 ) {

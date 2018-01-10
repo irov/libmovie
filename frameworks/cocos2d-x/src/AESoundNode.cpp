@@ -43,8 +43,8 @@ AESoundNode * AESoundNode::create( AESound *sound ) {
     if( ret ) {
         ret->autorelease();
         ret->_sound = sound;
-        //XCODE COMPILE COMMENT: CCLOG( "  sound ptr: %i", ret->getSound() );
-        //XCODE COMPILE COMMENT: CCLOG( " Sound: '%s'", ret->getSound()->getPath() );
+        CCLOG( "  sound ptr: %p", ret->getSound() );
+        CCLOG( " Sound: '%s'", ret->getSound()->getPath().c_str() );
 
         return ret;
     }

@@ -102,9 +102,9 @@ void *AEMovieData::callbackResourceProvider( const aeMovieResource * _resource, 
             const aeMovieResourceSlot * r = (const aeMovieResourceSlot *)_resource;
             AE_UNUSED(r);
             
-            //XCODE COMPILE COMMENT: CCLOG( "Resource type: slot." );
-            //XCODE COMPILE COMMENT: CCLOG( " width  = %i", r->width );
-            //XCODE COMPILE COMMENT: CCLOG( " height = %i", r->height );
+            CCLOG( "Resource type: slot." );
+            CCLOG( " width  = %f", r->width );
+            CCLOG( " height = %f", r->height );
             break;
         }
     default:
@@ -226,7 +226,7 @@ AESound *AEMovieData::createSound( const std::string & path ) {
 
     //	AudioEngine::preload(path);
 
-    auto sound = AESound::create( fileName );
+    AESound * sound = AESound::create( fileName );
     sound->retain();
 
     _sounds.push_back( sound );
