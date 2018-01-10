@@ -29,6 +29,10 @@
 
 #pragma once
 
+#ifdef _DEBUG
+#define COCOS2D_DEBUG 1
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4100)

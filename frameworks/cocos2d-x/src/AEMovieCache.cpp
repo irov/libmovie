@@ -70,7 +70,7 @@ static void stdlib_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, c
     vsnprintf( (char *)dst, sizeof( dst ), _format, argList );
     va_end( argList );
 
-    //XCODE COMPILE COMMENT: CCLOG( dst );
+    CCLOG( "%.2048s", dst );
 }
 
 //===============================================
@@ -81,7 +81,7 @@ AEMovieCache::AEMovieCache() {
 
 AEMovieCache::~AEMovieCache() {
     if( _instance != nullptr ) {
-        //XCODE COMPILE COMMENT: CCLOG( "Deleting movie instance." );
+        CCLOG( "Deleting movie instance." );
         ae_delete_movie_instance( _instance );
     }
 }
@@ -111,10 +111,10 @@ AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::strin
     std::string folder = path + name + "/";
     std::string relPath = folder + name + ".aem";
 
-    auto it = _movies.find( relPath );
+    MapAEMovieData::iterator it_found = _movies.find( relPath );
 
-    if( it != _movies.end() ) {
-        return it->second;
+    if( it_found != _movies.end() ) {
+        return it_found->second;
     }
 
     AEMovieData * data = new (std::nothrow) AEMovieData();
@@ -129,11 +129,14 @@ AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::strin
 }
 
 void AEMovieCache::removeUnusedMovies() {
-    for( auto it = _movies.cbegin(); it != _movies.cend(); ) {
+    for( MapAEMovieData::iterator
+        it = _movies.begin(),
+        it_end = _movies.end();
+        it != it_end; ) {
         AEMovieData *data = it->second;
 
         if( data->getReferenceCount() == 1 ) {
-            //XCODE COMPILE COMMENT: CCLOG( "AEMovieCache::removeUnusedMovies(): '%s'", it->first.c_str() );
+            CCLOG( "AEMovieCache::removeUnusedMovies(): '%s'", it->first.c_str() );
             it = _movies.erase( it );
         }
         else {

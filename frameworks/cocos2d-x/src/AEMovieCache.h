@@ -54,7 +54,8 @@ public:
 protected:
     aeMovieInstance * _instance;
 
-    cocos2d::Map<std::string, AEMovieData *> _movies;
+    using MapAEMovieData = cocos2d::Map<std::string, AEMovieData *>;
+    MapAEMovieData _movies;
 
     static AEMovieCache * s_sharedInstance;
 

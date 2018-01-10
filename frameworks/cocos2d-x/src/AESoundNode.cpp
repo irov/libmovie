@@ -43,8 +43,8 @@ AESoundNode * AESoundNode::create( AESound *sound ) {
     if( ret ) {
         ret->autorelease();
         ret->_sound = sound;
-        //XCODE COMPILE COMMENT: CCLOG( "  sound ptr: %i", ret->getSound() );
-        //XCODE COMPILE COMMENT: CCLOG( " Sound: '%s'", ret->getSound()->getPath() );
+        CCLOG( "  sound ptr: %p", ret->getSound() );
+        CCLOG( " Sound: '%s'", ret->getSound()->getPath().c_str() );
 
         return ret;
     }
@@ -58,11 +58,11 @@ AESoundNode::AESoundNode()
     : _sound( nullptr )
     , _audioId( AudioEngine::INVALID_AUDIO_ID )
 {
-    //XCODE COMPILE COMMENT: CCLOG( "AESoundNode::AESoundNode()" );
+    CCLOG( "AESoundNode::AESoundNode()" );
 }
 
 AESoundNode::~AESoundNode() {
-    //XCODE COMPILE COMMENT: CCLOG( "AESoundNode::~AESoundNode()" );
+    CCLOG( "AESoundNode::~AESoundNode()" );
     AudioEngine::stop( _audioId );
 }
 
