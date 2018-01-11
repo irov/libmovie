@@ -38,11 +38,11 @@
 #pragma warning(disable : 4100)
 #endif
 
-#include "cocos/cocos2d.h"
+#include "cocos2d.h"
 #include "audio/include/AudioEngine.h"
 #include "3d/CCBundleReader.h"
-#include "extensions/ExtensionMacros.h"
-#include "extensions/ExtensionExport.h"
+#include "ExtensionMacros.h"
+#include "ExtensionExport.h"
 
 #ifdef _MSC_VER
 #pragma warning(pop)
