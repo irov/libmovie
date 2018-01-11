@@ -6,14 +6,14 @@ docs/
 *.sublime-project
 *.sublime-workspace
 
-examples/cocos2d-x/build/
-examples/cocos2d-x/example/cocos2d/
-examples/cocos2d-x/example/cocos2dx.zip
-examples/cocos2d-x/example/Classes/movie/
-examples/cocos2d-x/example/Classes/AEMovie/
-examples/cocos2d-x/example/proj.ios_mac/LibMovieCocos.xcodeproj/project.xcworkspace
-examples/cocos2d-x/example/proj.ios_mac/LibMovieCocos.xcodeproj/xcuserdata
-examples/cocos2d-x/example/proj.win32/.vs
-examples/cocos2d-x/example/proj.win32/Debug.win32
-examples/cocos2d-x/example/proj.win32/Release.win32
-examples/cocos2d-x/example/Resources/AEM
+frameworks/cocos2d-x/build/
+frameworks/cocos2d-x/example/cocos2d/
+frameworks/cocos2d-x/example/cocos2dx.zip
+frameworks/cocos2d-x/example/Classes/movie/
+frameworks/cocos2d-x/example/Classes/AEMovie/
+frameworks/cocos2d-x/example/proj.ios_mac/LibMovieCocos.xcodeproj/project.xcworkspace
+frameworks/cocos2d-x/example/proj.ios_mac/LibMovieCocos.xcodeproj/xcuserdata
+frameworks/cocos2d-x/example/proj.win32/.vs
+frameworks/cocos2d-x/example/proj.win32/Debug.win32
+frameworks/cocos2d-x/example/proj.win32/Release.win32
+frameworks/cocos2d-x/example/Resources/AEM

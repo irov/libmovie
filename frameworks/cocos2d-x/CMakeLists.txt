@@ -1,55 +1,25 @@
-cmake_minimum_required(VERSION 3.9)
-
-project(cc_movie)
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall /WX")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4710") #function not inlined 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4738") #storing 32-bit float result in memory, possible loss of performance
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W4 /WX")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4710") #function not inlined 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4738") #storing 32-bit float result in memory, possible loss of performance
+cmake_minimum_required(VERSION 3.1)
+set(EXAMPLE_DIR "${CMAKE_CURRENT_LIST_DIR}/example")
+set(LIBMOVIE_DIR "${CMAKE_CURRENT_LIST_DIR}/../..")
+if (NOT EXISTS ${EXAMPLE_DIR}/cocos2d)
+    message("Downloading cocos2dx, this may take some time!")
+    file(DOWNLOAD "http://cdn.cocos2d-x.org/cocos2d-x-3.16.zip" "${EXAMPLE_DIR}/cocos2dx.zip")
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E tar x  ${EXAMPLE_DIR}/cocos2dx.zip
+        WORKING_DIRECTORY ${EXAMPLE_DIR}
+    )
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E rename
+        "${EXAMPLE_DIR}/cocos2d-x-3.16" "${EXAMPLE_DIR}/cocos2d"
+    )
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
-
-set(cc_movie_dependencies ../../dependencies)
-
-include_directories( ${PROJECT_NAME} ../../include)
-
-INCLUDE_DIRECTORIES( cocos2dx include )
-INCLUDE_DIRECTORIES( cocos2dx ${cc_movie_dependencies}/cocos2d-x/cocos )
-INCLUDE_DIRECTORIES( cocos2dx ${cc_movie_dependencies}/cocos2d-x/extensions )
-INCLUDE_DIRECTORIES( cocos2dx ${cc_movie_dependencies}/cocos2d-x/external )
-INCLUDE_DIRECTORIES( cocos2dx ${cc_movie_dependencies}/cocos2d-x/external/glfw3/include/win32 )
-INCLUDE_DIRECTORIES( cocos2dx ${cc_movie_dependencies}/cocos2d-x/external/win32-specific/gles/include/OGLES )
-
-ADD_DEFINITIONS(-DCC_STATIC)
-
-if( MSVC )
-  ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-endif()
-
-file(GLOB cc_player_headers src/*.h)
-file(GLOB cc_player_sources src/*.cpp)
-
-ADD_LIBRARY( ${PROJECT_NAME} STATIC ${cc_player_headers} ${cc_player_sources})
-
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} movie)
-#
+file(COPY ${LIBMOVIE_DIR}/include/movie DESTINATION ${EXAMPLE_DIR}/Classes/)
+file(COPY ${LIBMOVIE_DIR}/src DESTINATION ${EXAMPLE_DIR}/Classes/movie)
+file(COPY ${LIBMOVIE_DIR}/frameworks/cocos2d-x/src DESTINATION ${EXAMPLE_DIR}/Classes/)
+file(COPY ${LIBMOVIE_DIR}/examples/resources/Knight DESTINATION ${EXAMPLE_DIR}/Resources/AEM/)
+file(REMOVE_RECURSE ${EXAMPLE_DIR}/Classes/AEMovie/)
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E rename
+    "${EXAMPLE_DIR}/Classes/src" "${EXAMPLE_DIR}/Classes/AEMovie/"
+)
