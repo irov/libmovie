@@ -976,12 +976,12 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 					renderData.vertices.resize(renderMesh.vertexCount);
 
-                    ae_uint32_t i;
-					const float * p;
-					const float * uv;
+					const ae_float_t * p = &renderMesh.position[0][0];
+					const ae_float_t * uv = renderMesh.uv[0];
 
-					for (i = 0, p = &renderMesh.position[0][0], uv = renderMesh.uv[0]; i < renderMesh.vertexCount; i++, p += 3, uv += 2) {
-						V3F_C4B_T2F &v = renderData.vertices[i];
+                    for( ae_uint32_t i = 0; i != renderMesh.vertexCount; ++i ) 
+                    {
+                        V3F_C4B_T2F &v = renderData.vertices[i];
 
 						v.vertices = Vec3(p[0], p[1], p[2]);
 						v.colors = Color4B(Color4F(renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity));
@@ -991,6 +991,9 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
 						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1]);
 						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
+
+                        p += 3;
+                        uv += 2;
 					}
 					
 					convertTextCoords(renderData, spriteFrame);
@@ -1009,7 +1012,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					triangles.indexCount = renderMesh.indexCount;
 
 					#if COCOS2D_DEBUG > 0
-					for (i = 0; i < triangles.indexCount; i++) {
+					for (int i = 0; i < triangles.indexCount; i++) {
 						CCLOG(" index %i = %i", i, triangles.indices[i]);
 					}
 					#endif
@@ -1183,11 +1186,11 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 					renderData.vertices.resize(renderMesh.vertexCount);
 
-                    ae_uint32_t i;
-					const float *p;
-					const float *uv;
+					const ae_float_t *p = &renderMesh.position[0][0];
+					const ae_float_t *uv = renderMesh.uv[0];
 
-					for (i = 0, p = &renderMesh.position[0][0], uv = renderMesh.uv[0]; i < renderMesh.vertexCount; i++, p += 3, uv += 2) {
+                    for( ae_uint32_t i = 0; i != renderMesh.vertexCount; ++i ) 
+                    {
 						V3F_C4B_T2F &v = renderData.vertices[i];
 
 						v.vertices = Vec3(p[0], p[1], p[2]);
@@ -1208,6 +1211,9 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 
 						CCLOG("  tmUV     = %.2f %.2f", tmUV.x, tmUV.y);
 					#endif
+
+                        p += 3;
+                        uv += 2;
 					}
 
 					TrianglesCommand::Triangles triangles;
@@ -1224,7 +1230,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					triangles.indexCount = renderMesh.indexCount;
 
 					#if COCOS2D_DEBUG > 0
-					for (i = 0; i < triangles.indexCount; i++) {
+					for (int i = 0; i < triangles.indexCount; i++) {
 						CCLOG(" index %i = %i", i, triangles.indices[i]);
 					}
 					#endif
