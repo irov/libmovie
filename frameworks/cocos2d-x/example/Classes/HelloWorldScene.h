@@ -11,7 +11,7 @@ public:
 
     virtual bool init();
 	
-	void addMovie(cocos2d::extension::AEMovie* movie, const cocos2d::Point& position);
+	void addMovie(cocos2d::extension::AEMovie* movie, const cocos2d::Point& position, const std::string& composition);
     
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
