@@ -18,6 +18,7 @@ file(COPY ${LIBMOVIE_DIR}/include/movie DESTINATION ${EXAMPLE_DIR}/Classes/)
 file(COPY ${LIBMOVIE_DIR}/src DESTINATION ${EXAMPLE_DIR}/Classes/movie)
 file(COPY ${LIBMOVIE_DIR}/frameworks/cocos2d-x/src DESTINATION ${EXAMPLE_DIR}/Classes/)
 file(COPY ${LIBMOVIE_DIR}/examples/resources/Knight DESTINATION ${EXAMPLE_DIR}/Resources/AEM/)
+file(COPY ${LIBMOVIE_DIR}/examples/resources/ui DESTINATION ${EXAMPLE_DIR}/Resources/AEM/)
 file(REMOVE_RECURSE ${EXAMPLE_DIR}/Classes/AEMovie/)
 execute_process(
     COMMAND ${CMAKE_COMMAND} -E rename
