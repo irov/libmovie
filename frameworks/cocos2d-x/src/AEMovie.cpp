@@ -1288,6 +1288,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						flags);
 
 					renderer->addCommand(&renderData.trianglesCommand);
+					renderer->render();
 
 					break;
 				}
