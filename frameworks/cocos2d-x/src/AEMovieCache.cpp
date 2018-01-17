@@ -107,25 +107,32 @@ bool AEMovieCache::initialize( const char * _hash )
     return true;
 }
 
-AEMovieData * AEMovieCache::addMovie( const std::string & path, const std::string & name ) {
-    std::string folder = path + name + "/";
-    std::string relPath = folder + name + ".aem";
+AEMovieData * AEMovieCache::addMovie( const std::string & filepath, const std::string & framesFoldes ) {
+    MapAEMovieData::iterator it = _movies.find( filepath );
 
-    MapAEMovieData::iterator it_found = _movies.find( relPath );
-
-    if( it_found != _movies.end() ) {
-        return it_found->second;
+    if( it != _movies.end() ) {
+        return it->second;
     }
 
     AEMovieData * data = new (std::nothrow) AEMovieData();
 
-    if( data && data->initWithFile( _instance, path, name ) ) {
-        _movies.insert( relPath, data );
+    if( data && data->initWithFileAndFramesFolder( _instance, filepath, framesFoldes ) ) {
+        _movies.insert( filepath, data );
         data->release();
         return data;
     }
 
     return nullptr;
+}
+
+AEMovieData * AEMovieCache::addMovieWithPlist( const std::string & filePath, const std::string & plistPath )
+{
+	if(FileUtils::getInstance()->isFileExist(plistPath))
+	{
+		cocos2d::SpriteFrameCache::getInstance()->addSpriteFramesWithFile(plistPath);
+		return addMovie(filePath, "");
+	}
+	return nullptr;
 }
 
 void AEMovieCache::removeUnusedMovies() {

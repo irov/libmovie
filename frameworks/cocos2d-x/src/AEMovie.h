@@ -43,7 +43,7 @@
 
 NS_CC_EXT_BEGIN;
 
-#define AE_MOVIE_DEBUG_DRAW
+#define AE_MOVIE_DEBUG_DRAW 0
 
 //
 // the movie player
@@ -62,8 +62,12 @@ public:
     };
 
     // the only function to create new nodes
-    static AEMovie * create( const std::string & path, const std::string & name );
-
+	static AEMovie * create( const std::string & filePath );
+	
+	static AEMovie * createWithFramesFolder( const std::string & filePath, const std::string & framesFoldes );
+	
+	static AEMovie * createWithPlist( const std::string & filePath, const std::string & plistPath );
+	
     // select composition inside the movie
     void setComposition( const std::string & name );
 
@@ -95,7 +99,9 @@ CC_CONSTRUCTOR_ACCESS:
     AEMovie();
     virtual ~AEMovie();
 
-    virtual bool initWithFile( const std::string & path, const std::string & name );
+    virtual bool initWithFile( const std::string & filePath );
+	virtual bool initWithFileAndFramesFolder( const std::string & filePath, const std::string & framesFoldes );
+	virtual bool initWithPlist( const std::string & filePath, const std::string & plistPath );
     virtual bool initWithData( const AEMovieData * data );
 
 protected:
@@ -122,13 +128,15 @@ protected:
     // this is scheduled to update every frame after a composition is loaded
     virtual void update( float delta ) override;
 
-    // renders the node
+	void convertTextCoords(AERenderData& renderData, cocos2d::SpriteFrame* spriteFrame);
+
+	// renders the node
     virtual void draw( cocos2d::Renderer *renderer, const cocos2d::Mat4 &transform, uint32_t flags ) override;
 
     cocos2d::GLProgramState * _normalGPS;
     cocos2d::GLProgramState * _trackMatteGPS;
-
-#ifdef AE_MOVIE_DEBUG_DRAW
+	
+#if AE_MOVIE_DEBUG_DRAW > 0
     cocos2d::DrawNode *_debugDrawNode;
 #endif
 

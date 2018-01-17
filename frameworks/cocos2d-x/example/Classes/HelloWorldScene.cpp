@@ -1,8 +1,7 @@
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
 
-#include "AEMovie/AEMovieCache.h"
-#include "AEMovie/AEMovie.h"
+#include "AEMovieCache.h"
 #include "movie_hash.h"
 
 USING_NS_CC;
@@ -35,13 +34,37 @@ bool HelloWorld::init()
 
 	Size designSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
 
-	auto movie = extension::AEMovie::create("AEM/", "Knight");
-	movie->setPosition(Point(designSize/2));
+	const bool usePlist = true;
+	
+	if(usePlist)
+	{
+		addMovie(extension::AEMovie::createWithPlist("AEM/Knight/Knight.aem", "knight.plist"),
+				 Point(designSize.width / 4, designSize.height / 2), "Knight");
+		
+		addMovie(extension::AEMovie::createWithPlist("AEM/ui/ui.aem", "ui.plist"),
+				 Point(designSize.width / 4 * 3, designSize.height / 2), "unicorn");
+	}
+	else
+	{
+		addMovie(extension::AEMovie::create("AEM/Knight/Knight.aem"),
+				 Point(designSize.width / 4, designSize.height / 2), "Knight");
+		
+		addMovie(extension::AEMovie::createWithFramesFolder("AEM/ui/ui.aem", "AEM/ui/"),
+				 Point(designSize.width / 4 * 3, designSize.height / 2), "unicorn");
+	}
+	
+    return true;
+}
+
+void HelloWorld::addMovie(extension::AEMovie* movie, const cocos2d::Point& position, const std::string& composition)
+{
+	movie->setPosition(position);
 	movie->setAnchorPoint(Point::ANCHOR_MIDDLE);
 	
-	movie->setComposition("Knight");
+	movie->setComposition(composition);
 	movie->play();
 	
+	Size designSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
 	Size targetSize = designSize;
 	Size movieSize = movie->getContentSize();
 	float f = targetSize.height / movieSize.height;
@@ -51,8 +74,6 @@ bool HelloWorld::init()
 	movie->setScaleZ(f);
 	
 	addChild(movie);
-	
-    return true;
 }
 
 
