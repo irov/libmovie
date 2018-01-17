@@ -162,7 +162,8 @@ ae_voidptr_t AEMovie::callbackNodeProvider( const aeMovieNodeProviderCallbackDat
 				CCLOG(" Shape:");
 				break;
 			case AE_MOVIE_LAYER_TYPE_IMAGE:
-                Texture2D *texture = static_cast<Texture2D *>(ae_get_movie_layer_data_resource_data( _callbackData->track_matte_layer ));
+                SpriteFrame *spriteFrame = static_cast<SpriteFrame *>(ae_get_movie_layer_data_resource_data( _callbackData->track_matte_layer ));
+				Texture2D * texture = spriteFrame->getTexture();
 
 				AETrackMatteNode * trackMatteNode = AETrackMatteNode::createFromTexture(texture);
 				trackMatteNode->retain();
@@ -458,18 +459,41 @@ void AEMovie::addTrackMatteData(AETrackMatteData * data) {
 	_trackMatteDatas.push_back(data);
 }
 
-AEMovie * AEMovie::create(const std::string & path, const std::string & name) {
+AEMovie * AEMovie::create(const std::string & filepath) {
 	AEMovie * ret = new (std::nothrow) AEMovie();
 
-	if (ret && ret->initWithFile(path, name)) {
+	if (ret && ret->initWithFile(filepath)) {
 		ret->autorelease();
 		return ret;
 	}
-
-       	CC_SAFE_DELETE(ret);
-
+	CC_SAFE_DELETE(ret);
 	return nullptr;
 }
+
+AEMovie * AEMovie::createWithFramesFolder( const std::string & filepath, const std::string & framesFoldes )
+{
+	AEMovie * ret = new (std::nothrow) AEMovie();
+	
+	if (ret && ret->initWithFileAndFramesFolder(filepath, framesFoldes)) {
+		ret->autorelease();
+		return ret;
+	}
+	CC_SAFE_DELETE(ret);
+	return nullptr;
+}
+
+AEMovie * AEMovie::createWithPlist( const std::string & filePath, const std::string & plistPath )
+{
+	AEMovie * ret = new (std::nothrow) AEMovie();
+	
+	if (ret && ret->initWithPlist(filePath, plistPath)) {
+		ret->autorelease();
+		return ret;
+	}
+	CC_SAFE_DELETE(ret);
+	return nullptr;
+}
+
 
 AEMovie::AEMovie()
 : _normalGPS(nullptr)
@@ -480,7 +504,7 @@ AEMovie::AEMovie()
 , _duration(0.f)
 , _eventCallback(nullptr)
 {
-#ifdef AE_MOVIE_DEBUG_DRAW
+#if AE_MOVIE_DEBUG_DRAW > 0
 	_debugDrawNode = DrawNode::create();
 	addChild(_debugDrawNode);
 #endif
@@ -519,10 +543,30 @@ AEMovie::~AEMovie()
 */
 }
 
-bool AEMovie::initWithFile(const std::string & path, const std::string & name)
+bool AEMovie::initWithFile(const std::string & filepath)
+{
+	int k = filepath.find_last_of('/');
+	if( k != std::string::npos )
+	{
+		std::string framesFolder = filepath.substr(0, k + 1);
+		return initWithFileAndFramesFolder(filepath, framesFolder);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool AEMovie::initWithFileAndFramesFolder(const std::string & filePath, const std::string & framesFoldes)
 {
 	// FIXME: move cache to the Director
-	AEMovieData * data = AEMovieCache::getInstance()->addMovie(path, name);
+	AEMovieData * data = AEMovieCache::getInstance()->addMovie(filePath, framesFoldes);
+	return initWithData(data);
+}
+
+bool AEMovie::initWithPlist( const std::string & filePath, const std::string & plistPath )
+{
+	AEMovieData * data = AEMovieCache::getInstance()->addMovieWithPlist(filePath, plistPath);
 	return initWithData(data);
 }
 
@@ -785,8 +829,54 @@ static void calc_uv_clip_vectors( const Vec2 & _a, const Vec2 & _b, const Vec2 &
 	_out[3] = Vec3( _uvA.y, _duvAB.y, _duvAC.y );
 }
 
+void AEMovie::convertTextCoords(AERenderData& renderData, cocos2d::SpriteFrame* spriteFrame)
+{
+	float atlasWidth = spriteFrame->getTexture()->getPixelsWide();
+	float atlasHeight = spriteFrame->getTexture()->getPixelsHigh();
+	Rect rectInPixels = spriteFrame->getRect();
+	bool rectRotated = spriteFrame->isRotated();
+	
+	float rw = rectInPixels.size.width;
+	float rh = rectInPixels.size.height;
+	if (rectRotated)
+		std::swap(rw, rh);
+	
+	float left    = rectInPixels.origin.x / atlasWidth;
+	float right   = (rectInPixels.origin.x + rw) / atlasWidth;
+	float top     = rectInPixels.origin.y / atlasHeight;
+	float bottom  = (rectInPixels.origin.y + rh) / atlasHeight;
+	
+	left += right * renderData.vertices[0].texCoords.u;
+	top += bottom * renderData.vertices[0].texCoords.v;
+	right -= right * (1-renderData.vertices[2].texCoords.u);
+	bottom -= bottom * (1-renderData.vertices[2].texCoords.u);
+	
+	if (rectRotated)
+	{
+		renderData.vertices[0].texCoords.u = right;
+		renderData.vertices[0].texCoords.v = top;
+		renderData.vertices[1].texCoords.u = right;
+		renderData.vertices[1].texCoords.v = bottom;
+		renderData.vertices[2].texCoords.u = left;
+		renderData.vertices[2].texCoords.v = bottom;
+		renderData.vertices[3].texCoords.u = left;
+		renderData.vertices[3].texCoords.v = top;
+	}
+	else
+	{
+		renderData.vertices[0].texCoords.u = left;
+		renderData.vertices[0].texCoords.v = top;
+		renderData.vertices[1].texCoords.u = right;
+		renderData.vertices[1].texCoords.v = top;
+		renderData.vertices[2].texCoords.u = right;
+		renderData.vertices[2].texCoords.v = bottom;
+		renderData.vertices[3].texCoords.u = left;
+		renderData.vertices[3].texCoords.v = bottom;
+	}
+}
+
 void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) {
-#ifdef AE_MOVIE_DEBUG_DRAW
+#if AE_MOVIE_DEBUG_DRAW > 0
     const Size& size = getContentSize();
 
 	_debugDrawNode->clear();
@@ -874,6 +964,9 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					CCLOG(" RGBA: %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
 					CCLOG(" blendfunc: %i", renderMesh.blend_mode);
 
+					SpriteFrame * spriteFrame = static_cast<SpriteFrame *>(renderMesh.resource_data);
+					Texture2D * texture = spriteFrame->getTexture();
+
 					_renderDatas.push_back(AERenderData());
 					AERenderData & renderData = _renderDatas.back();
 
@@ -893,7 +986,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						v.vertices = Vec3(p[0], p[1], p[2]);
 						v.colors = Color4B(Color4F(renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity));
 						v.texCoords = Tex2F(uv[0], uv[1]);
-
+						
 						CCLOG(" vertex %i:", i);
 						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
 						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1]);
@@ -902,7 +995,9 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
                         p += 3;
                         uv += 2;
 					}
-
+					
+					convertTextCoords(renderData, spriteFrame);
+					
 					TrianglesCommand::Triangles triangles;
 					triangles.verts = renderData.vertices.data();
 					triangles.vertCount = renderMesh.vertexCount;
@@ -939,7 +1034,8 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 //					CCLOG(" resource type: %i", (int)renderMesh.resource_type);
 //					CCLOG(" resource data: %i", (int)renderMesh.resource_data);
 
-					Texture2D * texture = static_cast<Texture2D *>(renderMesh.resource_data);
+					
+					
 
 					#if COCOS2D_DEBUG > 0
 					const Texture2D::PixelFormatInfo & pfi = Texture2D::getPixelFormatInfoMap().at(texture->getPixelFormat());
@@ -1065,7 +1161,12 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					CCLOG(" uv[1]: %.2f %.2f", tmRenderMesh.uv[1][0], tmRenderMesh.uv[1][1]);
 					CCLOG(" uv[2]: %.2f %.2f", tmRenderMesh.uv[2][0], tmRenderMesh.uv[2][1]);
 
-					Vec3 clip[4];
+					
+					SpriteFrame * spriteFrame = static_cast<SpriteFrame *>(renderMesh.resource_data);
+					SpriteFrame * tmSpriteFrame = static_cast<SpriteFrame *>(tmRenderMesh.resource_data);
+					Texture2D * texture = spriteFrame->getTexture();
+					Texture2D * tmTexture = tmSpriteFrame->getTexture();
+					
 					Vec3 pos[3] = {
 						Vec3(tmRenderMesh.position[0][0], tmRenderMesh.position[0][1], 0.f),
 						Vec3(tmRenderMesh.position[1][0], tmRenderMesh.position[1][1], 0.f),
@@ -1074,16 +1175,26 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					transform.transformPoint(&pos[0]);
 					transform.transformPoint(&pos[1]);
 					transform.transformPoint(&pos[2]);
+					
+					AERenderData tmRenderData;
+					tmRenderData.vertices.resize(4);
+					for(size_t i=0; i<4; ++i)
+					{
+						tmRenderData.vertices[i].texCoords.u = tmRenderMesh.uv[i][1];
+						tmRenderData.vertices[i].texCoords.v = tmRenderMesh.uv[i][0];
+					}
+					convertTextCoords(tmRenderData, tmSpriteFrame);
 
+					Vec3 clip[4];
 					calc_uv_clip_vectors(
 						Vec2(pos[0].x, pos[0].y),
 						Vec2(pos[1].x, pos[1].y),
 						Vec2(pos[2].x, pos[2].y),
-						Vec2(tmRenderMesh.uv[0][0], tmRenderMesh.uv[0][1]),
-						Vec2(tmRenderMesh.uv[1][0], tmRenderMesh.uv[1][1]),
-						Vec2(tmRenderMesh.uv[2][0], tmRenderMesh.uv[2][1]),
+						Vec2(tmRenderData.vertices[0].texCoords.u, tmRenderData.vertices[0].texCoords.v),
+						Vec2(tmRenderData.vertices[1].texCoords.u, tmRenderData.vertices[1].texCoords.v),
+						Vec2(tmRenderData.vertices[2].texCoords.u, tmRenderData.vertices[2].texCoords.v),
 						clip);
-
+					
 					//
 					// setup vertices
 					//
@@ -1100,25 +1211,10 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						v.vertices = Vec3(p[0], p[1], p[2]);
 						v.colors = Color4B(Color4F(renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity));
 						v.texCoords = Tex2F(uv[0], uv[1]);
-
-					#if COCOS2D_DEBUG > 0
-						CCLOG(" vertex %i:", i);
-						CCLOG("  position = %.2f %.2f %.2f", p[0], p[1], p[2]);
-						CCLOG("  uv       = %.2f %.2f", uv[0], uv[1]);
-						CCLOG("  color    = %.2f %.2f %.2f %.2f", renderMesh.color.r, renderMesh.color.g, renderMesh.color.b, renderMesh.opacity);
-
-						float a = clip[0].dot(Vec3(1.f, v.vertices.x, v.vertices.y));
-						float b = clip[1].dot(Vec3(1.f, v.vertices.x, v.vertices.y));
-						Vec2 tmUV(
-							clip[2].dot(Vec3(1.f, a, b)),
-							clip[3].dot(Vec3(1.f, a, b)));
-
-						CCLOG("  tmUV     = %.2f %.2f", tmUV.x, tmUV.y);
-					#endif
-
                         p += 3;
                         uv += 2;
 					}
+					convertTextCoords(renderData, spriteFrame);
 
 					TrianglesCommand::Triangles triangles;
 					triangles.verts = renderData.vertices.data();
@@ -1155,9 +1251,6 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 //					CCLOG(" resource type: %i", (int)renderMesh.resource_type);
 //					CCLOG(" resource data: %i", (int)renderMesh.resource_data);
 
-					Texture2D * texture = static_cast<Texture2D *>(renderMesh.resource_data);
-					Texture2D * tmTexture = static_cast<Texture2D *>(tmRenderMesh.resource_data);
-
 					// don't do this because cocos binds the trianglesCommand.texture as CC_Texture0
 //					_trackMatteGPS->setUniformTexture("u_texture", texture);
 					_trackMatteGPS->setUniformTexture("u_tmTexture", tmTexture);
@@ -1167,6 +1260,21 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 					_trackMatteGPS->setUniformVec3("u_clip1", clip[1]);
 					_trackMatteGPS->setUniformVec3("u_clip2", clip[2]);
 					_trackMatteGPS->setUniformVec3("u_clip3", clip[3]);
+					
+					Vec2 left;
+					Vec2 right;
+					if(!tmSpriteFrame->isRotated())
+					{
+						left = Vec2(tmRenderData.vertices[0].texCoords.u, tmRenderData.vertices[0].texCoords.v);
+						right = Vec2(tmRenderData.vertices[2].texCoords.u, tmRenderData.vertices[2].texCoords.v);
+					}
+					else
+					{
+						left = Vec2(tmRenderData.vertices[3].texCoords.u, tmRenderData.vertices[3].texCoords.v);
+						right = Vec2(tmRenderData.vertices[1].texCoords.u, tmRenderData.vertices[1].texCoords.v);
+					}
+					_trackMatteGPS->setUniformVec2("left", left);
+					_trackMatteGPS->setUniformVec2("right", right);
 
 					setGLProgramState(_trackMatteGPS);
 
@@ -1180,6 +1288,7 @@ void AEMovie::draw(Renderer * renderer, const Mat4 & transform, uint32_t flags) 
 						flags);
 
 					renderer->addCommand(&renderData.trianglesCommand);
+					renderer->render();
 
 					break;
 				}
