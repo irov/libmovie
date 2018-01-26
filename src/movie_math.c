@@ -60,14 +60,17 @@ ae_void_t ae_ident_m4( ae_matrix4_t _out )
     _out[0 * 4 + 1] = 0.f;
     _out[0 * 4 + 2] = 0.f;
     _out[0 * 4 + 3] = 0.f;
+
     _out[1 * 4 + 0] = 0.f;
     _out[1 * 4 + 1] = 1.f;
     _out[1 * 4 + 2] = 0.f;
     _out[1 * 4 + 3] = 0.f;
+
     _out[2 * 4 + 0] = 0.f;
     _out[2 * 4 + 1] = 0.f;
     _out[2 * 4 + 2] = 1.f;
     _out[2 * 4 + 3] = 0.f;
+
     _out[3 * 4 + 0] = 0.f;
     _out[3 * 4 + 1] = 0.f;
     _out[3 * 4 + 2] = 0.f;
@@ -121,14 +124,17 @@ AE_INTERNAL ae_void_t __make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion
     _m[0 * 4 + 1] = xy - wz;
     _m[0 * 4 + 2] = xz + wy;
     _m[0 * 4 + 3] = 0.f;
+
     _m[1 * 4 + 0] = xy + wz;
     _m[1 * 4 + 1] = 1.f - (xx + zz);
     _m[1 * 4 + 2] = yz - wx;
     _m[1 * 4 + 3] = 0.f;
+
     _m[2 * 4 + 0] = xz - wy;
     _m[2 * 4 + 1] = yz + wx;
     _m[2 * 4 + 2] = 1.f - (xx + yy);
     _m[2 * 4 + 3] = 0.f;
+
     _m[3 * 4 + 0] = 0.f;
     _m[3 * 4 + 1] = 0.f;
     _m[3 * 4 + 2] = 0.f;
@@ -148,14 +154,17 @@ AE_INTERNAL ae_void_t __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaterni
     _m[0 * 4 + 1] = -wz;
     _m[0 * 4 + 2] = 0.f;
     _m[0 * 4 + 3] = 0.f;
+
     _m[1 * 4 + 0] = +wz;
     _m[1 * 4 + 1] = 1.f - zz;
     _m[1 * 4 + 2] = 0.f;
     _m[1 * 4 + 3] = 0.f;
+
     _m[2 * 4 + 0] = 0.f;
     _m[2 * 4 + 1] = 0.f;
     _m[2 * 4 + 2] = 1.f;
     _m[2 * 4 + 3] = 0.f;
+
     _m[3 * 4 + 0] = 0.f;
     _m[3 * 4 + 1] = 0.f;
     _m[3 * 4 + 2] = 0.f;
@@ -170,7 +179,7 @@ ae_void_t ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vecto
     _out[0 * 4 + 3] = 0.f;
 
     _out[1 * 4 + 0] = 0.f;
-    _out[2 * 4 + 1] = _scale[1];
+    _out[1 * 4 + 1] = _scale[1];
     _out[1 * 4 + 2] = 0.f;
     _out[1 * 4 + 3] = 0.f;
 
