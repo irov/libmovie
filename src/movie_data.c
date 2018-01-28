@@ -35,7 +35,7 @@
 #	include "movie_stream.h"
 
 //////////////////////////////////////////////////////////////////////////
-static const ae_uint32_t ae_movie_version = 14;
+static const ae_uint32_t ae_movie_version = 15;
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data )
 {
@@ -471,7 +471,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
 
     if( _property->immutable_r == AE_TRUE )
     {
-        AE_READF( _stream, _property->immutable_color_r );
+        AE_READ_COLOR_CHANNEL( _stream, _property->immutable_color_r );
 
         _property->colors_r = AE_NULL;
     }
@@ -479,7 +479,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
     {
         _property->immutable_color_r = 1.f;
 
-        ae_color8_t * colors_r = AE_NEWN( _stream->instance, ae_color8_t, _layer->frame_count );
+        ae_color_channel_t * colors_r = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
 
         AE_RESULT_PANIC_MEMORY( colors_r );
 
@@ -492,7 +492,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
 
     if( _property->immutable_g == AE_TRUE )
     {
-        AE_READF( _stream, _property->immutable_color_g );
+        AE_READ_COLOR_CHANNEL( _stream, _property->immutable_color_g );
 
         _property->colors_g = AE_NULL;
     }
@@ -500,7 +500,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
     {
         _property->immutable_color_g = 1.f;
 
-        ae_color8_t * colors_g = AE_NEWN( _stream->instance, ae_color8_t, _layer->frame_count );
+        ae_color_channel_t * colors_g = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
         
         AE_RESULT_PANIC_MEMORY( colors_g );
 
@@ -513,7 +513,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
 
     if( _property->immutable_b == AE_TRUE )
     {
-        AE_READF( _stream, _property->immutable_color_b );
+        AE_READ_COLOR_CHANNEL( _stream, _property->immutable_color_b );
 
         _property->colors_b = AE_NULL;
     }
@@ -521,7 +521,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
     {
         _property->immutable_color_b = 1.f;
 
-        ae_color8_t * colors_b = AE_NEWN( _stream->instance, ae_color8_t, _layer->frame_count );
+        ae_color_channel_t * colors_b = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
 
         AE_RESULT_PANIC_MEMORY( colors_b );
 
@@ -1391,7 +1391,7 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
     AE_MOVIE_PANIC_MEMORY( stream, AE_NULL );
 
     stream->instance = _instance;
-    stream->memory_read = __ae_read_buffer;
+    stream->memory_read = &__ae_read_buffer;
     stream->memory_copy = _copy;
     stream->read_data = stream;
     stream->copy_data = _data;

@@ -75,7 +75,7 @@ typedef struct aeMovieRenderMesh
     @{
     */
     ae_color_t color;
-    ae_float_t opacity;
+    ae_color_channel_t opacity;
     /// @}
 
     /**
@@ -198,7 +198,7 @@ typedef struct aeMovieNodeProviderCallbackData
     ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
-    ae_float_t opacity;
+    ae_color_channel_t opacity;
 
     /// @brief Pointer to track matte layer, should be used to create user track matte structure inside provider.
     const aeMovieLayerData * track_matte_layer;
@@ -228,7 +228,7 @@ typedef struct aeMovieNodeUpdateCallbackData
     ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
-    ae_float_t opacity;
+    ae_color_channel_t opacity;
 } aeMovieNodeUpdateCallbackData;
 
 typedef struct aeMovieTrackMatteProviderCallbackData
@@ -246,7 +246,7 @@ typedef struct aeMovieTrackMatteProviderCallbackData
     ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
-    ae_float_t opacity;
+    ae_color_channel_t opacity;
 
     aeMovieRenderMesh * mesh;    
 } aeMovieTrackMatteProviderCallbackData;
@@ -267,7 +267,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
-    ae_float_t opacity;
+    ae_color_channel_t opacity;
 
     aeMovieRenderMesh * mesh;
     ae_voidptr_t track_matte_data;
@@ -332,7 +332,7 @@ typedef struct aeMovieCompositionEventCallbackData
     ae_color_t color;
 
     /// @brief Value from 0.0 to 1.0.
-    ae_float_t opacity;
+    ae_color_channel_t opacity;
 
     ae_bool_t begin;
 } aeMovieCompositionEventCallbackData;

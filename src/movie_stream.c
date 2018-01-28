@@ -140,11 +140,16 @@ ae_result_t ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh )
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_void_t ae_magic_read_color_channel( aeMovieStream * _stream, ae_color_channel_t * _channel )
+{
+    AE_READP( _stream, _channel );
+}
+//////////////////////////////////////////////////////////////////////////
 ae_void_t ae_magic_read_color( aeMovieStream * _stream, ae_color_t * _color )
 {
-    AE_READF( _stream, _color->r );
-    AE_READF( _stream, _color->g );
-    AE_READF( _stream, _color->b );
+    AE_READ_COLOR_CHANNEL( _stream, _color->r );
+    AE_READ_COLOR_CHANNEL( _stream, _color->g );
+    AE_READ_COLOR_CHANNEL( _stream, _color->b );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport )

@@ -67,13 +67,13 @@ static const ae_bool_t AE_TRUE = 1;
 static const ae_bool_t AE_FALSE = 0;
 static const ae_voidptr_t AE_NULL = 0;
 
-typedef ae_uint8_t ae_color8_t;
+typedef ae_float_t ae_color_channel_t;
 
 typedef struct
 {
-    ae_float_t r;
-    ae_float_t g;
-    ae_float_t b;
+    ae_color_channel_t r;
+    ae_color_channel_t g;
+    ae_color_channel_t b;
 } ae_color_t;
 
 typedef struct
@@ -195,7 +195,6 @@ typedef enum
     AE_RESULT_INVALID_MEMORY = -7,
 } ae_result_t;
 
-typedef void( *ae_movie_stream_memory_info_t )(ae_voidptr_t _data, const ae_char_t * _buff, ae_size_t _size);
 typedef ae_size_t( *ae_movie_stream_memory_read_t )(ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size);
 typedef void( *ae_movie_stream_memory_copy_t )(ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size);
 
