@@ -38,7 +38,6 @@
 #	ifndef AE_MOVIE_BEZIER_WARP_BASE_GRID
 #	define AE_MOVIE_BEZIER_WARP_BASE_GRID 7U
 #	endif
-
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieBezierWarp
 {
@@ -171,7 +170,7 @@ struct aeMovieNode
     ae_float_t composition_opactity;
        
     ae_color_t color;
-    ae_float_t opacity;
+    ae_color_channel_t opacity;
 
     ae_blend_mode_t blend_mode;
 
@@ -321,7 +320,7 @@ struct aeMovieLayerData
     ae_float_t in_time;
     ae_float_t out_time;
 
-    ae_uint32_t blend_mode;
+    ae_blend_mode_t blend_mode;
     ae_bool_t threeD;
     ae_uint32_t params;
 
@@ -373,13 +372,13 @@ struct aeMoviePropertyColor
     ae_bool_t immutable_g;
     ae_bool_t immutable_b;
 
-    ae_float_t immutable_color_r;
-    ae_float_t immutable_color_g;
-    ae_float_t immutable_color_b;
+    ae_color_channel_t immutable_color_r;
+    ae_color_channel_t immutable_color_g;
+    ae_color_channel_t immutable_color_b;
 
-    const ae_color8_t * colors_r;
-    const ae_color8_t * colors_g;
-    const ae_color8_t * colors_b;
+    const ae_color_channel_t * colors_r;
+    const ae_color_channel_t * colors_g;
+    const ae_color_channel_t * colors_b;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerColorVertex

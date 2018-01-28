@@ -233,40 +233,49 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
     _render->indices = _instance->bezier_warp_indices[_quality];
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerBezierWarp * _bezierWarp, ae_uint32_t _frame, ae_float_t _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+AE_INTERNAL ae_void_t __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
-    if( _bezierWarp->immutable == AE_TRUE )
+    if( _layerBezierWarp->immutable == AE_TRUE )
     {
-        __make_bezier_warp_vertices( _instance, _bezierWarp->quality, &_bezierWarp->immutable_bezier_warp, _matrix, _render );
+        __make_bezier_warp_vertices( _instance, _layerBezierWarp->quality, &_layerBezierWarp->immutable_bezier_warp, _matrix, _render );
     }
     else
     {
-        const aeMovieBezierWarp * bezier_warp_frame_current = _bezierWarp->bezier_warps + _frame + 0;
-        const aeMovieBezierWarp * bezier_warp_frame_next = _bezierWarp->bezier_warps + _frame + 1;
+        if( _interpolate == AE_FALSE )
+        {
+            const aeMovieBezierWarp * bezier_warp = _layerBezierWarp->bezier_warps + _frame;
 
-        const ae_vector2_t * current_corners = bezier_warp_frame_current->corners;
-        const ae_vector2_t * next_corners = bezier_warp_frame_next->corners;
+            __make_bezier_warp_vertices( _instance, _layerBezierWarp->quality, bezier_warp, _matrix, _render );
+        }
+        else
+        {
+            const aeMovieBezierWarp * bezier_warp_frame_current = _layerBezierWarp->bezier_warps + _frame + 0;
+            const aeMovieBezierWarp * bezier_warp_frame_next = _layerBezierWarp->bezier_warps + _frame + 1;
 
-        aeMovieBezierWarp bezierWarp;
+            const ae_vector2_t * current_corners = bezier_warp_frame_current->corners;
+            const ae_vector2_t * next_corners = bezier_warp_frame_next->corners;
 
-        ae_linerp_f2( bezierWarp.corners[0], current_corners[0], next_corners[0], _t );
-        ae_linerp_f2( bezierWarp.corners[1], current_corners[1], next_corners[1], _t );
-        ae_linerp_f2( bezierWarp.corners[2], current_corners[2], next_corners[2], _t );
-        ae_linerp_f2( bezierWarp.corners[3], current_corners[3], next_corners[3], _t );
+            aeMovieBezierWarp bezierWarp;
 
-        const ae_vector2_t * current_beziers = bezier_warp_frame_current->beziers;
-        const ae_vector2_t * next_beziers = bezier_warp_frame_next->beziers;
+            ae_linerp_f2( bezierWarp.corners[0], current_corners[0], next_corners[0], _t );
+            ae_linerp_f2( bezierWarp.corners[1], current_corners[1], next_corners[1], _t );
+            ae_linerp_f2( bezierWarp.corners[2], current_corners[2], next_corners[2], _t );
+            ae_linerp_f2( bezierWarp.corners[3], current_corners[3], next_corners[3], _t );
 
-        ae_linerp_f2( bezierWarp.beziers[0], current_beziers[0], next_beziers[0], _t );
-        ae_linerp_f2( bezierWarp.beziers[1], current_beziers[1], next_beziers[1], _t );
-        ae_linerp_f2( bezierWarp.beziers[2], current_beziers[2], next_beziers[2], _t );
-        ae_linerp_f2( bezierWarp.beziers[3], current_beziers[3], next_beziers[3], _t );
-        ae_linerp_f2( bezierWarp.beziers[4], current_beziers[4], next_beziers[4], _t );
-        ae_linerp_f2( bezierWarp.beziers[5], current_beziers[5], next_beziers[5], _t );
-        ae_linerp_f2( bezierWarp.beziers[6], current_beziers[6], next_beziers[6], _t );
-        ae_linerp_f2( bezierWarp.beziers[7], current_beziers[7], next_beziers[7], _t );
+            const ae_vector2_t * current_beziers = bezier_warp_frame_current->beziers;
+            const ae_vector2_t * next_beziers = bezier_warp_frame_next->beziers;
 
-        __make_bezier_warp_vertices( _instance, _bezierWarp->quality, &bezierWarp, _matrix, _render );
+            ae_linerp_f2( bezierWarp.beziers[0], current_beziers[0], next_beziers[0], _t );
+            ae_linerp_f2( bezierWarp.beziers[1], current_beziers[1], next_beziers[1], _t );
+            ae_linerp_f2( bezierWarp.beziers[2], current_beziers[2], next_beziers[2], _t );
+            ae_linerp_f2( bezierWarp.beziers[3], current_beziers[3], next_beziers[3], _t );
+            ae_linerp_f2( bezierWarp.beziers[4], current_beziers[4], next_beziers[4], _t );
+            ae_linerp_f2( bezierWarp.beziers[5], current_beziers[5], next_beziers[5], _t );
+            ae_linerp_f2( bezierWarp.beziers[6], current_beziers[6], next_beziers[6], _t );
+            ae_linerp_f2( bezierWarp.beziers[7], current_beziers[7], next_beziers[7], _t );
+
+            __make_bezier_warp_vertices( _instance, _layerBezierWarp->quality, &bezierWarp, _matrix, _render );
+        }
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -288,7 +297,7 @@ AE_INTERNAL ae_uint32_t __compute_movie_node_frame( const aeMovieNode * _node, a
 
         if( _interpolate == AE_TRUE )
         {
-            *_t = frame_time - (ae_float_t)frame;
+            *_t = ae_fractional_f( frame_time );
         }
     }
     else
@@ -296,10 +305,10 @@ AE_INTERNAL ae_uint32_t __compute_movie_node_frame( const aeMovieNode * _node, a
         ae_float_t frame_time = (_node->current_time) * frameDurationInv;
 
         frame = (ae_uint32_t)frame_time;
-
+                
         if( _interpolate == AE_TRUE )
         {
-            *_t = frame_time - (ae_float_t)frame;
+            *_t = ae_fractional_f( frame_time );
         }
     }
 
@@ -367,7 +376,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, t_frame, _node->matrix, _render );
+                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
             }
             else
             {
@@ -419,7 +428,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, t_frame, _node->matrix, _render );
+                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
             }
             else if( resource_image->mesh != AE_NULL && _trackmatte == AE_FALSE )
             {
@@ -449,7 +458,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, t_frame, _node->matrix, _render );
+                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
             }
             else
             {
@@ -472,7 +481,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, t_frame, _node->matrix, _render );
+                __make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
             }
             else if( resource_image->mesh != AE_NULL && _trackmatte == AE_FALSE )
             {
@@ -563,7 +572,7 @@ AE_INTERNAL ae_float_t __compute_movie_property_value( const struct aeMoviePrope
     return valuef;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __compute_movie_property_color_r( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
+AE_INTERNAL ae_color_channel_t __compute_movie_property_color_r( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
 {
     if( _property->immutable_r == AE_TRUE )
     {
@@ -572,22 +581,20 @@ AE_INTERNAL ae_float_t __compute_movie_property_color_r( const struct aeMoviePro
 
     if( _interpolate == AE_FALSE )
     {
-        ae_color8_t c = _property->colors_r[_frame];
-
-        ae_float_t cf = ae_tof_c( c );
-
-        return cf;
+        ae_color_channel_t c = _property->colors_r[_frame];
+        
+        return c;
     }
 
-    ae_color8_t c0 = _property->colors_r[_frame + 0];
-    ae_color8_t c1 = _property->colors_r[_frame + 1];
+    ae_color_channel_t c0 = _property->colors_r[_frame + 0];
+    ae_color_channel_t c1 = _property->colors_r[_frame + 1];
 
-    ae_float_t cf = ae_linerp_c( c0, c1, t );
+    ae_color_channel_t cf = ae_linerp_f1( c0, c1, t );
 
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __compute_movie_property_color_g( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
+AE_INTERNAL ae_color_channel_t __compute_movie_property_color_g( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
 {
     if( _property->immutable_g == AE_TRUE )
     {
@@ -596,22 +603,20 @@ AE_INTERNAL ae_float_t __compute_movie_property_color_g( const struct aeMoviePro
 
     if( _interpolate == AE_FALSE )
     {
-        ae_color8_t c = _property->colors_g[_frame];
-
-        ae_float_t cf = ae_tof_c( c );
-
-        return cf;
+        ae_color_channel_t c = _property->colors_g[_frame];
+        
+        return c;
     }
 
-    ae_color8_t c0 = _property->colors_g[_frame + 0];
-    ae_color8_t c1 = _property->colors_g[_frame + 1];
+    ae_color_channel_t c0 = _property->colors_g[_frame + 0];
+    ae_color_channel_t c1 = _property->colors_g[_frame + 1];
 
-    ae_float_t cf = ae_linerp_c( c0, c1, t );
+    ae_color_channel_t cf = ae_linerp_f1( c0, c1, t );
 
     return cf;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __compute_movie_property_color_b( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
+AE_INTERNAL ae_color_channel_t __compute_movie_property_color_b( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
 {
     if( _property->immutable_b == AE_TRUE )
     {
@@ -620,17 +625,15 @@ AE_INTERNAL ae_float_t __compute_movie_property_color_b( const struct aeMoviePro
 
     if( _interpolate == AE_FALSE )
     {
-        ae_color8_t c = _property->colors_b[_frame];
-
-        ae_float_t cf = ae_tof_c( c );
-
-        return cf;
+        ae_color_channel_t c = _property->colors_b[_frame];
+        
+        return c;
     }
 
-    ae_color8_t c0 = _property->colors_b[_frame + 0];
-    ae_color8_t c1 = _property->colors_b[_frame + 1];
+    ae_color_channel_t c0 = _property->colors_b[_frame + 0];
+    ae_color_channel_t c1 = _property->colors_b[_frame + 1];
 
-    ae_float_t cf = ae_linerp_c( c0, c1, t );
+    ae_color_channel_t cf = ae_linerp_f1( c0, c1, t );
 
     return cf;
 }
@@ -674,25 +677,24 @@ AE_INTERNAL ae_uint32_t __get_movie_frame_time( const struct aeMovieCompositionA
 
     ae_uint32_t frame_relative = (ae_uint32_t)frame_time;
 
+    if( frame_relative >= layer->frame_count )
+    {
+        frame_relative = layer->frame_count - 1;
+
+        *_t = 0.f;
+
+        return frame_relative;
+    }
+
     if( _interpolate == AE_TRUE )
     {
-        ae_float_t t_relative = frame_time - (ae_float_t)frame_relative;
-
-        if( frame_relative >= layer->frame_count )
-        {
-            frame_relative = layer->frame_count - 1;
-
-            t_relative = 0.f;
-        }
+        ae_float_t t_relative = ae_fractional_f( frame_time );
 
         *_t = t_relative;
     }
     else
     {
-        if( frame_relative >= layer->frame_count )
-        {
-            frame_relative = layer->frame_count - 1;
-        }
+        *_t = 0.f;
     }
 
     return frame_relative;
@@ -719,9 +721,9 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
     }
 #	endif
 
-    ae_float_t local_r = 1.f;
-    ae_float_t local_g = 1.f;
-    ae_float_t local_b = 1.f;
+    ae_color_channel_t local_r = 1.f;
+    ae_color_channel_t local_g = 1.f;
+    ae_color_channel_t local_b = 1.f;
 
     if( layer->extensions->color_vertex != AE_NULL )
     {
@@ -729,12 +731,12 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
 
         local_r = __compute_movie_property_color_r( property_color, _frameId, _interpolate, _t );
         local_g = __compute_movie_property_color_g( property_color, _frameId, _interpolate, _t );
-        local_b = __compute_movie_property_color_g( property_color, _frameId, _interpolate, _t );
+        local_b = __compute_movie_property_color_b( property_color, _frameId, _interpolate, _t );
     }
 
     if( _node->relative_node == AE_NULL )
     {
-        ae_float_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
+        ae_color_channel_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
 
         if( _interpolate == AE_TRUE )
         {
@@ -781,7 +783,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
         __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node_relative, _revision, frame_relative, _interpolate, t_relative );
     }
 
-    ae_float_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
+    ae_color_channel_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
 
     ae_matrix4_t local_matrix;
 
@@ -883,9 +885,9 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_shader( const aeMovieCompo
             {                                                                                                                                   
                 const struct aeMovieLayerShaderParameterColor * parameter_color = (const struct aeMovieLayerShaderParameterColor *)parameter;
 
-                ae_float_t color_r = __compute_movie_property_color_r( parameter_color->property_color, _frameId, _interpolate, _t );
-                ae_float_t color_g = __compute_movie_property_color_g( parameter_color->property_color, _frameId, _interpolate, _t );
-                ae_float_t color_b = __compute_movie_property_color_b( parameter_color->property_color, _frameId, _interpolate, _t );
+                ae_color_channel_t color_r = __compute_movie_property_color_r( parameter_color->property_color, _frameId, _interpolate, _t );
+                ae_color_channel_t color_g = __compute_movie_property_color_g( parameter_color->property_color, _frameId, _interpolate, _t );
+                ae_color_channel_t color_b = __compute_movie_property_color_b( parameter_color->property_color, _frameId, _interpolate, _t );
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.element = _node->shader_data;
@@ -2642,6 +2644,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_track_matte_state( const a
     callbackData.loop = _loop;
     callbackData.offset = AE_TIME_OUTSCALE( _node->start_time + _time - _node->in_time );
     callbackData.matrix = _node->matrix;
+    callbackData.color = _node->color;
     callbackData.opacity = 0.f;
     callbackData.mesh = &mesh;
     callbackData.track_matte_data = _node->track_matte_data;
@@ -2849,8 +2852,13 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
             node->active = AE_TRUE;
 
             ae_bool_t node_interpolate = composition_interpolate ? (node_loop == AE_TRUE ? (endFrame + 1) < indexOut : AE_FALSE) : AE_FALSE;
-            ae_float_t t = node_interpolate == AE_TRUE ? frame_time - (ae_float_t)frameId : 0.f;
-
+            
+            ae_float_t t = 0.f;
+            if( node_interpolate == AE_TRUE )
+            {
+                t = ae_fractional_f( frame_time );
+            }
+            
             __update_node( _composition, _compositionData, _animation, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_TRUE );
         }
         else if( endFrame >= indexOut && beginFrame >= indexIn && beginFrame < indexOut )
@@ -2869,8 +2877,13 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         {
             node->active = AE_TRUE;
 
-            ae_bool_t node_interpolate = composition_interpolate ? (node_loop == AE_TRUE ? (endFrame + 1) < indexOut : AE_FALSE) : AE_FALSE;
-            ae_float_t t = node_interpolate == AE_TRUE ? frame_time - (ae_float_t)frameId : 0.f;
+            ae_bool_t node_interpolate = composition_interpolate ? (endFrame + 1) < indexOut : AE_FALSE;
+            
+            ae_float_t t = 0.f;
+            if( node_interpolate == AE_TRUE )
+            {
+                t = ae_fractional_f( frame_time );
+            }
 
             __update_node( _composition, _compositionData, _animation, node, _revision, _endTime, frameId, t, node_loop, node_interpolate, AE_TRUE );
         }
@@ -2905,7 +2918,7 @@ AE_INTERNAL ae_void_t __update_movie_camera( const aeMovieComposition * _composi
     }
     else
     {
-        ae_float_t t = frame_time - (ae_float_t)frame_id;
+        ae_float_t t = ae_fractional_f( frame_time );
 
         ae_movie_make_camera_transformation( callbackData.target, callbackData.position, callbackData.quaternion, composition_data->camera, frame_id, AE_TRUE, t );
     }
@@ -2976,9 +2989,15 @@ AE_INTERNAL ae_void_t __skip_movie_composition_node( const aeMovieComposition * 
             {
                 node->active = AE_FALSE;
 
-                ae_float_t t = frame_time - (ae_float_t)frameId;
+                ae_bool_t node_interpolate = (endFrame + 1) < indexOut;
+                
+                ae_float_t t = 0.f;
+                if( node_interpolate == AE_TRUE )
+                {
+                    t = ae_fractional_f( frame_time );
+                }
 
-                __update_node( _composition, _compositionData, _animation, node, _revision, _endTime, frameId, t, AE_FALSE, (endFrame + 1) < indexOut, AE_FALSE );
+                __update_node( _composition, _compositionData, _animation, node, _revision, _endTime, frameId, t, AE_FALSE, node_interpolate, AE_FALSE );
             }
             else if( beginFrame >= indexIn && endFrame >= indexIn && endFrame < indexOut )
             {
@@ -3517,8 +3536,8 @@ ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _compositi
         }
         else
         {
-            ae_float_t t_frame = 0.f;
-            ae_uint32_t frame = __compute_movie_node_frame( node, AE_FALSE, &t_frame );
+            ae_float_t t;
+            ae_uint32_t frame = __compute_movie_node_frame( node, AE_FALSE, &t );
 
             *_polygon = polygon->polygons + frame;
         }
