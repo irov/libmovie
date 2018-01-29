@@ -83,6 +83,8 @@ typedef struct aeMovieRenderMesh
     */
     ae_voidptr_t camera_data;
 
+    ae_track_matte_mode_t track_matte_mode;
+
     /**
     @brief Pointer to a user-provided track matte structure.
 
@@ -248,7 +250,9 @@ typedef struct aeMovieTrackMatteProviderCallbackData
     /// @brief Value from 0.0 to 1.0.
     ae_color_channel_t opacity;
 
-    aeMovieRenderMesh * mesh;    
+    aeMovieRenderMesh * mesh;
+
+    ae_track_matte_mode_t track_matte_mode;
 } aeMovieTrackMatteProviderCallbackData;
 
 typedef struct aeMovieTrackMatteUpdateCallbackData
@@ -270,13 +274,16 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     ae_color_channel_t opacity;
 
     aeMovieRenderMesh * mesh;
+
     ae_voidptr_t track_matte_data;
 } aeMovieTrackMatteUpdateCallbackData;
 
 typedef struct aeMovieTrackMatteDeleterCallbackData
-{
+{    
     ae_voidptr_t element;
     aeMovieLayerTypeEnum type;
+
+    ae_voidptr_t track_matte_data;
 
 } aeMovieTrackMatteDeleterCallbackData;
 

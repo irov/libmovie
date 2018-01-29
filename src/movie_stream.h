@@ -53,7 +53,7 @@
 #	define AE_READ8(stream) ae_magic_read_8(stream)
 //////////////////////////////////////////////////////////////////////////
 #	define AE_READ_COLOR(stream, ptr) ae_magic_read_color(stream, (ptr))
-#	define AE_READ_COLOR_CHANNEL(stream, ptr) ae_magic_read_color_channel(stream, &(ptr))
+#	define AE_READ_COLOR_CHANNEL(stream, ptr) AE_READ(stream, (ptr))
 #	define AE_READ_VIEWPORT(stream, ptr) ae_magic_read_viewport, (stream, (ptr))
 //////////////////////////////////////////////////////////////////////////
 #	define AE_READ_STRING(stream, ptr) AE_RESULT(ae_magic_read_string, (stream, &(ptr)))
@@ -86,7 +86,6 @@ AE_INTERNAL ae_uint32_t ae_magic_read_8( aeMovieStream * _stream )
 ae_uint32_t ae_magic_read_size( aeMovieStream * _stream );
 ae_result_t ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str );
 ae_result_t ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _polygon );
-ae_void_t ae_magic_read_color_channel( aeMovieStream * _stream, ae_color_channel_t * _color );
 ae_void_t ae_magic_read_color( aeMovieStream * _stream, ae_color_t * _color );
 ae_void_t ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport );
 ae_result_t ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh );

@@ -347,10 +347,12 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
 
     if( _node->track_matte_node != AE_NULL && _node->track_matte_node->active == AE_TRUE )
     {
+        _render->track_matte_mode = layer->track_matte_mode;
         _render->track_matte_data = _node->track_matte_node->track_matte_data;
     }
     else
     {
+        _render->track_matte_mode = AE_MOVIE_TRACK_MATTE_NONE;
         _render->track_matte_data = AE_NULL;
     }
 
@@ -1042,6 +1044,7 @@ AE_INTERNAL ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _com
             callbackData.color = node->color;
             callbackData.opacity = node->opacity;
             callbackData.mesh = &mesh;
+            callbackData.track_matte_mode = layer->track_matte_mode;
 
             ae_voidptr_t track_matte_data = (*_composition->providers.track_matte_provider)(&callbackData, _composition->provider_data);
             node->track_matte_data = track_matte_data;
@@ -1869,8 +1872,9 @@ AE_INTERNAL ae_void_t __delete_nodes( const aeMovieComposition * _composition )
         if( layer->is_track_matte == AE_TRUE )
         {
             aeMovieTrackMatteDeleterCallbackData callbackData;
-            callbackData.element = node->track_matte_data;
+            callbackData.element = node->element_data;
             callbackData.type = layer->type;
+            callbackData.track_matte_data = node->track_matte_data;
             
             (*_composition->providers.track_matte_deleter)(&callbackData, _composition->provider_data);
         }

@@ -186,6 +186,15 @@ typedef enum
 
 typedef enum
 {
+    AE_MOVIE_TRACK_MATTE_NONE = 0,
+    AE_MOVIE_TRACK_MATTE_ALPHA = 1,
+    AE_MOVIE_TRACK_MATTE_ALPHA_INVERTED = 2,
+    AE_MOVIE_TRACK_MATTE_LUMA = 3,
+    AE_MOVIE_TRACK_MATTE_LUMA_INVERTED = 4,
+} ae_track_matte_mode_t;
+
+typedef enum
+{
     AE_RESULT_SUCCESSFUL = 0,
     AE_RESULT_INVALID_MAGIC = -2,
     AE_RESULT_INVALID_VERSION = -3,
