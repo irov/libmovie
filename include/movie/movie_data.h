@@ -241,6 +241,13 @@ const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData
 ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer );
 
 /**
+@brief Get track matte type layer
+@param [in] _layer Layer.
+@return Layer track matte type.
+*/
+ae_track_matte_mode_t ae_get_movie_layer_data_track_matte_mode( const aeMovieLayerData * _layer );
+
+/**
 @brief Get blend mode layer
 @param [in] _layer Layer.
 @return Layer blend mode.

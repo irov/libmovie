@@ -303,6 +303,7 @@ struct aeMovieLayerData
 
     ae_bool_t is_track_matte;
     ae_bool_t has_track_matte;
+    ae_track_matte_mode_t track_matte_mode;
     const struct aeMovieLayerData * track_matte_layer;
 
     ae_uint32_t frame_count;

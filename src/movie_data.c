@@ -35,7 +35,7 @@
 #	include "movie_stream.h"
 
 //////////////////////////////////////////////////////////////////////////
-static const ae_uint32_t ae_movie_version = 15;
+static const ae_uint32_t ae_movie_version = 16;
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data )
 {
@@ -588,6 +588,11 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
     _layer->is_track_matte = AE_READB( _stream );
     _layer->has_track_matte = AE_READB( _stream );
+
+    if( _layer->has_track_matte == AE_TRUE )
+    {
+        _layer->track_matte_mode = AE_READ8( _stream );
+    }
 
     ae_uint8_t type;
     AE_READ( _stream, type );
@@ -1980,6 +1985,11 @@ const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData
 ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer )
 {
     return _layer->resource->data;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_track_matte_mode_t ae_get_movie_layer_data_track_matte_mode( const aeMovieLayerData * _layer )
+{
+    return _layer->track_matte_mode;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer )
