@@ -1,7 +1,7 @@
 dist: trusty
 sudo: required 
 
-language: cpp
+language: c
 
 os:
     - linux
