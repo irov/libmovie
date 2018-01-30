@@ -52,12 +52,12 @@ typedef enum aeMoviePropertyImmutableEnum
     AE_MOVIE_IMMUTABLE_TARGET_X = 0x00100000,
     AE_MOVIE_IMMUTABLE_TARGET_Y = 0x00200000,
     AE_MOVIE_IMMUTABLE_TARGET_Z = 0x00400000,
-    
-    AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION = 0 
+
+    AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION = 0
     | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
-    
-    AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL = 0 
-    | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y 
+
+    AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL = 0
+    | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y
     | AE_MOVIE_IMMUTABLE_POSITION_X | AE_MOVIE_IMMUTABLE_POSITION_Y
     | AE_MOVIE_IMMUTABLE_SCALE_X | AE_MOVIE_IMMUTABLE_SCALE_Y
     | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
@@ -140,10 +140,10 @@ typedef struct aeMovieLayerTransformation3DTimeline
 
 }aeMovieLayerTransformation3DTimeline;
 
-typedef struct aeMovieLayerTransformation aeMovieLayerTransformation;
+struct aeMovieLayerTransformation;
 
-typedef void( *ae_movie_make_layer_transformation_intepolate_t )(ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t);
-typedef void( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index);
+typedef void( *ae_movie_make_layer_transformation_intepolate_t )(ae_matrix4_t _out, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t);
+typedef void( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix4_t _out, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index);
 
 #   define AE_MOVIE_LAYER_TRANSFORMATION_BASE()\
     ae_uint32_t immutable_property_mask;\
@@ -162,9 +162,9 @@ typedef struct aeMovieLayerTransformation
 typedef struct aeMovieLayerTransformation2D
 {
     AE_MOVIE_LAYER_TRANSFORMATION_BASE();
-    
+
     aeMovieLayerTransformation2DImuttable immutable;
-    aeMovieLayerTransformation2DTimeline * timeline;    
+    aeMovieLayerTransformation2DTimeline * timeline;
 
 } aeMovieLayerTransformation2D;
 
