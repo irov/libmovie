@@ -33,7 +33,6 @@
 typedef struct aeMovieInstance aeMovieInstance;
 typedef struct aeMovieCompositionAnimation aeMovieCompositionAnimation;
 typedef struct aeMovieSubComposition aeMovieSubComposition;
-typedef struct aeMovieNode aeMovieNode;
 typedef struct aeMovieComposition aeMovieComposition;
 typedef struct aeMovieCompositionCamera aeMovieCompositionCamera;
 typedef struct aeMovieCompositionData aeMovieCompositionData;
