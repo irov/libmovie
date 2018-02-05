@@ -118,7 +118,7 @@ AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance 
     }
 }
 //////////////////////////////////////////////////////////////////////////
-aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logger_t _logger, ae_voidptr_t _data )
+const aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie_alloc_t _alloc, ae_movie_alloc_n_t _alloc_n, ae_movie_free_t _free, ae_movie_free_n_t _free_n, ae_movie_strncmp_t _strncmp, ae_movie_logger_t _logger, ae_voidptr_t _data )
 {
     aeMovieInstance * instance = (*_alloc)(_data, sizeof( aeMovieInstance ));
 
@@ -201,7 +201,7 @@ aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae_movie
     return instance;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_delete_movie_instance( aeMovieInstance * _instance )
+ae_void_t ae_delete_movie_instance( const aeMovieInstance * _instance )
 {
     (*_instance->memory_free)(_instance->instance_data, _instance);
 }

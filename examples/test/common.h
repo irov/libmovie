@@ -28,7 +28,7 @@ typedef struct {
 	// Current working objects
 	//
 
-	aeMovieInstance * instance;
+    const aeMovieInstance * instance;
 	aeMovieData * data;
 	aeMovieComposition * composition;
 

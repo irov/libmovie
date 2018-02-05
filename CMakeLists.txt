@@ -62,6 +62,7 @@ source
     ${SOURCE_DIR}/movie_transformation.c
     ${SOURCE_DIR}/movie_transformation.h
     ${SOURCE_DIR}/movie_debug.h
+    ${SOURCE_DIR}/movie_version.h
 )
 
 INCLUDE_DIRECTORIES( ${PROJECT_NAME} include ) 
