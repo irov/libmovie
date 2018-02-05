@@ -64,7 +64,7 @@ typedef void( *ae_movie_logger_t )(ae_voidptr_t _data, aeMovieErrorCode _code, c
 @param [in] _alloc,_alloc_n,_free,_free_n,_strncmp,_logger User pointers to utility functions.
 @param [in] _data Usually pointer to the creating object.
 */
-aeMovieInstance * ae_create_movie_instance(
+const aeMovieInstance * ae_create_movie_instance(
     const ae_char_t * _hashkey,
     ae_movie_alloc_t _alloc,
     ae_movie_alloc_n_t _alloc_n,
@@ -78,7 +78,7 @@ aeMovieInstance * ae_create_movie_instance(
 @brief Delete an existing instance.
 @param [in] _instance Instance.
 */
-ae_void_t ae_delete_movie_instance( aeMovieInstance * _instance );
+ae_void_t ae_delete_movie_instance( const aeMovieInstance * _instance );
 
 // instance
 /// @}
