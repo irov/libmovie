@@ -593,6 +593,10 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
     {
         _layer->track_matte_mode = AE_READ8( _stream );
     }
+    else
+    {
+        _layer->track_matte_mode = AE_MOVIE_TRACK_MATTE_NONE;
+    }
 
     ae_uint8_t type;
     AE_READ( _stream, type );
