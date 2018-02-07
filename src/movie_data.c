@@ -593,6 +593,10 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
     {
         _layer->track_matte_mode = AE_READ8( _stream );
     }
+    else
+    {
+        _layer->track_matte_mode = AE_MOVIE_TRACK_MATTE_NONE;
+    }
 
     ae_uint8_t type;
     AE_READ( _stream, type );
@@ -1499,7 +1503,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 {
     const aeMovieInstance * instance = _movieData->instance;
 
-#ifdef _DEBUG
+#ifdef AE_MOVIE_DEBUG_STREAM
     instance->logger( instance->instance_data, AE_ERROR_STREAM, "begin" );
 #endif
 
@@ -1529,7 +1533,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         ae_string_t name;
         AE_READ_STRING( _stream, name );
 
-#ifdef _DEBUG
+#ifdef AE_MOVIE_DEBUG_STREAM
         instance->logger( instance->instance_data, AE_ERROR_STREAM, "read type %d", type );
 #endif
 

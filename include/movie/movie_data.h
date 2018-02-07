@@ -74,12 +74,6 @@ typedef enum aeMovieLayerTypeEnum
     AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 } aeMovieLayerTypeEnum;
 
-typedef enum aeMovieLayerTypeExEnum
-{
-    AE_MOVIE_LAYER_TYPE_ANY = 0,
-} aeMovieLayerTypeExEnum;
-
-
 typedef enum aeMovieLayerParamEnum
 {
     AE_MOVIE_LAYER_PARAM_HORIZONTAL_CENTER = 0x00000002,
