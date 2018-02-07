@@ -1537,7 +1537,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         instance->logger( instance->instance_data, AE_ERROR_STREAM, "read type %d", type );
 #endif
 
-        aeMovieResource ** new_resource = AE_NULL;
+        aeMovieResource * new_resource = AE_NULL;
 
         switch( type )
         {
@@ -1573,7 +1573,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     }
                 }
 
-                *new_resource = (aeMovieResource *)resource;
+                new_resource = (aeMovieResource *)resource;
             }break;
         case AE_MOVIE_RESOURCE_VIDEO:
             {
@@ -1616,7 +1616,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     }
                 }
 
-                *new_resource = (aeMovieResource *)resource;
+                new_resource = (aeMovieResource *)resource;
             }break;
         case AE_MOVIE_RESOURCE_SOUND:
             {
@@ -1651,7 +1651,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     }
                 }
 
-                *new_resource = (aeMovieResource *)resource;
+                new_resource = (aeMovieResource *)resource;
             }break;
         case AE_MOVIE_RESOURCE_IMAGE:
             {
@@ -1726,7 +1726,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     }
                 }
 
-                *new_resource = (aeMovieResource *)resource;
+                new_resource = (aeMovieResource *)resource;
             }break;
         case AE_MOVIE_RESOURCE_SEQUENCE:
             {
@@ -1776,7 +1776,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     }
                 }
 
-                *new_resource = (aeMovieResource *)resource;
+                new_resource = (aeMovieResource *)resource;
             }break;
         case AE_MOVIE_RESOURCE_PARTICLE:
             {
@@ -1827,7 +1827,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     }
                 }
 
-                *new_resource = (aeMovieResource *)resource;
+                new_resource = (aeMovieResource *)resource;
             }break;
         case AE_MOVIE_RESOURCE_SLOT:
             {
@@ -1860,7 +1860,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                     }
                 }
 
-                *new_resource = (aeMovieResource *)resource;
+                new_resource = (aeMovieResource *)resource;
             }break;
         default:
             {
@@ -1868,9 +1868,9 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
             }break;
         }
 
-        (*new_resource)->type = type;
-        (*new_resource)->name = name;
-        (*new_resource)->data = (*_movieData->resource_provider)(*new_resource, _movieData->resource_ud);
+        new_resource->type = type;
+        new_resource->name = name;
+        new_resource->data = (*_movieData->resource_provider)(new_resource, _movieData->resource_ud);
 
         *it_resource = (aeMovieResource *)new_resource;
     }
