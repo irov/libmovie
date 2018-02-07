@@ -1503,7 +1503,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 {
     const aeMovieInstance * instance = _movieData->instance;
 
-#ifdef _DEBUG
+#ifdef AE_MOVIE_DEBUG_STREAM
     instance->logger( instance->instance_data, AE_ERROR_STREAM, "begin" );
 #endif
 
@@ -1530,7 +1530,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         ae_uint8_t type;
         AE_READ( _stream, type );
 
-#ifdef _DEBUG
+#ifdef AE_MOVIE_DEBUG_STREAM
         instance->logger( instance->instance_data, AE_ERROR_STREAM, "read type %d", type );
 #endif
 
