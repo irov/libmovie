@@ -824,12 +824,12 @@ ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instanc
     }
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_layer_transformation_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+ae_void_t ae_movie_make_layer_matrix_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
     (*_transformation->transforamtion_interpolate_matrix)(_out, _transformation, _index, _t);    
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_layer_transformation_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+ae_void_t ae_movie_make_layer_matrix_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
 {
     (*_transformation->transforamtion_fixed_matrix)(_out, _transformation, _index);
 }
@@ -896,4 +896,26 @@ ae_color_channel_t ae_movie_make_layer_opacity( const aeMovieLayerTransformation
     }
 
     return opacity;
+}
+//////////////////////////////////////////////////////////////////////////
+void ae_movie_make_layer_transformation2d( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t )
+{
+    AE_INTERPOLATE_PROPERTY( _transformation2d, anchor_point_x, _anchor_point[0] );
+    AE_INTERPOLATE_PROPERTY( _transformation2d, anchor_point_y, _anchor_point[1] );
+
+    AE_INTERPOLATE_PROPERTY( _transformation2d, position_x, _position[0] );
+    AE_INTERPOLATE_PROPERTY( _transformation2d, position_y, _position[1] );
+
+    AE_INTERPOLATE_PROPERTY( _transformation2d, scale_x, _scale[0] );
+    AE_INTERPOLATE_PROPERTY( _transformation2d, scale_y, _scale[1] );
+
+    ae_quaternionzw_t q1;
+    AE_FIXED_PROPERTY( _transformation2d, quaternion_z, 0, q1[0] );
+    AE_FIXED_PROPERTY( _transformation2d, quaternion_w, 0, q1[1] );
+
+    ae_quaternionzw_t q2;
+    AE_FIXED_PROPERTY( _transformation2d, quaternion_z, 1, q2[0] );
+    AE_FIXED_PROPERTY( _transformation2d, quaternion_w, 1, q2[1] );
+
+    ae_linerp_qzw( _quaternion, q1, q2, _t );
 }
