@@ -111,7 +111,15 @@ AE_INTERNAL ae_void_t __make_layer_mesh_vertices( const aeMovieLayerMesh * _laye
     __make_mesh_vertices( mesh, _matrix, _render );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __bezier_point( ae_float_t a, ae_float_t b, ae_float_t c, ae_float_t d, ae_float_t t )
+typedef struct ae_bezier_t
+{
+    ae_float_t ta;
+    ae_float_t tb;
+    ae_float_t tc;
+    ae_float_t td;
+} ae_bezier_t;
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __bezier_setup( ae_bezier_t * _bt, ae_float_t t )
 {
     ae_float_t t2 = t * t;
     ae_float_t t3 = t2 * t;
@@ -120,10 +128,18 @@ AE_INTERNAL ae_float_t __bezier_point( ae_float_t a, ae_float_t b, ae_float_t c,
     ae_float_t ti2 = ti * ti;
     ae_float_t ti3 = ti2 * ti;
 
-    return a * ti3 + 3.f * b * t * ti2 + 3.f * c * t2 * ti + d * t3;
+    _bt->ta = ti3;
+    _bt->tb = 3.f * t * ti3;
+    _bt->tc = 3.f * t2 * ti;
+    _bt->td = t3;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __bezier_warp_x( const aeMovieBezierWarp * _bezierWarp, ae_float_t _u, ae_float_t _v )
+AE_INTERNAL ae_float_t __bezier_point( ae_float_t a, ae_float_t b, ae_float_t c, ae_float_t d, const ae_bezier_t * _bt )
+{
+    return a * _bt->ta + b * _bt->tb + c * _bt->tc + d * _bt->td;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_float_t __bezier_warp_x( const aeMovieBezierWarp * _bezierWarp, const ae_bezier_t * _bu, const ae_bezier_t * _bv )
 {
     const ae_vector2_t * corners = _bezierWarp->corners;
     const ae_vector2_t * beziers = _bezierWarp->beziers;
@@ -133,17 +149,17 @@ AE_INTERNAL ae_float_t __bezier_warp_x( const aeMovieBezierWarp * _bezierWarp, a
     ae_float_t x2 = beziers[4][0] + beziers[5][0] - corners[2][0];
     ae_float_t x3 = beziers[6][0] + beziers[7][0] - corners[3][0];
 
-    ae_float_t bu0x = __bezier_point( corners[0][0], beziers[0][0], beziers[7][0], corners[3][0], _v );
-    ae_float_t bu1x = __bezier_point( beziers[1][0], x0, x3, beziers[6][0], _v );
-    ae_float_t bu2x = __bezier_point( beziers[2][0], x1, x2, beziers[5][0], _v );
-    ae_float_t bu3x = __bezier_point( corners[1][0], beziers[3][0], beziers[4][0], corners[2][0], _v );
+    ae_float_t bu0x = __bezier_point( corners[0][0], beziers[0][0], beziers[7][0], corners[3][0], _bv );
+    ae_float_t bu1x = __bezier_point( beziers[1][0], x0, x3, beziers[6][0], _bv );
+    ae_float_t bu2x = __bezier_point( beziers[2][0], x1, x2, beziers[5][0], _bv );
+    ae_float_t bu3x = __bezier_point( corners[1][0], beziers[3][0], beziers[4][0], corners[2][0], _bv );
 
-    ae_float_t x = __bezier_point( bu0x, bu1x, bu2x, bu3x, _u );
+    ae_float_t x = __bezier_point( bu0x, bu1x, bu2x, bu3x, _bu );
 
     return x;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __bezier_warp_y( const aeMovieBezierWarp * _bezierWarp, ae_float_t _u, ae_float_t _v )
+AE_INTERNAL ae_float_t __bezier_warp_y( const aeMovieBezierWarp * _bezierWarp, const ae_bezier_t * _bu, const ae_bezier_t * _bv )
 {
     const ae_vector2_t * corners = _bezierWarp->corners;
     const ae_vector2_t * beziers = _bezierWarp->beziers;
@@ -153,12 +169,12 @@ AE_INTERNAL ae_float_t __bezier_warp_y( const aeMovieBezierWarp * _bezierWarp, a
     ae_float_t x2 = beziers[4][1] + beziers[5][1] - corners[2][1];
     ae_float_t x3 = beziers[6][1] + beziers[7][1] - corners[3][1];
 
-    ae_float_t bu0x = __bezier_point( corners[0][1], beziers[0][1], beziers[7][1], corners[3][1], _v );
-    ae_float_t bu1x = __bezier_point( beziers[1][1], x0, x3, beziers[6][1], _v );
-    ae_float_t bu2x = __bezier_point( beziers[2][1], x1, x2, beziers[5][1], _v );
-    ae_float_t bu3x = __bezier_point( corners[1][1], beziers[3][1], beziers[4][1], corners[2][1], _v );
+    ae_float_t bu0x = __bezier_point( corners[0][1], beziers[0][1], beziers[7][1], corners[3][1], _bv );
+    ae_float_t bu1x = __bezier_point( beziers[1][1], x0, x3, beziers[6][1], _bv );
+    ae_float_t bu2x = __bezier_point( beziers[2][1], x1, x2, beziers[5][1], _bv );
+    ae_float_t bu3x = __bezier_point( corners[1][1], beziers[3][1], beziers[4][1], corners[2][1], _bv );
 
-    ae_float_t y = __bezier_point( bu0x, bu1x, bu2x, bu3x, _u );
+    ae_float_t y = __bezier_point( bu0x, bu1x, bu2x, bu3x, _bu );
 
     return y;
 }
@@ -210,11 +226,17 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
     ae_uint32_t v = 0;
     for( ; v != line_count; ++v )
     {
+        ae_bezier_t bv;
+        __bezier_setup( &bv, dv );
+
         ae_uint32_t u = 0;
         for( ; u != line_count; ++u )
         {
-            const ae_float_t x = __bezier_warp_x( _bezierWarp, du, dv );
-            const ae_float_t y = __bezier_warp_y( _bezierWarp, du, dv );
+            ae_bezier_t bu;
+            __bezier_setup( &bu, du );
+
+            const ae_float_t x = __bezier_warp_x( _bezierWarp, &bu, &bv );
+            const ae_float_t y = __bezier_warp_y( _bezierWarp, &bu, &bv );
 
             ae_vector2_t position;
             position[0] = x;
