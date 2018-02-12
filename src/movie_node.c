@@ -764,11 +764,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
 
         if( _interpolate == AE_TRUE )
         {
-            ae_movie_make_layer_transformation_interpolate( _node->matrix, layer->transformation, _frameId, _t );
+            ae_movie_make_layer_matrix_interpolate( _node->matrix, layer->transformation, _frameId, _t );
         }
         else
         {
-            ae_movie_make_layer_transformation_fixed( _node->matrix, layer->transformation, _frameId );
+            ae_movie_make_layer_matrix_fixed( _node->matrix, layer->transformation, _frameId );
         }
 
         if( layer->sub_composition_data != AE_NULL )
@@ -813,11 +813,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
 
     if( _interpolate == AE_TRUE )
     {
-        ae_movie_make_layer_transformation_interpolate( local_matrix, layer->transformation, _frameId, _t );
+        ae_movie_make_layer_matrix_interpolate( local_matrix, layer->transformation, _frameId, _t );
     }
     else
     {
-        ae_movie_make_layer_transformation_fixed( local_matrix, layer->transformation, _frameId );
+        ae_movie_make_layer_matrix_fixed( local_matrix, layer->transformation, _frameId );
     }
 
     ae_mul_m4_m4_r( _node->matrix, local_matrix, node_relative->matrix );
