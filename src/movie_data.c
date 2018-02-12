@@ -1162,6 +1162,10 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             {
                 _layer->renderable = AE_FALSE;
             }break;
+        case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+            {
+                _layer->renderable = AE_FALSE;
+            }break;
         case AE_MOVIE_LAYER_TYPE_SOLID:
             {
                 _layer->renderable = AE_TRUE;
