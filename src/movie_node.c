@@ -129,7 +129,7 @@ AE_INTERNAL ae_void_t __bezier_setup( ae_bezier_t * _bt, ae_float_t t )
     ae_float_t ti3 = ti2 * ti;
 
     _bt->ta = ti3;
-    _bt->tb = 3.f * t * ti3;
+    _bt->tb = 3.f * t * ti2;
     _bt->tc = 3.f * t2 * ti;
     _bt->td = t3;
 }
