@@ -57,8 +57,9 @@
  */
 
 typedef enum aeMovieLayerTypeEnum
-{    
+{
     AE_MOVIE_LAYER_TYPE_MOVIE = 1,
+    AE_MOVIE_LAYER_TYPE_SPRITE = 4,
     AE_MOVIE_LAYER_TYPE_TEXT = 5,
     AE_MOVIE_LAYER_TYPE_EVENT = 7,
     AE_MOVIE_LAYER_TYPE_SOCKET = 8,
