@@ -186,6 +186,7 @@ void ae_movie_make_layer_matrix_interpolate( ae_matrix4_t _out, const aeMovieLay
 void ae_movie_make_layer_matrix_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index );
 void ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 
-void ae_movie_make_layer_transformation2d( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t );
+void ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t );
+void ae_movie_make_layer_transformation2d_fixed( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index );
 
 #	endif

@@ -1100,6 +1100,8 @@ AE_INTERNAL ae_void_t __setup_movie_composition_scene_effect( aeMovieComposition
 
         break;
     }
+
+    _composition->scene_effect_data = AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_uint32_t __get_movie_subcomposition_count( aeMovieComposition * _composition )
@@ -2792,6 +2794,42 @@ AE_INTERNAL ae_void_t __update_node( const aeMovieComposition * _composition, co
     __update_movie_composition_node_state( _composition, _node, _loop, _begin, _time, _interpolate );
     
     _node->update_revision = _revision;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __update_movie_composition_scene_effect( const aeMovieComposition * _composition, const aeMovieCompositionAnimation * _animation )
+{
+    ae_bool_t composition_interpolate = _composition->interpolate;
+
+    aeMovieNode * node = _composition->scene_effect;
+
+    const aeMovieLayerData * layer = node->layer;
+
+    const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)layer->transformation;
+
+    ae_float_t frameDurationInv = layer->composition_data->frameDurationInv;
+    
+    ae_float_t current_time = _animation->time - node->in_time + node->start_time;
+    ae_float_t frame_time = current_time / node->stretch * frameDurationInv;
+
+    ae_uint32_t frameId = (ae_uint32_t)frame_time;
+
+    aeMovieCompositionSceneEffectUpdateCallbackData callbackData;
+    callbackData.element = node->element_data;
+    
+    if( composition_interpolate == AE_TRUE )
+    {
+        ae_float_t t = ae_fractional_f( frame_time );
+
+        ae_movie_make_layer_transformation2d_interpolate( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, transformation2d, frameId, t );
+    }
+    else
+    {
+        ae_movie_make_layer_transformation2d_fixed( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, transformation2d, frameId );
+    }
+
+    callbackData.scene_effect_data = _composition->scene_effect_data;
+
+    (*_composition->providers.scene_effect_update)(&callbackData, _composition->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition, ae_uint32_t _revision, ae_float_t _beginTime, ae_float_t _endTime )

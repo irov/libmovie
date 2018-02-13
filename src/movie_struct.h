@@ -197,6 +197,7 @@ struct aeMovieComposition
     aeMovieNode * nodes;
 
     aeMovieNode * scene_effect;
+    ae_voidptr_t scene_effect_data;
 
     ae_uint32_t subcomposition_count;
     aeMovieSubComposition * subcompositions;
