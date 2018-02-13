@@ -366,6 +366,8 @@ typedef struct aeMovieCompositionStateCallbackData
 
 typedef struct aeMovieCompositionSceneEffectProviderCallbackData
 {
+    ae_voidptr_t element;
+
     /// @brief Additional transform, e.g.
     ae_matrix4_ptr_t matrix;
 
@@ -381,13 +383,13 @@ typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
     ae_voidptr_t element;
 
     /// @brief Additional transform, e.g.
-    ae_matrix4_ptr_t matrix;
+    ae_vector2_t anchor_point;
+    ae_vector2_t position;
+    ae_vector2_t scale;
+    ae_quaternionzw_t quaternion;
 
-    /// @brief Value from 0.0 to 1.0.
-    ae_color_t color;
+    ae_voidptr_t scene_effect_data;
 
-    /// @brief Value from 0.0 to 1.0.
-    ae_color_channel_t opacity;
 } aeMovieCompositionSceneEffectUpdateCallbackData;
 
 typedef ae_voidptr_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data);
