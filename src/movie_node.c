@@ -1097,6 +1097,15 @@ AE_INTERNAL ae_void_t __setup_movie_composition_scene_effect( aeMovieComposition
         }
 
         _composition->scene_effect = node;
+       
+        const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)layer->transformation;
+
+        aeMovieCompositionSceneEffectProviderCallbackData callbackData;
+        callbackData.element = node->element_data;
+
+        ae_movie_make_layer_transformation2d_fixed( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, transformation2d, 0 );
+        
+        _composition->scene_effect_data = (*_composition->providers.scene_effect_provider)(&callbackData, _composition->provider_data);
 
         break;
     }
@@ -2796,7 +2805,7 @@ AE_INTERNAL ae_void_t __update_node( const aeMovieComposition * _composition, co
     _node->update_revision = _revision;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __update_movie_composition_scene_effect( const aeMovieComposition * _composition, const aeMovieCompositionAnimation * _animation )
+AE_INTERNAL ae_void_t __update_movie_scene_effect( const aeMovieComposition * _composition, const aeMovieCompositionAnimation * _animation )
 {
     ae_bool_t composition_interpolate = _composition->interpolate;
 
@@ -3235,6 +3244,7 @@ ae_void_t ae_update_movie_composition( aeMovieComposition * _composition, ae_tim
     if( animation->play == AE_TRUE && animation->pause == AE_FALSE )
     {
         composition_end = __update_movie_subcomposition( _composition, composition_data, timescale_timing, animation, AE_NULL );
+        __update_movie_scene_effect( _composition, animation );
         __update_movie_camera( _composition, animation );
     }
 

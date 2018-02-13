@@ -369,13 +369,11 @@ typedef struct aeMovieCompositionSceneEffectProviderCallbackData
     ae_voidptr_t element;
 
     /// @brief Additional transform, e.g.
-    ae_matrix4_ptr_t matrix;
+    ae_vector2_t anchor_point;
+    ae_vector2_t position;
+    ae_vector2_t scale;
+    ae_quaternionzw_t quaternion;
 
-    /// @brief Value from 0.0 to 1.0.
-    ae_color_t color;
-
-    /// @brief Value from 0.0 to 1.0.
-    ae_color_channel_t opacity;
 } aeMovieCompositionSceneEffectProviderCallbackData;
 
 typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
