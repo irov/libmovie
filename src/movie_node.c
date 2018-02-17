@@ -1950,6 +1950,8 @@ ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
 
     AE_DELETEN( instance, _composition->nodes );
 
+    AE_DELETE( instance, _composition->animation );
+
     AE_DELETE( instance, _composition->update_revision );
 
     AE_DELETE( instance, _composition );
