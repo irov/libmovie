@@ -1078,6 +1078,8 @@ AE_INTERNAL ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _com
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __setup_movie_composition_scene_effect( aeMovieComposition * _composition )
 {
+    _composition->scene_effect_node = AE_NULL;
+
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
     for( ; it_node != it_node_end; ++it_node )
@@ -1096,7 +1098,7 @@ AE_INTERNAL ae_void_t __setup_movie_composition_scene_effect( aeMovieComposition
             continue;
         }
 
-        _composition->scene_effect = node;
+        _composition->scene_effect_node = node;
        
         const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)layer->transformation;
 
@@ -1805,6 +1807,13 @@ AE_CALLBACK ae_voidptr_t __dummy_ae_movie_scene_effect_provider( const aeMovieCo
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+AE_CALLBACK ae_void_t __dummy_ae_movie_scene_effect_deleter( const aeMovieCompositionSceneEffectDeleterCallbackData * _callbackData, ae_voidptr_t _data )
+{
+    AE_UNUSED( _callbackData );
+    AE_UNUSED( _data );
+
+}
+//////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __dummy_ae_movie_scene_effect_update( const aeMovieCompositionSceneEffectUpdateCallbackData * _callbackData, ae_voidptr_t _data )
 {
     AE_UNUSED( _callbackData );
@@ -1829,6 +1838,7 @@ ae_void_t ae_initialize_movie_composition_providers( aeMovieCompositionProviders
     _providers->composition_event = &__dummy_ae_movie_composition_event;
     _providers->composition_state = &__dummy_ae_movie_composition_state;
     _providers->scene_effect_provider = &__dummy_ae_movie_scene_effect_provider;
+    _providers->scene_effect_deleter = &__dummy_ae_movie_scene_effect_deleter;
     _providers->scene_effect_update = &__dummy_ae_movie_scene_effect_update;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1980,16 +1990,32 @@ AE_INTERNAL ae_void_t __delete_camera( const aeMovieComposition * _composition )
 
     aeMovieCameraDeleterCallbackData callbackData;
     callbackData.name = camera->name;
-    callbackData.element = _composition->camera_data;
+    callbackData.camera_data = _composition->camera_data;
 
     (*_composition->providers.camera_deleter)(&callbackData, _composition->provider_data);
 }
-///
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __delete_scene_effect( const aeMovieComposition * _composition )
+{
+    if( _composition->scene_effect_node == AE_NULL )
+    {
+        return;
+    }
+
+    aeMovieNode * scene_effect_node = _composition->scene_effect_node;
+
+    aeMovieCompositionSceneEffectDeleterCallbackData callbackData;
+    callbackData.element = scene_effect_node->element_data;
+    callbackData.scene_effect_data = _composition->scene_effect_data;
+
+    (*_composition->providers.scene_effect_deleter)(&callbackData, _composition->provider_data);
+}
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
 {
     __delete_nodes( _composition );
     __delete_camera( _composition );
+    __delete_scene_effect( _composition );
     
     const aeMovieInstance * instance = _composition->movie_data->instance;
 
@@ -2811,21 +2837,26 @@ AE_INTERNAL ae_void_t __update_movie_scene_effect( const aeMovieComposition * _c
 {
     ae_bool_t composition_interpolate = _composition->interpolate;
 
-    aeMovieNode * node = _composition->scene_effect;
+    aeMovieNode * scene_effect_node = _composition->scene_effect_node;
 
-    const aeMovieLayerData * layer = node->layer;
+    if( scene_effect_node == AE_NULL )
+    {
+        return;
+    }
+
+    const aeMovieLayerData * layer = scene_effect_node->layer;
 
     const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)layer->transformation;
 
     ae_float_t frameDurationInv = layer->composition_data->frameDurationInv;
     
-    ae_float_t current_time = _animation->time - node->in_time + node->start_time;
-    ae_float_t frame_time = current_time / node->stretch * frameDurationInv;
+    ae_float_t current_time = _animation->time - scene_effect_node->in_time + scene_effect_node->start_time;
+    ae_float_t frame_time = current_time / scene_effect_node->stretch * frameDurationInv;
 
     ae_uint32_t frameId = (ae_uint32_t)frame_time;
 
     aeMovieCompositionSceneEffectUpdateCallbackData callbackData;
-    callbackData.element = node->element_data;
+    callbackData.element = scene_effect_node->element_data;
     
     if( composition_interpolate == AE_TRUE )
     {

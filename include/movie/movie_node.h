@@ -161,7 +161,7 @@ typedef struct aeMovieCameraProviderCallbackData
 typedef struct aeMovieCameraDeleterCallbackData
 {
     /// @brief Camera element data.
-    ae_voidptr_t element;
+    ae_voidptr_t camera_data;
 
     /// @brief Camera name.
     const ae_char_t * name;
@@ -376,6 +376,14 @@ typedef struct aeMovieCompositionSceneEffectProviderCallbackData
 
 } aeMovieCompositionSceneEffectProviderCallbackData;
 
+typedef struct aeMovieCompositionSceneEffectDeleterCallbackData
+{
+    ae_voidptr_t element;
+
+    ae_voidptr_t scene_effect_data;
+
+} aeMovieCompositionSceneEffectDeleterCallbackData;
+
 typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
 {
     ae_voidptr_t element;
@@ -410,6 +418,7 @@ typedef void( *ae_movie_callback_composition_event_t )(const aeMovieCompositionE
 typedef void( *ae_movie_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data);
 
 typedef ae_voidptr_t( *ae_movie_callback_scene_effect_provider_t )(const aeMovieCompositionSceneEffectProviderCallbackData * _callbackData, ae_voidptr_t _data);
+typedef void( *ae_movie_callback_scene_effect_deleter_t )(const aeMovieCompositionSceneEffectDeleterCallbackData * _callbackData, ae_voidptr_t _data);
 typedef void( *ae_movie_callback_scene_effect_update_t )(const aeMovieCompositionSceneEffectUpdateCallbackData * _callbackData, ae_voidptr_t _data);
 
 typedef struct aeMovieCompositionProviders
@@ -434,6 +443,7 @@ typedef struct aeMovieCompositionProviders
     ae_movie_callback_composition_state_t composition_state;
 
     ae_movie_callback_scene_effect_provider_t scene_effect_provider;
+    ae_movie_callback_scene_effect_deleter_t scene_effect_deleter;
     ae_movie_callback_scene_effect_update_t scene_effect_update;
 
 } aeMovieCompositionProviders;
