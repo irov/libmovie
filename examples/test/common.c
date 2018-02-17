@@ -874,6 +874,12 @@ ae_void_t ex_shutdown( ae_void_t ) {
 	// Free the allocated memory.
 	//
 
+    if( ex.composition ) {
+        EX_LOG( "Deleting movie composition.\n" );
+        ae_delete_movie_composition( ex.composition );
+        ex.composition = AE_NULL;
+    }
+
 	if( ex.data ) {
 		EX_LOG( "Deleting movie data.\n" );
 		ae_delete_movie_data( ex.data );

@@ -768,14 +768,14 @@ AE_INTERNAL ae_void_t __delete_layer_transformation2d( const aeMovieInstance * _
     {
         aeMovieLayerTransformation2DTimeline * timeline = _transformation->timeline;
 
-        AE_DELETEN( _instance, timeline->anchor_point_x );
-        AE_DELETEN( _instance, timeline->anchor_point_y );
-        AE_DELETEN( _instance, timeline->position_x );
-        AE_DELETEN( _instance, timeline->position_y );
-        AE_DELETEN( _instance, timeline->quaternion_z );
-        AE_DELETEN( _instance, timeline->quaternion_w );
-        AE_DELETEN( _instance, timeline->scale_x );
-        AE_DELETEN( _instance, timeline->scale_y );
+        AE_DELETE( _instance, timeline->anchor_point_x );
+        AE_DELETE( _instance, timeline->anchor_point_y );
+        AE_DELETE( _instance, timeline->position_x );
+        AE_DELETE( _instance, timeline->position_y );
+        AE_DELETE( _instance, timeline->quaternion_z );
+        AE_DELETE( _instance, timeline->quaternion_w );
+        AE_DELETE( _instance, timeline->scale_x );
+        AE_DELETE( _instance, timeline->scale_y );
 
         AE_DELETE( _instance, _transformation->timeline );
     }
@@ -787,19 +787,19 @@ AE_INTERNAL ae_void_t __delete_layer_transformation3d( const aeMovieInstance * _
     {
         aeMovieLayerTransformation3DTimeline * timeline = _transformation->timeline;
 
-        AE_DELETEN( _instance, timeline->anchor_point_x );
-        AE_DELETEN( _instance, timeline->anchor_point_y );
-        AE_DELETEN( _instance, timeline->anchor_point_z );
-        AE_DELETEN( _instance, timeline->position_x );
-        AE_DELETEN( _instance, timeline->position_y );
-        AE_DELETEN( _instance, timeline->position_z );
-        AE_DELETEN( _instance, timeline->quaternion_x );
-        AE_DELETEN( _instance, timeline->quaternion_y );
-        AE_DELETEN( _instance, timeline->quaternion_z );
-        AE_DELETEN( _instance, timeline->quaternion_w );
-        AE_DELETEN( _instance, timeline->scale_x );
-        AE_DELETEN( _instance, timeline->scale_y );
-        AE_DELETEN( _instance, timeline->scale_z );
+        AE_DELETE( _instance, timeline->anchor_point_x );
+        AE_DELETE( _instance, timeline->anchor_point_y );
+        AE_DELETE( _instance, timeline->anchor_point_z );
+        AE_DELETE( _instance, timeline->position_x );
+        AE_DELETE( _instance, timeline->position_y );
+        AE_DELETE( _instance, timeline->position_z );
+        AE_DELETE( _instance, timeline->quaternion_x );
+        AE_DELETE( _instance, timeline->quaternion_y );
+        AE_DELETE( _instance, timeline->quaternion_z );
+        AE_DELETE( _instance, timeline->quaternion_w );
+        AE_DELETE( _instance, timeline->scale_x );
+        AE_DELETE( _instance, timeline->scale_y );
+        AE_DELETE( _instance, timeline->scale_z );
 
         AE_DELETE( _instance, _transformation->timeline );
     }
@@ -807,7 +807,7 @@ AE_INTERNAL ae_void_t __delete_layer_transformation3d( const aeMovieInstance * _
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
 {
-    AE_DELETEN( _instance, _transformation->timeline_opacity );
+    AE_DELETE( _instance, _transformation->timeline_opacity );
 
     if( _threeD == AE_FALSE )
     {
