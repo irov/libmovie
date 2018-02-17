@@ -133,7 +133,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)base_resource;
 
-                AE_DELETE( instance, resource->path );
+                AE_DELETE_STRING( instance, resource->path );
 
                 (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
@@ -142,7 +142,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieResourceSound * resource = (const aeMovieResourceSound *)base_resource;
 
-                AE_DELETE( instance, resource->path );
+                AE_DELETE_STRING( instance, resource->path );
 
                 (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
@@ -151,7 +151,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieResourceImage * resource = (const aeMovieResourceImage *)base_resource;
 
-                AE_DELETE( instance, resource->path );
+                AE_DELETE_STRING( instance, resource->path );
 
                 if( resource->uv != instance->sprite_uv )
                 {
@@ -181,7 +181,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
 
-                AE_DELETE( instance, resource->path );
+                AE_DELETE_STRING( instance, resource->path );
 
                 (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
@@ -197,7 +197,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
             }break;
         }
 
-        AE_DELETE( instance, base_resource->name );
+        AE_DELETE_STRING( instance, base_resource->name );
         AE_DELETE( instance, base_resource );
     }
 
@@ -211,7 +211,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
         {
             const aeMovieCompositionCamera * camera = composition->camera;
 
-            AE_DELETE( instance, camera->name );
+            AE_DELETE_STRING( instance, camera->name );
 
             AE_DELETE( instance, composition->camera );
         }
@@ -277,9 +277,9 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieLayerShader * shader = extensions->shader;
 
-                AE_DELETE( instance, shader->name );
-                AE_DELETE( instance, shader->shader_vertex );
-                AE_DELETE( instance, shader->shader_fragment );
+                AE_DELETE_STRING( instance, shader->name );
+                AE_DELETE_STRING( instance, shader->shader_vertex );
+                AE_DELETE_STRING( instance, shader->shader_fragment );
 
                 const struct aeMovieLayerShaderParameter ** it_parameter = shader->parameters;
                 const struct aeMovieLayerShaderParameter ** it_parameter_end = shader->parameters + shader->parameter_count;
@@ -290,7 +290,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
                 {
                     const struct aeMovieLayerShaderParameter * parameter = *it_parameter;
 
-                    AE_DELETE( instance, parameter->name );
+                    AE_DELETE_STRING( instance, parameter->name );
 
                     aeMovieShaderParameterTypeEnum parameter_type = parameter->type;
 
@@ -338,12 +338,12 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             AE_DELETE( instance, layer->transformation );
 
-            AE_DELETE( instance, layer->name );
+            AE_DELETE_STRING( instance, layer->name );
         }
 
         AE_DELETEN( instance, composition->layers );
 
-        AE_DELETE( instance, composition->name );
+        AE_DELETE_STRING( instance, composition->name );
     }
 
     AE_DELETEN( instance, _movieData->resources );
@@ -351,7 +351,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
     if( _movieData->name != AE_NULL )
     {
-        AE_DELETE( instance, _movieData->name );
+        AE_DELETE_STRING( instance, _movieData->name );
     }
 
     AE_DELETE( instance, _movieData );
