@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 static const ae_char_t * ex_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
-static const ae_char_t * ex_example_movie_path = "../../examples/resources/Knight/Knight.aem";
-static const ae_char_t * ex_example_composition_name = "Knight";
+static const ae_char_t * ex_example_movie_path = "../../examples/resources/Unicorn/Unicorn.aem";
+static const ae_char_t * ex_example_composition_name = "Unicorn";
 
 
 ae_void_t EX_LOG( const char * _format, ... );

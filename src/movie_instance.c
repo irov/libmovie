@@ -203,6 +203,16 @@ const aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_instance( const aeMovieInstance * _instance )
 {
+    ae_uint32_t i;
+    for( i = 0; i != 10U; ++i )
+    {
+        ae_vector2_t * bezier_warp_uv = _instance->bezier_warp_uv[i];
+        (*_instance->memory_free_n)(_instance->instance_data, bezier_warp_uv);
+
+        ae_uint16_t * bezier_warp_indices = _instance->bezier_warp_indices[i];
+        (*_instance->memory_free_n)(_instance->instance_data, bezier_warp_indices);
+    }
+
     (*_instance->memory_free)(_instance->instance_data, _instance);
 }
 //////////////////////////////////////////////////////////////////////////

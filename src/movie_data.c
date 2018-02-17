@@ -1426,7 +1426,7 @@ ae_void_t ae_delete_movie_stream( aeMovieStream * _stream )
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream )
 {
-    ae_uint8_t magic[4];
+    ae_uint8_t magic[4] = { 0 };
     AE_READN( _stream, magic, 4 );
 
     if( magic[0] != 'A' ||
