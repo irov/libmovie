@@ -41,6 +41,7 @@
 #	define AE_NEWN(instance, type, n) ((type *)__magic_memory_alloc_n(instance, #type, sizeof(type), n))
 #	define AE_DELETE(instance, ptr) (__magic_memory_free(instance, #ptr, ptr))
 #	define AE_DELETEN(instance, ptr) (__magic_memory_free_n(instance, #ptr, ptr))
+#	define AE_DELETE_STRING(instance, ptr) (__magic_memory_free_n(instance, #ptr, ptr))
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_voidptr_t __magic_memory_alloc( const aeMovieInstance * _instance, const ae_char_t * _doc, ae_size_t _size )
 {
@@ -95,6 +96,7 @@ AE_INTERNAL ae_void_t __magic_memory_free_n( const aeMovieInstance * _instance, 
 #	define AE_NEWN(instance, type, n) ((type *)instance->memory_alloc_n( instance->instance_data, sizeof(type), n ))
 #	define AE_DELETE(instance, ptr) (instance->memory_free( instance->instance_data, ptr))
 #	define AE_DELETEN(instance, ptr) (instance->memory_free_n( instance->instance_data, ptr))
+#	define AE_DELETE_STRING(instance, ptr) (instance->memory_free_n( instance->instance_data, ptr))
 //////////////////////////////////////////////////////////////////////////
 #   endif
 //////////////////////////////////////////////////////////////////////////
