@@ -126,7 +126,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_UNUSED( resource );
 
-                (*_movieData->resource_deleter)( type, base_resource->data, _movieData->resource_ud);
+                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_VIDEO:
@@ -378,7 +378,7 @@ AE_INTERNAL ae_result_t __load_movie_data_composition_camera( aeMovieStream * _s
         camera_name[4] = '\0';
 
         camera->name = camera_name;
-        
+
         AE_READF( _stream, camera->zoom );
         AE_READF( _stream, camera->fov );
 
@@ -430,7 +430,7 @@ AE_INTERNAL ae_bool_t __find_movie_data_composition_layer_position_by_index( con
         if( layer->index == _index )
         {
             *_position = iterator;
-            
+
             return AE_TRUE;
         }
 
@@ -444,7 +444,7 @@ AE_INTERNAL ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompo
 {
     if( _layer->has_track_matte == AE_TRUE )
     {
-        ae_uint32_t layer_position;        
+        ae_uint32_t layer_position;
         if( __find_movie_data_composition_layer_position_by_index( _compositionData, _layers, _layer->index, &layer_position ) == AE_FALSE )
         {
             AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
@@ -501,7 +501,7 @@ AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, st
         _property->immutable_color_g = 1.f;
 
         ae_color_channel_t * colors_g = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
-        
+
         AE_RESULT_PANIC_MEMORY( colors_g );
 
         AE_READN( _stream, colors_g, _layer->frame_count );
@@ -548,7 +548,7 @@ AE_INTERNAL ae_result_t __load_movie_property_value( aeMovieStream * _stream, st
         _property->immutable_value = 0.f;
 
         ae_float_t * values = AE_NEWN( _stream->instance, ae_float_t, _layer->frame_count );
-        
+
         AE_RESULT_PANIC_MEMORY( values );
 
         AE_READN( _stream, values, _layer->frame_count );
@@ -565,7 +565,7 @@ AE_INTERNAL aeMovieLayerExtensions * __request_extensions( const aeMovieInstance
     {
         return _extensions;
     }
-     
+
     aeMovieLayerExtensions * extensions = AE_NEW( _instance, aeMovieLayerExtensions );
 
     if( extensions == AE_NULL )
@@ -575,7 +575,7 @@ AE_INTERNAL aeMovieLayerExtensions * __request_extensions( const aeMovieInstance
 
     __clear_layer_extensions( extensions );
 
-    return extensions;    
+    return extensions;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
@@ -876,7 +876,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
                         break;
                     }
                 }
-                
+
                 layer_extensions = __request_extensions( instance, layer_extensions );
 
                 AE_RESULT_PANIC_MEMORY( layer_extensions );
@@ -896,7 +896,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
                 AE_READ_STRING( _stream, layer_shader->shader_fragment );
 
                 layer_shader->parameter_count = AE_READZ( _stream );
-                
+
                 const struct aeMovieLayerShaderParameter ** parameters = AE_NEWN( _stream->instance, const struct aeMovieLayerShaderParameter *, layer_shader->parameter_count );
 
                 AE_RESULT_PANIC_MEMORY( parameters );
@@ -920,7 +920,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
                             AE_RESULT_PANIC_MEMORY( parameter_slider );
 
                             parameter_slider->type = paramater_type;
-                            AE_READ_STRING( _stream, parameter_slider->name );                                                        
+                            AE_READ_STRING( _stream, parameter_slider->name );
                             AE_READ_STRING( _stream, parameter_slider->uniform );
 
                             struct aeMoviePropertyValue * property_value = AE_NEW( _stream->instance, struct aeMoviePropertyValue );
@@ -1313,7 +1313,7 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
             }break;
         case 5:
             {
-                AE_RESULT( __load_movie_data_composition_camera, ( _stream, _compositionData ) );
+                AE_RESULT( __load_movie_data_composition_camera, (_stream, _compositionData) );
 
                 _compositionData->flags |= AE_MOVIE_COMPOSITION_CAMERA;
             }break;
@@ -1338,7 +1338,7 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
 
     AE_RESULT( __load_movie_data_composition_layers, (_movieData, _compositions, layers, _stream, _compositionData) );
 
-    AE_RESULT( __setup_movie_data_composition_layers, (_compositionData, layers) );   
+    AE_RESULT( __setup_movie_data_composition_layers, (_compositionData, layers) );
 
     _compositionData->layers = layers;
 
@@ -1385,7 +1385,7 @@ AE_INTERNAL ae_size_t __ae_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, 
     aeMovieStream * stream = (aeMovieStream *)_data;
 
     stream->memory_copy( stream->copy_data, (ae_constbyteptr_t)stream->buffer + _carriage, _buff, _size );
-        
+
     return _size;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1521,7 +1521,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     {
         return check_result;
     }
-    
+
     AE_READ_STRING( _stream, _movieData->name );
 
     ae_uint32_t resource_count = AE_READZ( _stream );
