@@ -17,3 +17,5 @@ frameworks/cocos2d-x/example/proj.win32/.vs
 frameworks/cocos2d-x/example/proj.win32/Debug.win32
 frameworks/cocos2d-x/example/proj.win32/Release.win32
 frameworks/cocos2d-x/example/Resources/AEM
+
+frameworks/emscripten/build/
