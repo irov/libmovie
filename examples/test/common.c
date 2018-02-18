@@ -559,9 +559,12 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
     aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
 
-    ae_result_t result_load_movie_data = ae_load_movie_data( data, stream );
+    ae_uint32_t load_version;
+	ae_result_t load_movie_data_result = ae_load_movie_data( data, stream, &load_version );
 
-    if( result_load_movie_data != AE_RESULT_SUCCESSFUL ) {
+    if( load_movie_data_result != AE_RESULT_SUCCESSFUL ) {
+        const ae_char_t * load_movie_data_result_info = ae_get_result_string_info( load_movie_data_result );
+        EX_LOG( "%s\n", load_movie_data_result_info );
         EX_LOG( "...failed.\n" );
 
         ae_delete_movie_data( data );
@@ -884,6 +887,12 @@ ae_void_t ex_shutdown( ae_void_t ) {
         ae_delete_movie_composition( ex.composition );
         ex.composition = AE_NULL;
     }
+
+	if( ex.data ) {
+		EX_LOG( "Deleting movie data.\n" );
+		ae_delete_movie_data( ex.data );
+		ex.data = AE_NULL;
+	}
 
     if( ex.data ) {
         EX_LOG( "Deleting movie data.\n" );

@@ -41,12 +41,14 @@
 
 /*
  case AE_MOVIE_LAYER_TYPE_MOVIE:
+ case AE_MOVIE_LAYER_TYPE_SPRITE:
  case AE_MOVIE_LAYER_TYPE_TEXT:
  case AE_MOVIE_LAYER_TYPE_EVENT:
  case AE_MOVIE_LAYER_TYPE_SOCKET:
  case AE_MOVIE_LAYER_TYPE_SHAPE:
  case AE_MOVIE_LAYER_TYPE_SLOT:
  case AE_MOVIE_LAYER_TYPE_NULL:
+ case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
  case AE_MOVIE_LAYER_TYPE_SOLID:
  case AE_MOVIE_LAYER_TYPE_SEQUENCE:
  case AE_MOVIE_LAYER_TYPE_VIDEO:
@@ -154,7 +156,9 @@ ae_void_t ae_delete_movie_stream( aeMovieStream * _stream );
 @param [in] _stream Object to load from.
 @return TRUE if successful.
 */
-ae_result_t ae_check_movie_data( aeMovieStream * _stream );
+ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _version );
+
+ae_uint32_t ae_get_movie_version( ae_void_t );
 
 /**
 @brief get result string info
@@ -169,7 +173,7 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result );
 @param [in] _stream Object to load from.
 @return TRUE if successful.
 */
-ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream );
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _version );
 
 /**
 @param [in] _movieData Data.

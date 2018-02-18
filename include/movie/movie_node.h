@@ -170,7 +170,7 @@ typedef struct aeMovieCameraDeleterCallbackData
 typedef struct aeMovieCameraUpdateCallbackData
 {
     /// @brief Camera element data.
-    ae_voidptr_t element;
+    ae_voidptr_t camera_data;
 
     /// @brief Camera name.
     const ae_char_t * name;
