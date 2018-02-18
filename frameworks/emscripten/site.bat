@@ -1,1 +1,1 @@
-"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir d:\Projects\Mengine\dependencies\libmovie\frameworks\emscripten\site.html
+"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir "%~dp0site\site.html"
