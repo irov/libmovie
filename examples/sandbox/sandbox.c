@@ -103,10 +103,13 @@ int main( int argc, char *argv[] )
     //stream.memory_copy = &memory_copy;
     //stream.data = f;
 
-    if( ae_load_movie_data( movieData, stream ) != AE_RESULT_SUCCESSFUL )
-    {
-        return 0;
-    }
+    ae_uint32_t load_version;
+    ae_result_t load_result = ae_load_movie_data( movieData, stream, &load_version );
+
+	if( load_result != AE_RESULT_SUCCESSFUL )
+	{
+		return 0;
+	}
 
     ae_delete_movie_stream( stream );
 

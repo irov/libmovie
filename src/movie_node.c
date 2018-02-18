@@ -3054,7 +3054,7 @@ AE_INTERNAL ae_void_t __update_movie_camera( const aeMovieComposition * _composi
     ae_bool_t composition_interpolate = _composition->interpolate;
     
     aeMovieCameraUpdateCallbackData callbackData;
-    callbackData.element = _composition->camera_data;
+    callbackData.camera_data = _composition->camera_data;
     callbackData.name = camera->name;
     
     ae_float_t frameDurationInv = composition_data->frameDurationInv;

@@ -84,9 +84,13 @@ typedef struct em_track_matte_shader_t
     GLint tex1Location;
 } em_track_matte_shader_t;
 //////////////////////////////////////////////////////////////////////////
+#define EM_FOLDER_MAX_PATH 256
+//////////////////////////////////////////////////////////////////////////
 typedef struct em_player_t
 {
-    aeMovieInstance * instance;
+    const aeMovieInstance * instance;
+
+    char folder[EM_FOLDER_MAX_PATH];
 
     uint32_t width;
     uint32_t height;
@@ -437,11 +441,11 @@ static em_track_matte_shader_t * __make_track_matte_shader()
     return track_matte_shader;
 }
 //////////////////////////////////////////////////////////////////////////
-em_player_t * em_create_player( const char * _hashkey, uint32_t _width, uint32_t _height, uint32_t _ud )
+em_player_t * em_create_player( const char * _hashkey, const char * _folder, uint32_t _width, uint32_t _height, uint32_t _ud )
 {
     em_player_t * player = EM_NEW( em_player_t );
 
-    aeMovieInstance * ae_instance = ae_create_movie_instance( _hashkey
+    const aeMovieInstance * ae_instance = ae_create_movie_instance( _hashkey
         , &__instance_alloc
         , &__instance_alloc_n
         , &__instance_free
@@ -451,6 +455,10 @@ em_player_t * em_create_player( const char * _hashkey, uint32_t _width, uint32_t
         , player );
 
     player->instance = ae_instance;
+
+    size_t folder_len = strlen( _folder );
+    memcpy( player->folder, _folder, folder_len );
+    player->folder[folder_len] = '\0';
 
     player->width = _width;
     player->height = _height;
@@ -527,10 +535,18 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
 
             GLuint texture_id = __make_opengl_texture();
 
+            char resource_path[EM_FOLDER_MAX_PATH];
+
+            size_t folder_len = strlen( em_player->folder );
+            memcpy( resource_path, em_player->folder, folder_len );
+            size_t path_len = strlen( r->path );
+            memcpy( resource_path + folder_len, r->path, path_len );
+            resource_path[folder_len + path_len] = '\0';
+
             EM_ASM(
             {
-                em_player_resource_image_provider( $0, $1, Module.Pointer_stringify( $2 ), $3, $4 );
-            }, em_player->ud, texture_id, r->path, r->codec, r->premultiplied );
+                em_player_resource_image_provider( $0, $1, Pointer_stringify( $2 ), $3, $4 );
+            }, em_player->ud, texture_id, resource_path, r->codec, r->premultiplied );
             
             resource_image->texture_id = texture_id;
 
@@ -551,7 +567,7 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
 
             uint32_t ud = EM_ASM_INT(
             {
-                return em_player_resource_sound_provider( $0, Module.Pointer_stringify( $1 ), $2, $3 );
+                return em_player_resource_sound_provider( $0, Pointer_stringify( $1 ), $2, $3 );
             }, em_player->ud, r->path, r->codec, r->duration );
 
             em_resource_sound_t * resource = EM_NEW( em_resource_sound_t );
@@ -579,7 +595,7 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t * _data, ae_voidptr_t _ud )
+static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
 {
     em_player_t * em_player = (em_player_t *)_ud;
 
@@ -647,12 +663,27 @@ em_movie_data_t * em_create_movie_data( em_player_t * _player, const uint8_t * _
 
     aeMovieStream * stream = ae_create_movie_stream_memory( _player->instance, _data, &__memory_copy, AE_NULL );
 
-    ae_result_t result_load = ae_load_movie_data( movie_data, stream );
+    ae_uint32_t load_version;
+    ae_result_t result_load = ae_load_movie_data( movie_data, stream, &load_version );
 
-    if( result_load != AE_MOVIE_SUCCESSFUL )
+    if( result_load == AE_RESULT_INVALID_VERSION )
     {
-        emscripten_log( EM_LOG_ERROR, "invalid load movie data 'result %d'"
-            , result_load 
+        ae_uint32_t sdk_version = ae_get_movie_version();
+
+        emscripten_log( EM_LOG_ERROR, "movie data invalid version sdk - '%u' load - '%u'"
+            , sdk_version
+            , load_version
+        );
+
+        return em_nullptr;
+    }
+
+    if( result_load != AE_RESULT_SUCCESSFUL )
+    {
+        const ae_char_t * result_load_info = ae_get_result_string_info( result_load );
+
+        emscripten_log( EM_LOG_ERROR, "invalid load movie data 'result %s'"
+            , result_load_info
         );
 
         return em_nullptr;
@@ -808,15 +839,29 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
 
     switch( _callbackData->state )
     {
-    case AE_MOVIE_NODE_UPDATE_UPDATE:
+    case AE_MOVIE_STATE_UPDATE_PROCESS:
         {
             //Empty
         }break;
-    case AE_MOVIE_NODE_UPDATE_BEGIN:
+    case AE_MOVIE_STATE_UPDATE_BEGIN:
         {
             switch( _callbackData->type )
             {
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_SPRITE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SLOT:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+            case AE_MOVIE_LAYER_TYPE_SOLID:
+            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
             case AE_MOVIE_LAYER_TYPE_VIDEO:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_IMAGE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                 {
                     //Empty
                 }break;
@@ -834,11 +879,25 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
                 }break;
             }
         }break;
-    case AE_MOVIE_NODE_UPDATE_END:
+    case AE_MOVIE_STATE_UPDATE_END:
         {
             switch( _callbackData->type )
             {
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_SPRITE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SLOT:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+            case AE_MOVIE_LAYER_TYPE_SOLID:
+            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
             case AE_MOVIE_LAYER_TYPE_VIDEO:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_IMAGE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                 {
                     //Empty
                 }break;
@@ -856,11 +915,25 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
                 }break;
             }
         }break;
-    case AE_MOVIE_NODE_UPDATE_PAUSE:
+    case AE_MOVIE_STATE_UPDATE_PAUSE:
         {
             switch( _callbackData->type )
             {
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_SPRITE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SLOT:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+            case AE_MOVIE_LAYER_TYPE_SOLID:
+            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
             case AE_MOVIE_LAYER_TYPE_VIDEO:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_IMAGE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                 {
                     //Empty
                 }break;
@@ -878,11 +951,25 @@ static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackD
                 }break;
             }
         }break;
-    case AE_MOVIE_NODE_UPDATE_RESUME:
+    case AE_MOVIE_STATE_UPDATE_RESUME:
         {
             switch( _callbackData->type )
             {
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_SPRITE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SLOT:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+            case AE_MOVIE_LAYER_TYPE_SOLID:
+            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
             case AE_MOVIE_LAYER_TYPE_VIDEO:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_IMAGE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
                 {
                     //Empty
                 }break;
@@ -930,7 +1017,7 @@ static void __ae_movie_callback_camera_deleter( const aeMovieCameraDeleterCallba
 {
     (void)_data;
 
-    ae_camera_t * camera = (ae_camera_t *)_callbackData->element;
+    ae_camera_t * camera = (ae_camera_t *)_callbackData->camera_data;
 
     EM_FREE( camera );
 }
@@ -939,7 +1026,7 @@ static void __ae_movie_callback_camera_update( const aeMovieCameraUpdateCallback
 {
     (void)_data;
 
-    ae_camera_t * camera = (ae_camera_t *)_callbackData->element;
+    ae_camera_t * camera = (ae_camera_t *)_callbackData->camera_data;
 
     __make_lookat_m4( camera->view, _callbackData->position, _callbackData->target );
 }
@@ -1125,9 +1212,9 @@ static void __ae_movie_callback_shader_property_update( const aeMovieShaderPrope
     case 5:
         {
             em_parameter_color_t c;
-            c.r = _callbackData->color_r;
-            c.g = _callbackData->color_g;
-            c.b = _callbackData->color_b;
+            c.r = _callbackData->color.r;
+            c.g = _callbackData->color.g;
+            c.b = _callbackData->color.b;
 
             shader->parameter_colors[index] = c;
         }
@@ -1167,15 +1254,21 @@ static void __ae_movie_callback_track_matte_update( const aeMovieTrackMatteUpdat
 
     switch( _callbackData->state )
     {
-    case AE_MOVIE_NODE_UPDATE_BEGIN:
+    case AE_MOVIE_STATE_UPDATE_BEGIN:
         {
             __copy_m4( track_matte->matrix, _callbackData->matrix );
             track_matte->mesh = *_callbackData->mesh;
         }break;
-    case AE_MOVIE_NODE_UPDATE_UPDATE:
+    case AE_MOVIE_STATE_UPDATE_PROCESS:
         {
             __copy_m4( track_matte->matrix, _callbackData->matrix );
             track_matte->mesh = *_callbackData->mesh;
+        }break;
+    case AE_MOVIE_STATE_UPDATE_PAUSE:
+    case AE_MOVIE_STATE_UPDATE_RESUME:
+    case AE_MOVIE_STATE_UPDATE_END:
+        {
+            //Empty
         }break;
     }
 }
@@ -1436,7 +1529,7 @@ uint32_t em_has_movie_composition_node( em_movie_composition_t * _composition, c
 {
     aeMovieComposition * ae_movie_composition = _composition->composition;
 
-    uint32_t exist = ae_has_movie_composition_node( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY );
+    uint32_t exist = ae_has_movie_composition_node_any( ae_movie_composition, _layer );
 
     return exist;
 }
@@ -1447,7 +1540,7 @@ float em_get_movie_composition_node_in_time( em_movie_composition_t * _compositi
 
     ae_float_t in;
     ae_float_t out;
-    ae_get_movie_composition_node_in_out_time( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, &in, &out );
+    ae_get_movie_composition_node_in_out_time_any( ae_movie_composition, _layer, &in, &out );
 
     return in;
 }
@@ -1458,7 +1551,7 @@ float em_get_movie_composition_node_out_time( em_movie_composition_t * _composit
 
     ae_float_t in;
     ae_float_t out;
-    ae_get_movie_composition_node_in_out_time( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, &in, &out );
+    ae_get_movie_composition_node_in_out_time_any( ae_movie_composition, _layer, &in, &out );
 
     return out;
 }
@@ -1467,7 +1560,7 @@ void em_set_movie_composition_node_enable( em_movie_composition_t * _composition
 {
     aeMovieComposition * ae_movie_composition = _composition->composition;
 
-    ae_set_movie_composition_node_enable( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, _enable );
+    ae_set_movie_composition_node_enable_any( ae_movie_composition, _layer, _enable );
 }
 //////////////////////////////////////////////////////////////////////////
 uint32_t em_get_movie_composition_node_enable( em_movie_composition_t * _composition, const char * _layer )
@@ -1475,7 +1568,7 @@ uint32_t em_get_movie_composition_node_enable( em_movie_composition_t * _composi
     aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_bool_t enable;
-    if( ae_get_movie_composition_node_enable( ae_movie_composition, _layer, AE_MOVIE_LAYER_TYPE_ANY, &enable ) == AE_FALSE )
+    if( ae_get_movie_composition_node_enable_any( ae_movie_composition, _layer, &enable ) == AE_FALSE )
     {
         emscripten_log( EM_LOG_ERROR, "movie '%s' not found node '%s'\n"
             , ae_get_movie_composition_name( ae_movie_composition )
@@ -1565,10 +1658,24 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
             switch( mesh.layer_type )
             {
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_SPRITE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SLOT:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+            case AE_MOVIE_LAYER_TYPE_SOUND:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                {
+                    //Empty
+                }break;
             case AE_MOVIE_LAYER_TYPE_SHAPE:
             case AE_MOVIE_LAYER_TYPE_SOLID:
                 {
-                    uint32_t color = __make_argb( mesh.r, mesh.g, mesh.b, mesh.a );
+                    uint32_t color = __make_argb( mesh.color.r, mesh.color.g, mesh.color.b, mesh.opacity );
 
                     for( uint32_t index = 0; index != mesh.vertexCount; ++index )
                     {
@@ -1594,7 +1701,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
                     texture_id = resource_image->texture_id;
 
-                    uint32_t color = __make_argb( mesh.r, mesh.g, mesh.b, mesh.a );
+                    uint32_t color = __make_argb( mesh.color.r, mesh.color.g, mesh.color.b, mesh.opacity );
 
                     for( uint32_t index = 0; index != mesh.vertexCount; ++index )
                     {
@@ -1615,6 +1722,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 }break;
             case AE_MOVIE_LAYER_TYPE_VIDEO:
                 {
+                    //Empty
                 }break;
             }
 
@@ -1776,6 +1884,22 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
             switch( mesh.layer_type )
             {
+            case AE_MOVIE_LAYER_TYPE_MOVIE:
+            case AE_MOVIE_LAYER_TYPE_SPRITE:
+            case AE_MOVIE_LAYER_TYPE_TEXT:
+            case AE_MOVIE_LAYER_TYPE_EVENT:
+            case AE_MOVIE_LAYER_TYPE_SOCKET:
+            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SLOT:
+            case AE_MOVIE_LAYER_TYPE_NULL:
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+            case AE_MOVIE_LAYER_TYPE_SOLID:
+            case AE_MOVIE_LAYER_TYPE_SOUND:
+            case AE_MOVIE_LAYER_TYPE_PARTICLE:
+            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+                {
+                    //Empty
+                }break;
             case AE_MOVIE_LAYER_TYPE_SEQUENCE:
             case AE_MOVIE_LAYER_TYPE_IMAGE:
                 {
@@ -1783,7 +1907,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
                     const aeMovieRenderMesh * track_matte_mesh = &track_matte->mesh;
 
-                    uint32_t color = __make_argb( mesh.r, mesh.g, mesh.b, mesh.a * track_matte_mesh->a );
+                    uint32_t color = __make_argb( mesh.color.r, mesh.color.g, mesh.color.b, mesh.opacity * track_matte_mesh->opacity );
 
                     for( uint32_t index = 0; index != mesh.vertexCount; ++index )
                     {
