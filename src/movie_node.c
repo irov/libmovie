@@ -1334,12 +1334,13 @@ AE_INTERNAL ae_void_t __setup_movie_node_time( aeMovieNode * _nodes, ae_uint32_t
     }
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __setup_movie_node_incessantly( aeMovieNode * _nodes, const aeMovieCompositionData * _compositionData )
+AE_INTERNAL ae_void_t __setup_movie_node_incessantly( aeMovieComposition * _composition )
 {
-    ae_time_t duration = _compositionData->duration;
+    const aeMovieCompositionData * composition_data = _composition->composition_data;
+    ae_time_t duration = composition_data->duration;
 
-    aeMovieNode *it_node = _nodes;
-    aeMovieNode *it_node_end = _nodes + _compositionData->layer_count;
+    aeMovieNode *it_node = _composition->nodes;
+    aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
     for( ; it_node != it_node_end; ++it_node )
     {
         aeMovieNode * node = it_node;
@@ -1838,7 +1839,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
     ae_uint32_t node_time_iterator = 0U;
     __setup_movie_node_time( composition->nodes, &node_time_iterator, _compositionData, AE_NULL, 1.f, 0.f );
 
-    __setup_movie_node_incessantly( composition->nodes, _compositionData );
+    __setup_movie_node_incessantly( composition );
 
     ae_uint32_t node_blend_mode_iterator = 0U;
     __setup_movie_node_blend_mode( composition->nodes, &node_blend_mode_iterator, _compositionData, AE_NULL, AE_MOVIE_BLEND_NORMAL );

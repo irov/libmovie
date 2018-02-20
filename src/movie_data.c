@@ -35,8 +35,6 @@
 #	include "movie_stream.h"
 
 //////////////////////////////////////////////////////////////////////////
-static const ae_uint32_t ae_movie_version = 16;
-//////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data )
 {
     aeMovieData * movie = AE_NEW( _instance, aeMovieData );
@@ -1434,7 +1432,7 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
 
     *_version = version;
 
-    if( version != ae_movie_version )
+    if( version != AE_MOVIE_SDK_VERSION )
     {        
         AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_VERSION );
     }
@@ -1464,9 +1462,9 @@ ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _version
     return result;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_movie_version( ae_void_t )
+ae_uint32_t ae_get_movie_sdk_version( ae_void_t )
 {
-    return ae_movie_version;
+    return AE_MOVIE_SDK_VERSION;
 }
 //////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_result_string_info( ae_result_t _result )
