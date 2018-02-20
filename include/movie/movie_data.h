@@ -162,8 +162,7 @@ ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _version
 @brief get sdk version
 @return version.
 */
-ae_uint32_t ae_get_movie_version( ae_void_t );
-
+ae_uint32_t ae_get_movie_sdk_version( ae_void_t );
 /**
 @brief get result string info
 @param [in] _result code
