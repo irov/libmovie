@@ -35,6 +35,8 @@
 
 #   include "movie/movie_config.h"
 
+#   define AE_MOVIE_SDK_VERSION 16
+
 typedef void ae_void_t;
 typedef uint32_t ae_bool_t;
 typedef char ae_char_t;
