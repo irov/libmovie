@@ -1433,7 +1433,7 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
     *_version = version;
 
     if( version != AE_MOVIE_SDK_VERSION )
-    {        
+    {
         AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_VERSION );
     }
 
