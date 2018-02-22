@@ -32,12 +32,18 @@ examples_t ex;
 // Playform-dependent function implementations.
 //
 
+#define TEST_WITHOUT_LOG
+
 ae_void_t EX_LOG( const char * _format, ... )
 {
+#ifdef TEST_WITHOUT_LOG
+    ( void )_format;
+#else
     va_list argList;
     va_start( argList, _format );
     vprintf( _format, argList );
     va_end( argList );
+#endif
 }
 
 //
@@ -876,7 +882,7 @@ ae_void_t ex_shutdown( ae_void_t ) {
 
     EX_LOG( "\nPress ENTER to exit...\n" );
 
-    getchar();
+	(void)getchar();
 
     //
     // Free the allocated memory.
