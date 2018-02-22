@@ -668,10 +668,8 @@ em_movie_data_t * em_create_movie_data( em_player_t * _player, const uint8_t * _
 
     if( result_load == AE_RESULT_INVALID_VERSION )
     {
-        ae_uint32_t sdk_version = ae_get_movie_version();
-
         emscripten_log( EM_LOG_ERROR, "movie data invalid version sdk - '%u' load - '%u'"
-            , sdk_version
+            , AE_MOVIE_SDK_VERSION
             , load_version
         );
 
@@ -1009,7 +1007,7 @@ static void __ae_movie_callback_camera_deleter( const aeMovieCameraDeleterCallba
 {
     (void)_data;
 
-    ae_camera_t * camera = (ae_camera_t *)_callbackData->element;
+    ae_camera_t * camera = (ae_camera_t *)_callbackData->camera_data;
 
     EM_FREE( camera );
 }
@@ -1018,7 +1016,7 @@ static void __ae_movie_callback_camera_update( const aeMovieCameraUpdateCallback
 {
     (void)_data;
 
-    ae_camera_t * camera = (ae_camera_t *)_callbackData->element;
+    ae_camera_t * camera = (ae_camera_t *)_callbackData->camera_data;
 
     __make_lookat_m4( camera->view, _callbackData->position, _callbackData->target );
 }
