@@ -667,11 +667,9 @@ em_movie_data_t * em_create_movie_data( em_player_t * _player, const uint8_t * _
     ae_result_t result_load = ae_load_movie_data( movie_data, stream, &load_version );
 
     if( result_load == AE_RESULT_INVALID_VERSION )
-    {
-        ae_uint32_t sdk_version = ae_get_movie_version();
-
+    {        
         emscripten_log( EM_LOG_ERROR, "movie data invalid version sdk - '%u' load - '%u'"
-            , sdk_version
+            , AE_MOVIE_SDK_VERSION
             , load_version
         );
 
