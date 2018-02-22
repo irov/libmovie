@@ -66,85 +66,68 @@ AE_INTERNAL ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovi
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_float_t __get_movie_layer_transformation_property( ae_constvoidptr_t _property, ae_uint32_t _index )
 {
+    ae_uint32_t property_block_offset[4] = { 1U, 3U, 0U, 0U };
+
     ae_uint32_t property_index = 0U;
 
     const ae_uint32_t * property_ae_uint32_t = (const ae_uint32_t *)_property;
+    
+    ae_uint32_t zp_block_type_count_data = *(property_ae_uint32_t++);
 
-    ae_uint32_t zp_count = *(property_ae_uint32_t++);
+    ae_uint32_t zp_block_type = zp_block_type_count_data >> 24U;
+    ae_uint32_t zp_block_count = zp_block_type_count_data & 0x00FFFFFF;
 
-    ae_uint32_t i = 0;
-    for( ; i != zp_count; ++i )
+    while( property_index + zp_block_count <= _index )
     {
-        ae_uint32_t zp_block_type_count_data = *(property_ae_uint32_t++);
+        property_block_offset[3] = zp_block_count;
 
-        ae_uint32_t zp_block_type = zp_block_type_count_data >> 24U;
-        ae_uint32_t zp_block_count = zp_block_type_count_data & 0x00FFFFFF;
-
-        if( property_index + zp_block_count > _index )
-        {
-            const ae_float_t * property_ae_float_t = (const ae_float_t *)(ae_constvoidptr_t)(property_ae_uint32_t);
-
-            switch( zp_block_type )
-            {
-            case 0:
-                {
-                    ae_float_t block_value = property_ae_float_t[0];
-
-                    return block_value;
-                }break;
-            case 1:
-                {
-                    ae_float_t block_inv = property_ae_float_t[0];
-                    ae_float_t block_begin = property_ae_float_t[1];
-                    ae_float_t block_end = property_ae_float_t[2];
-
-                    ae_float_t block_add = (block_end - block_begin) * block_inv;
-
-                    ae_uint32_t block_index = _index - property_index;
-                    ae_float_t block_index_f = (ae_float_t)block_index;
-
-                    ae_float_t block_value = block_begin + block_add * block_index_f;
-
-                    return block_value;
-                }break;
-            case 3:
-                {
-                    ae_uint32_t block_index = _index - property_index;
-
-                    ae_float_t block_value = property_ae_float_t[block_index];
-
-                    return block_value;
-                }break;
-            default:
-                {
-                    //Error
-                }break;
-            }
-        }
-        else
-        {
-            switch( zp_block_type )
-            {
-            case 0:
-                {
-                    property_ae_uint32_t += 1U;
-                }break;
-            case 1:
-                {
-                    property_ae_uint32_t += 3U;
-                }break;
-            case 3:
-                {
-                    property_ae_uint32_t += zp_block_count;
-                }break;
-            default:
-                {
-                    //Error
-                }break;
-            }
-        }
+        property_ae_uint32_t += property_block_offset[zp_block_type];
 
         property_index += zp_block_count;
+
+        ae_uint32_t zp_block_type_count_data_next = *(property_ae_uint32_t++);
+
+        zp_block_type = zp_block_type_count_data_next >> 24U;
+        zp_block_count = zp_block_type_count_data_next & 0x00FFFFFF;
+    }
+
+    const ae_float_t * property_ae_float_t = (const ae_float_t *)(ae_constvoidptr_t)(property_ae_uint32_t);
+
+    switch( zp_block_type )
+    {
+    case 0:
+        {
+            ae_float_t block_value = property_ae_float_t[0];
+
+            return block_value;
+        }break;
+    case 1:
+        {
+            ae_float_t block_inv = property_ae_float_t[0];
+            ae_float_t block_begin = property_ae_float_t[1];
+            ae_float_t block_end = property_ae_float_t[2];
+
+            ae_float_t block_add = (block_end - block_begin) * block_inv;
+
+            ae_uint32_t block_index = _index - property_index;
+            ae_float_t block_index_f = (ae_float_t)block_index;
+
+            ae_float_t block_value = block_begin + block_add * block_index_f;
+
+            return block_value;
+        }break;
+    case 3:
+        {
+            ae_uint32_t block_index = _index - property_index;
+
+            ae_float_t block_value = property_ae_float_t[block_index];
+
+            return block_value;
+        }break;
+    default:
+        {
+            //Error
+        }break;
     }
 
     return 0.f;

@@ -290,9 +290,6 @@ union __inverse_sqrtf_alias_cast_t
     ae_uint32_t data;
 };
 //////////////////////////////////////////////////////////////////////////
-static const ae_float_t __inverse_sqrtf_threehalfs = 1.5f;
-static const ae_uint32_t __inverse_sqrtf_magic_number = 0x5F3759DF;
-//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_float_t __inverse_sqrtf( ae_float_t _number )
 {
     ae_float_t x2 = _number * 0.5f;
@@ -301,15 +298,15 @@ AE_INTERNAL ae_float_t __inverse_sqrtf( ae_float_t _number )
     i_cast.raw = _number;
     ae_uint32_t i = i_cast.data;
     
-    i = __inverse_sqrtf_magic_number - (i >> 1);
+    i = 0x5F3759DF - (i >> 1);
 
     union __inverse_sqrtf_alias_cast_t f_cast;
     f_cast.data = i;
 
     ae_float_t y = f_cast.raw;
 
-    y = y * (__inverse_sqrtf_threehalfs - (x2 * y * y));
-    y = y * (__inverse_sqrtf_threehalfs - (x2 * y * y));
+    y = y * (1.5f - (x2 * y * y));
+    y = y * (1.5f - (x2 * y * y));
 
     return y;
 }
