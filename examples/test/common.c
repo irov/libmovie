@@ -32,7 +32,7 @@ examples_t ex;
 // Playform-dependent function implementations.
 //
 
-#define TEST_WITHOUT_LOG
+//#define TEST_WITHOUT_LOG
 
 ae_void_t EX_LOG( const char * _format, ... )
 {
