@@ -40,8 +40,8 @@
 
 typedef ae_voidptr_t( *ae_movie_alloc_t )(ae_voidptr_t _data, ae_size_t _size);
 typedef ae_voidptr_t( *ae_movie_alloc_n_t )(ae_voidptr_t _data, ae_size_t _size, ae_size_t _n);
-typedef void( *ae_movie_free_t )(ae_voidptr_t _data, ae_constvoidptr_t _ptr);
-typedef void( *ae_movie_free_n_t )(ae_voidptr_t _data, ae_constvoidptr_t _ptr);
+typedef ae_void_t( *ae_movie_free_t )(ae_voidptr_t _data, ae_constvoidptr_t _ptr);
+typedef ae_void_t( *ae_movie_free_n_t )(ae_voidptr_t _data, ae_constvoidptr_t _ptr);
 
 typedef ae_int32_t( *ae_movie_strncmp_t )(ae_voidptr_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count);
 
@@ -57,7 +57,7 @@ typedef enum
     AE_ERROR_CRITICAL,
 } aeMovieErrorCode;
 
-typedef void( *ae_movie_logger_t )(ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ...);
+typedef ae_void_t( *ae_movie_logger_t )(ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ...);
 
 /**
 @brief Create a new instance.

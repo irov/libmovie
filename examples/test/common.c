@@ -37,7 +37,7 @@ examples_t ex;
 ae_void_t EX_LOG( const char * _format, ... )
 {
 #ifdef TEST_WITHOUT_LOG
-    ( void )_format;
+    ( ae_void_t )_format;
 #else
     va_list argList;
     va_start( argList, _format );

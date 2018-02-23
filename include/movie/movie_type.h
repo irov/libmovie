@@ -48,8 +48,8 @@ typedef size_t ae_size_t;
 typedef int32_t ae_enum_t;
 typedef float ae_float_t;
 typedef float ae_time_t;
-typedef void * ae_voidptr_t;
-typedef const void * ae_constvoidptr_t;
+typedef ae_void_t * ae_voidptr_t;
+typedef const ae_void_t * ae_constvoidptr_t;
 typedef ae_uint8_t * ae_byteptr_t;
 typedef const ae_uint8_t * ae_constbyteptr_t;
 
@@ -208,6 +208,6 @@ typedef enum
 } ae_result_t;
 
 typedef ae_size_t( *ae_movie_stream_memory_read_t )(ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size);
-typedef void( *ae_movie_stream_memory_copy_t )(ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size);
+typedef ae_void_t( *ae_movie_stream_memory_copy_t )(ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size);
 
 #endif

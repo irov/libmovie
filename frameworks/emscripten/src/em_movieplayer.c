@@ -45,9 +45,9 @@
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_blend_render_vertex_t
 {
-    float position[3];
-    uint32_t color;
-    float uv[2];
+    ae_float_t position[3];
+    ae_uint32_t color;
+    ae_float_t uv[2];
 } em_blend_render_vertex_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_blend_shader_t
@@ -64,10 +64,10 @@ typedef struct em_blend_shader_t
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_track_matte_render_vertex_t
 {
-    float position[3];
-    uint32_t color;
-    float uv0[2];
-    float uv1[2];
+    ae_float_t position[3];
+    ae_uint32_t color;
+    ae_float_t uv0[2];
+    ae_float_t uv1[2];
 } em_track_matte_render_vertex_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_track_matte_shader_t
@@ -90,12 +90,12 @@ typedef struct em_player_t
 {
     const aeMovieInstance * instance;
 
-    char folder[EM_FOLDER_MAX_PATH];
+    ae_char_t folder[EM_FOLDER_MAX_PATH];
 
-    uint32_t width;
-    uint32_t height;
+    ae_uint32_t width;
+    ae_uint32_t height;
 
-    uint32_t ud;
+    ae_uint32_t ud;
 
     em_blend_shader_t * blend_shader;
     em_track_matte_shader_t * track_matte_shader;
@@ -105,46 +105,46 @@ typedef struct em_player_t
     
 } em_player_t;
 //////////////////////////////////////////////////////////////////////////
-static void * __instance_alloc( void * _data, size_t _size )
+static ae_voidptr_t __instance_alloc( ae_voidptr_t _data, ae_size_t _size )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     return EM_MALLOC( _size );
 }
 //////////////////////////////////////////////////////////////////////////
-static void * __instance_alloc_n( void * _data, size_t _size, size_t _count )
+static ae_voidptr_t __instance_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
-    size_t total = _size * _count;
+    ae_size_t total = _size * _count;
 
     return EM_MALLOC( total );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __instance_free( void * _data, const void * _ptr )
+static ae_void_t __instance_free( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
-    EM_FREE( (void *)_ptr );
+    EM_FREE( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __instance_free_n( void * _data, const void * _ptr )
+static ae_void_t __instance_free_n( ae_voidptr_t _data, ae_constvoidptr_t _ptr )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
-    EM_FREE( (void *)_ptr );
+    EM_FREE( (ae_voidptr_t)_ptr );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __instance_logerror( void * _data, aeMovieErrorCode _code, const char * _format, ... )
+static ae_void_t __instance_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _format, ... )
 {
-    (void)_data;
-    (void)_code;
-    (void)_format;
+    (ae_void_t)_data;
+    (ae_void_t)_code;
+    (ae_void_t)_format;
 
     va_list argList;
 
     va_start( argList, _format );
-    char msg[2048];
+    ae_char_t msg[2048];
     vsprintf( msg, _format, argList );
     va_end( argList );
 
@@ -496,7 +496,7 @@ void em_delete_player( em_player_t * _player )
 //////////////////////////////////////////////////////////////////////////
 static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_t _carriage, ae_uint32_t _size )
 {
-    (void)_carriage;
+    (ae_void_t)_carriage;
 
     FILE * f = (FILE *)_data;
 
@@ -505,9 +505,9 @@ static ae_size_t __read_file( ae_voidptr_t _data, ae_voidptr_t _buff, ae_uint32_
     return s;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
+static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size )
 {
-    (void)_data;
+    (ae_void_t)_data;
     memcpy( _dst, _src, _size );
 }
 //////////////////////////////////////////////////////////////////////////
@@ -716,9 +716,9 @@ typedef struct em_node_sound_t
     em_resource_sound_t * resource;
 } em_node_sound_t;
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, void * _data )
+static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     const aeMovieLayerData * layer = _callbackData->layer;
 
@@ -781,9 +781,9 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_composition_node_deleter( const aeMovieNodeDeleterCallbackData * _callbackData, void * _data )
+static ae_void_t __ae_movie_composition_node_deleter( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     const aeMovieLayerData * layer = _callbackData->layer;
 
@@ -831,7 +831,7 @@ static void __ae_movie_composition_node_deleter( const aeMovieNodeDeleterCallbac
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data )
 {
     em_player_t * em_player = (em_player_t *)_data;
 
@@ -996,9 +996,9 @@ typedef struct ae_camera_t
     float height;
 } ae_camera_t;
 //////////////////////////////////////////////////////////////////////////
-static void * __ae_movie_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, void * _data )
+static ae_voidptr_t __ae_movie_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     ae_camera_t * camera = EM_NEW( ae_camera_t );
 
@@ -1011,18 +1011,18 @@ static void * __ae_movie_callback_camera_provider( const aeMovieCameraProviderCa
     return camera;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_callback_camera_deleter( const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_void_t __ae_movie_callback_camera_deleter( const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     ae_camera_t * camera = (ae_camera_t *)_callbackData->camera_data;
 
     EM_FREE( camera );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_callback_camera_update( const aeMovieCameraUpdateCallbackData * _callbackData, void * _data )
+static ae_void_t __ae_movie_callback_camera_update( const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     ae_camera_t * camera = (ae_camera_t *)_callbackData->camera_data;
 
@@ -1058,7 +1058,7 @@ typedef struct em_custom_shader_t
 //////////////////////////////////////////////////////////////////////////
 static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     em_custom_shader_t * shader = EM_NEW( em_custom_shader_t );
 
@@ -1191,9 +1191,9 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
     return shader;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_callback_shader_property_update( const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_void_t __ae_movie_callback_shader_property_update( const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     em_custom_shader_t * shader = (em_custom_shader_t *)_callbackData->element;
 
@@ -1219,22 +1219,22 @@ static void __ae_movie_callback_shader_property_update( const aeMovieShaderPrope
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_callback_shader_deleter( const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_void_t __ae_movie_callback_shader_deleter( const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     EM_FREE( _callbackData->element );
 }
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_track_matte_t
 {
-    float matrix[16];
+    ae_float_t matrix[16];
     aeMovieRenderMesh mesh;
 } em_track_matte_t;
 //////////////////////////////////////////////////////////////////////////
-static void * __ae_movie_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, void * _data )
+static ae_voidptr_t __ae_movie_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     em_track_matte_t * track_matte = EM_NEW( em_track_matte_t );
 
@@ -1244,9 +1244,9 @@ static void * __ae_movie_callback_track_matte_provider( const aeMovieTrackMatteP
     return track_matte;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, void * _data )
+static ae_void_t __ae_movie_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     em_track_matte_t * track_matte = (em_track_matte_t *)_callbackData->track_matte_data;
 
@@ -1271,9 +1271,9 @@ static void __ae_movie_callback_track_matte_update( const aeMovieTrackMatteUpdat
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, void * _data )
+static ae_void_t __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data )
 {
-    (void)_data;
+    (ae_void_t)_data;
 
     em_track_matte_t * track_matte = (em_track_matte_t *)_callbackData->element;
 
