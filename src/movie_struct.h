@@ -69,7 +69,7 @@ typedef struct aeMovieLayerExtensions
 
 } aeMovieLayerExtensions;
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL void __clear_layer_extensions( aeMovieLayerExtensions * _extensions )
+AE_INTERNAL ae_void_t __clear_layer_extensions( aeMovieLayerExtensions * _extensions )
 {
     _extensions->timeremap = AE_NULL;
     _extensions->mesh = AE_NULL;
@@ -178,6 +178,7 @@ struct aeMovieNode
     ae_voidptr_t element_data;
     ae_voidptr_t shader_data;
     ae_voidptr_t track_matte_data;
+    ae_voidptr_t cache_uv_data;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieComposition
