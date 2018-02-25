@@ -172,7 +172,8 @@ bool AEMovieData::initWithFileAndFramesFolder( aeMovieInstance * instance, const
 	
 	_data = ae_create_movie_data( instance, &AEMovieData::callbackResourceProvider, &AEMovieData::callbackResourceDeleter, this );
 	aeMovieStream * stream = ae_create_movie_stream( instance, &Detail::read_file, &Detail::memory_copy, &reader );
-	int r = ae_load_movie_data( _data, stream );
+    ae_uint32_t version;
+    ae_result_t r = ae_load_movie_data( _data, stream, &version );
 	ae_delete_movie_stream( stream );
 	
 	//	data.clear();
