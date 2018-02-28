@@ -9,6 +9,10 @@ No resource or node providers.
 
 #include "common.h"
 
+static const ae_char_t * ex_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
+static const ae_char_t * ex_example_movie_path = "../../examples/resources/Knight/Knight.aem";
+static const ae_char_t * ex_example_composition_name = "Knight";
+
 int main( int argc, char *argv[] ) {
     AE_UNUSED( argc );
     AE_UNUSED( argv );
