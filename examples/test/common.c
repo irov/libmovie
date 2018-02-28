@@ -689,6 +689,11 @@ ae_void_t ex_render( ae_void_t ) {
 
                     break;
                 }
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
+                {
+                    EX_LOG( "scene effect\n" );
+                    break;
+                }
             case AE_MOVIE_LAYER_TYPE_SOLID:
                 {
                     EX_LOG( "solid\n" );
@@ -780,6 +785,7 @@ ae_void_t ex_render( ae_void_t ) {
             case AE_MOVIE_LAYER_TYPE_EVENT:
             case AE_MOVIE_LAYER_TYPE_SOCKET:
             case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
             case AE_MOVIE_LAYER_TYPE_SLOT:
             case AE_MOVIE_LAYER_TYPE_NULL:
             case AE_MOVIE_LAYER_TYPE_SOLID:
