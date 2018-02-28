@@ -2919,24 +2919,6 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         ae_uint32_t indexIn = (ae_uint32_t)(in_time * frameDurationInv + 0.001f);
         ae_uint32_t indexOut = (ae_uint32_t)(out_time * frameDurationInv + 0.001f);
 
-        if( indexIn > endFrame || indexOut < beginFrame )
-        {
-            if( node->incessantly == AE_TRUE )
-            {
-                node->current_time = 0.f;
-
-                __update_movie_composition_node_state( _composition, node, AE_TRUE, AE_TRUE, _endTime, composition_interpolate );
-
-                node->active = AE_TRUE;
-            }
-            else
-            {
-                node->active = AE_FALSE;
-            }
-
-            continue;
-        }
-
         ae_float_t current_time = (endFrame >= indexOut) ? out_time - node->in_time + node->start_time : _animation->time - node->in_time + node->start_time;
         ae_float_t frame_time = current_time / node->stretch * frameDurationInv;
 
@@ -2977,13 +2959,34 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
             continue;
         }
 
-        if( indexIn >= beginFrame && indexOut < endFrame )
+        if( indexIn > endFrame || indexOut < beginFrame )
+        {
+            if( node->incessantly == AE_TRUE )
+            {
+                node->current_time = 0.f;
+
+                __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node, _revision, frameId, AE_FALSE, 0.f );
+
+                __update_movie_composition_node_state( _composition, node, AE_TRUE, AE_TRUE, 0.f, composition_interpolate );
+
+                node->active = AE_TRUE;
+            }
+            else
+            {
+                node->active = AE_FALSE;
+            }
+
+            continue;
+        }
+        else if( indexIn >= beginFrame && indexOut < endFrame )
         {
             if( node->incessantly == AE_TRUE )
             {
                 node->current_time = current_time;
 
-                __update_movie_composition_node_state( _composition, node, AE_TRUE, AE_TRUE, _endTime, composition_interpolate );
+                __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node, _revision, frameId, AE_FALSE, 0.f );
+
+                __update_movie_composition_node_state( _composition, node, AE_TRUE, AE_TRUE, current_time, composition_interpolate );
 
                 node->active = AE_TRUE;
             }
