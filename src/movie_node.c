@@ -1407,6 +1407,42 @@ AE_INTERNAL ae_void_t __setup_movie_node_incessantly( aeMovieComposition * _comp
     }
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __setup_movie_node_incessantly2( aeMovieNode * _nodes, ae_uint32_t * _iterator, const aeMovieCompositionData * _compositionData, ae_bool_t _incessantly )
+{
+    const aeMovieLayerData *it_layer = _compositionData->layers;
+    const aeMovieLayerData *it_layer_end = _compositionData->layers + _compositionData->layer_count;
+    for( ; it_layer != it_layer_end; ++it_layer )
+    {
+        const aeMovieLayerData * layer = it_layer;
+
+        aeMovieNode * node = _nodes + ((*_iterator)++);
+
+        if( _incessantly == AE_TRUE )
+        {
+            node->incessantly = AE_TRUE;
+        }
+
+        switch( layer->type )
+        {
+        case AE_MOVIE_LAYER_TYPE_MOVIE:
+        case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
+            {
+                ae_bool_t param_loop = ae_has_movie_layer_data_param( layer, AE_MOVIE_LAYER_PARAM_LOOP );
+
+                if( _incessantly == AE_TRUE )
+                {
+                    param_loop = AE_TRUE;
+                }
+
+                __setup_movie_node_incessantly2( _nodes, _iterator, layer->sub_composition_data, param_loop );
+            }break;
+        default:
+            {
+            }break;
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __setup_movie_node_blend_mode( aeMovieNode * _nodes, ae_uint32_t * _iterator, const aeMovieCompositionData * _compositionData, const aeMovieNode * _parent, ae_blend_mode_t _blendMode )
 {
     AE_UNUSED( _parent ); //TODO
@@ -1904,6 +1940,9 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
     __setup_movie_node_time( composition->nodes, &node_time_iterator, _compositionData, AE_NULL, 1.f, 0.f );
 
     __setup_movie_node_incessantly( composition );
+
+    ae_uint32_t node_incessantly2_iterator = 0U;
+    __setup_movie_node_incessantly2( composition->nodes, &node_incessantly2_iterator, _compositionData, AE_FALSE );
 
     ae_uint32_t node_blend_mode_iterator = 0U;
     __setup_movie_node_blend_mode( composition->nodes, &node_blend_mode_iterator, _compositionData, AE_NULL, AE_MOVIE_BLEND_NORMAL );
@@ -2930,6 +2969,8 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
 
             __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node, _revision, frameId, AE_FALSE, 0.f );
 
+            node->update_revision = _revision;
+
             if( beginFrame < indexIn && endFrame >= indexIn )
             {
                 aeMovieCompositionEventCallbackData callbackData;
@@ -2965,10 +3006,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
             {
                 node->current_time = 0.f;
 
-                __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node, _revision, frameId, AE_FALSE, 0.f );
-
+                __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node, _revision, 0, AE_FALSE, 0.f );
+                
                 __update_movie_composition_node_state( _composition, node, AE_TRUE, AE_TRUE, 0.f, composition_interpolate );
 
+                node->update_revision = _revision;
                 node->active = AE_TRUE;
             }
             else
@@ -2988,6 +3030,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
 
                 __update_movie_composition_node_state( _composition, node, AE_TRUE, AE_TRUE, current_time, composition_interpolate );
 
+                node->update_revision = _revision;
                 node->active = AE_TRUE;
             }
             else
