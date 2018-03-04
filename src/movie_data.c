@@ -1084,12 +1084,12 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
     if( _layer->out_time > _compositionData->duration )
     {
-        _layer->trimmed_time = AE_FALSE;
+        _layer->trimmed_time = AE_TRUE;
         _layer->out_time = _compositionData->duration;
     }
     else
     {
-        _layer->trimmed_time = AE_TRUE;
+        _layer->trimmed_time = AE_FALSE;
     }
 
     ae_uint8_t blend_mode;
