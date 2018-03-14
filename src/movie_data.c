@@ -578,7 +578,7 @@ AE_INTERNAL aeMovieLayerExtensions * __request_extensions( const aeMovieInstance
     return extensions;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layer )
+AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieStream * _stream, aeMovieLayerData * _layer )
 {
     const aeMovieInstance * instance = _movieData->instance;
 
@@ -1077,22 +1077,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
     AE_READF( _stream, _layer->start_time );
     AE_READF( _stream, _layer->in_time );
     AE_READF( _stream, _layer->out_time );
-
-    if( _layer->in_time < 0.f )
-    {
-        _layer->start_time -= _layer->in_time;
-        _layer->in_time = 0.f;
-    }
-
-    if( _layer->out_time > _compositionData->duration )
-    {
-        _layer->trimmed_time = AE_TRUE;
-        _layer->out_time = _compositionData->duration;
-    }
-    else
-    {
-        _layer->trimmed_time = AE_FALSE;
-    }
+    _layer->trimmed_time = AE_READB( _stream );
 
     ae_uint8_t blend_mode;
     AE_READ( _stream, blend_mode );
@@ -1218,7 +1203,7 @@ AE_INTERNAL ae_result_t __load_movie_data_composition_layers( const aeMovieData 
 
         layer->composition_data = _compositionData;
 
-        AE_RESULT( __load_movie_data_layer, (_movieData, _compositions, _stream, _compositionData, layer) );
+        AE_RESULT( __load_movie_data_layer, (_movieData, _compositions, _stream, layer) );
     }
 
     return AE_RESULT_SUCCESSFUL;
