@@ -2637,7 +2637,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_normal_state( const aeMovi
             callbackData.type = layer->type;
             callbackData.loop = _loop;
             callbackData.state = AE_MOVIE_STATE_UPDATE_BEGIN;
-            callbackData.offset = AE_TIME_OUTSCALE( _node->start_time + _time - _node->in_time );
+            callbackData.offset = AE_TIME_OUTSCALE( layer->start_time + _time - _node->in_time );
             callbackData.matrix = _node->matrix;
             callbackData.color = _node->color;
             callbackData.opacity = _node->opacity;
@@ -2710,7 +2710,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_track_matte_state( const a
     callbackData.element = _node->element_data;
     callbackData.type = layer_type;
     callbackData.loop = _loop;
-    callbackData.offset = AE_TIME_OUTSCALE( _node->start_time + _time - _node->in_time );
+    callbackData.offset = AE_TIME_OUTSCALE( layer->start_time + _time - _node->in_time );
     callbackData.matrix = _node->matrix;
     callbackData.color = _node->color;
     callbackData.opacity = 0.f;

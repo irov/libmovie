@@ -1076,12 +1076,6 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
     AE_READF( _stream, _layer->in_time );
     AE_READF( _stream, _layer->out_time );
 
-    if( _layer->in_time < 0.f )
-    {
-        _layer->start_time -= _layer->in_time;
-        _layer->in_time = 0.f;
-    }
-
     if( _layer->out_time > _compositionData->duration )
     {
         _layer->trimmed_time = AE_TRUE;
