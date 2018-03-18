@@ -1316,8 +1316,6 @@ AE_INTERNAL ae_void_t __setup_movie_node_time( aeMovieNode * _nodes, ae_uint32_t
         }
         else
         {
-            //node->start_time = _startTime;
-
             ae_float_t layer_in = layer->in_time * _stretch - _startTime;
             ae_float_t parent_in = _parent->in_time;
 
@@ -1331,8 +1329,6 @@ AE_INTERNAL ae_void_t __setup_movie_node_time( aeMovieNode * _nodes, ae_uint32_t
                 node->start_time = 0.f;
                 node->in_time = layer_in;
             }
-
-            //node->in_time = max_f_f( layer_in, parent_in );
 
             ae_float_t layer_out = layer->out_time * _stretch - _startTime;
             ae_float_t parent_out = _parent->out_time;

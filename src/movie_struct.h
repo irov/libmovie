@@ -319,11 +319,13 @@ struct aeMovieLayerData
 
     ae_uint32_t parent_index;
 
-    ae_bool_t reverse_time;
-    ae_bool_t trimmed_time;
-    ae_float_t start_time;
     ae_float_t in_time;
     ae_float_t out_time;
+    ae_float_t start_time;
+    ae_float_t finish_time;
+
+    ae_bool_t reverse_time;
+    ae_bool_t trimmed_time;
 
     ae_blend_mode_t blend_mode;
     ae_bool_t threeD;

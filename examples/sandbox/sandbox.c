@@ -88,7 +88,7 @@ int main( int argc, char *argv[] )
 
     const aeMovieInstance * instance = ae_create_movie_instance( "0e41faff7d430be811df87466106e7a9b36cc3ea", &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, (ae_movie_strncmp_t)AE_NULL, &stdlib_movie_logerror, AE_NULL );
 
-    aeMovieData * movieData = ae_create_movie_data( instance, &__resource_provider, &__resource_deleter, AE_NULL );
+    aeMovieData * movie_data = ae_create_movie_data( instance, &__resource_provider, &__resource_deleter, AE_NULL );
 
     FILE * f = fopen( "ui.aem", "rb" );
 
@@ -97,25 +97,30 @@ int main( int argc, char *argv[] )
         return 0;
     }
 
-    aeMovieStream * stream = ae_create_movie_stream( instance, &__read_file, &__memory_copy, f );
-    //stream.instance = instance;
-    //stream.memory_read = &read_file;
-    //stream.memory_copy = &memory_copy;
-    //stream.data = f;
+    aeMovieStream * movie_stream = ae_create_movie_stream( instance, &__read_file, &__memory_copy, f );
 
-    ae_uint32_t load_version;
-    ae_result_t load_result = ae_load_movie_data( movieData, stream, &load_version );
+    ae_uint32_t load_major_version;
+    ae_uint32_t load_minor_version;
+    ae_result_t load_movie_data_result = ae_load_movie_data( movie_data, movie_stream, &load_major_version, &load_minor_version );
 
-	if( load_result != AE_RESULT_SUCCESSFUL )
+	if( load_movie_data_result != AE_RESULT_SUCCESSFUL )
 	{
-		return 0;
+        const ae_char_t * load_movie_data_result_info = ae_get_result_string_info( load_movie_data_result );
+        printf( "%s\n", load_movie_data_result_info );
+        printf( "...failed.\n" );
+
+        ae_delete_movie_data( movie_data );
+        ae_delete_movie_stream( movie_stream );
+        fclose( f );
+
+        return 0;
 	}
 
-    ae_delete_movie_stream( stream );
+    ae_delete_movie_stream( movie_stream );
 
     fclose( f );
 
-    const aeMovieCompositionData * compositionData = ae_get_movie_composition_data( movieData, "BigWin" );
+    const aeMovieCompositionData * compositionData = ae_get_movie_composition_data( movie_data, "BigWin" );
 
     if( compositionData == AE_NULL )
     {
@@ -125,7 +130,7 @@ int main( int argc, char *argv[] )
     aeMovieCompositionProviders providers;
     memset( &providers, 0, sizeof( providers ) );
 
-    aeMovieComposition * composition = ae_create_movie_composition( movieData, compositionData, AE_TRUE, &providers, AE_NULL );
+    aeMovieComposition * composition = ae_create_movie_composition( movie_data, compositionData, AE_TRUE, &providers, AE_NULL );
 
     //while( 1 )
     //{
@@ -144,7 +149,7 @@ int main( int argc, char *argv[] )
 
     ae_delete_movie_composition( composition );
 
-    ae_delete_movie_data( movieData );
+    ae_delete_movie_data( movie_data );
 
     ae_delete_movie_instance( instance );
 
