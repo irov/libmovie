@@ -559,22 +559,23 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
     EX_LOG( "Creating movie stream.\n" );
 
-    aeMovieStream * stream = ae_create_movie_stream( ex.instance, &__read_file, &__memory_copy, f );
+    aeMovieStream * movie_stream = ae_create_movie_stream( ex.instance, &__read_file, &__memory_copy, f );
 
     EX_LOG( "Loading movie data.\n" );
 
-    aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
+    aeMovieData * movie_data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
 
-    ae_uint32_t load_version;
-	ae_result_t load_movie_data_result = ae_load_movie_data( data, stream, &load_version );
+    ae_uint32_t load_major_version;
+    ae_uint32_t load_minor_version;
+	ae_result_t load_movie_data_result = ae_load_movie_data( movie_data, movie_stream, &load_major_version, &load_minor_version );
 
     if( load_movie_data_result != AE_RESULT_SUCCESSFUL ) {
         const ae_char_t * load_movie_data_result_info = ae_get_result_string_info( load_movie_data_result );
         EX_LOG( "%s\n", load_movie_data_result_info );
         EX_LOG( "...failed.\n" );
 
-        ae_delete_movie_data( data );
-        ae_delete_movie_stream( stream );
+        ae_delete_movie_data( movie_data );
+        ae_delete_movie_stream( movie_stream );
         fclose( f );
 
         exit( 0 );
@@ -582,13 +583,13 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
     //	EX_LOG("Deleting movie stream.\n");
 
-    ae_delete_movie_stream( stream );
+    ae_delete_movie_stream( movie_stream );
 
     //	EX_LOG("Closing file '%s'.\n", path);
 
     fclose( f );
 
-    ex.data = data;
+    ex.data = movie_data;
 }
 
 ae_void_t ex_set_composition( ae_void_t ) {

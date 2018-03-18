@@ -152,11 +152,12 @@ ae_void_t ae_delete_movie_stream( aeMovieStream * _stream );
 
 /**
 @brief Fills movie data structure and loads resources through provider.
-@param [in] _movieData Data structure to fill.
 @param [in] _stream Object to load from.
+@param [in] _major major version.
+@param [in] _minor minor version.
 @return TRUE if successful.
 */
-ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _version );
+ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor );
 
 /**
 @brief get sdk version
@@ -174,9 +175,11 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result );
 @brief Fills movie data structure and loads resources through provider.
 @param [in] _movieData Data structure to fill.
 @param [in] _stream Object to load from.
+@param [in] _major major version.
+@param [in] _minor minor version.
 @return TRUE if successful.
 */
-ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _version );
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor );
 
 /**
 @param [in] _movieData Data.
