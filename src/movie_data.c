@@ -1408,7 +1408,7 @@ ae_void_t ae_delete_movie_stream( aeMovieStream * _stream )
     AE_DELETE( _stream->instance, _stream );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t * _version )
+AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
 {
     ae_uint8_t magic[4];
     AE_READN( _stream, magic, 4 );
@@ -1421,12 +1421,20 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
         AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_MAGIC );
     }
 
-    ae_uint32_t version;
-    AE_READ( _stream, version );
+    ae_uint32_t major_version;
+    AE_READ( _stream, major_version );
 
-    *_version = version;
+    ae_uint32_t minor_version = AE_MOVIE_SDK_MINOR_VERSION;
 
-    if( version != AE_MOVIE_SDK_VERSION )
+    *_major = major_version;
+    *_minor = minor_version;
+
+    if( major_version != AE_MOVIE_SDK_MAJOR_VERSION )
+    {
+        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_VERSION );
+    }
+
+    if( minor_version != AE_MOVIE_SDK_MINOR_VERSION )
     {
         AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_VERSION );
     }
@@ -1449,16 +1457,21 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _version )
+ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
 {
-    ae_result_t result = __check_movie_data( _stream, _version );
-
+    ae_result_t result = __check_movie_data( _stream, _major, _minor );
+    
     return result;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_movie_sdk_version( ae_void_t )
+ae_uint32_t ae_get_movie_sdk_major_version( ae_void_t )
 {
-    return AE_MOVIE_SDK_VERSION;
+    return AE_MOVIE_SDK_MAJOR_VERSION;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_uint32_t ae_get_movie_sdk_minor_version( ae_void_t )
+{
+    return AE_MOVIE_SDK_MINOR_VERSION;
 }
 //////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_result_string_info( ae_result_t _result )
@@ -1498,7 +1511,7 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result )
     return "invalid result";
 }
 //////////////////////////////////////////////////////////////////////////
-ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _version )
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
 {
     const aeMovieInstance * instance = _movieData->instance;
 
@@ -1506,7 +1519,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     instance->logger( instance->instance_data, AE_ERROR_STREAM, "begin" );
 #endif
 
-    ae_result_t check_result = __check_movie_data( _stream, _version );
+    ae_result_t check_result = __check_movie_data( _stream, _major, _minor );
 
     if( check_result != AE_RESULT_SUCCESSFUL )
     {

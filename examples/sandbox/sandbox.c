@@ -103,8 +103,9 @@ int main( int argc, char *argv[] )
 	//stream.memory_copy = &memory_copy;
 	//stream.data = f;
 
-    ae_uint32_t load_version;
-    ae_result_t load_result = ae_load_movie_data( movieData, stream, &load_version );
+    ae_uint32_t major_version;
+    ae_uint32_t minor_version;
+    ae_result_t load_result = ae_load_movie_data( movieData, stream, &major_version, &minor_version );
 
 	if( load_result != AE_RESULT_SUCCESSFUL )
 	{

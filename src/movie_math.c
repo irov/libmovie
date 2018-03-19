@@ -314,14 +314,36 @@ AE_INTERNAL ae_float_t __inverse_sqrtf( ae_float_t _number )
     return y;
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_float_t __dot_q( const ae_quaternion_t _q1, const ae_quaternion_t _q2 )
+{
+    return _q1[0] * _q2[0] + _q1[1] * _q2[1] + _q1[2] * _q2[2] + _q1[3] * _q2[3];
+}
+//////////////////////////////////////////////////////////////////////////
 ae_void_t ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t )
 {
     ae_float_t inv_t = 1.f - _t;
 
-    ae_float_t x = _q1[0] * inv_t + _q2[0] * _t;
-    ae_float_t y = _q1[1] * inv_t + _q2[1] * _t;
-    ae_float_t z = _q1[2] * inv_t + _q2[2] * _t;
-    ae_float_t w = _q1[3] * inv_t + _q2[3] * _t;
+    ae_float_t dot = __dot_q( _q1, _q2 );
+
+    ae_float_t x;
+    ae_float_t y;
+    ae_float_t z;
+    ae_float_t w;
+
+    if( dot < 0.f )
+    {
+        x = _q1[0] * inv_t - _q2[0] * _t;
+        y = _q1[1] * inv_t - _q2[1] * _t;
+        z = _q1[2] * inv_t - _q2[2] * _t;
+        w = _q1[3] * inv_t - _q2[3] * _t;
+    }
+    else
+    {
+        x = _q1[0] * inv_t + _q2[0] * _t;
+        y = _q1[1] * inv_t + _q2[1] * _t;
+        z = _q1[2] * inv_t + _q2[2] * _t;
+        w = _q1[3] * inv_t + _q2[3] * _t;
+    }
 
     ae_float_t q_dot = x * x + y * y + z * z + w * w;
     ae_float_t inv_length = __inverse_sqrtf( q_dot );
