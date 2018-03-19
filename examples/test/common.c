@@ -565,8 +565,9 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
 	aeMovieData * data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
 
-    ae_uint32_t load_version;
-	ae_result_t load_movie_data_result = ae_load_movie_data( data, stream, &load_version );
+    ae_uint32_t major_version;
+    ae_uint32_t minor_version;
+	ae_result_t load_movie_data_result = ae_load_movie_data( data, stream, &major_version, &minor_version );
 
     if( load_movie_data_result != AE_RESULT_SUCCESSFUL ) {
         const ae_char_t * load_movie_data_result_info = ae_get_result_string_info( load_movie_data_result );
