@@ -27,15 +27,15 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	include "movie/movie_node.h"
-#	include "movie/movie_resource.h"
+#include "movie/movie_node.h"
+#include "movie/movie_resource.h"
 
-#	include "movie_transformation.h"
-#	include "movie_memory.h"
-#	include "movie_math.h"
-#	include "movie_debug.h"
+#include "movie_transformation.h"
+#include "movie_memory.h"
+#include "movie_math.h"
+#include "movie_debug.h"
 
-#	include "movie_struct.h"
+#include "movie_struct.h"
 
 //////////////////////////////////////////////////////////////////////////
 typedef enum
@@ -2767,7 +2767,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_state( const aeMovieCompos
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __update_node( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, aeMovieNode * _node, ae_uint32_t _revision, ae_float_t _time, ae_uint32_t _frameId, ae_float_t _t, ae_bool_t _loop, ae_bool_t _interpolate, ae_bool_t _begin )
 {
-#	ifdef AE_MOVIE_DEBUG	
+#ifdef AE_MOVIE_DEBUG	
     if( __test_error_composition_layer_frame( _composition->movie_data->instance
         , _compositionData
         , _node->layer
@@ -2777,7 +2777,7 @@ AE_INTERNAL ae_void_t __update_node( const aeMovieComposition * _composition, co
     {
         return;
     }
-#	endif
+#endif
 
     __update_movie_composition_node_matrix( _composition, _compositionData, _animation, _node, _revision, _frameId, _interpolate, _t );
 

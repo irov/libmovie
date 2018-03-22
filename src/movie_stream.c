@@ -27,7 +27,7 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	include "movie_stream.h"
+#include "movie_stream.h"
 
 //////////////////////////////////////////////////////////////////////////
 ae_result_t ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str )

@@ -27,12 +27,12 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	include "movie/movie_skeleton.h"
+#include "movie/movie_skeleton.h"
 
-#	include "movie_memory.h"
-#	include "movie_math.h"
-#	include "movie_struct.h"
-#	include "movie_debug.h"
+#include "movie_memory.h"
+#include "movie_math.h"
+#include "movie_struct.h"
+#include "movie_debug.h"
 
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_bool_t __test_movie_skeleton_base( aeMovieComposition * _base )
