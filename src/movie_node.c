@@ -255,6 +255,26 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
     _render->indices = _instance->bezier_warp_indices[_quality];
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __setup_bezier_corners( aeMovieBezierWarp * _bezier, const ae_vector2_t * _current, const ae_vector2_t * _next, ae_float_t _t )
+{
+    ae_linerp_f2( _bezier->corners[0], _current[0], _next[0], _t );
+    ae_linerp_f2( _bezier->corners[1], _current[1], _next[1], _t );
+    ae_linerp_f2( _bezier->corners[2], _current[2], _next[2], _t );
+    ae_linerp_f2( _bezier->corners[3], _current[3], _next[3], _t );
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __setup_bezier_beziers( aeMovieBezierWarp * _bezier, const ae_vector2_t * _current, const ae_vector2_t * _next, ae_float_t _t )
+{
+    ae_linerp_f2( _bezier->beziers[0], _current[0], _next[0], _t );
+    ae_linerp_f2( _bezier->beziers[1], _current[1], _next[1], _t );
+    ae_linerp_f2( _bezier->beziers[2], _current[2], _next[2], _t );
+    ae_linerp_f2( _bezier->beziers[3], _current[3], _next[3], _t );
+    ae_linerp_f2( _bezier->beziers[4], _current[4], _next[4], _t );
+    ae_linerp_f2( _bezier->beziers[5], _current[5], _next[5], _t );
+    ae_linerp_f2( _bezier->beziers[6], _current[6], _next[6], _t );
+    ae_linerp_f2( _bezier->beziers[7], _current[7], _next[7], _t );
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
     if( _layerBezierWarp->immutable == AE_TRUE )
@@ -274,27 +294,15 @@ AE_INTERNAL ae_void_t __make_layer_bezier_warp_vertices( const aeMovieInstance *
             const aeMovieBezierWarp * bezier_warp_frame_current = _layerBezierWarp->bezier_warps + _frame + 0;
             const aeMovieBezierWarp * bezier_warp_frame_next = _layerBezierWarp->bezier_warps + _frame + 1;
 
-            const ae_vector2_t * current_corners = bezier_warp_frame_current->corners;
-            const ae_vector2_t * next_corners = bezier_warp_frame_next->corners;
-
             aeMovieBezierWarp bezierWarp;
 
-            ae_linerp_f2( bezierWarp.corners[0], current_corners[0], next_corners[0], _t );
-            ae_linerp_f2( bezierWarp.corners[1], current_corners[1], next_corners[1], _t );
-            ae_linerp_f2( bezierWarp.corners[2], current_corners[2], next_corners[2], _t );
-            ae_linerp_f2( bezierWarp.corners[3], current_corners[3], next_corners[3], _t );
+            const ae_vector2_t * current_corners = bezier_warp_frame_current->corners;
+            const ae_vector2_t * next_corners = bezier_warp_frame_next->corners;
+            __setup_bezier_corners( &bezierWarp, current_corners, next_corners, _t );
 
             const ae_vector2_t * current_beziers = bezier_warp_frame_current->beziers;
             const ae_vector2_t * next_beziers = bezier_warp_frame_next->beziers;
-
-            ae_linerp_f2( bezierWarp.beziers[0], current_beziers[0], next_beziers[0], _t );
-            ae_linerp_f2( bezierWarp.beziers[1], current_beziers[1], next_beziers[1], _t );
-            ae_linerp_f2( bezierWarp.beziers[2], current_beziers[2], next_beziers[2], _t );
-            ae_linerp_f2( bezierWarp.beziers[3], current_beziers[3], next_beziers[3], _t );
-            ae_linerp_f2( bezierWarp.beziers[4], current_beziers[4], next_beziers[4], _t );
-            ae_linerp_f2( bezierWarp.beziers[5], current_beziers[5], next_beziers[5], _t );
-            ae_linerp_f2( bezierWarp.beziers[6], current_beziers[6], next_beziers[6], _t );
-            ae_linerp_f2( bezierWarp.beziers[7], current_beziers[7], next_beziers[7], _t );
+            __setup_bezier_beziers( &bezierWarp, current_beziers, next_beziers, _t );
 
             __make_bezier_warp_vertices( _instance, _layerBezierWarp->quality, &bezierWarp, _matrix, _render );
         }
