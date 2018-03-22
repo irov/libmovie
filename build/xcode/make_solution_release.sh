@@ -1,7 +1,7 @@
 #! /bin/bash
 
 CONFIGURATION=Release
-SOLUTION_DIR=../solutions/libmovie_xcode_macos_release
+SOLUTION_DIR=../solutions/libmovie_xcode_$CONFIGURATION
 
 pushd ..
 mkdir -p $SOLUTION_DIR

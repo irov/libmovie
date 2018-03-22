@@ -27,17 +27,17 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	ifndef MOVIE_STRUCT_H_
-#	define MOVIE_STRUCT_H_
+#ifndef MOVIE_STRUCT_H_
+#define MOVIE_STRUCT_H_
 
-#	include "movie/movie_type.h"
-#	include "movie/movie_instance.h"
-#	include "movie/movie_node.h"
+#include "movie/movie_type.h"
+#include "movie/movie_instance.h"
+#include "movie/movie_node.h"
 
 //////////////////////////////////////////////////////////////////////////
-#	ifndef AE_MOVIE_BEZIER_WARP_BASE_GRID
+#ifndef AE_MOVIE_BEZIER_WARP_BASE_GRID
 #	define AE_MOVIE_BEZIER_WARP_BASE_GRID 7U
-#	endif
+#endif
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieBezierWarp
 {
@@ -445,4 +445,4 @@ struct aeMovieLayerPolygon
 #define AE_SUCCESSFUL( Function, Args ) { ae_bool_t successful = (Function) Args; if( successful == AE_FALSE ) {return AE_FALSE;}}
 #define AE_RESULT_PANIC_MEMORY( Memory ) AE_MOVIE_PANIC_MEMORY( Memory, AE_RESULT_INVALID_MEMORY )
 //////////////////////////////////////////////////////////////////////////
-#	endif
+#endif

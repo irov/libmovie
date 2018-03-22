@@ -27,10 +27,10 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	include "movie_transformation.h"
+#include "movie_transformation.h"
 
-#	include "movie_stream.h"
-#	include "movie_math.h"
+#include "movie_stream.h"
+#include "movie_math.h"
 
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovieStream * _stream, const ae_char_t * _doc )
@@ -207,7 +207,7 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_
     ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
 }
 //////////////////////////////////////////////////////////////////////////
-#	define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
+#define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
 	if( _mask & Mask )\
 	{\
 		AE_READ( _stream, _transformation->immutable.Name );\
@@ -289,7 +289,7 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation3d( aeMovieStream * _st
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-#	undef AE_MOVIE_STREAM_PROPERTY
+#undef AE_MOVIE_STREAM_PROPERTY
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation_interpolate_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
@@ -306,12 +306,12 @@ AE_CALLBACK ae_void_t __make_layer_transformation_fixed_immutable( ae_matrix4_t 
     ae_copy_m4( _out, *_transformation->immutable_matrix );
 }
 //////////////////////////////////////////////////////////////////////////
-#	define AE_INTERPOLATE_PROPERTY( Transformation, Name, OutName )\
+#define AE_INTERPOLATE_PROPERTY( Transformation, Name, OutName )\
 	OutName = (Transformation->timeline == AE_NULL || Transformation->timeline->Name == AE_NULL) ? Transformation->immutable.Name : __get_movie_layer_transformation_property_interpolate(\
 		Transformation->timeline->Name,\
 		_index, _t )
 //////////////////////////////////////////////////////////////////////////
-#	define AE_FIXED_PROPERTY( Transformation, Name, Index, OutName)\
+#define AE_FIXED_PROPERTY( Transformation, Name, Index, OutName)\
 	OutName = (Transformation->timeline == AE_NULL || Transformation->timeline->Name == AE_NULL) ? Transformation->immutable.Name : __get_movie_layer_transformation_property(\
 		Transformation->timeline->Name,\
 		_index + Index )
@@ -709,7 +709,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-#	define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
+#define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
 	if( _mask & Mask )\
 	{\
 		AE_READ( _stream, _transformation->immutable.Name );\

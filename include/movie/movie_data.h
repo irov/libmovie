@@ -30,9 +30,9 @@
 #ifndef MOVIE_MOVIE_DATA_H_
 #define MOVIE_MOVIE_DATA_H_
 
-#	include "movie_type.h"
-#	include "movie_typedef.h"
-#	include "movie_instance.h"
+#include "movie_type.h"
+#include "movie_typedef.h"
+#include "movie_instance.h"
 
 /**
 @addtogroup data_types

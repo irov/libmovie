@@ -30,7 +30,7 @@
 #ifndef MOVIE_MOVIE_RESOURCE_H_
 #define MOVIE_MOVIE_RESOURCE_H_
 
-#	include "movie/movie_type.h"
+#include "movie/movie_type.h"
 
 typedef struct aeMovieResourceSolid
 {
@@ -122,7 +122,5 @@ typedef struct aeMovieResourceSlot
     ae_float_t height;
 
 } aeMovieResourceSlot;
-
-#	undef AE_MOVIE_RESOURCE_BASE
 
 #endif

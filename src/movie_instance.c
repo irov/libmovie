@@ -27,9 +27,9 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	include "movie/movie_instance.h"
+#include "movie/movie_instance.h"
 
-#	include "movie_struct.h"
+#include "movie_struct.h"
 
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_int32_t __ae_strncmp( ae_voidptr_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count )

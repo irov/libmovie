@@ -30,13 +30,13 @@
 #ifndef MOVIE_TYPE_H_
 #define MOVIE_TYPE_H_
 
-#	include <stdint.h>
-#	include <stddef.h>
+#include <stdint.h>
+#include <stddef.h>
 
-#   include "movie/movie_config.h"
+#include "movie/movie_config.h"
 
-#   define AE_MOVIE_SDK_MAJOR_VERSION 16
-#   define AE_MOVIE_SDK_MINOR_VERSION 0
+#define AE_MOVIE_SDK_MAJOR_VERSION 16
+#define AE_MOVIE_SDK_MINOR_VERSION 0
 
 typedef void ae_void_t;
 typedef uint32_t ae_bool_t;
@@ -107,17 +107,17 @@ typedef struct
 
 typedef struct aeMovieStream aeMovieStream;
 
-#	ifndef AE_MOVIE_MAX_LAYER_NAME
+#ifndef AE_MOVIE_MAX_LAYER_NAME
 #	define AE_MOVIE_MAX_LAYER_NAME 128U
-#	endif
+#endif
 
-#	ifndef AE_MOVIE_MAX_COMPOSITION_NAME
+#ifndef AE_MOVIE_MAX_COMPOSITION_NAME
 #	define AE_MOVIE_MAX_COMPOSITION_NAME 128U
-#	endif
+#endif
 
-#	ifndef AE_MOVIE_MAX_VERTICES
+#ifndef AE_MOVIE_MAX_VERTICES
 #	define AE_MOVIE_MAX_VERTICES 1024U
-#	endif
+#endif
 
 typedef enum
 {
@@ -137,7 +137,7 @@ typedef enum
     AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR = 5,
 } aeMovieShaderParameterTypeEnum;
 
-#	define AE_MOVIE_RESOURCE_BASE()\
+#define AE_MOVIE_RESOURCE_BASE()\
 	aeMovieResourceTypeEnum type;\
 	ae_voidptr_t data
 

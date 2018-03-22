@@ -1,9 +1,9 @@
-#	include "movie/movie.h"
+#include "movie/movie.h"
 
-#	include <stdlib.h>
-#	include <stdio.h>
-#	include <stdarg.h>
-#	include <memory.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <memory.h>
 
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size )

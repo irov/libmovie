@@ -12,17 +12,16 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Intel)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall /WX")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4710") #function not inlined 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4738") #storing 32-bit float result in memory, possible loss of performance
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4710")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4738")
 endif()
 
 OPTION(LIBMOVIE_EXTERNAL_BUILD  "LIBMOVIE_EXTERNAL_BUILD"  OFF)
-OPTION(LIBMOVIE_EXAMPLES_BUILD  "LIBMOVIE_EXAMPLES_BUILD"  OFF)
+OPTION(LIBMOVIE_EXAMPLES_BUILD  "LIBMOVIE_EXAMPLES_BUILD"  ON)
 
 IF( NOT LIBMOVIE_EXTERNAL_BUILD )
-    SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build_temp/ )
-    SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/libmovie_win32 )
-    SET( CMAKE_TEMP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMakeTemp/libmovie_win32/${CMAKE_GENERATOR}/${CMAKE_BUILD_TYPE} )
+    SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CMAKE_GENERATOR} )
+    SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_GENERATOR} )
 ENDIF()
 
 MACRO( ADD_FILTER group_name )
@@ -30,21 +29,21 @@ MACRO( ADD_FILTER group_name )
 	SET( SRC_FILES ${SRC_FILES} ${ARGN} )
 ENDMACRO()
 
-SET( PUBLIC_DIR include/movie )
-SET( SOURCE_DIR src )
+SET( INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include )
+SET( SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src )
 
 ADD_FILTER(
 public
-	${PUBLIC_DIR}/movie.h
-    ${PUBLIC_DIR}/movie.hpp
-    ${PUBLIC_DIR}/movie_node.h
-    ${PUBLIC_DIR}/movie_data.h
-    ${PUBLIC_DIR}/movie_instance.h
-    ${PUBLIC_DIR}/movie_resource.h
-    ${PUBLIC_DIR}/movie_skeleton.h
-    ${PUBLIC_DIR}/movie_type.h
-    ${PUBLIC_DIR}/movie_typedef.h
-    ${PUBLIC_DIR}/movie_config.h    
+	${INCLUDE_DIR}/movie/movie.h
+    ${INCLUDE_DIR}/movie/movie.hpp
+    ${INCLUDE_DIR}/movie/movie_node.h
+    ${INCLUDE_DIR}/movie/movie_data.h
+    ${INCLUDE_DIR}/movie/movie_instance.h
+    ${INCLUDE_DIR}/movie/movie_resource.h
+    ${INCLUDE_DIR}/movie/movie_skeleton.h
+    ${INCLUDE_DIR}/movie/movie_type.h
+    ${INCLUDE_DIR}/movie/movie_typedef.h
+    ${INCLUDE_DIR}/movie/movie_config.h    
 )
 
 ADD_FILTER(
@@ -64,17 +63,19 @@ source
     ${SOURCE_DIR}/movie_debug.h
 )
 
-INCLUDE_DIRECTORIES( ${PROJECT_NAME} include ) 
+INCLUDE_DIRECTORIES( ${PROJECT_NAME} ${INCLUDE_DIR} ) 
 
 ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SRC_FILES} )
 
 if( LIBMOVIE_EXAMPLES_BUILD )
+    SET( EXAMPLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/examples )
+
     set(
     sandbox_SOURCES
-        examples/sandbox/sandbox.c
+        ${EXAMPLES_DIR}/sandbox/sandbox.c
     )
 
-    INCLUDE_DIRECTORIES( sandbox ../include )
+    INCLUDE_DIRECTORIES( sandbox ${INCLUDE_DIR} )
     
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 
@@ -84,12 +85,12 @@ if( LIBMOVIE_EXAMPLES_BUILD )
     
     set(
     test1_SOURCES
-        examples/test/common.c
-        examples/test/common.h
-        examples/test/test1.c
+        ${EXAMPLES_DIR}/test/common.c
+        ${EXAMPLES_DIR}/test/common.h
+        ${EXAMPLES_DIR}/test/test1.c
     )
 
-    INCLUDE_DIRECTORIES( test1 ../include )
+    INCLUDE_DIRECTORIES( test1 ${INCLUDE_DIR} )
 
     ADD_EXECUTABLE( test1 ${test1_SOURCES} )
 
@@ -97,12 +98,12 @@ if( LIBMOVIE_EXAMPLES_BUILD )
     
     set(
     test2_SOURCES
-        examples/test/common.c
-        examples/test/common.h
-        examples/test/test2.c
+        ${EXAMPLES_DIR}/test/common.c
+        ${EXAMPLES_DIR}/test/common.h
+        ${EXAMPLES_DIR}/test/test2.c
     )
 
-    INCLUDE_DIRECTORIES( test2 ../include )
+    INCLUDE_DIRECTORIES( test2 ${INCLUDE_DIR} )
 
     ADD_EXECUTABLE( test2 ${test2_SOURCES} )
 
@@ -110,12 +111,12 @@ if( LIBMOVIE_EXAMPLES_BUILD )
     
     set(
     test3_SOURCES
-        examples/test/common.c
-        examples/test/common.h
-        examples/test/test3.c
+        ${EXAMPLES_DIR}/test/common.c
+        ${EXAMPLES_DIR}/test/common.h
+        ${EXAMPLES_DIR}/test/test3.c
     )
 
-    INCLUDE_DIRECTORIES( test3 ../include )
+    INCLUDE_DIRECTORIES( test3 ${INCLUDE_DIR} )
 
     ADD_EXECUTABLE( test3 ${test3_SOURCES} )
 
