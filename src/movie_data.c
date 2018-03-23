@@ -27,12 +27,12 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	include "movie/movie_data.h"
-#	include "movie/movie_resource.h"
+#include "movie/movie_data.h"
+#include "movie/movie_resource.h"
 
-#	include "movie_transformation.h"
-#	include "movie_memory.h"
-#	include "movie_stream.h"
+#include "movie_transformation.h"
+#include "movie_memory.h"
+#include "movie_stream.h"
 #	include "movie_version.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -1334,7 +1334,7 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
 //////////////////////////////////////////////////////////////////////////
 aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_movie_stream_memory_read_t _read, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data )
 {
-#	ifdef AE_MOVIE_DEBUG
+#ifdef AE_MOVIE_DEBUG
     if( _instance == AE_NULL )
     {
         return AE_NULL;
@@ -1349,7 +1349,7 @@ aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_mo
     {
         return AE_NULL;
     }
-#	endif
+#endif
 
     aeMovieStream * stream = AE_NEW( _instance, aeMovieStream );
 
@@ -1378,7 +1378,7 @@ AE_INTERNAL ae_size_t __ae_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, 
 //////////////////////////////////////////////////////////////////////////
 aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_movie_stream_memory_copy_t _copy, ae_voidptr_t _data )
 {
-#	ifdef AE_MOVIE_DEBUG
+#ifdef AE_MOVIE_DEBUG
     if( _instance == AE_NULL )
     {
         return AE_NULL;
@@ -1388,7 +1388,7 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
     {
         return AE_NULL;
     }
-#	endif
+#endif
 
     aeMovieStream * stream = AE_NEW( _instance, aeMovieStream );
 
@@ -1465,13 +1465,18 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
 ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
 {
     ae_result_t result = __check_movie_data( _stream, _major, _minor );
-
+    
     return result;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_movie_sdk_version( ae_void_t )
+ae_uint32_t ae_get_movie_sdk_major_version( ae_void_t )
 {
     return AE_MOVIE_SDK_MAJOR_VERSION;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_uint32_t ae_get_movie_sdk_minor_version( ae_void_t )
+{
+    return AE_MOVIE_SDK_MINOR_VERSION;
 }
 //////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_result_string_info( ae_result_t _result )

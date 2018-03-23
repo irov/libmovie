@@ -30,9 +30,9 @@
 #ifndef MOVIE_MOVIE_DATA_H_
 #define MOVIE_MOVIE_DATA_H_
 
-#	include "movie_type.h"
-#	include "movie_typedef.h"
-#	include "movie_instance.h"
+#include "movie_type.h"
+#include "movie_typedef.h"
+#include "movie_instance.h"
 
 /**
 @addtogroup data_types
@@ -163,7 +163,8 @@ ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _major, 
 @brief get sdk version
 @return version.
 */
-ae_uint32_t ae_get_movie_sdk_version( ae_void_t );
+ae_uint32_t ae_get_movie_sdk_major_version( ae_void_t );
+ae_uint32_t ae_get_movie_sdk_minor_version( ae_void_t );
 /**
 @brief get result string info
 @param [in] _result code

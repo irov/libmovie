@@ -1,7 +1,7 @@
 #! /bin/bash
 
 CONFIGURATION=Debug
-SOLUTION_DIR=../solutions/libmovie_xcode_macos_debug
+SOLUTION_DIR=../solutions/libmovie_xcode_$CONFIGURATION
 
 pushd ..
 mkdir -p $SOLUTION_DIR

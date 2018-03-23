@@ -27,11 +27,11 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	ifndef MOVIE_TRANSFORMATION_H_
-#	define MOVIE_TRANSFORMATION_H_
+#ifndef MOVIE_TRANSFORMATION_H_
+#define MOVIE_TRANSFORMATION_H_
 
-#	include "movie/movie_instance.h"
-#	include "movie/movie_type.h"
+#include "movie/movie_instance.h"
+#include "movie/movie_type.h"
 
 typedef enum aeMoviePropertyImmutableEnum
 {
@@ -145,7 +145,7 @@ struct aeMovieLayerTransformation;
 typedef ae_void_t( *ae_movie_make_layer_transformation_intepolate_t )(ae_matrix4_t _out, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t);
 typedef ae_void_t( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix4_t _out, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index);
 
-#   define AE_MOVIE_LAYER_TRANSFORMATION_BASE()\
+#define AE_MOVIE_LAYER_TRANSFORMATION_BASE()\
     ae_uint32_t immutable_property_mask;\
     ae_color_channel_t immutable_opacity;\
     ae_constvoidptr_t timeline_opacity;\
@@ -177,7 +177,6 @@ typedef struct aeMovieLayerTransformation3D
 
 } aeMovieLayerTransformation3D;
 
-
 ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
 ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovieCompositionCamera * _camera );
 ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
@@ -189,4 +188,4 @@ ae_void_t ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_
 ae_void_t ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t );
 ae_void_t ae_movie_make_layer_transformation2d_fixed( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index );
 
-#	endif
+#endif
