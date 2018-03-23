@@ -30,29 +30,29 @@
 #ifndef MOVIE_CONFIG_H_
 #define MOVIE_CONFIG_H_
 
-#	ifdef _DEBUG
-#	ifndef AE_MOVIE_NO_DEBUG
-#	ifndef AE_MOVIE_DEBUG
-#	define AE_MOVIE_DEBUG
+#ifdef _DEBUG
+#   ifndef AE_MOVIE_NO_DEBUG
+#	    ifndef AE_MOVIE_DEBUG
+#	        define AE_MOVIE_DEBUG
+#	    endif
 #	endif
-#	endif
-#	endif
+#endif
 
-#   ifndef AE_TIME_DEFINE
+#ifndef AE_TIME_DEFINE
 #   define AE_TIME_SECOND
-#   endif
+#endif
 
-#   ifdef AE_TIME_SECOND
+#ifdef AE_TIME_SECOND
 #   define AE_TIME_OUTSCALE( T ) (T)
 #   define AE_TIME_INSCALE( T ) (T)
-#   elif AE_TIME_MILLISECOND
+#elif AE_TIME_MILLISECOND
 #   define AE_TIME_OUTSCALE( T ) (T * 1000.f)
 #   define AE_TIME_INSCALE( T ) (T * 0.001f)
-#   endif
+#endif
 
-#   define AE_CALLBACK static
-#   define AE_INTERNAL inline static
+#define AE_CALLBACK static
+#define AE_INTERNAL inline static
 
-#   define AE_UNUSED(Var) ((ae_void_t)Var)
+#define AE_UNUSED(Var) ((ae_void_t)Var)
 
 #endif

@@ -27,38 +27,38 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	ifndef MOVIE_STREAM_H_
-#	define MOVIE_STREAM_H_
+#ifndef MOVIE_STREAM_H_
+#define MOVIE_STREAM_H_
 
-#	include "movie/movie_type.h"
+#include "movie/movie_type.h"
 
-#	include "movie_memory.h"
-#	include "movie_struct.h"
-#	include "movie_debug.h"
+#include "movie_memory.h"
+#include "movie_struct.h"
+#include "movie_debug.h"
 
-#	include <stddef.h>
+#include <stddef.h>
 
 //////////////////////////////////////////////////////////////////////////
-#	define AE_READ(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
-#	define AE_READP(stream, value) ae_magic_read_value(stream, (value), sizeof(*(value)))
-#	define AE_READF(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
-#	define AE_READF2(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
-#	define AE_READF3(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
-#	define AE_READF4(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
-#	define AE_READV(stream, value, size) ae_magic_read_value(stream, value, size)
-#	define AE_READN(stream, ptr, n) ae_magic_read_value(stream, ptr, sizeof(*ptr) * n)
+#define AE_READ(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#define AE_READP(stream, value) ae_magic_read_value(stream, (value), sizeof(*(value)))
+#define AE_READF(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#define AE_READF2(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#define AE_READF3(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#define AE_READF4(stream, value) ae_magic_read_value(stream, &(value), sizeof(value))
+#define AE_READV(stream, value, size) ae_magic_read_value(stream, value, size)
+#define AE_READN(stream, ptr, n) ae_magic_read_value(stream, ptr, sizeof(*ptr) * n)
 //////////////////////////////////////////////////////////////////////////
-#	define AE_READB(stream) ae_magic_read_bool(stream)
-#	define AE_READZ(stream) ae_magic_read_size(stream)
-#	define AE_READ8(stream) ae_magic_read_8(stream)
+#define AE_READB(stream) ae_magic_read_bool(stream)
+#define AE_READZ(stream) ae_magic_read_size(stream)
+#define AE_READ8(stream) ae_magic_read_8(stream)
 //////////////////////////////////////////////////////////////////////////
-#	define AE_READ_COLOR(stream, ptr) ae_magic_read_color(stream, (ptr))
-#	define AE_READ_COLOR_CHANNEL(stream, ptr) AE_READ(stream, (ptr))
-#	define AE_READ_VIEWPORT(stream, ptr) ae_magic_read_viewport, (stream, (ptr))
+#define AE_READ_COLOR(stream, ptr) ae_magic_read_color(stream, (ptr))
+#define AE_READ_COLOR_CHANNEL(stream, ptr) AE_READ(stream, (ptr))
+#define AE_READ_VIEWPORT(stream, ptr) ae_magic_read_viewport, (stream, (ptr))
 //////////////////////////////////////////////////////////////////////////
-#	define AE_READ_STRING(stream, ptr) AE_RESULT(ae_magic_read_string, (stream, &(ptr)))
-#	define AE_READ_POLYGON(stream, ptr) AE_RESULT(ae_magic_read_polygon, (stream, (ptr)))
-#	define AE_READ_MESH(stream, ptr) AE_RESULT(ae_magic_read_mesh, (stream, (ptr)))
+#define AE_READ_STRING(stream, ptr) AE_RESULT(ae_magic_read_string, (stream, &(ptr)))
+#define AE_READ_POLYGON(stream, ptr) AE_RESULT(ae_magic_read_polygon, (stream, (ptr)))
+#define AE_READ_MESH(stream, ptr) AE_RESULT(ae_magic_read_mesh, (stream, (ptr)))
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
 {
@@ -97,4 +97,4 @@ ae_void_t ae_magic_read_color( aeMovieStream * _stream, ae_color_t * _color );
 ae_void_t ae_magic_read_viewport( aeMovieStream * _stream, ae_viewport_t * _viewport );
 ae_result_t ae_magic_read_mesh( aeMovieStream * _stream, ae_mesh_t * _mesh );
 //////////////////////////////////////////////////////////////////////////
-#	endif
+#endif

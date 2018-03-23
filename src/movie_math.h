@@ -27,10 +27,10 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#	ifndef MOVIE_MATRIX_H_
-#	define MOVIE_MATRIX_H_
+#ifndef MOVIE_MATRIX_H_
+#define MOVIE_MATRIX_H_
 
-#	include "movie/movie_type.h"
+#include "movie/movie_type.h"
 
 //////////////////////////////////////////////////////////////////////////
 static const ae_float_t f_eps = 0.00001f;
@@ -112,4 +112,4 @@ ae_void_t ae_linerp_qzw( ae_quaternionzw_t _q, const ae_quaternionzw_t _q1, cons
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_multiply_tetragon_uv4_v2( ae_float_t * _out, const ae_vector2_t * _uv, const ae_float_t * _p );
 //////////////////////////////////////////////////////////////////////////
-#	endif
+#endif

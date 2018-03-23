@@ -30,7 +30,7 @@
 #ifndef MOVIE_DEBUG_H_
 #define MOVIE_DEBUG_H_
 
-#   include "movie/movie_type.h"
+#include "movie/movie_type.h"
 
 AE_INTERNAL ae_void_t __ae_break_point( ae_void_t )
 {
@@ -39,18 +39,18 @@ AE_INTERNAL ae_void_t __ae_break_point( ae_void_t )
     (ae_void_t)breakpoint_this;
 }
 
-#   ifdef AE_MOVIE_DEBUG
+#ifdef AE_MOVIE_DEBUG
 #   define AE_RETURN_ERROR_RESULT(Result) __ae_break_point(); return Result
-#   else
+#else
 #   define AE_RETURN_ERROR_RESULT(Result) return Result
-#   endif
+#endif
 
 
 
-#   ifdef AE_MOVIE_DEBUG
+#ifdef AE_MOVIE_DEBUG
 #	define AE_MOVIE_PANIC_MEMORY(Memory, Result) {if(Memory == AE_NULL) {__ae_break_point(); return Result;}}
-#   else
+#else
 #   define AE_MOVIE_PANIC_MEMORY(Memory, Result)
-#   endif
+#endif
 
 #endif
