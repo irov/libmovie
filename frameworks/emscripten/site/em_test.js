@@ -53,17 +53,23 @@ function em_player_node_sound_resume(ud, id)
     //a.resume()?
 }
 
-function onload_image(id, image)
+var loaders = {}
+
+function __onload_image(id, image, path)
 {
     var imageloadercanvas = document.getElementById("imageloader");
     
-    movie.utils_opengl_load_texure_from_image(imageloadercanvas, id, image)    
+    movie.utils_opengl_load_texure_from_image(imageloadercanvas, id, image)
+    
+    delete loaders[path]
 }
 
 function em_player_resource_image_provider(ud, id, path, codec, premultiplied)
 {
+    loaders[path] = 1
+
     var image = new Image();
-    image.onload = function() { onload_image(id, image, path); }
+    image.onload = function() { __onload_image(id, image, path); }
     image.src = path;
     image.setAttribute('crossOrigin', '');
 }
@@ -91,27 +97,43 @@ function onload_movie(canvas, response, em_player, composition_name)
         
         return
     }
-    
-    movie.set_movie_composition_wm(em_movie_composition, 100.0, 100.0, 0.0, 0.0, 1.0, 1.0, 0.0)
+       
+    movie.set_movie_composition_wm(em_movie_composition, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0)
         
     movie.play_movie_composition(em_movie_composition, 0.0)
     movie.set_movie_composition_loop(em_movie_composition, 1)
         
-    var start = performance.now();
-        
-    function tick(timestamp)
+    function wait_resource_load(timestamp2)
     {
-        var progressMs = timestamp - start;
-        start = timestamp
-            
-        movie.update_movie_composition(em_player, em_movie_composition, progressMs * 0.001)
-            
-        movie.render_movie_composition(em_player, em_movie_composition)
-            
-        requestAnimationFrame(tick);
-    }        
+        var loaders_length = Object.keys(loaders).length
         
-    requestAnimationFrame(tick)
+        if( loaders_length != 0 )
+        {
+            requestAnimationFrame(wait_resource_load);
+            return
+        }
+    
+        var start = performance.now();
+        
+        function tick(timestamp)
+        {
+            var progressMs = timestamp - start;
+            start = timestamp
+                        
+            if( progressMs > 0.0 )
+            {
+                movie.update_movie_composition(em_player, em_movie_composition, progressMs * 0.001)
+                    
+                movie.render_movie_composition(em_player, em_movie_composition)
+            }
+
+            requestAnimationFrame(tick);
+        }        
+            
+        requestAnimationFrame(tick)        
+    }
+        
+    requestAnimationFrame(wait_resource_load)
 };
 
 function libMOVIE_test(rendercanvas, movie_hash, movie_path, movie_aem, composition_name)

@@ -53,6 +53,8 @@ AEMovie["utils_opengl_initialize"] = function(canvas)
         if( context == null )
         {
             context = canvas.getContext("experimental-webgl");
+            
+            console.log("try get experimental-webgl context..." )
         }
      
         if( context == null) 
@@ -81,20 +83,20 @@ AEMovie["utils_opengl_initialize"] = function(canvas)
 
 AEMovie["utils_opengl_load_texure_from_image"] = function(imageloadercanvas, id, image)
 {
-    imageloadercanvas.setAttribute('width', '512px');
-    imageloadercanvas.setAttribute('height', '512px');
+    imageloadercanvas.setAttribute('width', '2048px');
+    imageloadercanvas.setAttribute('height', '2048px');
     
     context = imageloadercanvas.getContext('2d');
     
-    var width = 512
-    var height = 512
+    var width = image.width
+    var height = image.height
     
-    context.drawImage(image,0,0, image.width, image.height, 0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height, 0, 0, width, height);
     
     var image_data = context.getImageData(0, 0, width, height);
     
     var ptr = AEMovie["utils_malloc_arraybuffer"](image_data.data)
-
+    
     AEMovie["utils_opengl_create_texture"](id, width, height, ptr)
     
     AEMovie["utils_free_arraybuffer"](ptr);
@@ -103,7 +105,7 @@ AEMovie["utils_opengl_load_texure_from_image"] = function(imageloadercanvas, id,
 AEMovie["utils_malloc_arraybuffer"] = function(arraybuffer)
 {
     var numBytes = arraybuffer.byteLength;
-        
+            
     var ptr = AEMovie["_malloc"](numBytes);
     var heapBytes= new Uint8Array(AEMovie["HEAPU8"].buffer, ptr, numBytes);
     heapBytes.set(new Uint8Array(arraybuffer));
