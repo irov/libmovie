@@ -1604,9 +1604,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 AE_READF( _stream, resource->width );
                 AE_READF( _stream, resource->height );
 
-                ae_uint8_t alpha;
-                AE_READ( _stream, alpha );
-                resource->alpha = alpha;
+                resource->alpha = AE_READB( _stream );
 
                 AE_READF( _stream, resource->frameRate );
                 AE_READF( _stream, resource->duration );

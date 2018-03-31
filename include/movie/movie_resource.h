@@ -53,7 +53,7 @@ typedef struct aeMovieResourceVideo
     ae_float_t width;
     ae_float_t height;
 
-    ae_uint32_t alpha;
+    ae_bool_t alpha;
     ae_time_t frameRate; //No TIMESCALE
     ae_time_t duration; //No TIMESCALE
 
