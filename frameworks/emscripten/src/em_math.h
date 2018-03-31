@@ -152,34 +152,27 @@ static void __make_projection_fov_m4( float * _out, float _width, float _height,
     _out[15] = 0.f;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __make_orthogonal_m4( float * _out, float _width, float _height )
+static void __make_orthogonal_m4( float * _out, float _left, float _right, float _top, float _bottom, float _near, float _far )
 {
-    float zn = -1.f;
-    float zf = 1.f;
-    float r = 1.f;
-    float l = 0.f;
-    float t = 1.f;
-    float b = 0.f;
+    _out[0 * 4 + 0] = 2.f / (_right - _left);
+    _out[0 * 4 + 1] = 0.f;
+    _out[0 * 4 + 2] = 0.f;
+    _out[0 * 4 + 3] = 0.f;
 
-    _out[0] = 2.f / _width;
-    _out[1] = 0.f;
-    _out[2] = 0.f;
-    _out[3] = 0.f;
+    _out[1 * 4 + 0] = 0.f;
+    _out[1 * 4 + 1] = 2.f / (_top - _bottom);
+    _out[1 * 4 + 2] = 0.f;
+    _out[1 * 4 + 3] = 0.f;
 
-    _out[4] = 0.f;
-    _out[5] = -2.f / _height;
-    _out[6] = 0.f;
-    _out[7] = 0.f;
+    _out[2 * 4 + 0] = 0.f;
+    _out[2 * 4 + 1] = 0.f;
+    _out[2 * 4 + 2] = 1.f / (_far - _near);
+    _out[2 * 4 + 3] = 0.f;
 
-    _out[8] = 0.f;
-    _out[9] = 0.f;
-    _out[10] = 2.f / (zf - zn);
-    _out[11] = 0.f;
-
-    _out[12] = -(r + l) / (r - l);
-    _out[13] = (t + b) / (t - b);
-    _out[14] = -zn / (zn - zf);
-    _out[15] = 1.f;
+    _out[3 * 4 + 0] = (_left + _right) / (_left - _right);
+    _out[3 * 4 + 1] = (_bottom + _top) / (_bottom - _top);
+    _out[3 * 4 + 2] = _near / (_near - _far);
+    _out[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __identity_m4( float * _out )
@@ -226,6 +219,13 @@ static void __mul_v3_v3_m4_r( float * _out, const float * _v, const float * _m )
     _out[0] = _m[0 * 4 + 0] * _v[0] + _m[1 * 4 + 0] * _v[1] + _m[2 * 4 + 0] * _v[2];
     _out[1] = _m[0 * 4 + 1] * _v[0] + _m[1 * 4 + 1] * _v[1] + _m[2 * 4 + 1] * _v[2];
     _out[2] = _m[0 * 4 + 2] * _v[0] + _m[1 * 4 + 2] * _v[1] + _m[2 * 4 + 2] * _v[2];
+}
+//////////////////////////////////////////////////////////////////////////
+static void __copy_v3( float * _out, const float * _v )
+{
+    _out[0] = _v[0];
+    _out[1] = _v[1];
+    _out[2] = _v[2];
 }
 //////////////////////////////////////////////////////////////////////////
 static void __v3_v3_m4( float * _out, const float * _v, const float * _m )

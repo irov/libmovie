@@ -43,34 +43,17 @@
 #include "em_opengles.h"
 
 //////////////////////////////////////////////////////////////////////////
-typedef struct em_blend_render_vertex_t
-{
-    ae_float_t position[3];
-    ae_uint32_t color;
-    ae_float_t uv[2];
-} em_blend_render_vertex_t;
+#define EM_MAX_PATH 256
 //////////////////////////////////////////////////////////////////////////
-typedef struct em_blend_shader_t
-{
-    GLuint program_id;
-
-    GLint positionLocation;
-    GLint colorLocation;
-    GLint texcoordLocation;
-    GLint vpMatrixLocation;
-    GLint worldMatrixLocation;
-    GLint tex0Location;
-} em_blend_shader_t;
-//////////////////////////////////////////////////////////////////////////
-typedef struct em_track_matte_render_vertex_t
+typedef struct em_render_vertex_t
 {
     ae_float_t position[3];
     ae_uint32_t color;
     ae_float_t uv0[2];
     ae_float_t uv1[2];
-} em_track_matte_render_vertex_t;
+} em_render_vertex_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct em_track_matte_shader_t
+typedef struct em_shader_t
 {
     GLuint program_id;
 
@@ -82,26 +65,33 @@ typedef struct em_track_matte_shader_t
     GLint worldMatrixLocation;
     GLint tex0Location;
     GLint tex1Location;
-} em_track_matte_shader_t;
+} em_shader_t;
 //////////////////////////////////////////////////////////////////////////
-#define EM_FOLDER_MAX_PATH 256
+typedef struct em_texture_cache_t
+{
+    ae_char_t path[EM_MAX_PATH];
+    GLuint id;
+} em_texture_cache_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_player_t
 {
     const aeMovieInstance * instance;
 
-    ae_char_t folder[EM_FOLDER_MAX_PATH];
+    ae_char_t folder[EM_MAX_PATH];
 
     ae_uint32_t width;
     ae_uint32_t height;
 
     ae_uint32_t ud;
 
-    em_blend_shader_t * blend_shader;
-    em_track_matte_shader_t * track_matte_shader;
+    em_shader_t * color_shader;
+    em_shader_t * blend_shader;
+    em_shader_t * track_matte_shader;
+    em_shader_t * track_matte_shader_premultiplied;
 
-    em_blend_render_vertex_t blend_vertices[1024];
-    em_track_matte_render_vertex_t track_matte_vertices[1024];
+    em_render_vertex_t blend_vertices[1024];
+    
+    em_texture_cache_t texture_caches[256];
     
 } em_player_t;
 //////////////////////////////////////////////////////////////////////////
@@ -173,30 +163,121 @@ static ae_void_t __instance_logerror( ae_voidptr_t _data, aeMovieErrorCode _code
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static em_blend_shader_t * __make_blend_shader()
+static em_shader_t * __make_color_shader()
 {
     const char * vertex_shader_source =
         "uniform highp mat4 g_vpMatrix;\n"
         "uniform highp mat4 g_worldMatrix;\n"
         "attribute highp vec4 a_position;\n"
-        "attribute lowp vec4 a_color;\n"
-        "attribute mediump vec2 a_texcoord;\n"
-        "varying lowp vec4 v_color;\n"
-        "varying mediump vec2 v_texcoord;\n"
+        "attribute highp vec4 a_color;\n"
+        "varying highp vec4 v_color;\n"
         "void main( void )\n"
         "{\n"
         "   gl_Position = g_vpMatrix * g_worldMatrix * a_position;\n"
         "   v_color = a_color;\n"
-        "   v_texcoord = a_texcoord;\n"
+        "}\n";
+
+    const char * fragment_shader_source =
+        "varying highp vec4 v_color;\n"
+        "void main( void ) {\n"
+        "   gl_FragColor = v_color;\n"
+        "}\n";
+
+    GLuint program_id = __make_opengl_program( "__color__", 100, vertex_shader_source, fragment_shader_source );
+
+    if( program_id == 0U )
+    {
+        return em_nullptr;
+    }
+
+    int positionLocation;
+    GLCALLR( positionLocation, glGetAttribLocation, (program_id, "a_position") );
+
+    if( positionLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_position '%d'\n"
+            , positionLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int colorLocation;
+    GLCALLR( colorLocation, glGetAttribLocation, (program_id, "a_color") );
+
+    if( colorLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_color '%d'\n"
+            , colorLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int vpMatrixLocation;
+    GLCALLR( vpMatrixLocation, glGetUniformLocation, (program_id, "g_vpMatrix") );
+
+    if( vpMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_vpMatrix '%d'\n"
+            , vpMatrixLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int worldMatrixLocation;
+    GLCALLR( worldMatrixLocation, glGetUniformLocation, (program_id, "g_worldMatrix") );
+
+    if( worldMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_worldMatrix '%d'\n"
+            , worldMatrixLocation
+        );
+
+        return em_nullptr;
+    }
+
+    em_shader_t * shader = EM_NEW( em_shader_t );
+
+    shader->program_id = program_id;
+    shader->positionLocation = positionLocation;
+    shader->colorLocation = colorLocation;
+    shader->texcoord0Location = -1;
+    shader->texcoord1Location = -1;
+    shader->vpMatrixLocation = vpMatrixLocation;
+    shader->worldMatrixLocation = worldMatrixLocation;
+    shader->tex0Location = -1;
+    shader->tex1Location = -1;
+
+    return shader;
+}
+//////////////////////////////////////////////////////////////////////////
+static em_shader_t * __make_blend_shader()
+{
+    const char * vertex_shader_source =
+        "uniform highp mat4 g_vpMatrix;\n"
+        "uniform highp mat4 g_worldMatrix;\n"
+        "attribute highp vec4 a_position;\n"
+        "attribute highp vec4 a_color;\n"
+        "attribute highp vec2 a_texcoord0;\n"
+        "attribute highp vec2 a_texcoord1;\n"
+        "varying highp vec4 v_color;\n"
+        "varying highp vec2 v_texcoord0;\n"
+        "void main( void )\n"
+        "{\n"
+        "   gl_Position = g_vpMatrix * g_worldMatrix * a_position;\n"
+        "   v_color = a_color;\n"
+        "   v_texcoord0 = a_texcoord0;\n"
         "}\n";
 
     const char * fragment_shader_source =
         "uniform sampler2D g_tex0;\n"
-        "varying lowp vec4 v_color;\n"
-        "varying mediump vec2 v_texcoord;\n"
+        "varying highp vec4 v_color;\n"
+        "varying highp vec2 v_texcoord0;\n"
         "void main( void ) {\n"
-        "mediump vec4 c = texture2D( g_tex0, v_texcoord );\n"
-        "gl_FragColor = v_color * c;\n"
+        "   highp vec4 c = texture2D( g_tex0, v_texcoord0 );\n"
+        "   gl_FragColor = v_color * c;\n"
         "}\n";
 
     GLuint program_id = __make_opengl_program( "__blend__", 100, vertex_shader_source, fragment_shader_source );
@@ -230,13 +311,13 @@ static em_blend_shader_t * __make_blend_shader()
         return em_nullptr;
     }
 
-    int texcoordLocation;
-    GLCALLR( texcoordLocation, glGetAttribLocation, (program_id, "a_texcoord") );
+    int texcoord0Location;
+    GLCALLR( texcoord0Location, glGetAttribLocation, (program_id, "a_texcoord0") );
 
-    if( texcoordLocation == -1 )
+    if( texcoord0Location == -1 )
     {
-        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_texcoord '%d'\n"
-            , texcoordLocation
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_texcoord0 '%d'\n"
+            , texcoord0Location
         );
 
         return em_nullptr;
@@ -278,31 +359,33 @@ static em_blend_shader_t * __make_blend_shader()
         return em_nullptr;
     }
 
-    em_blend_shader_t * blend_shader = EM_NEW( em_blend_shader_t );
+    em_shader_t * shader = EM_NEW( em_shader_t );
 
-    blend_shader->program_id = program_id;
-    blend_shader->positionLocation = positionLocation;
-    blend_shader->colorLocation = colorLocation;
-    blend_shader->texcoordLocation = texcoordLocation;
-    blend_shader->vpMatrixLocation = vpMatrixLocation;
-    blend_shader->worldMatrixLocation = worldMatrixLocation;
-    blend_shader->tex0Location = tex0Location;
+    shader->program_id = program_id;
+    shader->positionLocation = positionLocation;
+    shader->colorLocation = colorLocation;
+    shader->texcoord0Location = texcoord0Location;
+    shader->texcoord1Location = -1;
+    shader->vpMatrixLocation = vpMatrixLocation;
+    shader->worldMatrixLocation = worldMatrixLocation;
+    shader->tex0Location = tex0Location;
+    shader->tex1Location = -1;
 
-    return blend_shader;
+    return shader;
 }
 //////////////////////////////////////////////////////////////////////////
-static em_track_matte_shader_t * __make_track_matte_shader()
+static em_shader_t * __make_track_matte_shader()
 {
     const char * vertex_shader_source =
         "uniform highp mat4 g_vpMatrix;\n"
         "uniform highp mat4 g_worldMatrix;\n"
         "attribute highp vec4 a_position;\n"
-        "attribute lowp vec4 a_color;\n"
-        "attribute mediump vec2 a_texcoord0;\n"
-        "attribute mediump vec2 a_texcoord1;\n"
-        "varying lowp vec4 v_color;\n"
-        "varying mediump vec2 v_texcoord0;\n"
-        "varying mediump vec2 v_texcoord1;\n"
+        "attribute highp vec4 a_color;\n"
+        "attribute highp vec2 a_texcoord0;\n"
+        "attribute highp vec2 a_texcoord1;\n"
+        "varying highp vec4 v_color;\n"
+        "varying highp vec2 v_texcoord0;\n"
+        "varying highp vec2 v_texcoord1;\n"
         "void main( void )\n"
         "{\n"
         "   gl_Position = g_vpMatrix * g_worldMatrix * a_position;\n"
@@ -314,13 +397,15 @@ static em_track_matte_shader_t * __make_track_matte_shader()
     const char * fragment_shader_source =
         "uniform sampler2D g_tex0;\n"
         "uniform sampler2D g_tex1;\n"
-        "varying lowp vec4 v_color;\n"
-        "varying mediump vec2 v_texcoord0;\n"
-        "varying mediump vec2 v_texcoord1;\n"
+        "varying highp vec4 v_color;\n"
+        "varying highp vec2 v_texcoord0;\n"
+        "varying highp vec2 v_texcoord1;\n"
         "void main( void ) {\n"
-        "mediump vec4 c0 = texture2D( g_tex0, v_texcoord0 );\n"
-        "mediump vec4 c1 = texture2D( g_tex1, v_texcoord1 );\n"
-        "gl_FragColor = v_color * c0 * vec4(1.0, 1.0, 1.0, c1.a);\n"
+        "   highp vec4 c0 = texture2D( g_tex0, v_texcoord0 );\n"
+        "   highp vec4 c1 = texture2D( g_tex1, v_texcoord1 );\n"
+        "   highp vec4 c = v_color * c0;\n"
+        "   c.a *= c1.a;\n"
+        "   gl_FragColor = c;\n"
         "}\n";
 
     GLuint program_id = __make_opengl_program( "__track_matte__", 100, vertex_shader_source, fragment_shader_source );
@@ -426,19 +511,174 @@ static em_track_matte_shader_t * __make_track_matte_shader()
         return em_nullptr;
     }
 
-    em_track_matte_shader_t * track_matte_shader = EM_NEW( em_track_matte_shader_t );
+    em_shader_t * shader = EM_NEW( em_shader_t );
 
-    track_matte_shader->program_id = program_id;
-    track_matte_shader->positionLocation = positionLocation;
-    track_matte_shader->colorLocation = colorLocation;
-    track_matte_shader->texcoord0Location = texcoord0Location;
-    track_matte_shader->texcoord1Location = texcoord1Location;
-    track_matte_shader->vpMatrixLocation = vpMatrixLocation;
-    track_matte_shader->worldMatrixLocation = worldMatrixLocation;    
-    track_matte_shader->tex0Location = tex0Location;
-    track_matte_shader->tex1Location = tex1Location;
+    shader->program_id = program_id;
+    shader->positionLocation = positionLocation;
+    shader->colorLocation = colorLocation;
+    shader->texcoord0Location = texcoord0Location;
+    shader->texcoord1Location = texcoord1Location;
+    shader->vpMatrixLocation = vpMatrixLocation;
+    shader->worldMatrixLocation = worldMatrixLocation;    
+    shader->tex0Location = tex0Location;
+    shader->tex1Location = tex1Location;
 
-    return track_matte_shader;
+    return shader;
+}
+//////////////////////////////////////////////////////////////////////////
+static em_shader_t * __make_track_matte_shader_premultiplied()
+{
+    const char * vertex_shader_source =
+        "uniform highp mat4 g_vpMatrix;\n"
+        "uniform highp mat4 g_worldMatrix;\n"
+        "attribute highp vec4 a_position;\n"
+        "attribute highp vec4 a_color;\n"
+        "attribute highp vec2 a_texcoord0;\n"
+        "attribute highp vec2 a_texcoord1;\n"
+        "varying highp vec4 v_color;\n"
+        "varying highp vec2 v_texcoord0;\n"
+        "varying highp vec2 v_texcoord1;\n"
+        "void main( void )\n"
+        "{\n"
+        "   gl_Position = g_vpMatrix * g_worldMatrix * a_position;\n"
+        "   v_color = a_color;\n"
+        "   v_texcoord0 = a_texcoord0;\n"
+        "   v_texcoord1 = a_texcoord1;\n"
+        "}\n";
+
+    const char * fragment_shader_source =
+        "uniform sampler2D g_tex0;\n"
+        "uniform sampler2D g_tex1;\n"
+        "varying highp vec4 v_color;\n"
+        "varying highp vec2 v_texcoord0;\n"
+        "varying highp vec2 v_texcoord1;\n"
+        "void main( void ) {\n"
+        "   highp vec4 c0 = texture2D( g_tex0, v_texcoord0 );\n"
+        "   highp vec4 c1 = texture2D( g_tex1, v_texcoord1 );\n"
+        "   highp vec4 c = v_color * c0;\n"
+        "   c.r *= c1.a;\n"
+        "   c.g *= c1.a;\n"
+        "   c.b *= c1.a;\n"
+        "   c.a *= c1.a;\n"
+        "   gl_FragColor = c;\n"
+        "}\n";
+
+    GLuint program_id = __make_opengl_program( "__track_matte_premultiplied__", 100, vertex_shader_source, fragment_shader_source );
+
+    if( program_id == 0U )
+    {
+        return em_nullptr;
+    }
+
+    int positionLocation;
+    GLCALLR( positionLocation, glGetAttribLocation, (program_id, "a_position") );
+
+    if( positionLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_position '%d'\n"
+            , positionLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int colorLocation;
+    GLCALLR( colorLocation, glGetAttribLocation, (program_id, "a_color") );
+
+    if( colorLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_color '%d'\n"
+            , colorLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int texcoord0Location;
+    GLCALLR( texcoord0Location, glGetAttribLocation, (program_id, "a_texcoord0") );
+
+    if( texcoord0Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl attrib a_texcoord0 '%d'\n"
+            , texcoord0Location
+        );
+
+        return em_nullptr;
+    }
+
+    int texcoord1Location;
+    GLCALLR( texcoord1Location, glGetAttribLocation, (program_id, "a_texcoord1") );
+
+    if( texcoord1Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid attrib a_texcoord1 '%d'\n"
+            , texcoord1Location
+        );
+
+        return em_nullptr;
+    }
+
+    int vpMatrixLocation;
+    GLCALLR( vpMatrixLocation, glGetUniformLocation, (program_id, "g_vpMatrix") );
+
+    if( vpMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_vpMatrix '%d'\n"
+            , vpMatrixLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int worldMatrixLocation;
+    GLCALLR( worldMatrixLocation, glGetUniformLocation, (program_id, "g_worldMatrix") );
+
+    if( worldMatrixLocation == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_worldMatrix '%d'\n"
+            , worldMatrixLocation
+        );
+
+        return em_nullptr;
+    }
+
+    int tex0Location;
+    GLCALLR( tex0Location, glGetUniformLocation, (program_id, "g_tex0") );
+
+    if( tex0Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_tex0 '%d'\n"
+            , tex0Location
+        );
+
+        return em_nullptr;
+    }
+
+    int tex1Location;
+    GLCALLR( tex1Location, glGetUniformLocation, (program_id, "g_tex1") );
+
+    if( tex1Location == -1 )
+    {
+        emscripten_log( EM_LOG_ERROR, "opengl invalid uniform g_tex1 '%d'\n"
+            , tex1Location
+        );
+
+        return em_nullptr;
+    }
+
+    em_shader_t * shader = EM_NEW( em_shader_t );
+
+    shader->program_id = program_id;
+    shader->positionLocation = positionLocation;
+    shader->colorLocation = colorLocation;
+    shader->texcoord0Location = texcoord0Location;
+    shader->texcoord1Location = texcoord1Location;
+    shader->vpMatrixLocation = vpMatrixLocation;
+    shader->worldMatrixLocation = worldMatrixLocation;
+    shader->tex0Location = tex0Location;
+    shader->tex1Location = tex1Location;
+
+    return shader;
 }
 //////////////////////////////////////////////////////////////////////////
 em_player_t * em_create_player( const char * _hashkey, const char * _folder, uint32_t _width, uint32_t _height, uint32_t _ud )
@@ -464,30 +704,72 @@ em_player_t * em_create_player( const char * _hashkey, const char * _folder, uin
     player->height = _height;
     player->ud = _ud;
 
-    em_blend_shader_t * blend_shader = __make_blend_shader();
+    em_shader_t * color_shader = __make_color_shader();
+
+    if( color_shader == em_nullptr )
+    {
+        emscripten_log( EM_LOG_ERROR, "player invalid create color shader\n"
+        );
+
+        return em_nullptr;
+    }
+
+    player->color_shader = color_shader;
+
+    em_shader_t * blend_shader = __make_blend_shader();
 
     if( blend_shader == em_nullptr )
     {
+        emscripten_log( EM_LOG_ERROR, "player invalid create blend shader\n"
+        );
+
         return em_nullptr;
     }
 
     player->blend_shader = blend_shader;
 
-    em_track_matte_shader_t * track_matte_shader = __make_track_matte_shader();
+    em_shader_t * track_matte_shader = __make_track_matte_shader();
 
     if( track_matte_shader == em_nullptr )
     {
+        emscripten_log( EM_LOG_ERROR, "player invalid create track matte shader\n"
+        );
+
         return em_nullptr;
     }
 
     player->track_matte_shader = track_matte_shader;
+
+    em_shader_t * track_matte_shader_premultiplied = __make_track_matte_shader_premultiplied();
+
+    if( track_matte_shader_premultiplied == em_nullptr )
+    {
+        emscripten_log( EM_LOG_ERROR, "player invalid create track matte shader\n"
+        );
+
+        return em_nullptr;
+    }
+
+    player->track_matte_shader_premultiplied = track_matte_shader_premultiplied;
+
+    uint32_t i = 0;
+    for( ; i != 256; ++i )
+    {
+        em_texture_cache_t * cache = player->texture_caches + i;
+
+        cache->id = 0U;
+        memset( cache->path, 0, EM_MAX_PATH );
+    }
     
     return player;
 }
 //////////////////////////////////////////////////////////////////////////
 void em_delete_player( em_player_t * _player )
 {
+    EM_FREE( _player->color_shader );
     EM_FREE( _player->blend_shader );
+    EM_FREE( _player->track_matte_shader );
+    EM_FREE( _player->track_matte_shader_premultiplied );    
 
     ae_delete_movie_instance( _player->instance );
 
@@ -514,6 +796,7 @@ static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_v
 typedef struct em_resource_image_t
 {
     GLuint texture_id;
+    ae_bool_t premultiplied;
 } em_resource_image_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_resource_sound_t
@@ -521,34 +804,70 @@ typedef struct em_resource_sound_t
     uint32_t ud;
 } em_resource_sound_t;
 //////////////////////////////////////////////////////////////////////////
+static GLuint __cache_resource_image( em_player_t * em_player, const ae_char_t * _path, ae_uint32_t _codec, ae_bool_t _premultiplied )
+{
+    uint32_t i = 0;
+    for( ; i != 256; ++i )
+    {
+        em_texture_cache_t * cache = em_player->texture_caches + i;
+
+        if( cache->id == 0U )
+        {
+            break;
+        }
+
+        if( strcmp( cache->path, _path ) != 0 )
+        {
+            continue;
+        }
+
+        GLuint texture_id = cache->id;
+
+        return texture_id;
+    }
+
+    em_texture_cache_t * new_cache = em_player->texture_caches + i;
+    
+    strcpy( new_cache->path, _path );
+
+    GLuint texture_id = __make_opengl_texture();
+    new_cache->id = texture_id;
+
+    char resource_path[EM_MAX_PATH];
+
+    strcpy( resource_path, em_player->folder );
+    strcat( resource_path, _path );
+
+    EM_ASM(
+        {
+            em_player_resource_image_provider( $0, $1, Pointer_stringify( $2 ), $3, $4 );
+        }, em_player->ud, texture_id, resource_path, _codec, _premultiplied );
+
+    return texture_id;
+}
+//////////////////////////////////////////////////////////////////////////
 static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _resource, ae_voidptr_t _ud )
 {
     em_player_t * em_player = (em_player_t *)_ud;
 
     switch( _resource->type )
     {
+    case AE_MOVIE_RESOURCE_SOLID:
+        {
+            const aeMovieResourceSolid * r = (const aeMovieResourceSolid *)_resource;
+
+            //TODO
+        }break;
     case AE_MOVIE_RESOURCE_IMAGE:
         {
             const aeMovieResourceImage * r = (const aeMovieResourceImage *)_resource;
 
             em_resource_image_t * resource_image = EM_NEW( em_resource_image_t );
 
-            GLuint texture_id = __make_opengl_texture();
+            GLuint texture_id = __cache_resource_image( em_player, r->path, r->codec, r->premultiplied );
 
-            char resource_path[EM_FOLDER_MAX_PATH];
-
-            size_t folder_len = strlen( em_player->folder );
-            memcpy( resource_path, em_player->folder, folder_len );
-            size_t path_len = strlen( r->path );
-            memcpy( resource_path + folder_len, r->path, path_len );
-            resource_path[folder_len + path_len] = '\0';
-
-            EM_ASM(
-            {
-                em_player_resource_image_provider( $0, $1, Pointer_stringify( $2 ), $3, $4 );
-            }, em_player->ud, texture_id, resource_path, r->codec, r->premultiplied );
-            
             resource_image->texture_id = texture_id;
+            resource_image->premultiplied = r->premultiplied;
 
             return resource_image;            
         }break;
@@ -663,14 +982,17 @@ em_movie_data_t * em_create_movie_data( em_player_t * _player, const uint8_t * _
 
     aeMovieStream * stream = ae_create_movie_stream_memory( _player->instance, _data, &__memory_copy, AE_NULL );
 
-    ae_uint32_t load_version;
-    ae_result_t result_load = ae_load_movie_data( movie_data, stream, &load_version );
+    ae_uint32_t load_major_version;
+    ae_uint32_t load_minor_version;
+    ae_result_t result_load = ae_load_movie_data( movie_data, stream, &load_major_version, &load_minor_version );
 
     if( result_load == AE_RESULT_INVALID_VERSION )
     {
-        emscripten_log( EM_LOG_ERROR, "movie data invalid version sdk - '%u' load - '%u'"
-            , AE_MOVIE_SDK_VERSION
-            , load_version
+        emscripten_log( EM_LOG_ERROR, "movie data invalid version sdk - '%u:%u' load - '%u:%u'"
+            , AE_MOVIE_SDK_MAJOR_VERSION
+            , AE_MOVIE_SDK_MINOR_VERSION
+            , load_major_version
+            , load_minor_version
         );
 
         return em_nullptr;
@@ -845,24 +1167,6 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
         {
             switch( _callbackData->type )
             {
-            case AE_MOVIE_LAYER_TYPE_MOVIE:
-            case AE_MOVIE_LAYER_TYPE_SPRITE:
-            case AE_MOVIE_LAYER_TYPE_TEXT:
-            case AE_MOVIE_LAYER_TYPE_EVENT:
-            case AE_MOVIE_LAYER_TYPE_SOCKET:
-            case AE_MOVIE_LAYER_TYPE_SHAPE:
-            case AE_MOVIE_LAYER_TYPE_SLOT:
-            case AE_MOVIE_LAYER_TYPE_NULL:
-            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
-            case AE_MOVIE_LAYER_TYPE_SOLID:
-            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
-            case AE_MOVIE_LAYER_TYPE_VIDEO:
-            case AE_MOVIE_LAYER_TYPE_PARTICLE:
-            case AE_MOVIE_LAYER_TYPE_IMAGE:
-            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-                {
-                    //Empty
-                }break;
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
                     em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
@@ -875,30 +1179,14 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
                     }, em_player->ud, resource_sound->ud, _callbackData->offset );
                     
                 }break;
+            default:
+                break;
             }
         }break;
     case AE_MOVIE_STATE_UPDATE_END:
         {
             switch( _callbackData->type )
             {
-            case AE_MOVIE_LAYER_TYPE_MOVIE:
-            case AE_MOVIE_LAYER_TYPE_SPRITE:
-            case AE_MOVIE_LAYER_TYPE_TEXT:
-            case AE_MOVIE_LAYER_TYPE_EVENT:
-            case AE_MOVIE_LAYER_TYPE_SOCKET:
-            case AE_MOVIE_LAYER_TYPE_SHAPE:
-            case AE_MOVIE_LAYER_TYPE_SLOT:
-            case AE_MOVIE_LAYER_TYPE_NULL:
-            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
-            case AE_MOVIE_LAYER_TYPE_SOLID:
-            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
-            case AE_MOVIE_LAYER_TYPE_VIDEO:
-            case AE_MOVIE_LAYER_TYPE_PARTICLE:
-            case AE_MOVIE_LAYER_TYPE_IMAGE:
-            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-                {
-                    //Empty
-                }break;
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
                     em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
@@ -911,30 +1199,14 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
                     }, em_player->ud, resource_sound->ud );
 
                 }break;
+            default:
+                break;
             }
         }break;
     case AE_MOVIE_STATE_UPDATE_PAUSE:
         {
             switch( _callbackData->type )
             {
-            case AE_MOVIE_LAYER_TYPE_MOVIE:
-            case AE_MOVIE_LAYER_TYPE_SPRITE:
-            case AE_MOVIE_LAYER_TYPE_TEXT:
-            case AE_MOVIE_LAYER_TYPE_EVENT:
-            case AE_MOVIE_LAYER_TYPE_SOCKET:
-            case AE_MOVIE_LAYER_TYPE_SHAPE:
-            case AE_MOVIE_LAYER_TYPE_SLOT:
-            case AE_MOVIE_LAYER_TYPE_NULL:
-            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
-            case AE_MOVIE_LAYER_TYPE_SOLID:
-            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
-            case AE_MOVIE_LAYER_TYPE_VIDEO:
-            case AE_MOVIE_LAYER_TYPE_PARTICLE:
-            case AE_MOVIE_LAYER_TYPE_IMAGE:
-            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-                {
-                    //Empty
-                }break;
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
                     em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
@@ -947,30 +1219,14 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
                     }, em_player->ud, resource_sound->ud );
 
                 }break;
+            default:
+                break;
             }
         }break;
     case AE_MOVIE_STATE_UPDATE_RESUME:
         {
             switch( _callbackData->type )
             {
-            case AE_MOVIE_LAYER_TYPE_MOVIE:
-            case AE_MOVIE_LAYER_TYPE_SPRITE:
-            case AE_MOVIE_LAYER_TYPE_TEXT:
-            case AE_MOVIE_LAYER_TYPE_EVENT:
-            case AE_MOVIE_LAYER_TYPE_SOCKET:
-            case AE_MOVIE_LAYER_TYPE_SHAPE:
-            case AE_MOVIE_LAYER_TYPE_SLOT:
-            case AE_MOVIE_LAYER_TYPE_NULL:
-            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
-            case AE_MOVIE_LAYER_TYPE_SOLID:
-            case AE_MOVIE_LAYER_TYPE_SEQUENCE:
-            case AE_MOVIE_LAYER_TYPE_VIDEO:
-            case AE_MOVIE_LAYER_TYPE_PARTICLE:
-            case AE_MOVIE_LAYER_TYPE_IMAGE:
-            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-                {
-                    //Empty
-                }break;
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
                     em_node_sound_t * node_sound = (em_node_sound_t *)_callbackData->element;
@@ -983,6 +1239,8 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
                     }, em_player->ud, resource_sound->ud );
 
                 }break;
+            default:
+                break;
             }
         }break;
     }
@@ -1049,7 +1307,8 @@ typedef struct em_custom_shader_t
 
     GLint positionLocation;
     GLint colorLocation;
-    GLint texcoordLocation;
+    GLint texcoord0Location;
+    GLint texcoord1Location;
 
     GLint vpMatrixLocation;
     GLint worldMatrixLocation;
@@ -1101,20 +1360,20 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
 
     shader->colorLocation = colorLocation;
 
-    int texcoordLocation;
-    GLCALLR( texcoordLocation, glGetAttribLocation, (program_id, "a_texcoord") );
+    int texcoord0Location;
+    GLCALLR( texcoord0Location, glGetAttribLocation, (program_id, "a_texcoord") );
 
-    if( texcoordLocation == -1 )
+    if( texcoord0Location == -1 )
     {
         emscripten_log( EM_LOG_ERROR, "shader '%s' invalid attrib inUV '%d'\n"
             , _callbackData->name
-            , texcoordLocation
+            , texcoord0Location
         );
 
         return em_nullptr;
     }
 
-    shader->texcoordLocation = texcoordLocation;
+    shader->texcoord0Location = texcoord0Location;
 
     shader->parameter_count = _callbackData->parameter_count;
 
@@ -1343,20 +1602,12 @@ em_movie_composition_t * em_create_movie_composition( em_player_t * _player, em_
     aeMovieCompositionRenderInfo info;
     ae_calculate_movie_composition_render_info( composition, &info );
 
-    //size_t opengl_vertex_buffer_size = info.max_vertex_count * sizeof( em_blend_render_vertex_t );
-
     GLuint opengl_vertex_buffer_id = 0;
     GLCALL( glGenBuffers, (1, &opengl_vertex_buffer_id) );
-    //GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, opengl_vertex_buffer_id) );
-    //GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
-
-    //size_t opengl_indices_buffer_size = info.max_index_count * sizeof( em_render_index_t );
 
     GLuint opengl_indices_buffer_id = 0;
     GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
-    //GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_id) );
-    //GLCALL( glBufferData, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_size, indices, GL_STREAM_DRAW) );
-    
+
     em_movie_composition_t * em_composition = EM_NEW( em_movie_composition_t );
 
     em_composition->composition = composition;
@@ -1586,8 +1837,109 @@ void em_update_movie_composition( em_player_t * _player, em_movie_composition_t 
     ae_update_movie_composition( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
+static ae_bool_t __em_render_set_blend( aeMovieRenderMesh * mesh )
+{
+    ae_bool_t texture_premultiplied = AE_FALSE;
+
+    switch( mesh->layer_type )
+    {
+    case AE_MOVIE_LAYER_TYPE_SEQUENCE:
+    case AE_MOVIE_LAYER_TYPE_IMAGE:
+        {
+            const em_resource_image_t * resource_image = (const em_resource_image_t *)mesh->resource_data;
+                        
+            texture_premultiplied = resource_image->premultiplied;
+        }
+    default:
+        break;
+    }
+
+    switch( mesh->blend_mode )
+    {
+    case AE_MOVIE_BLEND_ADD:
+        {
+            if( texture_premultiplied == AE_TRUE )
+            {
+                GLCALL( glBlendFunc, (GL_ONE, GL_ONE) );
+            }
+            else
+            {
+                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE) );
+            }
+        }break;
+    case AE_MOVIE_BLEND_NORMAL:
+        {
+            if( texture_premultiplied == AE_TRUE )
+            {
+                GLCALL( glBlendFunc, (GL_ONE, GL_ONE_MINUS_SRC_ALPHA) );
+            }
+            else
+            {
+                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );
+            }
+        }break;
+    default:
+        break;
+    }
+
+    return texture_premultiplied;
+}
+//////////////////////////////////////////////////////////////////////////
+static void __em_render_set_camera( const aeMovieComposition * ae_movie_composition, float player_width, float player_height, aeMovieRenderMesh * mesh, float * m )
+{
+    if( mesh->camera_data == AE_NULL )
+    {
+        const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
+
+        float viewMatrix[16];
+        __identity_m4( viewMatrix );
+
+        float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
+        float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
+
+        float aspect = player_width / player_height;
+
+        float new_composition_width = 0.f;
+        float offset_composition_width = 0.f;
+
+        if( aspect >= 1.f )
+        {
+            new_composition_width = composition_height * aspect;
+
+            if( new_composition_width < composition_width )
+            {
+                offset_composition_width = (composition_width - new_composition_width) * 0.5f;
+            }
+        }
+        else
+        {
+            new_composition_width = composition_width;
+        }
+
+        float projectionMatrix[16];
+        __make_orthogonal_m4( projectionMatrix, offset_composition_width, offset_composition_width + new_composition_width, 0.f, composition_height, -1.f, 1.f );
+
+        __mul_m4_m4( m, projectionMatrix, viewMatrix );
+    }
+    else
+    {
+        ae_camera_t * camera = (ae_camera_t *)mesh->camera_data;
+
+        __mul_m4_m4( m, camera->projection, camera->view );
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 void em_render_movie_composition( em_player_t * _player, em_movie_composition_t * _composition )
 {
+    GLCALL( glClearColor, (0, 0, 0, 255) );
+    GLCALL( glDepthMask, (GL_FALSE) );
+    GLCALL( glClear, (GL_COLOR_BUFFER_BIT) );
+
+    float player_width = _player->width;
+    float player_height = _player->height;
+
+    GLCALL( glViewport, (0, 0, (GLsizei)player_width, (GLsizei)player_height) );
+
     aeMovieComposition * ae_movie_composition = _composition->composition;
 
     uint32_t mesh_iterator = 0;
@@ -1595,81 +1947,23 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
     aeMovieRenderMesh mesh;
     while( ae_compute_movie_mesh( ae_movie_composition, &mesh_iterator, &mesh ) == AE_TRUE )
     {
-        switch( mesh.blend_mode )
-        {
-        case AE_MOVIE_BLEND_ADD:
-            {
-                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE) );
-            }break;
-        case AE_MOVIE_BLEND_NORMAL:
-            {
-                GLCALL( glBlendFunc, (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );
-            }break;
-        case AE_MOVIE_BLEND_ALPHA_ADD:
-        case AE_MOVIE_BLEND_CLASSIC_COLOR_BURN:
-        case AE_MOVIE_BLEND_CLASSIC_COLOR_DODGE:
-        case AE_MOVIE_BLEND_CLASSIC_DIFFERENCE:
-        case AE_MOVIE_BLEND_COLOR:
-        case AE_MOVIE_BLEND_COLOR_BURN:
-        case AE_MOVIE_BLEND_COLOR_DODGE:
-        case AE_MOVIE_BLEND_DANCING_DISSOLVE:
-        case AE_MOVIE_BLEND_DARKEN:
-        case AE_MOVIE_BLEND_DARKER_COLOR:
-        case AE_MOVIE_BLEND_DIFFERENCE:
-        case AE_MOVIE_BLEND_DISSOLVE:
-        case AE_MOVIE_BLEND_EXCLUSION:
-        case AE_MOVIE_BLEND_HARD_LIGHT:
-        case AE_MOVIE_BLEND_HARD_MIX:
-        case AE_MOVIE_BLEND_HUE:
-        case AE_MOVIE_BLEND_LIGHTEN:
-        case AE_MOVIE_BLEND_LIGHTER_COLOR:
-        case AE_MOVIE_BLEND_LINEAR_BURN:
-        case AE_MOVIE_BLEND_LINEAR_DODGE:
-        case AE_MOVIE_BLEND_LINEAR_LIGHT:
-        case AE_MOVIE_BLEND_LUMINESCENT_PREMUL:
-        case AE_MOVIE_BLEND_LUMINOSITY:
-        case AE_MOVIE_BLEND_MULTIPLY:
-        case AE_MOVIE_BLEND_OVERLAY:
-        case AE_MOVIE_BLEND_PIN_LIGHT:
-        case AE_MOVIE_BLEND_SATURATION:
-        case AE_MOVIE_BLEND_SCREEN:
-        case AE_MOVIE_BLEND_SILHOUETE_ALPHA:
-        case AE_MOVIE_BLEND_SILHOUETTE_LUMA:
-        case AE_MOVIE_BLEND_SOFT_LIGHT:
-        case AE_MOVIE_BLEND_STENCIL_ALPHA:
-        case AE_MOVIE_BLEND_STENCIL_LUMA:
-        case AE_MOVIE_BLEND_VIVID_LIGHT:
-            {
+        ae_bool_t texture_premultiplied = __em_render_set_blend( &mesh );
 
-            }break;
-        }
+        float projectionViewMatrix[16];
+        __em_render_set_camera( ae_movie_composition, player_width, player_height, &mesh, projectionViewMatrix );
+
+        size_t opengl_indices_buffer_size = mesh.indexCount * sizeof( em_render_index_t );
+        size_t opengl_vertex_buffer_size = mesh.vertexCount * sizeof( em_render_vertex_t );
+
+        em_render_vertex_t * vertices = _player->blend_vertices;
+        const ae_uint16_t * indices = mesh.indices;
 
         if( mesh.track_matte_data == em_nullptr )
         {
-            size_t opengl_indices_buffer_size = mesh.indexCount * sizeof( em_render_index_t );
-            size_t opengl_vertex_buffer_size = mesh.vertexCount * sizeof( em_blend_render_vertex_t );
-
             GLuint texture_id = 0U;
-
-            em_blend_render_vertex_t * vertices = _player->blend_vertices;
-            const ae_uint16_t * indices = mesh.indices;
 
             switch( mesh.layer_type )
             {
-            case AE_MOVIE_LAYER_TYPE_MOVIE:
-            case AE_MOVIE_LAYER_TYPE_SPRITE:
-            case AE_MOVIE_LAYER_TYPE_TEXT:
-            case AE_MOVIE_LAYER_TYPE_EVENT:
-            case AE_MOVIE_LAYER_TYPE_SOCKET:
-            case AE_MOVIE_LAYER_TYPE_SLOT:
-            case AE_MOVIE_LAYER_TYPE_NULL:
-            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
-            case AE_MOVIE_LAYER_TYPE_SOUND:
-            case AE_MOVIE_LAYER_TYPE_PARTICLE:
-            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-                {
-                    //Empty
-                }break;
             case AE_MOVIE_LAYER_TYPE_SHAPE:
             case AE_MOVIE_LAYER_TYPE_SOLID:
                 {
@@ -1677,19 +1971,20 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
                     for( uint32_t index = 0; index != mesh.vertexCount; ++index )
                     {
-                        em_blend_render_vertex_t * v = vertices + index;
+                        em_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-                        v->position[0] = mesh_position[0];
-                        v->position[1] = mesh_position[1];
-                        v->position[2] = mesh_position[2];
+                        __copy_v3( v->position, mesh_position );
                         
                         v->color = color;
 
                         const float * mesh_uv = mesh.uv[index];
 
-                        v->uv[0] = mesh_uv[0];
-                        v->uv[1] = mesh_uv[1];
+                        v->uv0[0] = mesh_uv[0];
+                        v->uv0[1] = mesh_uv[1];
+
+                        v->uv1[0] = 0.f;
+                        v->uv1[1] = 0.f;
                     }
                 }break;
             case AE_MOVIE_LAYER_TYPE_SEQUENCE:
@@ -1703,7 +1998,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
                     for( uint32_t index = 0; index != mesh.vertexCount; ++index )
                     {
-                        em_blend_render_vertex_t * v = vertices + index;
+                        em_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
                         v->position[0] = mesh_position[0];
@@ -1714,50 +2009,66 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
                         const float * mesh_uv = mesh.uv[index];
 
-                        v->uv[0] = mesh_uv[0];
-                        v->uv[1] = mesh_uv[1];
+                        v->uv0[0] = mesh_uv[0];
+                        v->uv0[1] = mesh_uv[1];
+
+                        v->uv1[0] = 0.f;
+                        v->uv1[1] = 0.f;
                     }
                 }break;
-            case AE_MOVIE_LAYER_TYPE_VIDEO:
-                {
-                    //Empty
-                }break;
+            default:
+                break;
             }
 
-            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, _composition->opengl_vertex_buffer_id) );
-            GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
-
-            GLint positionLocation;
-            GLint colorLocation;
-            GLint texcoordLocation;
-            GLint vpMatrixLocation;
-            GLint worldMatrixLocation;
-            GLint tex0Location;
-
-            GLuint program_id;
+            GLint positionLocation = -1;
+            GLint colorLocation = -1;
+            GLint texcoord0Location = -1;
+            GLint texcoord1Location = -1;
+            GLint vpMatrixLocation = -1;
+            GLint worldMatrixLocation = -1;
+            GLint tex0Location = -1;
 
             if( mesh.shader_data == AE_NULL )
             {
-                em_blend_shader_t * blend_shader = _player->blend_shader;
+                if( texture_id != 0U )
+                {
+                    em_shader_t * shader = _player->blend_shader;
 
-                program_id = blend_shader->program_id;
+                    GLuint program_id = shader->program_id;
 
-                GLCALL( glUseProgram, (blend_shader->program_id) );
+                    GLCALL( glUseProgram, (program_id) );
 
-                positionLocation = blend_shader->positionLocation;
-                colorLocation = blend_shader->colorLocation;
-                texcoordLocation = blend_shader->texcoordLocation;
-                vpMatrixLocation = blend_shader->vpMatrixLocation;
-                worldMatrixLocation = blend_shader->worldMatrixLocation;
-                tex0Location = blend_shader->tex0Location;
+                    positionLocation = shader->positionLocation;
+                    colorLocation = shader->colorLocation;
+                    texcoord0Location = shader->texcoord0Location;
+                    texcoord1Location = shader->texcoord1Location;
+                    vpMatrixLocation = shader->vpMatrixLocation;
+                    worldMatrixLocation = shader->worldMatrixLocation;
+                    tex0Location = shader->tex0Location;
+                }
+                else
+                {
+                    em_shader_t * shader = _player->color_shader;
+
+                    GLuint program_id = shader->program_id;
+
+                    GLCALL( glUseProgram, (program_id) );
+
+                    positionLocation = shader->positionLocation;
+                    colorLocation = shader->colorLocation;
+                    texcoord0Location = shader->texcoord0Location;
+                    texcoord1Location = shader->texcoord1Location;
+                    vpMatrixLocation = shader->vpMatrixLocation;
+                    worldMatrixLocation = shader->worldMatrixLocation;
+                }
             }
             else
             {
                 em_custom_shader_t * shader = (em_custom_shader_t *)mesh.shader_data;
 
-                program_id = shader->program_id;
+                GLuint program_id = shader->program_id;
 
-                GLCALL( glUseProgram, (shader->program_id) );
+                GLCALL( glUseProgram, (program_id) );
 
                 uint8_t parameter_count = shader->parameter_count;
                 for( uint8_t i = 0; i != parameter_count; ++i )
@@ -1783,7 +2094,8 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
                 positionLocation = shader->positionLocation;
                 colorLocation = shader->colorLocation;
-                texcoordLocation = shader->texcoordLocation;
+                texcoord0Location = shader->texcoord0Location;
+                texcoord1Location = shader->texcoord1Location;
                 vpMatrixLocation = shader->vpMatrixLocation;
                 worldMatrixLocation = shader->worldMatrixLocation;
                 tex0Location = shader->tex0Location;
@@ -1794,7 +2106,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             if( texture_id != 0U )
             {
                 GLCALL( glBindTexture, (GL_TEXTURE_2D, texture_id) );
-
+                
                 GLCALL( glUniform1i, (tex0Location, 0) );
             }
             else
@@ -1802,102 +2114,66 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                 GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
             }
 
-            GLCALL( glEnableVertexAttribArray, (positionLocation) );
-            GLCALL( glEnableVertexAttribArray, (colorLocation) );
-            GLCALL( glEnableVertexAttribArray, (texcoordLocation) );
+            GLCALL( glUniformMatrix4fv, (worldMatrixLocation, 1, GL_FALSE, _composition->wm) );
+            GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
 
-            GLCALL( glVertexAttribPointer, (positionLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_blend_render_vertex_t ), (const GLvoid *)offsetof( em_blend_render_vertex_t, position )) );
-            GLCALL( glVertexAttribPointer, (colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_blend_render_vertex_t ), (const GLvoid *)offsetof( em_blend_render_vertex_t, color )) );
-            GLCALL( glVertexAttribPointer, (texcoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof( em_blend_render_vertex_t ), (const GLvoid *)offsetof( em_blend_render_vertex_t, uv )) );
-
-            if( worldMatrixLocation != -1 )
-            {
-                GLCALL( glUniformMatrix4fv, (worldMatrixLocation, 1, GL_FALSE, _composition->wm) );
-            }
-
-            if( mesh.camera_data == AE_NULL )
-            {
-                const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
-
-                float viewMatrix[16];
-                __identity_m4( viewMatrix );
-
-                float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
-                float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
-                
-                float width = _player->width;
-                float height = _player->height;
-
-                float projectionMatrix[16];
-                __make_orthogonal_m4( projectionMatrix, width, height );
-
-                float projectionViewMatrix[16];
-                __mul_m4_m4( projectionViewMatrix, projectionMatrix, viewMatrix );
-
-                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
-
-                glViewport( 0, 0, (GLsizei)width, (GLsizei)height );
-            }
-            else
-            {
-                ae_camera_t * camera = (ae_camera_t *)mesh.camera_data;
-
-                float projectionViewMatrix[16];
-                __mul_m4_m4( projectionViewMatrix, camera->projection, camera->view );
-
-                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
-
-                glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
-            }
+            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, _composition->opengl_vertex_buffer_id) );
+            GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
 
             GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, _composition->opengl_indices_buffer_id) );
             GLCALL( glBufferData, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_size, indices, GL_STREAM_DRAW) );
 
-            GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, 0) );
+            GLCALL( glEnableVertexAttribArray, (positionLocation) );
+            GLCALL( glEnableVertexAttribArray, (colorLocation) );
+
+            GLCALL( glVertexAttribPointer, (positionLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, position )) );
+            GLCALL( glVertexAttribPointer, (colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
+            
+            if( texcoord0Location != -1 )
+            {
+                GLCALL( glEnableVertexAttribArray, (texcoord0Location) );
+                GLCALL( glVertexAttribPointer, (texcoord0Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv0 )) );
+            }
+
+            if( texcoord1Location != -1 )
+            {
+                GLCALL( glEnableVertexAttribArray, (texcoord1Location) );
+                GLCALL( glVertexAttribPointer, (texcoord1Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv1 )) );
+            }
+
+            const GLvoid * offsetIndex = 0U;
+            GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, offsetIndex) );
 
             GLCALL( glDisableVertexAttribArray, (positionLocation) );
             GLCALL( glDisableVertexAttribArray, (colorLocation) );
-            GLCALL( glDisableVertexAttribArray, (texcoordLocation) );
+
+            if( texcoord0Location != -1 )
+            {
+                GLCALL( glDisableVertexAttribArray, (texcoord0Location) );
+            }
+            
+            if( texcoord1Location != -1 )
+            {
+                GLCALL( glDisableVertexAttribArray, (texcoord1Location) );
+            }
 
             GLCALL( glActiveTexture, (GL_TEXTURE0) );
-            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
+            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
 
             GLCALL( glUseProgram, (0) );
 
-            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0) );
-            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0) );
+            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0U) );
+            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0U) );
         }
         else
         {
-            size_t opengl_indices_buffer_size = mesh.indexCount * sizeof( em_render_index_t );
-            size_t opengl_vertex_buffer_size = mesh.vertexCount * sizeof( em_track_matte_render_vertex_t );
-
             em_node_track_matte_t * node_track_matte = (em_node_track_matte_t *)mesh.element_data;
 
             GLuint base_texture_id = node_track_matte->base_image->texture_id;
             GLuint track_matte_texture_id = node_track_matte->track_matte_image->texture_id;
-
-            em_track_matte_render_vertex_t * vertices = _player->track_matte_vertices;
-            const ae_uint16_t * indices = mesh.indices;
-
+            
             switch( mesh.layer_type )
             {
-            case AE_MOVIE_LAYER_TYPE_MOVIE:
-            case AE_MOVIE_LAYER_TYPE_SPRITE:
-            case AE_MOVIE_LAYER_TYPE_TEXT:
-            case AE_MOVIE_LAYER_TYPE_EVENT:
-            case AE_MOVIE_LAYER_TYPE_SOCKET:
-            case AE_MOVIE_LAYER_TYPE_SHAPE:
-            case AE_MOVIE_LAYER_TYPE_SLOT:
-            case AE_MOVIE_LAYER_TYPE_NULL:
-            case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
-            case AE_MOVIE_LAYER_TYPE_SOLID:
-            case AE_MOVIE_LAYER_TYPE_SOUND:
-            case AE_MOVIE_LAYER_TYPE_PARTICLE:
-            case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
-                {
-                    //Empty
-                }break;
             case AE_MOVIE_LAYER_TYPE_SEQUENCE:
             case AE_MOVIE_LAYER_TYPE_IMAGE:
                 {
@@ -1909,10 +2185,10 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
                     for( uint32_t index = 0; index != mesh.vertexCount; ++index )
                     {
-                        em_track_matte_render_vertex_t * v = vertices + index;
+                        em_render_vertex_t * v = vertices + index;
 
                         const float * mesh_position = mesh.position[index];
-                        __v3_v3_m4( v->position, mesh_position, _composition->wm );
+                        __copy_v3( v->position, mesh_position );
 
                         v->color = color;
 
@@ -1935,28 +2211,53 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                         v->uv1[1] = uv1[1];
                     }
                 }break;
-            case AE_MOVIE_LAYER_TYPE_VIDEO:
-                {
-                }break;
+            default:
+                break;
             }
+            
+            GLint positionLocation = -1;
+            GLint colorLocation = -1;
+            GLint texcoord0Location = -1;
+            GLint texcoord1Location = -1;
+            GLint vpMatrixLocation = -1;
+            GLint worldMatrixLocation = -1;
+            GLint tex0Location = -1;
+            GLint tex1Location = -1;
 
-            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, _composition->opengl_vertex_buffer_id) );
-            GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
+            if( texture_premultiplied == AE_TRUE )
+            {
+                em_shader_t * shader = _player->track_matte_shader_premultiplied;
 
-            em_track_matte_shader_t * track_matte_shader = _player->track_matte_shader;
+                GLuint program_id = shader->program_id;
 
-            GLuint program_id = track_matte_shader->program_id;
+                GLCALL( glUseProgram, (program_id) );
 
-            GLCALL( glUseProgram, (program_id) );
+                positionLocation = shader->positionLocation;
+                colorLocation = shader->colorLocation;
+                texcoord0Location = shader->texcoord0Location;
+                texcoord1Location = shader->texcoord1Location;
+                vpMatrixLocation = shader->vpMatrixLocation;
+                worldMatrixLocation = shader->worldMatrixLocation;
+                tex0Location = shader->tex0Location;
+                tex1Location = shader->tex1Location;
+            }
+            else
+            {
+                em_shader_t * shader = _player->track_matte_shader;
 
-            GLint positionLocation = track_matte_shader->positionLocation;
-            GLint colorLocation = track_matte_shader->colorLocation;
-            GLint texcoord0Location = track_matte_shader->texcoord0Location;
-            GLint texcoord1Location = track_matte_shader->texcoord1Location;            
-            GLint vpMatrixLocation = track_matte_shader->vpMatrixLocation;
-            GLint worldMatrixLocation = track_matte_shader->worldMatrixLocation;
-            GLint tex0Location = track_matte_shader->tex0Location;
-            GLint tex1Location = track_matte_shader->tex1Location;
+                GLuint program_id = shader->program_id;
+
+                GLCALL( glUseProgram, (program_id) );
+
+                positionLocation = shader->positionLocation;
+                colorLocation = shader->colorLocation;
+                texcoord0Location = shader->texcoord0Location;
+                texcoord1Location = shader->texcoord1Location;
+                vpMatrixLocation = shader->vpMatrixLocation;
+                worldMatrixLocation = shader->worldMatrixLocation;
+                tex0Location = shader->tex0Location;
+                tex1Location = shader->tex1Location;
+            }
 
             GLCALL( glActiveTexture, (GL_TEXTURE0) );
             GLCALL( glBindTexture, (GL_TEXTURE_2D, base_texture_id) );
@@ -1966,62 +2267,27 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             GLCALL( glBindTexture, (GL_TEXTURE_2D, track_matte_texture_id) );
             GLCALL( glUniform1i, (tex1Location, 1) );
 
+            GLCALL( glUniformMatrix4fv, (worldMatrixLocation, 1, GL_FALSE, _composition->wm) );
+            GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
+            
+            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, _composition->opengl_vertex_buffer_id) );
+            GLCALL( glBufferData, (GL_ARRAY_BUFFER, opengl_vertex_buffer_size, vertices, GL_STREAM_DRAW) );
+
+            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, _composition->opengl_indices_buffer_id) );
+            GLCALL( glBufferData, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_size, indices, GL_STREAM_DRAW) );
+
             GLCALL( glEnableVertexAttribArray, (positionLocation) );
             GLCALL( glEnableVertexAttribArray, (colorLocation) );
             GLCALL( glEnableVertexAttribArray, (texcoord0Location) );
             GLCALL( glEnableVertexAttribArray, (texcoord1Location) );
 
-            GLCALL( glVertexAttribPointer, (positionLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_track_matte_render_vertex_t ), (const GLvoid *)offsetof( em_track_matte_render_vertex_t, position )) );
-            GLCALL( glVertexAttribPointer, (colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_track_matte_render_vertex_t ), (const GLvoid *)offsetof( em_track_matte_render_vertex_t, color )) );
-            GLCALL( glVertexAttribPointer, (texcoord0Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_track_matte_render_vertex_t ), (const GLvoid *)offsetof( em_track_matte_render_vertex_t, uv0 )) );
-            GLCALL( glVertexAttribPointer, (texcoord1Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_track_matte_render_vertex_t ), (const GLvoid *)offsetof( em_track_matte_render_vertex_t, uv1 )) );
+            GLCALL( glVertexAttribPointer, (positionLocation, 3, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, position )) );
+            GLCALL( glVertexAttribPointer, (colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, color )) );
+            GLCALL( glVertexAttribPointer, (texcoord0Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv0 )) );
+            GLCALL( glVertexAttribPointer, (texcoord1Location, 2, GL_FLOAT, GL_FALSE, sizeof( em_render_vertex_t ), (const GLvoid *)offsetof( em_render_vertex_t, uv1 )) );
 
-            if( worldMatrixLocation != -1 )
-            {
-                GLCALL( glUniformMatrix4fv, (worldMatrixLocation, 1, GL_FALSE, _composition->wm) );
-            }
-
-            if( mesh.camera_data == AE_NULL )
-            {
-                const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
-
-                float viewMatrix[16];
-                __identity_m4( viewMatrix );
-
-                float composition_width = ae_get_movie_composition_data_width( ae_movie_composition_data );
-                float composition_height = ae_get_movie_composition_data_height( ae_movie_composition_data );
-
-                float width = _player->width;
-                float height = _player->height;
-
-                float projectionMatrix[16];
-                __make_orthogonal_m4( projectionMatrix, width, height );
-
-                float projectionViewMatrix[16];
-                __mul_m4_m4( projectionViewMatrix, projectionMatrix, viewMatrix );
-
-                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
-
-                glViewport( 0, 0, (GLsizei)width, (GLsizei)height );
-            }
-            else
-            {
-                ae_camera_t * camera = (ae_camera_t *)mesh.camera_data;
-
-                float projectionViewMatrix[16];
-                __mul_m4_m4( projectionViewMatrix, camera->projection, camera->view );
-
-                GLCALL( glUniformMatrix4fv, (vpMatrixLocation, 1, GL_FALSE, projectionViewMatrix) );
-
-                glViewport( 0, 0, (GLsizei)camera->width, (GLsizei)camera->height );
-            }
-
-            //GLuint opengl_indices_buffer_id = 0;
-            //GLCALL( glGenBuffers, (1, &opengl_indices_buffer_id) );
-            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, _composition->opengl_indices_buffer_id) );
-            GLCALL( glBufferData, (GL_ELEMENT_ARRAY_BUFFER, opengl_indices_buffer_size, indices, GL_STREAM_DRAW) );
-
-            GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, 0) );
+            const GLvoid * offsetIndex = 0U;
+            GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, offsetIndex) );
 
             GLCALL( glDisableVertexAttribArray, (positionLocation) );
             GLCALL( glDisableVertexAttribArray, (colorLocation) );

@@ -202,6 +202,16 @@ static GLuint __make_opengl_texture()
     GLuint texture_id;
     GLCALL( glGenTextures, (1, &texture_id) );
 
+    glBindTexture( GL_TEXTURE_2D, texture_id );
+
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) );
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) );
+
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) );
+    GLCALL( glTexParameteri, (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE) );
+
+    GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
+
     return texture_id;
 }
 
