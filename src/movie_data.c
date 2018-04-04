@@ -29,11 +29,11 @@
 
 #include "movie/movie_data.h"
 #include "movie/movie_resource.h"
+#include "movie/movie_version.h"
 
 #include "movie_transformation.h"
 #include "movie_memory.h"
 #include "movie_stream.h"
-#	include "movie_version.h"
 
 //////////////////////////////////////////////////////////////////////////
 aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data )

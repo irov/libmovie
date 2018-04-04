@@ -48,10 +48,16 @@ typedef enum aeMoviePropertyImmutableEnum
     AE_MOVIE_IMMUTABLE_QUATERNION_Y = 0x00002000,
     AE_MOVIE_IMMUTABLE_QUATERNION_Z = 0x00004000,
     AE_MOVIE_IMMUTABLE_QUATERNION_W = 0x00008000,
-    AE_MOVIE_IMMUTABLE_OPACITY = 0x00010000,
+    AE_MOVIE_IMMUTABLE_SKEW = 0x00010000,
+    AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z = 0x00020000,
+    AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W = 0x00040000,
     AE_MOVIE_IMMUTABLE_TARGET_X = 0x00100000,
     AE_MOVIE_IMMUTABLE_TARGET_Y = 0x00200000,
     AE_MOVIE_IMMUTABLE_TARGET_Z = 0x00400000,
+    AE_MOVIE_IMMUTABLE_OPACITY = 0x10000000,
+
+    AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW = 0
+    | AE_MOVIE_IMMUTABLE_SKEW | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W,
 
     AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION = 0
     | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
@@ -60,13 +66,15 @@ typedef enum aeMoviePropertyImmutableEnum
     | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y
     | AE_MOVIE_IMMUTABLE_POSITION_X | AE_MOVIE_IMMUTABLE_POSITION_Y
     | AE_MOVIE_IMMUTABLE_SCALE_X | AE_MOVIE_IMMUTABLE_SCALE_Y
-    | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
+    | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W
+    | AE_MOVIE_IMMUTABLE_SKEW | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W,
 
     AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL = 0
     | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z
     | AE_MOVIE_IMMUTABLE_POSITION_X | AE_MOVIE_IMMUTABLE_POSITION_Y | AE_MOVIE_IMMUTABLE_POSITION_Z
     | AE_MOVIE_IMMUTABLE_SCALE_X | AE_MOVIE_IMMUTABLE_SCALE_Y | AE_MOVIE_IMMUTABLE_SCALE_Z
-    | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
+    | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W
+    | AE_MOVIE_IMMUTABLE_SKEW | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W,
 
     AE_MOVIE_IMMUTABLE_SUPER_THREE_D_QUATERNION = 0
     | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
@@ -88,6 +96,9 @@ typedef struct aeMovieLayerTransformation2DImuttable
     ae_float_t scale_y;
     ae_float_t quaternion_z;
     ae_float_t quaternion_w;
+    ae_float_t skew;
+    ae_float_t skew_quaternion_z;
+    ae_float_t skew_quaternion_w;
 
 }aeMovieLayerTransformation2DImuttable;
 
@@ -106,6 +117,9 @@ typedef struct aeMovieLayerTransformation3DImuttable
     ae_float_t quaternion_y;
     ae_float_t quaternion_z;
     ae_float_t quaternion_w;
+    ae_float_t skew;
+    ae_float_t skew_quaternion_z;
+    ae_float_t skew_quaternion_w;
 
 }aeMovieLayerTransformation3DImuttable;
 
@@ -115,10 +129,13 @@ typedef struct aeMovieLayerTransformation2DTimeline
     ae_constvoidptr_t anchor_point_y;
     ae_constvoidptr_t position_x;
     ae_constvoidptr_t position_y;
-    ae_constvoidptr_t quaternion_z;
-    ae_constvoidptr_t quaternion_w;
     ae_constvoidptr_t scale_x;
     ae_constvoidptr_t scale_y;
+    ae_constvoidptr_t quaternion_z;
+    ae_constvoidptr_t quaternion_w;
+    ae_constvoidptr_t skew;
+    ae_constvoidptr_t skew_quaternion_z;
+    ae_constvoidptr_t skew_quaternion_w;
 
 }aeMovieLayerTransformation2DTimeline;
 
@@ -130,13 +147,16 @@ typedef struct aeMovieLayerTransformation3DTimeline
     ae_constvoidptr_t position_x;
     ae_constvoidptr_t position_y;
     ae_constvoidptr_t position_z;
+    ae_constvoidptr_t scale_x;
+    ae_constvoidptr_t scale_y;
+    ae_constvoidptr_t scale_z;
     ae_constvoidptr_t quaternion_x;
     ae_constvoidptr_t quaternion_y;
     ae_constvoidptr_t quaternion_z;
     ae_constvoidptr_t quaternion_w;
-    ae_constvoidptr_t scale_x;
-    ae_constvoidptr_t scale_y;
-    ae_constvoidptr_t scale_z;
+    ae_constvoidptr_t skew;
+    ae_constvoidptr_t skew_quaternion_z;
+    ae_constvoidptr_t skew_quaternion_w;
 
 }aeMovieLayerTransformation3DTimeline;
 
@@ -185,7 +205,7 @@ ae_void_t ae_movie_make_layer_matrix_interpolate( ae_matrix4_t _out, const aeMov
 ae_void_t ae_movie_make_layer_matrix_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index );
 ae_void_t ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 
-ae_void_t ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t );
-ae_void_t ae_movie_make_layer_transformation2d_fixed( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index );
+ae_void_t ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, ae_skew_t _skew, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t );
+ae_void_t ae_movie_make_layer_transformation2d_fixed( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, ae_skew_t _skew, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index );
 
 #endif

@@ -46,12 +46,28 @@ AE_INTERNAL ae_void_t __mul_v4_m4_rr( ae_vector4_t _out, const ae_vector4_t _a, 
     _out[3] = _a[3] * _b[3 * 4 + 3];
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_mul_m4_m4_r( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
+AE_INTERNAL ae_void_t __mul_m4_m4_r( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
 {
     __mul_v4_m4_r( _out + 0, _a + 0, _b );
     __mul_v4_m4_r( _out + 4, _a + 4, _b );
     __mul_v4_m4_r( _out + 8, _a + 8, _b );
     __mul_v4_m4_rr( _out + 12, _a + 12, _b );
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __mul_v4_m4( ae_vector4_t _out, const ae_vector4_t _a, const ae_matrix4_t _b )
+{
+    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _a[2] * _b[2 * 4 + 0] + _a[3] * _b[3 * 4 + 0];
+    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _a[2] * _b[2 * 4 + 1] + _a[3] * _b[3 * 4 + 1];
+    _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _a[2] * _b[2 * 4 + 2] + _a[3] * _b[3 * 4 + 2];
+    _out[3] = _a[0] * _b[0 * 4 + 3] + _a[1] * _b[1 * 4 + 3] + _a[2] * _b[2 * 4 + 3] + _a[3] * _b[3 * 4 + 3];
+}
+//////////////////////////////////////////////////////////////////////////
+ae_void_t ae_mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b )
+{
+    __mul_v4_m4( _out + 0, _a + 0, _b );
+    __mul_v4_m4( _out + 4, _a + 4, _b );
+    __mul_v4_m4( _out + 8, _a + 8, _b );
+    __mul_v4_m4( _out + 12, _a + 12, _b );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_ident_m4( ae_matrix4_t _out )
@@ -171,114 +187,157 @@ AE_INTERNAL ae_void_t __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaterni
     _m[3 * 4 + 3] = 1.0f;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _origin, const ae_vector3_t _scale )
+AE_INTERNAL ae_void_t __make_transformation2d_anchor_scale_m4( ae_matrix4_t _m, const ae_vector2_t _anchor, const ae_vector2_t _scale )
 {
-    _out[0 * 4 + 0] = _scale[0];
-    _out[0 * 4 + 1] = 0.f;
-    _out[0 * 4 + 2] = 0.f;
-    _out[0 * 4 + 3] = 0.f;
+    _m[0 * 4 + 0] = _scale[0];
+    _m[0 * 4 + 1] = 0.f;
+    _m[0 * 4 + 2] = 0.f;
+    _m[0 * 4 + 3] = 0.f;
 
-    _out[1 * 4 + 0] = 0.f;
-    _out[1 * 4 + 1] = _scale[1];
-    _out[1 * 4 + 2] = 0.f;
-    _out[1 * 4 + 3] = 0.f;
+    _m[1 * 4 + 0] = 0.f;
+    _m[1 * 4 + 1] = _scale[1];
+    _m[1 * 4 + 2] = 0.f;
+    _m[1 * 4 + 3] = 0.f;
 
-    _out[2 * 4 + 0] = 0.f;
-    _out[2 * 4 + 1] = 0.f;
-    _out[2 * 4 + 2] = _scale[2];
-    _out[2 * 4 + 3] = 0.f;
+    _m[2 * 4 + 0] = 0.f;
+    _m[2 * 4 + 1] = 0.f;
+    _m[2 * 4 + 2] = 1.f;
+    _m[2 * 4 + 3] = 0.f;
 
-    _out[3 * 4 + 0] = _position[0] - _origin[0] * _scale[0];
-    _out[3 * 4 + 1] = _position[1] - _origin[1] * _scale[1];
-    _out[3 * 4 + 2] = _position[2] - _origin[2] * _scale[2];
-    _out[3 * 4 + 3] = 1.f;
+    _m[3 * 4 + 0] = - _anchor[0] * _scale[0];
+    _m[3 * 4 + 1] = - _anchor[1] * _scale[1];
+    _m[3 * 4 + 2] = 0.f;
+    _m[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_transformation3d_m4( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion )
+AE_INTERNAL ae_void_t __make_transformation3d_anchor_scale_m4( ae_matrix4_t _m, const ae_vector3_t _anchor, const ae_vector3_t _scale )
 {
-    ae_matrix4_t mat_scale;
+    _m[0 * 4 + 0] = _scale[0];
+    _m[0 * 4 + 1] = 0.f;
+    _m[0 * 4 + 2] = 0.f;
+    _m[0 * 4 + 3] = 0.f;
 
-    mat_scale[0 * 4 + 0] = _scale[0];
-    mat_scale[0 * 4 + 1] = 0.f;
-    mat_scale[0 * 4 + 2] = 0.f;
-    mat_scale[0 * 4 + 3] = 0.f;
+    _m[1 * 4 + 0] = 0.f;
+    _m[1 * 4 + 1] = _scale[1];
+    _m[1 * 4 + 2] = 0.f;
+    _m[1 * 4 + 3] = 0.f;
 
-    mat_scale[1 * 4 + 0] = 0.f;
-    mat_scale[1 * 4 + 1] = _scale[1];
-    mat_scale[1 * 4 + 2] = 0.f;
-    mat_scale[1 * 4 + 3] = 0.f;
+    _m[2 * 4 + 0] = 0.f;
+    _m[2 * 4 + 1] = 0.f;
+    _m[2 * 4 + 2] = _scale[2];
+    _m[2 * 4 + 3] = 0.f;
 
-    mat_scale[2 * 4 + 0] = 0.f;
-    mat_scale[2 * 4 + 1] = 0.f;
-    mat_scale[2 * 4 + 2] = _scale[2];
-    mat_scale[2 * 4 + 3] = 0.f;
+    _m[3 * 4 + 0] = - _anchor[0] * _scale[0];
+    _m[3 * 4 + 1] = - _anchor[1] * _scale[1];
+    _m[3 * 4 + 2] = - _anchor[2] * _scale[2];
+    _m[3 * 4 + 3] = 1.f;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __make_transformation_skew_m4( ae_matrix4_t _m, const ae_float_t _skew )
+{
+    _m[0 * 4 + 0] = 1.f;
+    _m[0 * 4 + 1] = _skew;
+    _m[0 * 4 + 2] = 0.f;
+    _m[0 * 4 + 3] = 0.f;
 
-    mat_scale[3 * 4 + 0] = -_anchor[0] * _scale[0];
-    mat_scale[3 * 4 + 1] = -_anchor[1] * _scale[1];
-    mat_scale[3 * 4 + 2] = -_anchor[2] * _scale[2];
-    mat_scale[3 * 4 + 3] = 1.f;
+    _m[1 * 4 + 0] = 0.f;
+    _m[1 * 4 + 1] = 1.f;
+    _m[1 * 4 + 2] = 0.f;
+    _m[1 * 4 + 3] = 0.f;
 
-    ae_matrix4_t mat_rotate;
-    __make_quaternion_m4( mat_rotate, _quaternion );
+    _m[2 * 4 + 0] = 0.f;
+    _m[2 * 4 + 1] = 0.f;
+    _m[2 * 4 + 2] = 1.f;
+    _m[2 * 4 + 3] = 0.f;
 
-    ae_mul_m4_m4_r( _out, mat_scale, mat_rotate );
+    _m[3 * 4 + 0] = 0.f;
+    _m[3 * 4 + 1] = 0.f;
+    _m[3 * 4 + 2] = 0.f;
+    _m[3 * 4 + 3] = 1.f;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __apply_transformation_skew_m4( ae_matrix4_t _out, const ae_matrix4_t _in, const ae_skew_t _skew )
+{
+    ae_quaternionzw_t qzw_skew_rotate_inv;
+    qzw_skew_rotate_inv[0] = -_skew[1];
+    qzw_skew_rotate_inv[1] = _skew[2];
+
+    ae_matrix4_t m4_skew_rotate_inv;
+    __make_quaternionzw_m4( m4_skew_rotate_inv, qzw_skew_rotate_inv );
+
+    ae_matrix4_t m4_skew;
+    __make_transformation_skew_m4( m4_skew, _skew[0] );
+
+    ae_quaternionzw_t qzw_skew_rotate;
+    qzw_skew_rotate[0] = _skew[1];
+    qzw_skew_rotate[1] = _skew[2];
+
+    ae_matrix4_t m4_skew_rotate;
+    __make_quaternionzw_m4( m4_skew_rotate, qzw_skew_rotate );
+
+    ae_matrix4_t m4_skew_1;
+    ae_mul_m4_m4( m4_skew_1, _in, m4_skew_rotate_inv );
+
+    ae_matrix4_t m4_skew_2;
+    ae_mul_m4_m4( m4_skew_2, m4_skew_1, m4_skew );
+
+    ae_mul_m4_m4( _out, m4_skew_2, m4_skew_rotate );
+}
+//////////////////////////////////////////////////////////////////////////
+ae_void_t ae_movie_make_transformation3d_m4( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion, const ae_skew_t _skew )
+{
+    ae_matrix4_t m4_anchor_scale;
+    __make_transformation3d_anchor_scale_m4( m4_anchor_scale, _anchor, _scale );
+
+    ae_matrix4_t m4_rotate;
+    __make_quaternion_m4( m4_rotate, _quaternion );
+
+    ae_matrix4_t m4_anchor_scale_rotate;
+    ae_mul_m4_m4( m4_anchor_scale_rotate, m4_anchor_scale, m4_rotate );
+
+    __apply_transformation_skew_m4( _out, m4_anchor_scale_rotate, _skew );
 
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
     _out[3 * 4 + 2] += _position[2];
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_transformation2d_m4wq( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale )
+ae_void_t ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_skew_t _skew )
 {
-    _out[0 * 4 + 0] = _scale[0];
-    _out[0 * 4 + 1] = 0.f;
-    _out[0 * 4 + 2] = 0.f;
-    _out[0 * 4 + 3] = 0.f;
-
-    _out[1 * 4 + 0] = 0.f;
-    _out[1 * 4 + 1] = _scale[1];
-    _out[1 * 4 + 2] = 0.f;
-    _out[1 * 4 + 3] = 0.f;
-
-    _out[2 * 4 + 0] = 0.f;
-    _out[2 * 4 + 1] = 0.f;
-    _out[2 * 4 + 2] = 1.f;
-    _out[2 * 4 + 3] = 0.f;
-
-    _out[3 * 4 + 0] = _position[0] - _anchor[0] * _scale[0];
-    _out[3 * 4 + 1] = _position[1] - _anchor[1] * _scale[1];
-    _out[3 * 4 + 2] = 0.f;
-    _out[3 * 4 + 3] = 1.f;
+    ae_matrix4_t m4_anchor_scale;
+    __make_transformation3d_anchor_scale_m4( m4_anchor_scale, _anchor, _scale );
+    
+    __apply_transformation_skew_m4( _out, m4_anchor_scale, _skew );
+    
+    _out[3 * 4 + 0] += _position[0];
+    _out[3 * 4 + 1] += _position[1];
+    _out[3 * 4 + 2] += _position[2];
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_transformation2d_m4( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion )
+ae_void_t ae_movie_make_transformation2d_m4wq( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_skew_t _skew )
 {
-    ae_matrix4_t mat_base;
+    ae_matrix4_t m4_anchor_scale;
+    __make_transformation2d_anchor_scale_m4( m4_anchor_scale, _anchor, _scale );
 
-    mat_base[0 * 4 + 0] = _scale[0];
-    mat_base[0 * 4 + 1] = 0.f;
-    mat_base[0 * 4 + 2] = 0.f;
-    mat_base[0 * 4 + 3] = 0.f;
+    __apply_transformation_skew_m4( _out, m4_anchor_scale, _skew );
 
-    mat_base[1 * 4 + 0] = 0.f;
-    mat_base[1 * 4 + 1] = _scale[1];
-    mat_base[1 * 4 + 2] = 0.f;
-    mat_base[1 * 4 + 3] = 0.f;
+    _out[3 * 4 + 0] += _position[0];
+    _out[3 * 4 + 1] += _position[1];
+}
+//////////////////////////////////////////////////////////////////////////
+ae_void_t ae_movie_make_transformation2d_m4( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion, const ae_skew_t _skew )
+{
+    (void)_skew;
+    ae_matrix4_t m4_anchor_scale;
+    __make_transformation2d_anchor_scale_m4( m4_anchor_scale, _anchor, _scale );
 
-    mat_base[2 * 4 + 0] = 0.f;
-    mat_base[2 * 4 + 1] = 0.f;
-    mat_base[2 * 4 + 2] = 1.f;
-    mat_base[2 * 4 + 3] = 0.f;
+    ae_matrix4_t m4_rotate;
+    __make_quaternionzw_m4( m4_rotate, _quaternion );
 
-    mat_base[3 * 4 + 0] = -_anchor[0] * _scale[0];
-    mat_base[3 * 4 + 1] = -_anchor[1] * _scale[1];
-    mat_base[3 * 4 + 2] = 0.f;
-    mat_base[3 * 4 + 3] = 1.f;
+    ae_matrix4_t m4_anchor_scale_rotate;
+    ae_mul_m4_m4( m4_anchor_scale_rotate, m4_anchor_scale, m4_rotate );
 
-    ae_matrix4_t mat_rotate;
-    __make_quaternionzw_m4( mat_rotate, _quaternion );
-
-    ae_mul_m4_m4_r( _out, mat_base, mat_rotate );
+    __apply_transformation_skew_m4( _out, m4_anchor_scale_rotate, _skew );
 
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];

@@ -43,7 +43,8 @@ public
     ${INCLUDE_DIR}/movie/movie_skeleton.h
     ${INCLUDE_DIR}/movie/movie_type.h
     ${INCLUDE_DIR}/movie/movie_typedef.h
-    ${INCLUDE_DIR}/movie/movie_config.h    
+    ${INCLUDE_DIR}/movie/movie_config.h 
+    ${INCLUDE_DIR}/movie/movie_version.h
 )
 
 ADD_FILTER(
@@ -60,8 +61,7 @@ source
     ${SOURCE_DIR}/movie_struct.h
     ${SOURCE_DIR}/movie_transformation.c
     ${SOURCE_DIR}/movie_transformation.h
-    ${SOURCE_DIR}/movie_debug.h
-    ${SOURCE_DIR}/movie_version.h
+    ${SOURCE_DIR}/movie_debug.h    
 )
 
 INCLUDE_DIRECTORIES( ${PROJECT_NAME} ${INCLUDE_DIR} ) 

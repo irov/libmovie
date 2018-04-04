@@ -35,9 +35,6 @@
 
 #include "movie/movie_config.h"
 
-#define AE_MOVIE_SDK_MAJOR_VERSION 17
-#define AE_MOVIE_SDK_MINOR_VERSION 1
-
 typedef void ae_void_t;
 typedef uint32_t ae_bool_t;
 typedef char ae_char_t;
@@ -61,6 +58,7 @@ typedef ae_float_t ae_vector3_t[3];
 typedef ae_float_t ae_vector4_t[4];
 typedef ae_float_t ae_quaternionzw_t[2];
 typedef ae_float_t ae_quaternion_t[4];
+typedef ae_float_t ae_skew_t[3];
 typedef ae_float_t ae_matrix4_t[16];
 
 typedef const ae_float_t * ae_vector3_ptr_t;
@@ -77,6 +75,7 @@ typedef struct
     ae_color_channel_t r;
     ae_color_channel_t g;
     ae_color_channel_t b;
+
 } ae_color_t;
 
 typedef struct
