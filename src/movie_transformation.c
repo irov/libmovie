@@ -160,8 +160,13 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation2d_immutable( ae_matrix4_
     ae_quaternionzw_t quaternionzw;
     quaternionzw[0] = _transformation->immutable.quaternion_z;
     quaternionzw[1] = _transformation->immutable.quaternion_w;
+
+    ae_skew_t skew;
+    skew[0] = _transformation->immutable.skew;
+    skew[1] = _transformation->immutable.skew_quaternion_z;
+    skew[2] = _transformation->immutable.skew_quaternion_w;
         
-    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternionzw );
+    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternionzw, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation3D * _transformation )
@@ -186,8 +191,13 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_
     quaternion[1] = _transformation->immutable.quaternion_y;
     quaternion[2] = _transformation->immutable.quaternion_z;
     quaternion[3] = _transformation->immutable.quaternion_w;
+
+    ae_skew_t skew;
+    skew[0] = _transformation->immutable.skew;
+    skew[1] = _transformation->immutable.skew_quaternion_z;
+    skew[2] = _transformation->immutable.skew_quaternion_w;
     
-    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
+    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 #define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
@@ -216,6 +226,10 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation2d( aeMovieStream * _st
 
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+
+    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
+    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
+    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
 
     if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
     {
@@ -253,6 +267,10 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation3d( aeMovieStream * _st
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y );
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
     AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+
+    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
+    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
+    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
 
     if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
     {
@@ -307,6 +325,7 @@ AE_INTERNAL ae_void_t __make_layer_transformation2d_fixed( ae_matrix4_t _out, co
     ae_vector2_t position;
     ae_vector2_t scale;
     ae_quaternionzw_t quaternion;
+    ae_skew_t skew;
 
     AE_FIXED_PROPERTY( transformation2d, anchor_point_x, 0, anchor_point[0] );
     AE_FIXED_PROPERTY( transformation2d, anchor_point_y, 0, anchor_point[1] );
@@ -320,7 +339,11 @@ AE_INTERNAL ae_void_t __make_layer_transformation2d_fixed( ae_matrix4_t _out, co
     AE_FIXED_PROPERTY( transformation2d, quaternion_z, 0, quaternion[0] );
     AE_FIXED_PROPERTY( transformation2d, quaternion_w, 0, quaternion[1] );
 
-    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
+    AE_FIXED_PROPERTY( transformation2d, skew, 0, skew[0] );
+    AE_FIXED_PROPERTY( transformation2d, skew_quaternion_z, 0, skew[1] );
+    AE_FIXED_PROPERTY( transformation2d, skew_quaternion_w, 0, skew[2] );
+
+    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation2d_fixed_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
@@ -330,6 +353,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_fixed_wq( ae_matrix4_t _out,
     ae_vector2_t anchor_point;
     ae_vector2_t position;
     ae_vector2_t scale;
+    ae_skew_t skew;
 
     AE_FIXED_PROPERTY( transformation2d, anchor_point_x, 0, anchor_point[0] );
     AE_FIXED_PROPERTY( transformation2d, anchor_point_y, 0, anchor_point[1] );
@@ -340,7 +364,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_fixed_wq( ae_matrix4_t _out,
     AE_FIXED_PROPERTY( transformation2d, scale_x, 0, scale[0] );
     AE_FIXED_PROPERTY( transformation2d, scale_y, 0, scale[1] );
 
-    ae_movie_make_transformation2d_m4wq( _out, position, anchor_point, scale );
+    AE_FIXED_PROPERTY( transformation2d, skew, 0, skew[0] );
+    AE_FIXED_PROPERTY( transformation2d, skew_quaternion_z, 0, skew[1] );
+    AE_FIXED_PROPERTY( transformation2d, skew_quaternion_w, 0, skew[2] );
+
+    ae_movie_make_transformation2d_m4wq( _out, position, anchor_point, scale, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
@@ -350,6 +378,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate_wq( ae_matrix4_t
     ae_vector2_t anchor_point;
     ae_vector2_t position;
     ae_vector2_t scale;
+    ae_skew_t skew;
     
     AE_INTERPOLATE_PROPERTY( transformation2d, anchor_point_x, anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( transformation2d, anchor_point_y, anchor_point[1] );
@@ -360,7 +389,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate_wq( ae_matrix4_t
     AE_INTERPOLATE_PROPERTY( transformation2d, scale_x, scale[0] );
     AE_INTERPOLATE_PROPERTY( transformation2d, scale_y, scale[1] );
 
-    ae_movie_make_transformation2d_m4wq( _out, position, anchor_point, scale );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew, skew[0] );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew_quaternion_z, skew[1] );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew_quaternion_w, skew[2] );
+
+    ae_movie_make_transformation2d_m4wq( _out, position, anchor_point, scale, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate_fq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
@@ -371,6 +404,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate_fq( ae_matrix4_t
     ae_vector2_t position;
     ae_vector2_t scale;
     ae_quaternionzw_t quaternion;
+    ae_skew_t skew;
 
     AE_INTERPOLATE_PROPERTY( transformation2d, anchor_point_x, anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( transformation2d, anchor_point_y, anchor_point[1] );
@@ -384,7 +418,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate_fq( ae_matrix4_t
     AE_FIXED_PROPERTY( transformation2d, quaternion_z, 0, quaternion[0] );
     AE_FIXED_PROPERTY( transformation2d, quaternion_w, 0, quaternion[1] );
 
-    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew, skew[0] );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew_quaternion_z, skew[1] );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew_quaternion_w, skew[2] );
+
+    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
@@ -395,6 +433,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate( ae_matrix4_t _o
     ae_vector2_t position;
     ae_vector2_t scale;
     ae_quaternionzw_t quaternion;
+    ae_skew_t skew;
 
     AE_INTERPOLATE_PROPERTY( transformation2d, anchor_point_x, anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( transformation2d, anchor_point_y, anchor_point[1] );
@@ -415,7 +454,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate( ae_matrix4_t _o
 
     ae_linerp_qzw( quaternion, q1, q2, _t );
 
-    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew, skew[0] );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew_quaternion_z, skew[1] );
+    AE_INTERPOLATE_PROPERTY( transformation2d, skew_quaternion_w, skew[2] );
+
+    ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation3d_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
@@ -426,6 +469,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_fixed( ae_matrix4_t _out, co
     ae_vector3_t position;
     ae_vector3_t scale;
     ae_quaternion_t quaternion;
+    ae_skew_t skew;
 
     AE_FIXED_PROPERTY( transformation3d, anchor_point_x, 0, anchor_point[0] );
     AE_FIXED_PROPERTY( transformation3d, anchor_point_y, 0, anchor_point[1] );
@@ -444,7 +488,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_fixed( ae_matrix4_t _out, co
     AE_FIXED_PROPERTY( transformation3d, quaternion_z, 0, quaternion[2] );
     AE_FIXED_PROPERTY( transformation3d, quaternion_w, 0, quaternion[3] );
 
-    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
+    AE_FIXED_PROPERTY( transformation3d, skew, 0, skew[0] );
+    AE_FIXED_PROPERTY( transformation3d, skew_quaternion_z, 0, skew[1] );
+    AE_FIXED_PROPERTY( transformation3d, skew_quaternion_w, 0, skew[2] );
+
+    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation3d_fixed_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
@@ -454,6 +502,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_fixed_wq( ae_matrix4_t _out,
     ae_vector3_t anchor_point;
     ae_vector3_t position;
     ae_vector3_t scale;
+    ae_skew_t skew;
 
     AE_FIXED_PROPERTY( transformation3d, anchor_point_x, 0, anchor_point[0] );
     AE_FIXED_PROPERTY( transformation3d, anchor_point_y, 0, anchor_point[1] );
@@ -467,7 +516,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_fixed_wq( ae_matrix4_t _out,
     AE_FIXED_PROPERTY( transformation3d, scale_y, 0, scale[1] );
     AE_FIXED_PROPERTY( transformation3d, scale_z, 0, scale[2] );
 
-    ae_movie_make_transformation3d_m4wq( _out, position, anchor_point, scale );
+    AE_FIXED_PROPERTY( transformation3d, skew, 0, skew[0] );
+    AE_FIXED_PROPERTY( transformation3d, skew_quaternion_z, 0, skew[1] );
+    AE_FIXED_PROPERTY( transformation3d, skew_quaternion_w, 0, skew[2] );
+
+    ae_movie_make_transformation3d_m4wq( _out, position, anchor_point, scale, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate_wq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
@@ -477,6 +530,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate_wq( ae_matrix4_t
     ae_vector3_t anchor_point;
     ae_vector3_t position;
     ae_vector3_t scale;
+    ae_skew_t skew;
     
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_x, anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_y, anchor_point[1] );
@@ -490,7 +544,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate_wq( ae_matrix4_t
     AE_INTERPOLATE_PROPERTY( transformation3d, scale_y, scale[1] );
     AE_INTERPOLATE_PROPERTY( transformation3d, scale_z, scale[2] );
 
-    ae_movie_make_transformation3d_m4wq( _out, position, anchor_point, scale );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew, skew[0] );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew_quaternion_z, skew[1] );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew_quaternion_w, skew[2] );
+
+    ae_movie_make_transformation3d_m4wq( _out, position, anchor_point, scale, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate_fq( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
@@ -501,6 +559,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate_fq( ae_matrix4_t
     ae_vector3_t position;
     ae_vector3_t scale;
     ae_quaternion_t quaternion;
+    ae_skew_t skew;
 
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_x, anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_y, anchor_point[1] );
@@ -519,7 +578,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate_fq( ae_matrix4_t
     AE_FIXED_PROPERTY( transformation3d, quaternion_z, 0, quaternion[2] );
     AE_FIXED_PROPERTY( transformation3d, quaternion_w, 0, quaternion[3] );
 
-    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew, skew[0] );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew_quaternion_z, skew[1] );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew_quaternion_w, skew[2] );
+
+    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
@@ -530,6 +593,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate( ae_matrix4_t _o
     ae_vector3_t position;
     ae_vector3_t scale;
     ae_quaternion_t quaternion;
+    ae_skew_t skew;
 
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_x, anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_y, anchor_point[1] );
@@ -557,7 +621,11 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate( ae_matrix4_t _o
 
     ae_linerp_q( quaternion, q1, q2, _t );
 
-    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew, skew[0] );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew_quaternion_z, skew[1] );
+    AE_INTERPOLATE_PROPERTY( transformation3d, skew_quaternion_w, skew[2] );
+
+    ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, ae_bool_t _threeD )
@@ -566,17 +634,6 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
     AE_READ( _stream, immutable_property_mask );
 
     _transformation->immutable_property_mask = immutable_property_mask;
-
-    if( immutable_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
-    {
-        AE_READF( _stream, _transformation->immutable_opacity );
-        _transformation->timeline_opacity = AE_NULL;
-    }
-    else
-    {
-        _transformation->immutable_opacity = 0.f;
-        _transformation->timeline_opacity = __load_movie_layer_transformation_timeline( _stream, "immutable_opacity" );
-    }
 
     if( _threeD == AE_FALSE )
     {
@@ -689,6 +746,17 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
         }
     }
 
+    if( immutable_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
+    {
+        AE_READF( _stream, _transformation->immutable_opacity );
+        _transformation->timeline_opacity = AE_NULL;
+    }
+    else
+    {
+        _transformation->immutable_opacity = 0.f;
+        _transformation->timeline_opacity = __load_movie_layer_transformation_timeline( _stream, "immutable_opacity" );
+    }
+
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -755,10 +823,13 @@ AE_INTERNAL ae_void_t __delete_layer_transformation2d( const aeMovieInstance * _
         AE_DELETE( _instance, timeline->anchor_point_y );
         AE_DELETE( _instance, timeline->position_x );
         AE_DELETE( _instance, timeline->position_y );
-        AE_DELETE( _instance, timeline->quaternion_z );
-        AE_DELETE( _instance, timeline->quaternion_w );
         AE_DELETE( _instance, timeline->scale_x );
         AE_DELETE( _instance, timeline->scale_y );
+        AE_DELETE( _instance, timeline->quaternion_z );
+        AE_DELETE( _instance, timeline->quaternion_w );
+        AE_DELETE( _instance, timeline->skew );
+        AE_DELETE( _instance, timeline->skew_quaternion_z );
+        AE_DELETE( _instance, timeline->skew_quaternion_w );
 
         AE_DELETE( _instance, _transformation->timeline );
     }
@@ -776,13 +847,16 @@ AE_INTERNAL ae_void_t __delete_layer_transformation3d( const aeMovieInstance * _
         AE_DELETE( _instance, timeline->position_x );
         AE_DELETE( _instance, timeline->position_y );
         AE_DELETE( _instance, timeline->position_z );
+        AE_DELETE( _instance, timeline->scale_x );
+        AE_DELETE( _instance, timeline->scale_y );
+        AE_DELETE( _instance, timeline->scale_z );
         AE_DELETE( _instance, timeline->quaternion_x );
         AE_DELETE( _instance, timeline->quaternion_y );
         AE_DELETE( _instance, timeline->quaternion_z );
         AE_DELETE( _instance, timeline->quaternion_w );
-        AE_DELETE( _instance, timeline->scale_x );
-        AE_DELETE( _instance, timeline->scale_y );
-        AE_DELETE( _instance, timeline->scale_z );
+        AE_DELETE( _instance, timeline->skew );
+        AE_DELETE( _instance, timeline->skew_quaternion_z );
+        AE_DELETE( _instance, timeline->skew_quaternion_w );
 
         AE_DELETE( _instance, _transformation->timeline );
     }
@@ -881,7 +955,7 @@ ae_color_channel_t ae_movie_make_layer_opacity( const aeMovieLayerTransformation
     return opacity;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t )
+ae_void_t ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, ae_skew_t _skew, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t )
 {
     AE_INTERPOLATE_PROPERTY( _transformation2d, anchor_point_x, _anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( _transformation2d, anchor_point_y, _anchor_point[1] );
@@ -901,9 +975,13 @@ ae_void_t ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor
     AE_FIXED_PROPERTY( _transformation2d, quaternion_w, 1, q2[1] );
 
     ae_linerp_qzw( _quaternion, q1, q2, _t );
+
+    AE_INTERPOLATE_PROPERTY( _transformation2d, skew, _skew[0] );
+    AE_INTERPOLATE_PROPERTY( _transformation2d, skew_quaternion_z, _skew[1] );
+    AE_INTERPOLATE_PROPERTY( _transformation2d, skew_quaternion_w, _skew[2] );
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_layer_transformation2d_fixed( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index )
+ae_void_t ae_movie_make_layer_transformation2d_fixed( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, ae_skew_t _skew, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index )
 {
     AE_FIXED_PROPERTY( _transformation2d, anchor_point_x, 0, _anchor_point[0] );
     AE_FIXED_PROPERTY( _transformation2d, anchor_point_y, 0, _anchor_point[1] );
@@ -916,4 +994,8 @@ ae_void_t ae_movie_make_layer_transformation2d_fixed( ae_vector2_t _anchor_point
 
     AE_FIXED_PROPERTY( _transformation2d, quaternion_z, 0, _quaternion[0] );
     AE_FIXED_PROPERTY( _transformation2d, quaternion_w, 0, _quaternion[1] );
+
+    AE_FIXED_PROPERTY( _transformation2d, skew, 0, _skew[0] );
+    AE_FIXED_PROPERTY( _transformation2d, skew_quaternion_z, 0, _skew[1] );
+    AE_FIXED_PROPERTY( _transformation2d, skew_quaternion_w, 0, _skew[2] );
 }

@@ -30,6 +30,7 @@
 #ifndef MOVIE_MOVIE_H_
 #define MOVIE_MOVIE_H_
 
+#include "movie_version.h"
 #include "movie_type.h"
 #include "movie_instance.h"
 #include "movie_data.h"

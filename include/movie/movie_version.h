@@ -27,5 +27,6 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 //////////////////////////////////////////////////////////////////////////
-static const ae_uint32_t ae_movie_version = 17;
+#define AE_MOVIE_SDK_MAJOR_VERSION 17
+#define AE_MOVIE_SDK_MINOR_VERSION 2
 //////////////////////////////////////////////////////////////////////////

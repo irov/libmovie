@@ -402,6 +402,7 @@ typedef struct aeMovieCompositionSceneEffectProviderCallbackData
     ae_vector2_t position;
     ae_vector2_t scale;
     ae_quaternionzw_t quaternion;
+    ae_skew_t skew;
 
 } aeMovieCompositionSceneEffectProviderCallbackData;
 
@@ -422,6 +423,7 @@ typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
     ae_vector2_t position;
     ae_vector2_t scale;
     ae_quaternionzw_t quaternion;
+    ae_skew_t skew;
 
     ae_voidptr_t scene_effect_data;
 

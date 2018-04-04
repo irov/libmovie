@@ -828,7 +828,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
         ae_movie_make_layer_matrix_fixed( local_matrix, layer->transformation, _frameId );
     }
 
-    ae_mul_m4_m4_r( _node->matrix, local_matrix, node_relative->matrix );
+    ae_mul_m4_m4( _node->matrix, local_matrix, node_relative->matrix );
 
     if( layer->sub_composition_data != AE_NULL )
     {
@@ -1124,7 +1124,7 @@ AE_INTERNAL ae_void_t __setup_movie_composition_scene_effect( aeMovieComposition
             aeMovieCompositionSceneEffectProviderCallbackData callbackData;
             callbackData.element = node->element_data;
 
-            ae_movie_make_layer_transformation2d_fixed( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, transformation2d, 0 );
+            ae_movie_make_layer_transformation2d_fixed( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, callbackData.skew, transformation2d, 0 );
 
             ae_voidptr_t scene_effect_data = (*_composition->providers.scene_effect_provider)(&callbackData, _composition->provider_data);
 
@@ -3004,11 +3004,11 @@ AE_INTERNAL ae_void_t __update_movie_scene_effect( const aeMovieComposition * _c
     {
         ae_float_t t = ae_fractional_f( frame_time );
 
-        ae_movie_make_layer_transformation2d_interpolate( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, transformation2d, frameId, t );
+        ae_movie_make_layer_transformation2d_interpolate( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, callbackData.skew, transformation2d, frameId, t );
     }
     else
     {
-        ae_movie_make_layer_transformation2d_fixed( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, transformation2d, frameId );
+        ae_movie_make_layer_transformation2d_fixed( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, callbackData.skew, transformation2d, frameId );
     }
 
     callbackData.scene_effect_data = _composition->scene_effect_data;
