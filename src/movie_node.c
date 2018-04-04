@@ -1205,6 +1205,7 @@ AE_INTERNAL ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _compo
 
                 AE_MOVIE_PANIC_MEMORY( animation, AE_FALSE );
 
+                animation->enable = AE_TRUE;
                 animation->play = AE_FALSE;
                 animation->pause = AE_FALSE;
                 animation->interrupt = AE_FALSE;
@@ -1943,6 +1944,7 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 
     AE_MOVIE_PANIC_MEMORY( animation, AE_NULL );
 
+    animation->enable = AE_TRUE;
     animation->play = AE_FALSE;
     animation->pause = AE_FALSE;
     animation->interrupt = AE_FALSE;
@@ -3906,6 +3908,11 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, ae_uin
             continue;
         }
 
+        if( node->subcomposition != AE_NULL && node->subcomposition->animation->enable == AE_FALSE )
+        {
+            continue;
+        }
+
         const aeMovieLayerData * layer = node->layer;
         
         if( layer->renderable == AE_FALSE )
@@ -4487,6 +4494,22 @@ ae_bool_t ae_get_movie_sub_composition_loop( const aeMovieSubComposition * _subc
     ae_bool_t loop = animation->loop;
 
     return loop;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_void_t ae_set_movie_sub_composition_enable( const aeMovieSubComposition * _subcomposition, ae_bool_t _enable )
+{
+    aeMovieCompositionAnimation * animation = _subcomposition->animation;
+
+    animation->enable = _enable;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_sub_composition_enable( const aeMovieSubComposition * _subcomposition )
+{
+    const aeMovieCompositionAnimation * animation = _subcomposition->animation;
+
+    ae_bool_t enable = animation->enable;
+
+    return enable;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_sub_composition_work_area( const aeMovieComposition * _composition, const aeMovieSubComposition * _subcomposition, ae_time_t _begin, ae_time_t _end )
