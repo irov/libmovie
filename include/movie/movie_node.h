@@ -956,6 +956,19 @@ ae_void_t ae_set_movie_sub_composition_loop( const aeMovieSubComposition * _subc
 ae_bool_t ae_get_movie_sub_composition_loop( const aeMovieSubComposition * _subcomposition );
 
 /**
+@brief Set whether a sub-composition is enable or not.
+@param [in] _subcomposition Sub-composition.
+@param [in] _loop If TRUE, playback will be looped.
+*/
+ae_void_t ae_set_movie_sub_composition_enable( const aeMovieSubComposition * _subcomposition, ae_bool_t _enable );
+
+/**
+@param [in] _subcomposition Sub-composition.
+@return TRUE if sub-composition playback is enable.
+*/
+ae_bool_t ae_get_movie_sub_composition_enable( const aeMovieSubComposition * _subcomposition );
+
+/**
 @brief Set playback area of a sub-composition in milliseconds.
 @param [in] _composition Composition.
 @param [in] _subcomposition Sub-composition.

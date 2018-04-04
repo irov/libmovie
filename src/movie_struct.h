@@ -116,6 +116,8 @@ struct aeMovieStream
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieCompositionAnimation
 {
+    ae_bool_t enable;
+
     ae_bool_t play;
     ae_bool_t pause;
     ae_bool_t interrupt;
