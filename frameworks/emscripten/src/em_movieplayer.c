@@ -846,7 +846,7 @@ static GLuint __cache_resource_image( em_player_t * em_player, const ae_char_t *
     return texture_id;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _resource, ae_voidptr_t _ud )
+static ae_bool_t __ae_movie_data_resource_provider( const aeMovieResource * _resource, ae_voidptrptr_t _rp, ae_voidptr_t _ud )
 {
     em_player_t * em_player = (em_player_t *)_ud;
 
@@ -869,7 +869,9 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
             resource_image->texture_id = texture_id;
             resource_image->premultiplied = r->premultiplied;
 
-            return resource_image;            
+            *_rp = resource_image;
+
+            return AE_TRUE;            
         }break;
     case AE_MOVIE_RESOURCE_SEQUENCE:
         {   
@@ -879,21 +881,24 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
             emscripten_log( EM_LOG_ERROR, "Unsuported resource type: video.\n"
             );
             
+            return AE_FALSE;
         }break;
     case AE_MOVIE_RESOURCE_SOUND:
         {
             const aeMovieResourceSound * r = (const aeMovieResourceSound *)_resource;
 
-            uint32_t ud = EM_ASM_INT(
+            uint32_t em_ud = EM_ASM_INT(
             {
                 return em_player_resource_sound_provider( $0, Pointer_stringify( $1 ), $2, $3 );
             }, em_player->ud, r->path, r->codec, r->duration );
 
             em_resource_sound_t * resource = EM_NEW( em_resource_sound_t );
 
-            resource->ud = ud;
+            resource->ud = em_ud;
 
-            return resource;            
+            *_rp = resource;
+
+            return AE_TRUE;            
         }break;
     case AE_MOVIE_RESOURCE_SLOT:
         {
@@ -906,12 +911,12 @@ static ae_voidptr_t __ae_movie_data_resource_provider( const aeMovieResource * _
             emscripten_log( EM_LOG_ERROR, "Unsuport resource type: other (%i).\n"
                 , _resource->type 
             );
-
-            break;
-        }
+            
+            return AE_FALSE;
+        }break;
     }
 
-    return AE_NULL;
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
@@ -1038,9 +1043,9 @@ typedef struct em_node_sound_t
     em_resource_sound_t * resource;
 } em_node_sound_t;
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_bool_t __ae_movie_composition_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud )
 {
-    (ae_void_t)_data;
+    (ae_void_t)_ud;
 
     const aeMovieLayerData * layer = _callbackData->layer;
 
@@ -1048,7 +1053,9 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
 
     if( is_track_matte == AE_TRUE )
     {
-        return AE_NULL;
+        *_nd = AE_NULL;
+
+        return AE_TRUE;
     }
 
     aeMovieLayerTypeEnum type = ae_get_movie_layer_data_type( layer );
@@ -1067,7 +1074,9 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
                 node_track_matte->base_image = base_image;
                 node_track_matte->track_matte_image = track_matte_image;
 
-                return node_track_matte;
+                *_nd = node_track_matte;
+
+                return AE_TRUE;
             }break;
         default:
             {
@@ -1082,7 +1091,7 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
             {
                 //Empty
 
-                return AE_NULL;
+                return AE_FALSE;
             }break;
         case AE_MOVIE_LAYER_TYPE_SOUND:
             {
@@ -1092,7 +1101,9 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
 
                 node_sound->resource = (em_resource_sound_t *)resource_data;
 
-                return node_sound;
+                *_nd = node_sound;
+
+                return AE_TRUE;
             }break;
         default:
             {
@@ -1100,7 +1111,9 @@ static ae_voidptr_t __ae_movie_composition_node_provider( const aeMovieNodeProvi
         }
     }
 
-    return AE_NULL;
+    *_nd = AE_NULL;
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_void_t __ae_movie_composition_node_deleter( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data )
@@ -1254,9 +1267,9 @@ typedef struct ae_camera_t
     float height;
 } ae_camera_t;
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t __ae_movie_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_bool_t __ae_movie_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud )
 {
-    (ae_void_t)_data;
+    (ae_void_t)_ud;
 
     ae_camera_t * camera = EM_NEW( ae_camera_t );
 
@@ -1266,7 +1279,9 @@ static ae_voidptr_t __ae_movie_callback_camera_provider( const aeMovieCameraProv
     camera->width = _callbackData->width;
     camera->height = _callbackData->height;
 
-    return camera;
+    *_cd = camera;
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_void_t __ae_movie_callback_camera_deleter( const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _data )
@@ -1315,9 +1330,9 @@ typedef struct em_custom_shader_t
     GLint tex0Location;
 } em_custom_shader_t;
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_bool_t __ae_movie_callback_shader_provider( const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptrptr_t _sd, ae_voidptr_t _ud )
 {
-    (ae_void_t)_data;
+    (ae_void_t)_ud;
 
     em_custom_shader_t * shader = EM_NEW( em_custom_shader_t );
 
@@ -1325,7 +1340,7 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
 
     if( program_id == 0U )
     {
-        return em_nullptr;
+        return AE_FALSE;
     }
 
     shader->program_id = program_id;
@@ -1340,7 +1355,7 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
             , positionLocation
         );
 
-        return em_nullptr;
+        return AE_FALSE;
     }
 
     shader->positionLocation = positionLocation;
@@ -1355,7 +1370,7 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
             , colorLocation
         );
 
-        return em_nullptr;
+        return AE_FALSE;
     }
 
     shader->colorLocation = colorLocation;
@@ -1370,7 +1385,7 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
             , texcoord0Location
         );
 
-        return em_nullptr;
+        return AE_FALSE;
     }
 
     shader->texcoord0Location = texcoord0Location;
@@ -1397,7 +1412,7 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
                 , parameter_location
             );
 
-            return em_nullptr;
+            return AE_FALSE;
         }
 
         shader->parameter_locations[i] = parameter_location;
@@ -1413,7 +1428,7 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
             , vpMatrixLocation
         );
 
-        return em_nullptr;
+        return AE_FALSE;
     }
 
     int worldMatrixLocation;
@@ -1426,7 +1441,7 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
             , worldMatrixLocation
         );
 
-        return em_nullptr;
+        return AE_FALSE;
     }
     
     int tex0Location;
@@ -1439,15 +1454,16 @@ static ae_voidptr_t __ae_movie_callback_shader_provider( const aeMovieShaderProv
             , tex0Location
         );
 
-        return em_nullptr;
+        return AE_FALSE;
     }
-
     
     shader->vpMatrixLocation = vpMatrixLocation; 
     shader->worldMatrixLocation = worldMatrixLocation;    
     shader->tex0Location = tex0Location;
 
-    return shader;
+    *_sd = shader;
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_void_t __ae_movie_callback_shader_property_update( const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data )
@@ -1491,16 +1507,18 @@ typedef struct em_track_matte_t
     aeMovieRenderMesh mesh;
 } em_track_matte_t;
 //////////////////////////////////////////////////////////////////////////
-static ae_voidptr_t __ae_movie_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data )
+static ae_bool_t __ae_movie_callback_track_matte_provider( const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptrptr_t _tmd, ae_voidptr_t _ud )
 {
-    (ae_void_t)_data;
+    (ae_void_t)_ud;
 
     em_track_matte_t * track_matte = EM_NEW( em_track_matte_t );
 
     __copy_m4( track_matte->matrix, _callbackData->matrix );
     track_matte->mesh = *_callbackData->mesh;
 
-    return track_matte;
+    *_tmd = track_matte;
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 static ae_void_t __ae_movie_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data )

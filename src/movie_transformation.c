@@ -973,7 +973,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
                 }break;
             default:
                 {
-                    return AE_RESULT_INVALID_INTERNAL;
+                    return AE_RESULT_INTERNAL_ERROR;
                 }break;
             }
         }
@@ -1062,7 +1062,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
                 }break;
             default:
                 {
-                    return AE_RESULT_INVALID_INTERNAL;
+                    return AE_RESULT_INTERNAL_ERROR;
                 }break;
             };
         }
