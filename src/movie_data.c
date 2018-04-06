@@ -1511,6 +1511,10 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result )
         {
             return "invalid memory";
         }break;
+    case AE_RESULT_INTERNAL_ERROR:
+        {
+            return "internal error";
+        }break;
     }
 
     return "invalid result";
@@ -1889,7 +1893,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         ae_voidptr_t resource_data;
         if( (*_movieData->resource_provider)(new_resource, &resource_data, _movieData->resource_ud) == AE_FALSE )
         {
-            return AE_RESULT_INVALID_INTERNAL;
+            return AE_RESULT_INTERNAL_ERROR;
         }
 
         new_resource->data = resource_data;
