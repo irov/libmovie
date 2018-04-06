@@ -1885,7 +1885,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
         new_resource->type = type;
         new_resource->name = name;
-        new_resource->data = (*_movieData->resource_provider)(new_resource, _movieData->resource_ud);
+        
+        ae_voidptr_t resource_data;
+        if( (*_movieData->resource_provider)(new_resource, &resource_data, _movieData->resource_ud) == AE_FALSE )
+        {
+            return AE_RESULT_INVALID_INTERNAL;
+        }
+
+        new_resource->data = resource_data;
 
         *it_resource = (aeMovieResource *)new_resource;
     }
