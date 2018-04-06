@@ -109,7 +109,7 @@ typedef enum aeMovieCompositionFlag
 @param [in] _data Object which will hold the resource reference after loading.
 @return Reference to the created resource.
 */
-typedef ae_voidptr_t( *ae_movie_data_resource_provider_t )(const aeMovieResource * _resource, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_data_resource_provider_t )(const aeMovieResource * _resource, ae_voidptrptr_t _rd, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_data_resource_deleter_t )(aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud);
 
 /**

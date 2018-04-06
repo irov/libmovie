@@ -112,27 +112,29 @@ function onload_movie(canvas, response, em_player, composition_name)
             requestAnimationFrame(wait_resource_load);
             return
         }
-    
+        
         var start = performance.now();
         
         function tick(timestamp)
         {
+            requestAnimationFrame(tick);
+            
             var progressMs = timestamp - start;
-            start = timestamp
-                        
-            if( progressMs > 0.0 )
+            var fpsInterval = 70.0
+            
+            if( progressMs > fpsInterval )
             {
+                start = timestamp - (progressMs % fpsInterval)
+                
                 movie.update_movie_composition(em_player, em_movie_composition, progressMs * 0.001)
-                    
+                
                 movie.render_movie_composition(em_player, em_movie_composition)
             }
-
-            requestAnimationFrame(tick);
-        }        
-            
-        requestAnimationFrame(tick)        
-    }
+        }
         
+        requestAnimationFrame(tick)
+    }
+    
     requestAnimationFrame(wait_resource_load)
 };
 
