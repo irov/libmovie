@@ -57,7 +57,7 @@ ae_bool_t ex_callback_resource_provider( const aeMovieResource * _resource, ae_v
 // Callbacks for loading composition data & managing it.
 //
 
-ae_bool_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _ñd, ae_voidptr_t _ud );
+ae_bool_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud );
 ae_bool_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud );
 ae_void_t ex_callback_node_destroyer( const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _ud );
 ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _ud );

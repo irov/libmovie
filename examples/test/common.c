@@ -191,12 +191,12 @@ ae_bool_t ex_callback_resource_provider( const aeMovieResource * _resource, ae_v
 
 //==================================================
 
-ae_bool_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _ñd, ae_voidptr_t _ud ) {
+ae_bool_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud ) {
     //
     // This would be our examples_t object if we used it here.
     //
 
-    AE_UNUSED( _ñd );
+    AE_UNUSED( _cd );
     AE_UNUSED( _ud );
 
     EX_LOG( "Camera provider callback.\n" );

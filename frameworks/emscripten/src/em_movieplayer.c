@@ -35,6 +35,7 @@
 
 #include <stdarg.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "em_typedef.h"
