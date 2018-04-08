@@ -72,7 +72,7 @@ AE_INTERNAL ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
     ae_uint8_t value;
     AE_READ( _stream, value );
 
-#ifdef _DEBUG
+#ifdef AE_MOVIE_DEBUG
     if( value != 0 && value != 1 )
     {
         __ae_break_point();
