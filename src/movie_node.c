@@ -1601,7 +1601,9 @@ AE_INTERNAL ae_void_t __setup_movie_node_matrix2( const aeMovieComposition * _co
         ae_float_t t = 0.f;
         ae_uint32_t frameId = __get_movie_frame_time( _animation, node, _composition->interpolate, &t );
 
-        __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node, update_revision, frameId, _composition->interpolate, t );
+        ae_bool_t node_interpolate = (frameId + 1 == node->layer->frame_count) ? AE_FALSE : _composition->interpolate;
+
+        __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node, update_revision, frameId, node_interpolate, t );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2829,14 +2831,16 @@ AE_INTERNAL ae_void_t __update_node( const aeMovieComposition * _composition, co
     }
 #endif
 
+    ae_bool_t node_interpolate = (_frameId + 1 == node->layer->frame_count) ? AE_FALSE : _interpolate;
+
     __update_movie_composition_node_matrix( _composition, _compositionData, _animation, _node, _revision, _frameId, _interpolate, _t );
 
     if( _node->shader_data != AE_NULL )
     {
-        __update_movie_composition_node_shader( _composition, _compositionData, _node, _revision, _frameId, _interpolate, _t );
+        __update_movie_composition_node_shader( _composition, _compositionData, _node, _revision, _frameId, node_interpolate, _t );
     }
 
-    __update_movie_composition_node_state( _composition, _node, _loop, _begin, _time, _interpolate );
+    __update_movie_composition_node_state( _composition, _node, _loop, _begin, _time, node_interpolate );
     
     _node->update_revision = _revision;
 }
