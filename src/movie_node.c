@@ -812,7 +812,9 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
         ae_float_t t_relative = 0.f;
         ae_uint32_t frame_relative = __get_movie_frame_time( _animation, node_relative, _composition->interpolate, &t_relative );
 
-        __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node_relative, _revision, frame_relative, _interpolate, t_relative );
+        ae_bool_t interpolate_relative = (frame_relative + 1 == node_relative->layer->frame_count) ? AE_FALSE : _interpolate;
+
+        __update_movie_composition_node_matrix( _composition, _compositionData, _animation, node_relative, _revision, frame_relative, interpolate_relative, t_relative );
     }
 
     ae_color_channel_t local_opacity = ae_movie_make_layer_opacity( layer->transformation, _frameId, _interpolate, _t );
