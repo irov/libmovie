@@ -1950,10 +1950,6 @@ static void __em_render_set_camera( const aeMovieComposition * ae_movie_composit
 //////////////////////////////////////////////////////////////////////////
 void em_render_movie_composition( em_player_t * _player, em_movie_composition_t * _composition )
 {
-    GLCALL( glClearColor, (0, 0, 0, 255) );
-    GLCALL( glDepthMask, (GL_FALSE) );
-    GLCALL( glClear, (GL_COLOR_BUFFER_BIT) );
-
     float player_width = _player->width;
     float player_height = _player->height;
 
