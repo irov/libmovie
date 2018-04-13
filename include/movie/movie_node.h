@@ -393,26 +393,24 @@ typedef struct aeMovieCompositionStateCallbackData
     const aeMovieSubComposition * subcomposition;
 } aeMovieCompositionStateCallbackData;
 
-typedef ae_voidptr_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _data);
+typedef ae_bool_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_voidptr_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _data);
+typedef ae_bool_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_voidptr_t( *ae_movie_callback_track_matte_provider_t )(const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_track_matte_deleter_t )(const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _data);
+typedef ae_bool_t( *ae_movie_callback_track_matte_provider_t )(const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptrptr_t _tmd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_track_matte_deleter_t )(const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
+typedef ae_bool_t( *ae_movie_callback_shader_provider_t )(const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptrptr_t _sd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_shader_deleter_t )(const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_shader_property_update_t )(const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_voidptr_t( *ae_movie_callback_shader_provider_t )(const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_shader_deleter_t )(const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_shader_property_update_t )(const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _data);
-
-
-typedef void( *ae_movie_callback_composition_event_t )(const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _data);
-typedef void( *ae_movie_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _data);
+typedef ae_void_t( *ae_movie_callback_composition_event_t )(const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _ud);
 
 typedef struct aeMovieCompositionProviders
 {

@@ -1583,7 +1583,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
+
+                ae_voidptr_t data;
+                if( (*_movieData->resource_provider)(*it_resource, &data, _movieData->resource_ud) == AE_FALSE )
+                {
+                    return AE_RESULT_INTERNAL_ERROR;
+                }
+
+                resource->data = data;
             }break;
         case AE_MOVIE_RESOURCE_VIDEO:
             {
@@ -1629,7 +1636,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
+
+                ae_voidptr_t data;
+                if( (*_movieData->resource_provider)(*it_resource, &data, _movieData->resource_ud) == AE_FALSE )
+                {
+                    return AE_RESULT_INTERNAL_ERROR;
+                }
+
+                resource->data = data;
             }break;
         case AE_MOVIE_RESOURCE_SOUND:
             {
@@ -1667,7 +1681,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
+
+                ae_voidptr_t data;
+                if( (*_movieData->resource_provider)(*it_resource, &data, _movieData->resource_ud) == AE_FALSE )
+                {
+                    return AE_RESULT_INTERNAL_ERROR;
+                }
+
+                resource->data = data;
             }break;
         case AE_MOVIE_RESOURCE_IMAGE:
             {
@@ -1745,7 +1766,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
+
+                ae_voidptr_t data;
+                if( (*_movieData->resource_provider)(*it_resource, &data, _movieData->resource_ud) == AE_FALSE )
+                {
+                    return AE_RESULT_INTERNAL_ERROR;
+                }
+
+                resource->data = data;
             }break;
         case AE_MOVIE_RESOURCE_SEQUENCE:
             {
@@ -1798,7 +1826,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
+
+                ae_voidptr_t data;
+                if( (*_movieData->resource_provider)(*it_resource, &data, _movieData->resource_ud) == AE_FALSE )
+                {
+                    return AE_RESULT_INTERNAL_ERROR;
+                }
+
+                resource->data = data;
             }break;
         case AE_MOVIE_RESOURCE_PARTICLE:
             {
@@ -1852,7 +1887,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
+
+                ae_voidptr_t data;
+                if( (*_movieData->resource_provider)(*it_resource, &data, _movieData->resource_ud) == AE_FALSE )
+                {
+                    return AE_RESULT_INTERNAL_ERROR;
+                }
+
+                resource->data = data;
             }break;
         case AE_MOVIE_RESOURCE_SLOT:
             {
@@ -1888,7 +1930,14 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
                 *it_resource = (aeMovieResource *)resource;
 
                 resource->type = type;
-                resource->data = (*_movieData->resource_provider)(*it_resource, _movieData->resource_ud);
+
+                ae_voidptr_t data;
+                if( (*_movieData->resource_provider)(*it_resource, &data, _movieData->resource_ud) == AE_FALSE )
+                {
+                    return AE_RESULT_INTERNAL_ERROR;
+                }
+
+                resource->data = data;
             }break;
         default:
             {

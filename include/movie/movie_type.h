@@ -50,6 +50,7 @@ typedef int32_t ae_enum_t;
 typedef float ae_float_t;
 typedef float ae_time_t;
 typedef void * ae_voidptr_t;
+typedef ae_voidptr_t * ae_voidptrptr_t;
 typedef const void * ae_constvoidptr_t;
 typedef ae_uint8_t * ae_byteptr_t;
 typedef const ae_uint8_t * ae_constbyteptr_t;
@@ -205,6 +206,7 @@ typedef enum
     AE_RESULT_INVALID_STREAM = -5,
     AE_RESULT_INVALID_DATA = -6,
     AE_RESULT_INVALID_MEMORY = -7,
+    AE_RESULT_INTERNAL_ERROR = -8,
 } ae_result_t;
 
 typedef ae_size_t( *ae_movie_stream_memory_read_t )(ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size);

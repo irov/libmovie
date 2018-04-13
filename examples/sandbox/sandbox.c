@@ -66,12 +66,13 @@ AE_CALLBACK ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src,
 	memcpy( _dst, _src, _size );
 }
 
-AE_CALLBACK ae_voidptr_t __resource_provider( const aeMovieResource * _resource, ae_voidptr_t _data )
+AE_CALLBACK ae_bool_t __resource_provider( const aeMovieResource * _resource, ae_voidptrptr_t _rd, ae_voidptr_t _data )
 {
     AE_UNUSED( _resource );
+    AE_UNUSED( _rd );
     AE_UNUSED( _data );
 
-	return AE_NULL;
+	return AE_TRUE;
 }
 
 AE_CALLBACK ae_void_t __resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
