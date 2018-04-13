@@ -2831,7 +2831,7 @@ AE_INTERNAL ae_void_t __update_node( const aeMovieComposition * _composition, co
     }
 #endif
 
-    ae_bool_t node_interpolate = (_frameId + 1 == node->layer->frame_count) ? AE_FALSE : _interpolate;
+    ae_bool_t node_interpolate = (_frameId + 1 == _node->layer->frame_count) ? AE_FALSE : _interpolate;
 
     __update_movie_composition_node_matrix( _composition, _compositionData, _animation, _node, _revision, _frameId, _interpolate, _t );
 
