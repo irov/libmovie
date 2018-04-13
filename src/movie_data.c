@@ -1506,6 +1506,10 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result )
         {
             return "invalid memory";
         }break;
+    case AE_RESULT_INTERNAL_ERROR:
+        {
+            return "internal error";
+        }break;
     }
 
     return "invalid result";
