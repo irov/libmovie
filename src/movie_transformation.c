@@ -130,6 +130,8 @@ AE_INTERNAL ae_float_t __get_movie_layer_transformation_property( ae_constvoidpt
         }break;
     }
 
+    __ae_break_point();
+
     return 0.f;
 }
 //////////////////////////////////////////////////////////////////////////
