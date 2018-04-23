@@ -2122,7 +2122,7 @@ ae_void_t ae_get_movie_composition_data_loop_segment( const aeMovieCompositionDa
     *_out = AE_TIME_OUTSCALE( _compositionData->loop_segment[1] );
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _compositionData )
+ae_bool_t ae_is_movie_composition_data_master( const aeMovieCompositionData * _compositionData )
 {
     return _compositionData->master;
 }

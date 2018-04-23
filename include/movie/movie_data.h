@@ -339,7 +339,7 @@ ae_void_t ae_get_movie_composition_data_loop_segment( const aeMovieCompositionDa
 @param [in] _compositionData Composition data.
 @return ???
 */
-ae_bool_t ae_get_movie_composition_data_master( const aeMovieCompositionData * _compositionData );
+ae_bool_t ae_is_movie_composition_data_master( const aeMovieCompositionData * _compositionData );
 
 /**
 @param [in] _movieData Data.
