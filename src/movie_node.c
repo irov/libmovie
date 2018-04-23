@@ -3880,7 +3880,7 @@ ae_uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composit
             continue;
         }
 
-        count += 1;
+        ++count;
     }
 
     return count;

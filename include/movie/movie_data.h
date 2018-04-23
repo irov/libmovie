@@ -204,6 +204,11 @@ ae_bool_t ae_has_movie_composition_data( const aeMovieData * _movieData, const a
 */
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 
+
+typedef ae_bool_t( *ae_movie_layer_data_visit_t )(const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layer, ae_voidptr_t _ud);
+
+ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visit_t _visitor, ae_voidptr_t _ud );
+
 /**
 @param [in] _layer Layer.
 @return Layer name.
@@ -246,6 +251,12 @@ const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData
 @return Pointer to the data referenced by the resource linked to the layer.
 */
 ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer );
+
+/**
+@param [in] _layer Layer.
+@return Pointer to the data referenced by the resource linked to the layer.
+*/
+ae_bool_t ae_test_movie_layer_data_opacity_transparent( const aeMovieLayerData * _layer );
 
 /**
 @brief Get track matte type layer

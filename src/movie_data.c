@@ -118,16 +118,13 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
         {
         case AE_MOVIE_RESOURCE_NONE:
             {
-
             }break;
         case AE_MOVIE_RESOURCE_SOLID:
             {
                 const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
 
                 AE_UNUSED( resource );
-
-                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
-
+                
             }break;
         case AE_MOVIE_RESOURCE_VIDEO:
             {
@@ -135,16 +132,12 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_DELETE_STRING( instance, resource->path );
 
-                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
-
             }break;
         case AE_MOVIE_RESOURCE_SOUND:
             {
                 const aeMovieResourceSound * resource = (const aeMovieResourceSound *)base_resource;
 
                 AE_DELETE_STRING( instance, resource->path );
-
-                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_IMAGE:
@@ -165,16 +158,12 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
                     AE_DELETE( instance, resource->mesh );
                 }
 
-                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
-
             }break;
         case AE_MOVIE_RESOURCE_SEQUENCE:
             {
                 const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)base_resource;
 
                 AE_DELETEN( instance, resource->images );
-
-                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
 
             }break;
         case AE_MOVIE_RESOURCE_PARTICLE:
@@ -183,8 +172,6 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_DELETE_STRING( instance, resource->path );
 
-                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
-
             }break;
         case AE_MOVIE_RESOURCE_SLOT:
             {
@@ -192,9 +179,12 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 AE_UNUSED( resource );
 
-                (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
-
             }break;
+        }
+
+        if( _movieData->resource_deleter != AE_NULL )
+        {
+            (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
         }
 
         AE_DELETE_STRING( instance, base_resource->name );
@@ -1131,7 +1121,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_MOVIE_LAYER_TYPE_TEXT:
             {
-                _layer->renderable = AE_FALSE;
+                _layer->renderable = AE_TRUE;
             }break;
         case AE_MOVIE_LAYER_TYPE_EVENT:
             {
@@ -1890,13 +1880,20 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
         new_resource->type = type;
         new_resource->name = name;
         
-        ae_voidptr_t resource_data;
-        if( (*_movieData->resource_provider)(new_resource, &resource_data, _movieData->resource_ud) == AE_FALSE )
+        if( _movieData->resource_provider != AE_NULL )
         {
-            return AE_RESULT_INTERNAL_ERROR;
-        }
+            ae_voidptr_t resource_data;
+            if( (*_movieData->resource_provider)(new_resource, &resource_data, _movieData->resource_ud) == AE_FALSE )
+            {
+                return AE_RESULT_INTERNAL_ERROR;
+            }
 
-        new_resource->data = resource_data;
+            new_resource->data = resource_data;
+        }
+        else
+        {
+            new_resource->data = AE_NULL;
+        }
 
         *it_resource = (aeMovieResource *)new_resource;
     }
@@ -1972,6 +1969,30 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visit_t _visitor, ae_voidptr_t _ud )
+{
+    const aeMovieCompositionData * it_composition = _movieData->compositions;
+    const aeMovieCompositionData * it_composition_end = _movieData->compositions + _movieData->composition_count;
+    for( ; it_composition != it_composition_end; ++it_composition )
+    {
+        const aeMovieCompositionData * compositionData = it_composition;
+
+        const aeMovieLayerData *it_layer = compositionData->layers;
+        const aeMovieLayerData *it_layer_end = compositionData->layers + compositionData->layer_count;
+        for( ; it_layer != it_layer_end; ++it_layer )
+        {
+            const aeMovieLayerData * layerData = it_layer;
+
+            if( (*_visitor)(compositionData, layerData, _ud) == AE_FALSE )
+            {
+                return AE_FALSE;
+            }
+        }
+    }
+
+    return AE_TRUE;
+}
+//////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer )
 {
     return _layer->name;
@@ -2005,6 +2026,21 @@ const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData
 ae_voidptr_t ae_get_movie_layer_data_resource_data( const aeMovieLayerData * _layer )
 {
     return _layer->resource->data;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_test_movie_layer_data_opacity_transparent( const aeMovieLayerData * _layer )
+{
+    if( _layer->transformation->timeline_opacity != AE_NULL )
+    {
+        return AE_FALSE;
+    }
+
+    if( _layer->transformation->immutable_opacity != 0.f )
+    {
+        return AE_FALSE;
+    }
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_track_matte_mode_t ae_get_movie_layer_data_track_matte_mode( const aeMovieLayerData * _layer )
