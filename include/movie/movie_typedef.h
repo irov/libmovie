@@ -46,5 +46,6 @@ typedef struct aeMovieLayerColorVertex aeMovieLayerColorVertex;
 typedef struct aeMovieLayerShader aeMovieLayerShader;
 typedef struct aeMovieLayerViewport aeMovieLayerViewport;
 typedef struct aeMovieLayerPolygon aeMovieLayerPolygon;
+typedef struct aeMovieLayerVolume aeMovieLayerVolume;
 
 #endif
