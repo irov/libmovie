@@ -479,7 +479,7 @@ typedef struct aeMovieCompositionProviders
 
 } aeMovieCompositionProviders;
 
-ae_void_t ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _providers );
+ae_void_t ae_clear_movie_composition_providers( aeMovieCompositionProviders * _providers );
 
 /**
 @brief Allocate a composition in memory.
@@ -845,6 +845,8 @@ ae_bool_t ae_get_movie_composition_node_enable_any( const aeMovieComposition * _
 @{
 */
 
+ae_bool_t ae_has_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name );
+
 /**
 @brief Search for a sub-composition by name.
 @param [in] _composition Composition.
@@ -852,6 +854,11 @@ ae_bool_t ae_get_movie_composition_node_enable_any( const aeMovieComposition * _
 @return Pointer to the sub-composition or AE_NULL if not found.
 */
 const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name );
+
+
+typedef ae_bool_t( *ae_movie_sub_composition_visitor_t )(const aeMovieComposition * _compositionData, const ae_char_t * _name, const aeMovieSubComposition * _subcomposition, ae_voidptr_t _ud);
+
+ae_bool_t ae_visit_movie_sub_composition( const aeMovieComposition * _composition, ae_movie_sub_composition_visitor_t _visitor, ae_voidptr_t _ud );
 
 /**
 @brief Get name of a sub-composition.

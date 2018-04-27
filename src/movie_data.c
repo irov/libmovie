@@ -95,11 +95,21 @@ AE_INTERNAL ae_void_t __ae_delete_property_value( const aeMovieInstance * _insta
     AE_DELETEN( _instance, _property->values );
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __ae_delete_property_color_channel( const aeMovieInstance * _instance, const struct aeMoviePropertyColorChannel * _property )
+{
+    AE_DELETEN( _instance, _property->values );
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __ae_delete_property_color( const aeMovieInstance * _instance, const struct aeMoviePropertyColor * _property )
 {
-    AE_DELETEN( _instance, _property->colors_r );
-    AE_DELETEN( _instance, _property->colors_g );
-    AE_DELETEN( _instance, _property->colors_b );
+    __ae_delete_property_color_channel( _instance, _property->color_channel_r );
+    AE_DELETEN( _instance, _property->color_channel_r );
+
+    __ae_delete_property_color_channel( _instance, _property->color_channel_g );
+    AE_DELETEN( _instance, _property->color_channel_g );
+
+    __ae_delete_property_color_channel( _instance, _property->color_channel_b );
+    AE_DELETEN( _instance, _property->color_channel_b );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
@@ -455,75 +465,7 @@ AE_INTERNAL ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompo
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, struct aeMoviePropertyColor * _property, const aeMovieLayerData * _layer )
-{
-    _property->immutable_r = AE_READB( _stream );
-
-    if( _property->immutable_r == AE_TRUE )
-    {
-        AE_READ_COLOR_CHANNEL( _stream, _property->immutable_color_r );
-
-        _property->colors_r = AE_NULL;
-    }
-    else
-    {
-        _property->immutable_color_r = 1.f;
-
-        ae_color_channel_t * colors_r = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
-
-        AE_RESULT_PANIC_MEMORY( colors_r );
-
-        AE_READN( _stream, colors_r, _layer->frame_count );
-
-        _property->colors_r = colors_r;
-    }
-
-    _property->immutable_g = AE_READB( _stream );
-
-    if( _property->immutable_g == AE_TRUE )
-    {
-        AE_READ_COLOR_CHANNEL( _stream, _property->immutable_color_g );
-
-        _property->colors_g = AE_NULL;
-    }
-    else
-    {
-        _property->immutable_color_g = 1.f;
-
-        ae_color_channel_t * colors_g = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
-
-        AE_RESULT_PANIC_MEMORY( colors_g );
-
-        AE_READN( _stream, colors_g, _layer->frame_count );
-
-        _property->colors_g = colors_g;
-    }
-
-    _property->immutable_b = AE_READB( _stream );
-
-    if( _property->immutable_b == AE_TRUE )
-    {
-        AE_READ_COLOR_CHANNEL( _stream, _property->immutable_color_b );
-
-        _property->colors_b = AE_NULL;
-    }
-    else
-    {
-        _property->immutable_color_b = 1.f;
-
-        ae_color_channel_t * colors_b = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
-
-        AE_RESULT_PANIC_MEMORY( colors_b );
-
-        AE_READN( _stream, colors_b, _layer->frame_count );
-
-        _property->colors_b = colors_b;
-    }
-
-    return AE_RESULT_SUCCESSFUL;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __load_movie_property_value( aeMovieStream * _stream, struct aeMoviePropertyValue * _property, const aeMovieLayerData * _layer )
+AE_INTERNAL ae_result_t __load_movie_property_value( aeMovieStream * _stream, const aeMovieLayerData * _layer, struct aeMoviePropertyValue * _property )
 {
     _property->immutable = AE_READB( _stream );
 
@@ -545,6 +487,51 @@ AE_INTERNAL ae_result_t __load_movie_property_value( aeMovieStream * _stream, st
 
         _property->values = values;
     }
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __load_movie_property_color_channel( aeMovieStream * _stream, const aeMovieLayerData * _layer, struct aeMoviePropertyColorChannel * _property )
+{
+    _property->immutable = AE_READB( _stream );
+
+    if( _property->immutable == AE_TRUE )
+    {
+        AE_READ_COLOR_CHANNEL( _stream, _property->immutable_value );
+
+        _property->values = AE_NULL;
+    }
+    else
+    {
+        _property->immutable_value = 1.f;
+
+        ae_color_channel_t * values = AE_NEWN( _stream->instance, ae_color_channel_t, _layer->frame_count );
+
+        AE_RESULT_PANIC_MEMORY( values );
+
+        AE_READN( _stream, values, _layer->frame_count );
+
+        _property->values = values;
+    }
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __load_movie_property_color( aeMovieStream * _stream, const aeMovieLayerData * _layer, struct aeMoviePropertyColor * _property )
+{
+    const aeMovieInstance * instance = _stream->instance;
+
+    struct aeMoviePropertyColorChannel * color_channel_r = AE_NEW( instance, struct aeMoviePropertyColorChannel );
+    AE_RESULT( __load_movie_property_color_channel, (_stream, _layer, color_channel_r) );
+    _property->color_channel_r = color_channel_r;
+
+    struct aeMoviePropertyColorChannel * color_channel_g = AE_NEW( instance, struct aeMoviePropertyColorChannel );
+    AE_RESULT( __load_movie_property_color_channel, (_stream, _layer, color_channel_g) );
+    _property->color_channel_g = color_channel_g;
+
+    struct aeMoviePropertyColorChannel * color_channel_b = AE_NEW( instance, struct aeMoviePropertyColorChannel );
+    AE_RESULT( __load_movie_property_color_channel, (_stream, _layer, color_channel_b) );
+    _property->color_channel_b = color_channel_b;
 
     return AE_RESULT_SUCCESSFUL;
 }
@@ -781,7 +768,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
                 AE_RESULT_PANIC_MEMORY( property_color );
 
-                AE_RESULT( __load_movie_property_color, (_stream, property_color, _layer) );
+                AE_RESULT( __load_movie_property_color, (_stream, _layer, property_color) );
 
                 layer_color_vertex->property_color = property_color;
 
@@ -917,7 +904,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
                             AE_RESULT_PANIC_MEMORY( property_value );
 
-                            AE_RESULT( __load_movie_property_value, (_stream, property_value, _layer) );
+                            AE_RESULT( __load_movie_property_value, (_stream, _layer, property_value) );
 
                             parameter_slider->property_value = property_value;
 
@@ -937,7 +924,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
                             AE_RESULT_PANIC_MEMORY( property_color );
 
-                            AE_RESULT( __load_movie_property_color, (_stream, property_color, _layer) );
+                            AE_RESULT( __load_movie_property_color, (_stream, _layer, property_color) );
 
                             parameter_color->property_color = property_color;
 
@@ -1011,6 +998,48 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
                 AE_RESULT_PANIC_MEMORY( layer_extensions );
 
                 layer_extensions->viewport = layer_viewport;
+            }break;
+        case AE_LAYER_EXTENSION_VOLUME:
+            {
+                aeMovieLayerVolume * layer_volume = AE_NEW( instance, aeMovieLayerVolume );
+
+                AE_RESULT_PANIC_MEMORY( layer_volume );
+
+                struct aeMoviePropertyValue * property_volume = AE_NEW( _stream->instance, struct aeMoviePropertyValue );
+
+                AE_RESULT_PANIC_MEMORY( property_volume );
+
+                AE_RESULT( __load_movie_property_value, (_stream, _layer, property_volume) );
+
+                layer_volume->property_volume = property_volume;
+
+                for( ;; )
+                {
+                    ae_uint8_t params;
+                    AE_READ( _stream, params );
+
+                    switch( params )
+                    {
+                    case 0:
+                        {
+                        }break;
+                    default:
+                        {
+                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                        }break;
+                    }
+
+                    if( params == 0 )
+                    {
+                        break;
+                    }
+                }
+
+                layer_extensions = __request_extensions( instance, layer_extensions );
+
+                AE_RESULT_PANIC_MEMORY( layer_extensions );
+
+                layer_extensions->volume = layer_volume;
             }break;
         default:
             {
@@ -1969,7 +1998,7 @@ const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData 
     return AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visit_t _visitor, ae_voidptr_t _ud )
+ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visitor_t _visitor, ae_voidptr_t _ud )
 {
     const aeMovieCompositionData * it_composition = _movieData->compositions;
     const aeMovieCompositionData * it_composition_end = _movieData->compositions + _movieData->composition_count;

@@ -604,66 +604,22 @@ AE_INTERNAL ae_float_t __compute_movie_property_value( const struct aeMoviePrope
     return valuef;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_color_channel_t __compute_movie_property_color_r( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
+AE_INTERNAL ae_color_channel_t __compute_movie_property_color_channel( const struct aeMoviePropertyColorChannel * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
 {
-    if( _property->immutable_r == AE_TRUE )
+    if( _property->immutable == AE_TRUE )
     {
-        return _property->immutable_color_r;
+        return _property->immutable_value;
     }
 
     if( _interpolate == AE_FALSE )
     {
-        ae_color_channel_t c = _property->colors_r[_frame];
+        ae_color_channel_t c = _property->values[_frame];
         
         return c;
     }
 
-    ae_color_channel_t c0 = _property->colors_r[_frame + 0];
-    ae_color_channel_t c1 = _property->colors_r[_frame + 1];
-
-    ae_color_channel_t cf = ae_linerp_f1( c0, c1, t );
-
-    return cf;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_color_channel_t __compute_movie_property_color_g( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
-{
-    if( _property->immutable_g == AE_TRUE )
-    {
-        return _property->immutable_color_g;
-    }
-
-    if( _interpolate == AE_FALSE )
-    {
-        ae_color_channel_t c = _property->colors_g[_frame];
-        
-        return c;
-    }
-
-    ae_color_channel_t c0 = _property->colors_g[_frame + 0];
-    ae_color_channel_t c1 = _property->colors_g[_frame + 1];
-
-    ae_color_channel_t cf = ae_linerp_f1( c0, c1, t );
-
-    return cf;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_color_channel_t __compute_movie_property_color_b( const struct aeMoviePropertyColor * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
-{
-    if( _property->immutable_b == AE_TRUE )
-    {
-        return _property->immutable_color_b;
-    }
-
-    if( _interpolate == AE_FALSE )
-    {
-        ae_color_channel_t c = _property->colors_b[_frame];
-        
-        return c;
-    }
-
-    ae_color_channel_t c0 = _property->colors_b[_frame + 0];
-    ae_color_channel_t c1 = _property->colors_b[_frame + 1];
+    ae_color_channel_t c0 = _property->values[_frame + 0];
+    ae_color_channel_t c1 = _property->values[_frame + 1];
 
     ae_color_channel_t cf = ae_linerp_f1( c0, c1, t );
 
@@ -761,9 +717,9 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
     {
         const struct aeMoviePropertyColor * property_color = layer->extensions->color_vertex->property_color;
 
-        local_r = __compute_movie_property_color_r( property_color, _frameId, _interpolate, _t );
-        local_g = __compute_movie_property_color_g( property_color, _frameId, _interpolate, _t );
-        local_b = __compute_movie_property_color_b( property_color, _frameId, _interpolate, _t );
+        local_r = __compute_movie_property_color_channel( property_color->color_channel_r, _frameId, _interpolate, _t );
+        local_g = __compute_movie_property_color_channel( property_color->color_channel_g, _frameId, _interpolate, _t );
+        local_b = __compute_movie_property_color_channel( property_color->color_channel_b, _frameId, _interpolate, _t );
     }
 
     if( _node->relative_node == AE_NULL )
@@ -924,9 +880,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_shader( const aeMovieCompo
             {
                 const struct aeMovieLayerShaderParameterColor * parameter_color = (const struct aeMovieLayerShaderParameterColor *)parameter;
 
-                ae_color_channel_t color_r = __compute_movie_property_color_r( parameter_color->property_color, _frameId, _interpolate, _t );
-                ae_color_channel_t color_g = __compute_movie_property_color_g( parameter_color->property_color, _frameId, _interpolate, _t );
-                ae_color_channel_t color_b = __compute_movie_property_color_b( parameter_color->property_color, _frameId, _interpolate, _t );
+                const struct aeMoviePropertyColor * property_color = parameter_color->property_color;
+
+                ae_color_channel_t color_r = __compute_movie_property_color_channel( property_color->color_channel_r, _frameId, _interpolate, _t );
+                ae_color_channel_t color_g = __compute_movie_property_color_channel( property_color->color_channel_g, _frameId, _interpolate, _t );
+                ae_color_channel_t color_b = __compute_movie_property_color_channel( property_color->color_channel_b, _frameId, _interpolate, _t );
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.element = _node->shader_data;
@@ -1821,7 +1779,7 @@ AE_INTERNAL ae_void_t __setup_movie_composition_active( aeMovieComposition * _co
     }
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_initialize_movie_composition_providers( aeMovieCompositionProviders * _providers )
+ae_void_t ae_clear_movie_composition_providers( aeMovieCompositionProviders * _providers )
 {
     _providers->camera_provider = 0;
     _providers->camera_deleter = 0;
@@ -1935,7 +1893,10 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
         return AE_NULL;
     }
 
-    __setup_movie_composition_element( composition );    
+    if( __setup_movie_composition_element( composition ) == AE_FALSE )
+    {
+        return AE_NULL;
+    }
 
     if( __setup_movie_node_track_matte2( composition ) == AE_FALSE )
     {
@@ -4152,6 +4113,29 @@ ae_bool_t ae_get_movie_composition_node_enable_any( const aeMovieComposition * _
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_has_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name )
+{
+    const aeMovieInstance * instance = _composition->movie_data->instance;
+
+    const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
+    const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
+    for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
+    {
+        const aeMovieSubComposition * subcomposition = it_subcomposition;
+
+        const aeMovieLayerData * layer = subcomposition->layer;
+
+        if( AE_STRNCMP( instance, layer->name, _name, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+        {
+            continue;
+        }
+
+        return AE_TRUE;
+    }
+
+    return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
 const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name )
 {
     const aeMovieInstance * instance = _composition->movie_data->instance;
@@ -4173,6 +4157,25 @@ const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposi
     }
 
     return AE_NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_visit_movie_sub_composition( const aeMovieComposition * _composition, ae_movie_sub_composition_visitor_t _visitor, ae_voidptr_t _ud )
+{
+    const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
+    const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
+    for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
+    {
+        const aeMovieSubComposition * subcomposition = it_subcomposition;
+
+        const aeMovieLayerData * layer = subcomposition->layer;
+        
+        if( (*_visitor)(_composition, layer->name, subcomposition, _ud) == AE_FALSE )
+        {
+            return AE_FALSE;
+        }
+    }
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_movie_sub_composition_name( const aeMovieSubComposition * _subcomposition )

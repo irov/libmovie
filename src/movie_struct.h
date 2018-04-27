@@ -55,6 +55,7 @@ typedef enum aeMovieLayerExtensionEnum
     AE_LAYER_EXTENSION_POLYGON = 5,
     AE_LAYER_EXTENSION_SHADER = 6,
     AE_LAYER_EXTENSION_VIEWPORT = 7,
+    AE_LAYER_EXTENSION_VOLUME = 8,
 } aeMovieLayerExtensionEnum;
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieLayerExtensions
@@ -66,6 +67,7 @@ typedef struct aeMovieLayerExtensions
     const aeMovieLayerPolygon * polygon;
     const aeMovieLayerShader * shader;
     const aeMovieLayerViewport * viewport;
+    const aeMovieLayerVolume * volume;
 
 } aeMovieLayerExtensions;
 //////////////////////////////////////////////////////////////////////////
@@ -375,19 +377,20 @@ struct aeMoviePropertyValue
     const ae_float_t * values;
 };
 //////////////////////////////////////////////////////////////////////////
+struct aeMoviePropertyColorChannel
+{
+    ae_bool_t immutable;
+
+    ae_color_channel_t immutable_value;
+
+    const ae_color_channel_t * values;
+};
+//////////////////////////////////////////////////////////////////////////
 struct aeMoviePropertyColor
 {
-    ae_bool_t immutable_r;
-    ae_bool_t immutable_g;
-    ae_bool_t immutable_b;
-
-    ae_color_channel_t immutable_color_r;
-    ae_color_channel_t immutable_color_g;
-    ae_color_channel_t immutable_color_b;
-
-    const ae_color_channel_t * colors_r;
-    const ae_color_channel_t * colors_g;
-    const ae_color_channel_t * colors_b;
+    const struct aeMoviePropertyColorChannel * color_channel_r;
+    const struct aeMoviePropertyColorChannel * color_channel_g;
+    const struct aeMoviePropertyColorChannel * color_channel_b;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerColorVertex
@@ -438,6 +441,11 @@ struct aeMovieLayerViewport
 {
     ae_viewport_t viewport;
 
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerVolume
+{
+    const struct aeMoviePropertyValue * property_volume;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerPolygon
