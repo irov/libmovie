@@ -209,6 +209,13 @@ typedef ae_bool_t( *ae_movie_layer_data_visitor_t )(const aeMovieCompositionData
 
 ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visitor_t _visitor, ae_voidptr_t _ud );
 
+
+/**
+@param [in] _layer Layer.
+@return Layer index.
+*/
+ae_uint32_t ae_get_movie_layer_data_index( const aeMovieLayerData * _layer );
+
 /**
 @param [in] _layer Layer.
 @return Layer name.
