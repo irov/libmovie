@@ -216,6 +216,8 @@ typedef struct aeMovieCameraUpdateCallbackData
 
 typedef struct aeMovieNodeProviderCallbackData
 {
+    ae_uint32_t index;
+
     const aeMovieLayerData * layer;
     
     /// @brief if node incessantly timeline
@@ -237,6 +239,8 @@ typedef struct aeMovieNodeProviderCallbackData
 
 typedef struct aeMovieNodeDeleterCallbackData
 {
+    ae_uint32_t index;
+
     ae_voidptr_t element;
 
     const aeMovieLayerData * layer;
@@ -245,6 +249,8 @@ typedef struct aeMovieNodeDeleterCallbackData
 
 typedef struct aeMovieNodeUpdateCallbackData
 {
+    ae_uint32_t index;
+
     ae_voidptr_t element;
     aeMovieLayerTypeEnum type;
 
@@ -264,6 +270,8 @@ typedef struct aeMovieNodeUpdateCallbackData
 
 typedef struct aeMovieTrackMatteProviderCallbackData
 {
+    ae_uint32_t index;
+
     ae_voidptr_t element;
     aeMovieLayerTypeEnum type;
 
@@ -286,6 +294,8 @@ typedef struct aeMovieTrackMatteProviderCallbackData
 
 typedef struct aeMovieTrackMatteUpdateCallbackData
 {
+    ae_uint32_t index;
+
     ae_voidptr_t element;
     aeMovieLayerTypeEnum type;
 
@@ -309,6 +319,8 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 
 typedef struct aeMovieTrackMatteDeleterCallbackData
 {    
+    ae_uint32_t index;
+
     ae_voidptr_t element;
     aeMovieLayerTypeEnum type;
 
@@ -347,6 +359,7 @@ typedef struct aeMovieShaderPropertyUpdateCallbackData
 
 typedef struct aeMovieShaderDeleterCallbackData
 {
+    ae_uint32_t index;
     ae_voidptr_t element;
 
     ae_string_t name;
@@ -356,6 +369,8 @@ typedef struct aeMovieShaderDeleterCallbackData
 
 typedef struct aeMovieCompositionEventCallbackData
 {
+    ae_uint32_t index;
+
     ae_voidptr_t element;
 
     /// @brief Name of the composition which sent the event.
@@ -395,6 +410,8 @@ typedef struct aeMovieCompositionStateCallbackData
 
 typedef struct aeMovieCompositionSceneEffectProviderCallbackData
 {
+    ae_uint32_t index;
+
     ae_voidptr_t element;
 
     /// @brief Additional transform, e.g.
@@ -416,6 +433,8 @@ typedef struct aeMovieCompositionSceneEffectDeleterCallbackData
 
 typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
 {
+    ae_uint32_t index;
+
     ae_voidptr_t element;
 
     /// @brief Additional transform, e.g.
@@ -429,13 +448,13 @@ typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
 
 } aeMovieCompositionSceneEffectUpdateCallbackData;
 
-typedef ae_bool_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
-
 typedef ae_bool_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
+
+typedef ae_bool_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
 typedef ae_bool_t( *ae_movie_callback_track_matte_provider_t )(const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptrptr_t _tmd, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_callback_track_matte_deleter_t )(const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
@@ -454,13 +473,13 @@ typedef ae_void_t( *ae_movie_callback_scene_effect_update_t )(const aeMovieCompo
 
 typedef struct aeMovieCompositionProviders
 {
-    ae_movie_callback_camera_provider_t camera_provider;
-    ae_movie_callback_camera_deleter_t camera_deleter;
-    ae_movie_callback_camera_update_t camera_update;
-
     ae_movie_callback_node_provider_t node_provider;
     ae_movie_callback_node_deleter_t node_deleter;
     ae_movie_callback_node_update_t node_update;
+
+    ae_movie_callback_camera_provider_t camera_provider;
+    ae_movie_callback_camera_deleter_t camera_deleter;
+    ae_movie_callback_camera_update_t camera_update;
 
     ae_movie_callback_track_matte_provider_t track_matte_provider;
     ae_movie_callback_track_matte_update_t track_matte_update;
