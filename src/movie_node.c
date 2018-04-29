@@ -1712,22 +1712,20 @@ AE_INTERNAL ae_bool_t __setup_movie_node_shader( aeMovieComposition * _compositi
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_bool_t __setup_movie_composition_element( aeMovieComposition * _composition )
 {
-    if( _composition->providers.node_provider == AE_NULL )
-    {
-        return AE_TRUE;
-    }
-
     if( _composition->providers.node_provider != AE_NULL )
     {
+        ae_uint32_t enumerator = 0;
+
         aeMovieNode* it_node = _composition->nodes;
         aeMovieNode* it_node_end = _composition->nodes + _composition->node_count;
-        for( ; it_node != it_node_end; ++it_node )
+        for( ; it_node != it_node_end; ++it_node, ++enumerator )
         {
             aeMovieNode * node = it_node;
 
             const aeMovieLayerData * track_matte_layer = node->track_matte_node == AE_NULL ? AE_NULL : node->track_matte_node->layer;
 
             aeMovieNodeProviderCallbackData callbackData;
+            callbackData.index = enumerator;
             callbackData.layer = node->layer;
             callbackData.incessantly = node->incessantly;
             callbackData.matrix = node->matrix;
@@ -1781,12 +1779,12 @@ AE_INTERNAL ae_void_t __setup_movie_composition_active( aeMovieComposition * _co
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_clear_movie_composition_providers( aeMovieCompositionProviders * _providers )
 {
-    _providers->camera_provider = 0;
-    _providers->camera_deleter = 0;
-    _providers->camera_update = 0;
     _providers->node_provider = 0;
     _providers->node_deleter = 0;
     _providers->node_update = 0;
+    _providers->camera_provider = 0;
+    _providers->camera_deleter = 0;
+    _providers->camera_update = 0;
     _providers->track_matte_provider = 0;
     _providers->track_matte_update = 0;
     _providers->track_matte_deleter = 0;
@@ -1913,9 +1911,11 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __delete_nodes( const aeMovieComposition * _composition )
 {
+    ae_uint32_t enumerator = 0U;
+
     const aeMovieNode *it_node = _composition->nodes;
     const aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
-    for( ; it_node != it_node_end; ++it_node )
+    for( ; it_node != it_node_end; ++it_node, ++enumerator )
     {
         const aeMovieNode * node = it_node;
 
@@ -1924,6 +1924,7 @@ AE_INTERNAL ae_void_t __delete_nodes( const aeMovieComposition * _composition )
         if( node->shader_data != AE_NULL && _composition->providers.shader_deleter != AE_NULL )
         { 
             aeMovieShaderDeleterCallbackData callbackData;
+            callbackData.index = enumerator;
             callbackData.element = node->shader_data;
             callbackData.name = layer->extensions->shader->name;
             callbackData.version = layer->extensions->shader->version;
@@ -1934,6 +1935,7 @@ AE_INTERNAL ae_void_t __delete_nodes( const aeMovieComposition * _composition )
         if( layer->is_track_matte == AE_TRUE && _composition->providers.track_matte_deleter != AE_NULL )
         {
             aeMovieTrackMatteDeleterCallbackData callbackData;
+            callbackData.index = enumerator;
             callbackData.element = node->element_data;
             callbackData.type = layer->type;
             callbackData.track_matte_data = node->track_matte_data;
@@ -1946,6 +1948,7 @@ AE_INTERNAL ae_void_t __delete_nodes( const aeMovieComposition * _composition )
             const aeMovieLayerData * track_matte_layer = node->track_matte_node == AE_NULL ? AE_NULL : node->track_matte_node->layer;
 
             aeMovieNodeDeleterCallbackData callbackData;
+            callbackData.index = enumerator;
             callbackData.element = node->element_data;
             callbackData.layer = layer;
             callbackData.track_matte_layer = track_matte_layer;
@@ -2339,9 +2342,11 @@ AE_INTERNAL ae_void_t __notify_stop_nodies( const aeMovieComposition * _composit
 {
     __setup_movie_node_matrix2( _composition, _compositionData, _animation, _subcomposition );
 
+    ae_uint32_t enumerator = 0U;
+
     aeMovieNode *it_node = _composition->nodes;
     aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
-    for( ; it_node != it_node_end; ++it_node )
+    for( ; it_node != it_node_end; ++it_node, ++enumerator )
     {
         aeMovieNode * node = it_node;
 
@@ -2362,6 +2367,7 @@ AE_INTERNAL ae_void_t __notify_stop_nodies( const aeMovieComposition * _composit
                     __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
                     aeMovieTrackMatteUpdateCallbackData callbackData;
+                    callbackData.index = enumerator;
                     callbackData.element = node->element_data;
                     callbackData.type = layer->type;
                     callbackData.loop = _animation->loop;
@@ -2386,6 +2392,7 @@ AE_INTERNAL ae_void_t __notify_stop_nodies( const aeMovieComposition * _composit
                 if( _composition->providers.node_update != AE_NULL )
                 {
                     aeMovieNodeUpdateCallbackData callbackData;
+                    callbackData.index = enumerator;
                     callbackData.element = node->element_data;
                     callbackData.type = layer->type;
                     callbackData.loop = _animation->loop;
@@ -2422,9 +2429,11 @@ AE_INTERNAL ae_void_t __notify_pause_nodies( const aeMovieComposition * _composi
 {
     __setup_movie_node_matrix2( _composition, _compositionData, _animation, _subcomposition );
 
+    ae_uint32_t enumerator = 0U;
+
     aeMovieNode *it_node = _composition->nodes;
     aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
-    for( ; it_node != it_node_end; ++it_node )
+    for( ; it_node != it_node_end; ++it_node, ++enumerator )
     {
         aeMovieNode * node = it_node;
 
@@ -2445,6 +2454,7 @@ AE_INTERNAL ae_void_t __notify_pause_nodies( const aeMovieComposition * _composi
                     __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
                     aeMovieTrackMatteUpdateCallbackData callbackData;
+                    callbackData.index = enumerator;
                     callbackData.element = node->element_data;
                     callbackData.type = layer->type;
                     callbackData.loop = _animation->loop;
@@ -2467,6 +2477,7 @@ AE_INTERNAL ae_void_t __notify_pause_nodies( const aeMovieComposition * _composi
                 if( _composition->providers.node_update != AE_NULL )
                 {
                     aeMovieNodeUpdateCallbackData callbackData;
+                    callbackData.index = enumerator;
                     callbackData.element = node->element_data;
                     callbackData.type = layer->type;
                     callbackData.loop = _animation->loop;
@@ -2530,9 +2541,11 @@ AE_INTERNAL ae_void_t __notify_resume_nodies( const aeMovieComposition * _compos
 {
     __setup_movie_node_matrix2( _composition, _compositionData, _animation, _subcomposition );
 
+    ae_uint32_t enumerator = 0U;
+
     aeMovieNode *it_node = _composition->nodes;
     aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
-    for( ; it_node != it_node_end; ++it_node )
+    for( ; it_node != it_node_end; ++it_node, ++enumerator )
     {
         aeMovieNode * node = it_node;
 
@@ -2553,6 +2566,7 @@ AE_INTERNAL ae_void_t __notify_resume_nodies( const aeMovieComposition * _compos
                     __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
                     aeMovieTrackMatteUpdateCallbackData callbackData;
+                    callbackData.index = enumerator;
                     callbackData.element = node->element_data;
                     callbackData.type = layer->type;
                     callbackData.loop = _animation->loop;
@@ -2575,6 +2589,7 @@ AE_INTERNAL ae_void_t __notify_resume_nodies( const aeMovieComposition * _compos
                 if( _composition->providers.node_update != AE_NULL )
                 {
                     aeMovieNodeUpdateCallbackData callbackData;
+                    callbackData.index = enumerator;
                     callbackData.element = node->element_data;
                     callbackData.type = layer->type;
                     callbackData.loop = _animation->loop;
@@ -2911,9 +2926,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
     ae_float_t loopBegin = __get_animation_loop_work_begin( _animation );
     ae_float_t loopEnd = __get_animation_loop_work_end( _animation );
     
+    ae_uint32_t enumerator = 0U;
+
     aeMovieNode *it_node = _composition->nodes;
     aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
-    for( ; it_node != it_node_end; ++it_node )
+    for( ; it_node != it_node_end; ++it_node, ++enumerator )
     {
         aeMovieNode * node = it_node;
 

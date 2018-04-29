@@ -2022,11 +2022,6 @@ ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_la
     return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_movie_layer_data_index( const aeMovieLayerData * _layer )
-{
-    return _layer->index;
-}
-//////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer )
 {
     return _layer->name;
