@@ -53,6 +53,9 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_
     movie->resource_deleter = _deleter;
     movie->resource_ud = _data;
 
+    movie->atlas_count = 0;
+    movie->atlases = AE_NULL;
+
     movie->resource_count = 0;
     movie->resources = AE_NULL;
 
@@ -69,7 +72,7 @@ AE_INTERNAL ae_void_t __ae_delete_mesh_t( const aeMovieInstance * _instance, con
     AE_DELETEN( _instance, _mesh->indices );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const aeMovieLayerMesh * _layerMesh, ae_uint32_t _count )
+AE_INTERNAL ae_void_t __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const aeMovieLayerExtensionMesh * _layerMesh, ae_uint32_t _count )
 {
     if( _layerMesh->immutable == AE_TRUE )
     {
@@ -112,93 +115,112 @@ AE_INTERNAL ae_void_t __ae_delete_property_color( const aeMovieInstance * _insta
     AE_DELETEN( _instance, _property->color_channel_b );
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, const aeMovieResource * _resource )
+{
+    const aeMovieInstance * instance = _movieData->instance;
+
+    aeMovieResourceTypeEnum type = _resource->type;
+
+    switch( type )
+    {
+    case AE_MOVIE_RESOURCE_NONE:
+        {
+        }break;
+    case AE_MOVIE_RESOURCE_SOLID:
+        {
+            const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)_resource;
+
+            AE_UNUSED( resource );
+
+        }break;
+    case AE_MOVIE_RESOURCE_VIDEO:
+        {
+            const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)_resource;
+
+            AE_DELETE_STRING( instance, resource->path );
+
+        }break;
+    case AE_MOVIE_RESOURCE_SOUND:
+        {
+            const aeMovieResourceSound * resource = (const aeMovieResourceSound *)_resource;
+
+            AE_DELETE_STRING( instance, resource->path );
+
+        }break;
+    case AE_MOVIE_RESOURCE_IMAGE:
+        {
+            const aeMovieResourceImage * resource = (const aeMovieResourceImage *)_resource;
+
+            AE_DELETE_STRING( instance, resource->path );
+
+            if( resource->uv != instance->sprite_uv )
+            {
+                AE_DELETEN( instance, resource->uv );
+            }
+
+            if( resource->mesh != AE_NULL )
+            {
+                __ae_delete_mesh_t( instance, resource->mesh );
+
+                AE_DELETE( instance, resource->mesh );
+            }
+
+        }break;
+    case AE_MOVIE_RESOURCE_SEQUENCE:
+        {
+            const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)_resource;
+
+            AE_DELETEN( instance, resource->images );
+
+        }break;
+    case AE_MOVIE_RESOURCE_PARTICLE:
+        {
+            const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)_resource;
+
+            AE_DELETE_STRING( instance, resource->path );
+
+        }break;
+    case AE_MOVIE_RESOURCE_SLOT:
+        {
+            const aeMovieResourceSlot * resource = (const aeMovieResourceSlot *)_resource;
+
+            AE_UNUSED( resource );
+
+        }break;
+    }
+
+    if( _movieData->resource_deleter != AE_NULL )
+    {
+        (*_movieData->resource_deleter)(type, _resource->data, _movieData->resource_ud);
+    }
+
+    AE_DELETE_STRING( instance, _resource->name );
+}
+//////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 {
     const aeMovieInstance * instance = _movieData->instance;
+
+    const aeMovieResource * const * it_atlas = _movieData->atlases;
+    const aeMovieResource * const * it_atlas_end = _movieData->atlases + _movieData->atlas_count;
+    for( ; it_atlas != it_atlas_end; ++it_atlas )
+    {
+        const aeMovieResource * atlas = *it_atlas;
+
+        __delete_movie_resource( _movieData, atlas );
+
+        AE_DELETE( instance, atlas );
+    }
 
     const aeMovieResource * const * it_resource = _movieData->resources;
     const aeMovieResource * const * it_resource_end = _movieData->resources + _movieData->resource_count;
     for( ; it_resource != it_resource_end; ++it_resource )
     {
-        const aeMovieResource * base_resource = *it_resource;
+        const aeMovieResource * resource = *it_resource;
 
-        aeMovieResourceTypeEnum type = base_resource->type;
+        __delete_movie_resource( _movieData, resource );
 
-        switch( type )
-        {
-        case AE_MOVIE_RESOURCE_NONE:
-            {
-            }break;
-        case AE_MOVIE_RESOURCE_SOLID:
-            {
-                const aeMovieResourceSolid * resource = (const aeMovieResourceSolid *)base_resource;
-
-                AE_UNUSED( resource );
-                
-            }break;
-        case AE_MOVIE_RESOURCE_VIDEO:
-            {
-                const aeMovieResourceVideo * resource = (const aeMovieResourceVideo *)base_resource;
-
-                AE_DELETE_STRING( instance, resource->path );
-
-            }break;
-        case AE_MOVIE_RESOURCE_SOUND:
-            {
-                const aeMovieResourceSound * resource = (const aeMovieResourceSound *)base_resource;
-
-                AE_DELETE_STRING( instance, resource->path );
-
-            }break;
-        case AE_MOVIE_RESOURCE_IMAGE:
-            {
-                const aeMovieResourceImage * resource = (const aeMovieResourceImage *)base_resource;
-
-                AE_DELETE_STRING( instance, resource->path );
-
-                if( resource->uv != instance->sprite_uv )
-                {
-                    AE_DELETEN( instance, resource->uv );
-                }
-
-                if( resource->mesh != AE_NULL )
-                {
-                    __ae_delete_mesh_t( instance, resource->mesh );
-
-                    AE_DELETE( instance, resource->mesh );
-                }
-
-            }break;
-        case AE_MOVIE_RESOURCE_SEQUENCE:
-            {
-                const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)base_resource;
-
-                AE_DELETEN( instance, resource->images );
-
-            }break;
-        case AE_MOVIE_RESOURCE_PARTICLE:
-            {
-                const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)base_resource;
-
-                AE_DELETE_STRING( instance, resource->path );
-
-            }break;
-        case AE_MOVIE_RESOURCE_SLOT:
-            {
-                const aeMovieResourceSlot * resource = (const aeMovieResourceSlot *)base_resource;
-
-                AE_UNUSED( resource );
-
-            }break;
-        }
-
-        if( _movieData->resource_deleter != AE_NULL )
-        {
-            (*_movieData->resource_deleter)(type, base_resource->data, _movieData->resource_ud);
-        }
-
-        AE_DELETE_STRING( instance, base_resource->name );
-        AE_DELETE( instance, base_resource );
+        AE_DELETE( instance, resource );
     }
 
     const aeMovieCompositionData * it_composition = _movieData->compositions;
@@ -226,7 +248,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             if( extensions->timeremap != AE_NULL )
             {
-                const aeMovieLayerTimeremap * timeremap = extensions->timeremap;
+                const aeMovieLayerExtensionTimeremap * timeremap = extensions->timeremap;
 
                 AE_DELETEN( instance, timeremap->times );
 
@@ -235,7 +257,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             if( extensions->mesh != AE_NULL )
             {
-                const aeMovieLayerMesh * mesh = extensions->mesh;
+                const aeMovieLayerExtensionMesh * mesh = extensions->mesh;
 
                 __ae_delete_layer_mesh_t( instance, mesh, layer->frame_count );
 
@@ -244,7 +266,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             if( extensions->bezier_warp != AE_NULL )
             {
-                const aeMovieLayerBezierWarp * bezier_warp = extensions->bezier_warp;
+                const aeMovieLayerExtensionBezierWarp * bezier_warp = extensions->bezier_warp;
 
                 AE_DELETEN( instance, bezier_warp->bezier_warps );
 
@@ -253,7 +275,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             if( extensions->color_vertex != AE_NULL )
             {
-                const aeMovieLayerColorVertex * color_vertex = extensions->color_vertex;
+                const aeMovieLayerExtensionColorVertex * color_vertex = extensions->color_vertex;
 
                 const struct aeMoviePropertyColor * property_color = color_vertex->property_color;
 
@@ -266,7 +288,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             if( extensions->polygon != AE_NULL )
             {
-                const aeMovieLayerPolygon * polygon = extensions->polygon;
+                const aeMovieLayerExtensionPolygon * polygon = extensions->polygon;
 
                 AE_DELETEN( instance, polygon->polygons );
 
@@ -275,7 +297,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             if( extensions->shader != AE_NULL )
             {
-                const aeMovieLayerShader * shader = extensions->shader;
+                const aeMovieLayerExtensionShader * shader = extensions->shader;
 
                 AE_DELETE_STRING( instance, shader->name );
                 AE_DELETE_STRING( instance, shader->shader_vertex );
@@ -322,7 +344,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
             if( extensions->viewport != AE_NULL )
             {
-                const aeMovieLayerViewport * viewport = extensions->viewport;
+                const aeMovieLayerExtensionViewport * viewport = extensions->viewport;
 
                 AE_UNUSED( viewport );
 
@@ -595,7 +617,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_TIMEREMAP:
             {
-                aeMovieLayerTimeremap * layer_timeremap = AE_NEW( instance, aeMovieLayerTimeremap );
+                aeMovieLayerExtensionTimeremap * layer_timeremap = AE_NEW( instance, aeMovieLayerExtensionTimeremap );
 
                 AE_RESULT_PANIC_MEMORY( layer_timeremap );
 
@@ -637,7 +659,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_MESH:
             {
-                aeMovieLayerMesh * layer_mesh = AE_NEW( instance, aeMovieLayerMesh );
+                aeMovieLayerExtensionMesh * layer_mesh = AE_NEW( instance, aeMovieLayerExtensionMesh );
 
                 AE_RESULT_PANIC_MEMORY( layer_mesh );
 
@@ -695,7 +717,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_BEZIERWARP:
             {
-                aeMovieLayerBezierWarp * layer_bezier_warp = AE_NEW( instance, aeMovieLayerBezierWarp );
+                aeMovieLayerExtensionBezierWarp * layer_bezier_warp = AE_NEW( instance, aeMovieLayerExtensionBezierWarp );
 
                 AE_RESULT_PANIC_MEMORY( layer_bezier_warp );
 
@@ -760,7 +782,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_COLORVERTEX:
             {
-                aeMovieLayerColorVertex * layer_color_vertex = AE_NEW( instance, aeMovieLayerColorVertex );
+                aeMovieLayerExtensionColorVertex * layer_color_vertex = AE_NEW( instance, aeMovieLayerExtensionColorVertex );
 
                 AE_RESULT_PANIC_MEMORY( layer_color_vertex );
 
@@ -802,7 +824,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_POLYGON:
             {
-                aeMovieLayerPolygon * layer_polygon = AE_NEW( instance, aeMovieLayerPolygon );
+                aeMovieLayerExtensionPolygon * layer_polygon = AE_NEW( instance, aeMovieLayerExtensionPolygon );
 
                 AE_RESULT_PANIC_MEMORY( layer_polygon );
 
@@ -862,7 +884,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_SHADER:
             {
-                aeMovieLayerShader * layer_shader = AE_NEW( instance, aeMovieLayerShader );
+                aeMovieLayerExtensionShader * layer_shader = AE_NEW( instance, aeMovieLayerExtensionShader );
 
                 AE_RESULT_PANIC_MEMORY( layer_shader );
 
@@ -965,7 +987,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_VIEWPORT:
             {
-                aeMovieLayerViewport * layer_viewport = AE_NEW( instance, aeMovieLayerViewport );
+                aeMovieLayerExtensionViewport * layer_viewport = AE_NEW( instance, aeMovieLayerExtensionViewport );
 
                 AE_RESULT_PANIC_MEMORY( layer_viewport );
 
@@ -1001,7 +1023,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_LAYER_EXTENSION_VOLUME:
             {
-                aeMovieLayerVolume * layer_volume = AE_NEW( instance, aeMovieLayerVolume );
+                aeMovieLayerExtensionVolume * layer_volume = AE_NEW( instance, aeMovieLayerExtensionVolume );
 
                 AE_RESULT_PANIC_MEMORY( layer_volume );
 
@@ -1539,6 +1561,382 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result )
     return "invalid result";
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovieStream * _stream, const aeMovieResource ** _atlases, const aeMovieResource ** _resources, aeMovieResource ** _resource )
+{
+    const aeMovieInstance * instance = _movieData->instance;
+
+    ae_uint8_t type;
+    AE_READ( _stream, type );
+
+    ae_string_t name;
+    AE_READ_STRING( _stream, name );
+
+#ifdef AE_MOVIE_DEBUG_STREAM
+    instance->logger( instance->instance_data, AE_ERROR_STREAM, "read type %d", type );
+#endif
+
+    aeMovieResource * new_resource = AE_NULL;
+
+    switch( type )
+    {
+    case AE_MOVIE_RESOURCE_SOLID:
+        {
+            aeMovieResourceSolid * resource = AE_NEW( instance, aeMovieResourceSolid );
+
+            AE_RESULT_PANIC_MEMORY( resource );
+
+            AE_READF( _stream, resource->width );
+            AE_READF( _stream, resource->height );
+            AE_READ_COLOR( _stream, &resource->color );
+
+            for( ;;)
+            {
+                ae_uint8_t param_type;
+                AE_READ( _stream, param_type );
+
+                switch( param_type )
+                {
+                case 0:
+                    {
+                    }break;
+                default:
+                    {
+                        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                    }
+                }
+
+                if( param_type == 0 )
+                {
+                    break;
+                }
+            }
+
+            new_resource = (aeMovieResource *)resource;
+        }break;
+    case AE_MOVIE_RESOURCE_VIDEO:
+        {
+            aeMovieResourceVideo * resource = AE_NEW( instance, aeMovieResourceVideo );
+
+            AE_RESULT_PANIC_MEMORY( resource );
+
+            AE_READ_STRING( _stream, resource->path );
+            resource->codec = AE_READ8( _stream );
+
+            AE_READF( _stream, resource->width );
+            AE_READF( _stream, resource->height );
+
+            resource->alpha = AE_READB( _stream );
+
+            AE_READF( _stream, resource->frameRate );
+            AE_READF( _stream, resource->duration );
+
+            for( ;;)
+            {
+                ae_uint8_t param_type;
+                AE_READ( _stream, param_type );
+
+                switch( param_type )
+                {
+                case 0:
+                    {
+                    }break;
+                default:
+                    {
+                        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                    }
+                }
+
+                if( param_type == 0 )
+                {
+                    break;
+                }
+            }
+
+            new_resource = (aeMovieResource *)resource;
+        }break;
+    case AE_MOVIE_RESOURCE_SOUND:
+        {
+            aeMovieResourceSound * resource = AE_NEW( instance, aeMovieResourceSound );
+
+            AE_RESULT_PANIC_MEMORY( resource );
+
+            AE_READ_STRING( _stream, resource->path );
+            resource->codec = AE_READ8( _stream );
+
+            AE_READF( _stream, resource->duration );
+
+            for( ;;)
+            {
+                ae_uint8_t param_type;
+                AE_READ( _stream, param_type );
+
+                switch( param_type )
+                {
+                case 0:
+                    {
+                    }break;
+                default:
+                    {
+                        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                    }
+                }
+
+                if( param_type == 0 )
+                {
+                    break;
+                }
+            }
+
+            new_resource = (aeMovieResource *)resource;
+        }break;
+    case AE_MOVIE_RESOURCE_IMAGE:
+        {
+            aeMovieResourceImage * resource = AE_NEW( instance, aeMovieResourceImage );
+
+            AE_RESULT_PANIC_MEMORY( resource );
+
+            AE_READ_STRING( _stream, resource->path );
+            resource->codec = AE_READ8( _stream );
+
+            resource->premultiplied = AE_READB( _stream );
+            resource->atlas_image = AE_NULL;
+            resource->atlas_rotate = AE_FALSE;
+
+            AE_READF( _stream, resource->base_width );
+            AE_READF( _stream, resource->base_height );
+
+            resource->trim_width = resource->base_width;
+            resource->trim_height = resource->base_height;
+            resource->offset_x = 0.f;
+            resource->offset_y = 0.f;
+            resource->uv = instance->sprite_uv;
+            resource->mesh = AE_NULL;
+
+            for( ;;)
+            {
+                ae_uint8_t param_type;
+                AE_READ( _stream, param_type );
+
+                switch( param_type )
+                {
+                case 0:
+                    {
+                    }break;
+                case 1:
+                    {
+                        AE_READF( _stream, resource->trim_width );
+                        AE_READF( _stream, resource->trim_height );
+                        AE_READF( _stream, resource->offset_x );
+                        AE_READF( _stream, resource->offset_y );
+                    }break;
+                case 2:
+                    {
+                        ae_vector2_t * uv = AE_NEWN( instance, ae_vector2_t, 4 );
+
+                        AE_RESULT_PANIC_MEMORY( uv );
+
+                        AE_READF2( _stream, uv[0] );
+                        AE_READF2( _stream, uv[1] );
+                        AE_READF2( _stream, uv[2] );
+                        AE_READF2( _stream, uv[3] );
+
+                        resource->uv = (const ae_vector2_t *)uv;
+                    }break;
+                case 3:
+                    {
+                        ae_mesh_t * mesh = AE_NEW( instance, ae_mesh_t );
+
+                        AE_RESULT_PANIC_MEMORY( mesh );
+
+                        AE_READ_MESH( _stream, mesh );
+
+                        resource->mesh = mesh;
+                    }break;
+                case 4:
+                    {
+                        ae_uint32_t atlas_id = AE_READZ( _stream );
+
+                        resource->atlas_image = (const aeMovieResourceImage *)_atlases[atlas_id];
+
+                        resource->atlas_rotate = AE_READB( _stream );
+                    }break;
+                default:
+                    {
+                        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                    }
+                }
+
+                if( param_type == 0 )
+                {
+                    break;
+                }
+            }
+
+            new_resource = (aeMovieResource *)resource;
+        }break;
+    case AE_MOVIE_RESOURCE_SEQUENCE:
+        {
+            aeMovieResourceSequence * resource = AE_NEW( instance, aeMovieResourceSequence );
+
+            AE_RESULT_PANIC_MEMORY( resource );
+
+            AE_READF( _stream, resource->frameDurationInv );
+
+            ae_uint32_t image_count = AE_READZ( _stream );
+
+            resource->image_count = image_count;
+            const aeMovieResourceImage ** images = AE_NEWN( instance, const aeMovieResourceImage *, image_count );
+
+            AE_RESULT_PANIC_MEMORY( images );
+
+            const aeMovieResourceImage ** it_image = images;
+            const aeMovieResourceImage ** it_image_end = images + image_count;
+            for( ; it_image != it_image_end; ++it_image )
+            {
+                ae_uint32_t resource_id = AE_READZ( _stream );
+
+                *it_image = (const aeMovieResourceImage *)_resources[resource_id];
+            }
+
+            resource->images = images;
+
+            for( ;;)
+            {
+                ae_uint8_t param_type;
+                AE_READ( _stream, param_type );
+
+                switch( param_type )
+                {
+                case 0:
+                    {
+                    }break;
+                default:
+                    {
+                        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                    }
+                }
+
+                if( param_type == 0 )
+                {
+                    break;
+                }
+            }
+
+            new_resource = (aeMovieResource *)resource;
+        }break;
+    case AE_MOVIE_RESOURCE_PARTICLE:
+        {
+            aeMovieResourceParticle * resource = AE_NEW( instance, aeMovieResourceParticle );
+
+            AE_RESULT_PANIC_MEMORY( resource );
+
+            AE_READ_STRING( _stream, resource->path );
+            resource->codec = AE_READ8( _stream );
+
+            ae_uint32_t image_count = AE_READZ( _stream );
+
+            resource->image_count = image_count;
+            const aeMovieResourceImage ** images = AE_NEWN( instance, const aeMovieResourceImage *, image_count );
+
+            AE_RESULT_PANIC_MEMORY( images );
+
+            const aeMovieResourceImage ** it_image = images;
+            const aeMovieResourceImage ** it_image_end = images + image_count;
+            for( ; it_image != it_image_end; ++it_image )
+            {
+                ae_uint32_t resource_id = AE_READZ( _stream );
+
+                *it_image = (const aeMovieResourceImage *)_resources[resource_id];
+            }
+
+            resource->images = images;
+
+            for( ;;)
+            {
+                ae_uint8_t param_type;
+                AE_READ( _stream, param_type );
+
+                switch( param_type )
+                {
+                case 0:
+                    {
+                    }break;
+                default:
+                    {
+                        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                    }
+                }
+
+                if( param_type == 0 )
+                {
+                    break;
+                }
+            }
+
+            new_resource = (aeMovieResource *)resource;
+        }break;
+    case AE_MOVIE_RESOURCE_SLOT:
+        {
+            aeMovieResourceSlot * resource = AE_NEW( instance, aeMovieResourceSlot );
+
+            AE_RESULT_PANIC_MEMORY( resource );
+
+            AE_READF( _stream, resource->width );
+            AE_READF( _stream, resource->height );
+
+            for( ;;)
+            {
+                ae_uint8_t param_type;
+                AE_READ( _stream, param_type );
+
+                switch( param_type )
+                {
+                case 0:
+                    {
+                    }break;
+                default:
+                    {
+                        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+                    }
+                }
+
+                if( param_type == 0 )
+                {
+                    break;
+                }
+            }
+
+            new_resource = (aeMovieResource *)resource;
+        }break;
+    default:
+        {
+            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
+        }break;
+    }
+
+    new_resource->type = type;
+    new_resource->name = name;
+
+    if( _movieData->resource_provider != AE_NULL )
+    {
+        ae_voidptr_t resource_data;
+        if( (*_movieData->resource_provider)(new_resource, &resource_data, _movieData->resource_ud) == AE_FALSE )
+        {
+            return AE_RESULT_INTERNAL_ERROR;
+        }
+
+        new_resource->data = resource_data;
+    }
+    else
+    {
+        new_resource->data = AE_NULL;
+    }
+
+    *_resource = new_resource;
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
 ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
 {
     const aeMovieInstance * instance = _movieData->instance;
@@ -1556,6 +1954,25 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
     AE_READ_STRING( _stream, _movieData->name );
 
+    ae_uint32_t atlas_count = AE_READZ( _stream );
+
+    _movieData->atlas_count = atlas_count;
+    const aeMovieResource ** atlases = AE_NEWN( instance, const aeMovieResource *, atlas_count );
+
+    AE_RESULT_PANIC_MEMORY( atlases );
+
+    const aeMovieResource ** it_atlas = atlases;
+    const aeMovieResource ** it_atlas_end = atlases + atlas_count;
+    for( ; it_atlas != it_atlas_end; ++it_atlas )
+    {
+        aeMovieResource * new_atlas;
+        __load_movie_resource( _movieData, _stream, AE_NULL, atlases, &new_atlas );
+
+        *it_atlas = new_atlas;
+    }
+
+    _movieData->atlases = atlases;
+
     ae_uint32_t resource_count = AE_READZ( _stream );
 
     _movieData->resource_count = resource_count;
@@ -1567,364 +1984,10 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     const aeMovieResource ** it_resource_end = resources + resource_count;
     for( ; it_resource != it_resource_end; ++it_resource )
     {
-        ae_uint8_t type;
-        AE_READ( _stream, type );
+        aeMovieResource * new_resource;
+        __load_movie_resource( _movieData, _stream, atlases, resources, &new_resource );
 
-        ae_string_t name;
-        AE_READ_STRING( _stream, name );
-
-#ifdef AE_MOVIE_DEBUG_STREAM
-        instance->logger( instance->instance_data, AE_ERROR_STREAM, "read type %d", type );
-#endif
-
-        aeMovieResource * new_resource = AE_NULL;
-
-        switch( type )
-        {
-        case AE_MOVIE_RESOURCE_SOLID:
-            {
-                aeMovieResourceSolid * resource = AE_NEW( instance, aeMovieResourceSolid );
-
-                AE_RESULT_PANIC_MEMORY( resource );
-
-                AE_READF( _stream, resource->width );
-                AE_READF( _stream, resource->height );
-                AE_READ_COLOR( _stream, &resource->color );
-
-                for( ;;)
-                {
-                    ae_uint8_t param_type;
-                    AE_READ( _stream, param_type );
-
-                    switch( param_type )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }
-                    }
-
-                    if( param_type == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                new_resource = (aeMovieResource *)resource;
-            }break;
-        case AE_MOVIE_RESOURCE_VIDEO:
-            {
-                aeMovieResourceVideo * resource = AE_NEW( instance, aeMovieResourceVideo );
-
-                AE_RESULT_PANIC_MEMORY( resource );
-
-                AE_READ_STRING( _stream, resource->path );
-                resource->codec = AE_READ8( _stream );
-
-                AE_READF( _stream, resource->width );
-                AE_READF( _stream, resource->height );
-
-                resource->alpha = AE_READB( _stream );
-
-                AE_READF( _stream, resource->frameRate );
-                AE_READF( _stream, resource->duration );
-
-                for( ;;)
-                {
-                    ae_uint8_t param_type;
-                    AE_READ( _stream, param_type );
-
-                    switch( param_type )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }
-                    }
-
-                    if( param_type == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                new_resource = (aeMovieResource *)resource;
-            }break;
-        case AE_MOVIE_RESOURCE_SOUND:
-            {
-                aeMovieResourceSound * resource = AE_NEW( instance, aeMovieResourceSound );
-
-                AE_RESULT_PANIC_MEMORY( resource );
-
-                AE_READ_STRING( _stream, resource->path );
-                resource->codec = AE_READ8( _stream );
-
-                AE_READF( _stream, resource->duration );
-
-                for( ;;)
-                {
-                    ae_uint8_t param_type;
-                    AE_READ( _stream, param_type );
-
-                    switch( param_type )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }
-                    }
-
-                    if( param_type == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                new_resource = (aeMovieResource *)resource;
-            }break;
-        case AE_MOVIE_RESOURCE_IMAGE:
-            {
-                aeMovieResourceImage * resource = AE_NEW( instance, aeMovieResourceImage );
-
-                AE_RESULT_PANIC_MEMORY( resource );
-
-                AE_READ_STRING( _stream, resource->path );
-                resource->codec = AE_READ8( _stream );
-
-                resource->premultiplied = AE_READB( _stream );
-
-                AE_READF( _stream, resource->base_width );
-                AE_READF( _stream, resource->base_height );
-
-                resource->trim_width = resource->base_width;
-                resource->trim_height = resource->base_height;
-                resource->offset_x = 0.f;
-                resource->offset_y = 0.f;
-                resource->uv = instance->sprite_uv;
-                resource->mesh = AE_NULL;
-
-                for( ;;)
-                {
-                    ae_uint8_t param_type;
-                    AE_READ( _stream, param_type );
-
-                    switch( param_type )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    case 1:
-                        {
-                            AE_READF( _stream, resource->trim_width );
-                            AE_READF( _stream, resource->trim_height );
-                            AE_READF( _stream, resource->offset_x );
-                            AE_READF( _stream, resource->offset_y );
-                        }break;
-                    case 2:
-                        {
-                            ae_vector2_t * uv = AE_NEWN( instance, ae_vector2_t, 4 );
-
-                            AE_RESULT_PANIC_MEMORY( uv );
-
-                            AE_READF2( _stream, uv[0] );
-                            AE_READF2( _stream, uv[1] );
-                            AE_READF2( _stream, uv[2] );
-                            AE_READF2( _stream, uv[3] );
-
-                            resource->uv = (const ae_vector2_t *)uv;
-                        }break;
-                    case 3:
-                        {
-                            ae_mesh_t * mesh = AE_NEW( instance, ae_mesh_t );
-
-                            AE_RESULT_PANIC_MEMORY( mesh );
-
-                            AE_READ_MESH( _stream, mesh );
-
-                            resource->mesh = mesh;
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }
-                    }
-
-                    if( param_type == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                new_resource = (aeMovieResource *)resource;
-            }break;
-        case AE_MOVIE_RESOURCE_SEQUENCE:
-            {
-                aeMovieResourceSequence * resource = AE_NEW( instance, aeMovieResourceSequence );
-
-                AE_RESULT_PANIC_MEMORY( resource );
-
-                AE_READF( _stream, resource->frameDurationInv );
-
-                ae_uint32_t image_count = AE_READZ( _stream );
-
-                resource->image_count = image_count;
-                const aeMovieResourceImage ** images = AE_NEWN( instance, const aeMovieResourceImage *, image_count );
-
-                AE_RESULT_PANIC_MEMORY( images );
-
-                const aeMovieResourceImage ** it_image = images;
-                const aeMovieResourceImage ** it_image_end = images + image_count;
-                for( ; it_image != it_image_end; ++it_image )
-                {
-                    ae_uint32_t resource_id = AE_READZ( _stream );
-
-                    *it_image = (const aeMovieResourceImage *)resources[resource_id];
-                }
-
-                resource->images = images;
-
-                for( ;;)
-                {
-                    ae_uint8_t param_type;
-                    AE_READ( _stream, param_type );
-
-                    switch( param_type )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }
-                    }
-
-                    if( param_type == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                new_resource = (aeMovieResource *)resource;
-            }break;
-        case AE_MOVIE_RESOURCE_PARTICLE:
-            {
-                aeMovieResourceParticle * resource = AE_NEW( instance, aeMovieResourceParticle );
-
-                AE_RESULT_PANIC_MEMORY( resource );
-
-                AE_READ_STRING( _stream, resource->path );
-                resource->codec = AE_READ8( _stream );
-
-                ae_uint32_t image_count = AE_READZ( _stream );
-
-                resource->image_count = image_count;
-                const aeMovieResourceImage ** images = AE_NEWN( instance, const aeMovieResourceImage *, image_count );
-
-                AE_RESULT_PANIC_MEMORY( images );
-
-                const aeMovieResourceImage ** it_image = images;
-                const aeMovieResourceImage ** it_image_end = images + image_count;
-                for( ; it_image != it_image_end; ++it_image )
-                {
-                    ae_uint32_t resource_id = AE_READZ( _stream );
-
-                    *it_image = (const aeMovieResourceImage *)resources[resource_id];
-                }
-
-                resource->images = images;
-
-                for( ;;)
-                {
-                    ae_uint8_t param_type;
-                    AE_READ( _stream, param_type );
-
-                    switch( param_type )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }
-                    }
-
-                    if( param_type == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                new_resource = (aeMovieResource *)resource;
-            }break;
-        case AE_MOVIE_RESOURCE_SLOT:
-            {
-                aeMovieResourceSlot * resource = AE_NEW( instance, aeMovieResourceSlot );
-
-                AE_RESULT_PANIC_MEMORY( resource );
-
-                AE_READF( _stream, resource->width );
-                AE_READF( _stream, resource->height );
-
-                for( ;;)
-                {
-                    ae_uint8_t param_type;
-                    AE_READ( _stream, param_type );
-
-                    switch( param_type )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }
-                    }
-
-                    if( param_type == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                new_resource = (aeMovieResource *)resource;
-            }break;
-        default:
-            {
-                AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-            }break;
-        }
-
-        new_resource->type = type;
-        new_resource->name = name;
-        
-        if( _movieData->resource_provider != AE_NULL )
-        {
-            ae_voidptr_t resource_data;
-            if( (*_movieData->resource_provider)(new_resource, &resource_data, _movieData->resource_ud) == AE_FALSE )
-            {
-                return AE_RESULT_INTERNAL_ERROR;
-            }
-
-            new_resource->data = resource_data;
-        }
-        else
-        {
-            new_resource->data = AE_NULL;
-        }
-
-        *it_resource = (aeMovieResource *)new_resource;
+        *it_resource = new_resource;
     }
 
     _movieData->resources = resources;
@@ -2101,7 +2164,7 @@ ae_bool_t ae_get_movie_layer_data_socket_polygon( const aeMovieLayerData * _laye
     }
 #endif
 
-    const aeMovieLayerPolygon * polygon = _layerData->extensions->polygon;
+    const aeMovieLayerExtensionPolygon * polygon = _layerData->extensions->polygon;
 
     if( polygon->immutable == AE_TRUE )
     {

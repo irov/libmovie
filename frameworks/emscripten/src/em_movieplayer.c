@@ -865,10 +865,20 @@ static ae_bool_t __ae_movie_data_resource_provider( const aeMovieResource * _res
 
             em_resource_image_t * resource_image = EM_NEW( em_resource_image_t );
 
-            GLuint texture_id = __cache_resource_image( em_player, r->path, r->codec, r->premultiplied );
+            if( r->atlas_image == AE_NULL )
+            {
+                GLuint texture_id = __cache_resource_image( em_player, r->path, r->codec, r->premultiplied );
 
-            resource_image->texture_id = texture_id;
-            resource_image->premultiplied = r->premultiplied;
+                resource_image->texture_id = texture_id;
+                resource_image->premultiplied = r->premultiplied;
+            }
+            else
+            {
+                em_resource_image_t * image_atlas = (em_resource_image_t *)r->atlas_image->data;
+
+                resource_image->texture_id = image_atlas->texture_id;
+                resource_image->premultiplied = r->premultiplied;
+            }
 
             *_rp = resource_image;
 
@@ -1588,7 +1598,7 @@ em_movie_composition_t * em_create_movie_composition( em_player_t * _player, em_
     }
 
     aeMovieCompositionProviders providers;
-    ae_initialize_movie_composition_providers( &providers );
+    ae_clear_movie_composition_providers( &providers );
 
     providers.node_provider = &__ae_movie_composition_node_provider;
     providers.node_deleter = &__ae_movie_composition_node_deleter;
@@ -2159,26 +2169,26 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             const GLvoid * offsetIndex = 0U;
             GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, offsetIndex) );
 
-            GLCALL( glDisableVertexAttribArray, (positionLocation) );
-            GLCALL( glDisableVertexAttribArray, (colorLocation) );
+            //GLCALL( glDisableVertexAttribArray, (positionLocation) );
+            //GLCALL( glDisableVertexAttribArray, (colorLocation) );
 
-            if( texcoord0Location != -1 )
-            {
-                GLCALL( glDisableVertexAttribArray, (texcoord0Location) );
-            }
-            
-            if( texcoord1Location != -1 )
-            {
-                GLCALL( glDisableVertexAttribArray, (texcoord1Location) );
-            }
+            //if( texcoord0Location != -1 )
+            //{
+            //    GLCALL( glDisableVertexAttribArray, (texcoord0Location) );
+            //}
+            //
+            //if( texcoord1Location != -1 )
+            //{
+            //    GLCALL( glDisableVertexAttribArray, (texcoord1Location) );
+            //}
 
-            GLCALL( glActiveTexture, (GL_TEXTURE0) );
-            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
+            //GLCALL( glActiveTexture, (GL_TEXTURE0) );
+            //GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
 
-            GLCALL( glUseProgram, (0) );
+            //GLCALL( glUseProgram, (0) );
 
-            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0U) );
-            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0U) );
+            //GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0U) );
+            //GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0U) );
         }
         else
         {
@@ -2304,20 +2314,20 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
             const GLvoid * offsetIndex = 0U;
             GLCALL( glDrawElements, (GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_SHORT, offsetIndex) );
 
-            GLCALL( glDisableVertexAttribArray, (positionLocation) );
-            GLCALL( glDisableVertexAttribArray, (colorLocation) );
-            GLCALL( glDisableVertexAttribArray, (texcoord0Location) );
-            GLCALL( glDisableVertexAttribArray, (texcoord1Location) );
+            //GLCALL( glDisableVertexAttribArray, (positionLocation) );
+            //GLCALL( glDisableVertexAttribArray, (colorLocation) );
+            //GLCALL( glDisableVertexAttribArray, (texcoord0Location) );
+            //GLCALL( glDisableVertexAttribArray, (texcoord1Location) );
 
-            GLCALL( glActiveTexture, (GL_TEXTURE0) );
-            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
-            GLCALL( glActiveTexture, (GL_TEXTURE1) );
-            GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
+            //GLCALL( glActiveTexture, (GL_TEXTURE0) );
+            //GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
+            //GLCALL( glActiveTexture, (GL_TEXTURE1) );
+            //GLCALL( glBindTexture, (GL_TEXTURE_2D, 0) );
 
-            GLCALL( glUseProgram, (0) );
+            //GLCALL( glUseProgram, (0) );
 
-            GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0) );
-            GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0) );
+            //GLCALL( glBindBuffer, (GL_ARRAY_BUFFER, 0) );
+            //GLCALL( glBindBuffer, (GL_ELEMENT_ARRAY_BUFFER, 0) );
         }
     }
 }
@@ -2332,7 +2342,7 @@ void em_utils_opengl_create_texture( uint32_t _id, uint32_t _width, uint32_t _he
 
     GLCALL( glTexImage2D, (GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0x00000000, GL_RGBA, GL_UNSIGNED_BYTE, _data) );
     
-    GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
+    //GLCALL( glBindTexture, (GL_TEXTURE_2D, 0U) );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_set_movie_composition_wm( em_movie_composition_t * _composition, float _px, float _py, float _ox, float _oy, float _sx, float _sy, float _angle )

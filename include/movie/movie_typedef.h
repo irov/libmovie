@@ -39,13 +39,13 @@ typedef struct aeMovieCompositionData aeMovieCompositionData;
 typedef struct aeMovieData aeMovieData;
 typedef struct aeMovieLayerData aeMovieLayerData;
 
-typedef struct aeMovieLayerTimeremap aeMovieLayerTimeremap;
-typedef struct aeMovieLayerMesh aeMovieLayerMesh;
-typedef struct aeMovieLayerBezierWarp aeMovieLayerBezierWarp;
-typedef struct aeMovieLayerColorVertex aeMovieLayerColorVertex;
-typedef struct aeMovieLayerShader aeMovieLayerShader;
-typedef struct aeMovieLayerViewport aeMovieLayerViewport;
-typedef struct aeMovieLayerPolygon aeMovieLayerPolygon;
-typedef struct aeMovieLayerVolume aeMovieLayerVolume;
+typedef struct aeMovieLayerExtensionTimeremap aeMovieLayerExtensionTimeremap;
+typedef struct aeMovieLayerExtensionMesh aeMovieLayerExtensionMesh;
+typedef struct aeMovieLayerExtensionBezierWarp aeMovieLayerExtensionBezierWarp;
+typedef struct aeMovieLayerExtensionColorVertex aeMovieLayerExtensionColorVertex;
+typedef struct aeMovieLayerExtensionShader aeMovieLayerExtensionShader;
+typedef struct aeMovieLayerExtensionViewport aeMovieLayerExtensionViewport;
+typedef struct aeMovieLayerExtensionPolygon aeMovieLayerExtensionPolygon;
+typedef struct aeMovieLayerExtensionVolume aeMovieLayerExtensionVolume;
 
 #endif

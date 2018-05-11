@@ -89,6 +89,9 @@ typedef struct aeMovieResourceImage
     const ae_vector2_t * uv;
     const ae_mesh_t * mesh;
 
+    const struct aeMovieResourceImage * atlas_image;
+    ae_bool_t atlas_rotate;
+
 } aeMovieResourceImage;
 
 typedef struct aeMovieResourceSequence

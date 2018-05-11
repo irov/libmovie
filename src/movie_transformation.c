@@ -545,8 +545,15 @@ AE_CALLBACK ae_void_t __make_layer_transformation2d_interpolate_wsk( ae_matrix4_
     AE_INTERPOLATE_PROPERTY( transformation2d, scale_x, scale[0] );
     AE_INTERPOLATE_PROPERTY( transformation2d, scale_y, scale[1] );
 
-    AE_FIXED_PROPERTY( transformation2d, quaternion_z, 0, quaternion[0] );
-    AE_FIXED_PROPERTY( transformation2d, quaternion_w, 0, quaternion[1] );
+    ae_quaternionzw_t q1;
+    AE_FIXED_PROPERTY( transformation2d, quaternion_z, 0, q1[0] );
+    AE_FIXED_PROPERTY( transformation2d, quaternion_w, 0, q1[1] );
+
+    ae_quaternionzw_t q2;
+    AE_FIXED_PROPERTY( transformation2d, quaternion_z, 1, q2[0] );
+    AE_FIXED_PROPERTY( transformation2d, quaternion_w, 1, q2[1] );
+
+    ae_linerp_qzw( quaternion, q1, q2, _t );
 
     ae_movie_make_transformation2d_m4wsk( _out, position, anchor_point, scale, quaternion );
 }

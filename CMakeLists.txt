@@ -72,7 +72,7 @@ if(LIBMOVIE_INSTALL)
             FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
 
     install(TARGETS ${PROJECT_NAME}
-            ARCHIVE DESTINATION bin)
+            ARCHIVE DESTINATION lib)
 endif()
 
 if(LIBMOVIE_EXAMPLES_BUILD)
