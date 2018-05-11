@@ -74,7 +74,7 @@ function em_player_resource_image_provider(ud, id, path, codec, premultiplied)
     image.setAttribute('crossOrigin', '');
 }
 
-function onload_movie(canvas, response, em_player, composition_name)
+function onload_movie(canvas, gl, response, em_player, composition_name)
 {
     var ptr = movie.utils_malloc_arraybuffer(response);
         
@@ -126,6 +126,8 @@ function onload_movie(canvas, response, em_player, composition_name)
             {
                 start = timestamp - (progressMs % fpsInterval)
                 
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                
                 movie.update_movie_composition(em_player, em_movie_composition, progressMs * 0.001)
                 
                 movie.render_movie_composition(em_player, em_movie_composition)
@@ -142,8 +144,9 @@ function libMOVIE_test(rendercanvas, movie_hash, movie_path, movie_aem, composit
 {
     var canvas = document.getElementById(rendercanvas);    
     var gl = movie.utils_opengl_initialize(canvas);
-    
+        
     gl.enable(gl.BLEND)
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     
     var em_player = movie.create_player(movie_hash, movie_path, canvas.width, canvas.height, 0)
     
@@ -157,6 +160,6 @@ function libMOVIE_test(rendercanvas, movie_hash, movie_path, movie_aem, composit
     var xhr = new XMLHttpRequest();
     xhr.open('get', movie_path + movie_aem, true); 
     xhr.responseType = "arraybuffer"
-    xhr.onload = function(){ onload_movie(canvas, xhr.response, em_player, composition_name) }
+    xhr.onload = function(){ onload_movie(canvas, gl, xhr.response, em_player, composition_name) }
     xhr.send();    
  }

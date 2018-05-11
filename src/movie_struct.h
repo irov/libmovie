@@ -60,14 +60,14 @@ typedef enum aeMovieLayerExtensionEnum
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieLayerExtensions
 {
-    const aeMovieLayerTimeremap * timeremap;
-    const aeMovieLayerMesh * mesh;
-    const aeMovieLayerBezierWarp * bezier_warp;
-    const aeMovieLayerColorVertex * color_vertex;
-    const aeMovieLayerPolygon * polygon;
-    const aeMovieLayerShader * shader;
-    const aeMovieLayerViewport * viewport;
-    const aeMovieLayerVolume * volume;
+    const aeMovieLayerExtensionTimeremap * timeremap;
+    const aeMovieLayerExtensionMesh * mesh;
+    const aeMovieLayerExtensionBezierWarp * bezier_warp;
+    const aeMovieLayerExtensionColorVertex * color_vertex;
+    const aeMovieLayerExtensionPolygon * polygon;
+    const aeMovieLayerExtensionShader * shader;
+    const aeMovieLayerExtensionViewport * viewport;
+    const aeMovieLayerExtensionVolume * volume;
 
 } aeMovieLayerExtensions;
 //////////////////////////////////////////////////////////////////////////
@@ -80,6 +80,7 @@ AE_INTERNAL ae_void_t __clear_layer_extensions( aeMovieLayerExtensions * _extens
     _extensions->polygon = AE_NULL;
     _extensions->shader = AE_NULL;
     _extensions->viewport = AE_NULL;
+    _extensions->volume = AE_NULL;
 }
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieInstance
@@ -176,6 +177,8 @@ struct aeMovieNode
     ae_color_t color;
     ae_color_channel_t opacity;
 
+    ae_float_t volume;
+
     ae_blend_mode_t blend_mode;
 
     ae_voidptr_t camera_data;
@@ -200,7 +203,7 @@ struct aeMovieComposition
 
     ae_uint32_t node_count;
     aeMovieNode * nodes;
-
+    
     aeMovieNode * scene_effect_node;
     ae_voidptr_t scene_effect_data;
 
@@ -291,6 +294,9 @@ struct aeMovieData
     ae_movie_data_resource_deleter_t resource_deleter;
     ae_voidptr_t resource_ud;
 
+    ae_uint32_t atlas_count;
+    const aeMovieResource * const * atlases;
+
     ae_uint32_t resource_count;
     const aeMovieResource * const * resources;
 
@@ -342,13 +348,13 @@ struct aeMovieLayerData
     const struct aeMovieLayerTransformation * transformation;
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerTimeremap
+struct aeMovieLayerExtensionTimeremap
 {
     const ae_float_t * times;
 
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerMesh
+struct aeMovieLayerExtensionMesh
 {
     ae_bool_t immutable;
     ae_mesh_t immutable_mesh;
@@ -357,7 +363,7 @@ struct aeMovieLayerMesh
 
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerBezierWarp
+struct aeMovieLayerExtensionBezierWarp
 {
     ae_bool_t immutable;
     aeMovieBezierWarp immutable_bezier_warp;
@@ -393,7 +399,7 @@ struct aeMoviePropertyColor
     const struct aeMoviePropertyColorChannel * color_channel_b;
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerColorVertex
+struct aeMovieLayerExtensionColorVertex
 {
     const struct aeMoviePropertyColor * property_color;
 
@@ -424,7 +430,7 @@ struct aeMovieLayerShaderParameterSlider
     const struct aeMoviePropertyValue * property_value;
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerShader
+struct aeMovieLayerExtensionShader
 {
     ae_string_t name;
     ae_uint32_t version;
@@ -437,18 +443,18 @@ struct aeMovieLayerShader
 
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerViewport
+struct aeMovieLayerExtensionViewport
 {
     ae_viewport_t viewport;
 
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerVolume
+struct aeMovieLayerExtensionVolume
 {
     const struct aeMoviePropertyValue * property_volume;
 };
 //////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerPolygon
+struct aeMovieLayerExtensionPolygon
 {
     ae_bool_t immutable;
     ae_polygon_t immutable_polygon;

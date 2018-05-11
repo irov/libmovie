@@ -233,6 +233,9 @@ typedef struct aeMovieNodeProviderCallbackData
     /// @brief Value from 0.0 to 1.0.
     ae_color_channel_t opacity;
 
+    /// @brief Value from 0.0 to 1.0.
+    ae_float_t volume;
+
     /// @brief Pointer to track matte layer, should be used to create user track matte structure inside provider.
     const aeMovieLayerData * track_matte_layer;
 } aeMovieNodeProviderCallbackData;
@@ -266,6 +269,9 @@ typedef struct aeMovieNodeUpdateCallbackData
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_channel_t opacity;
+
+    /// @brief Value from 0.0 to 1.0.
+    ae_float_t volume;
 } aeMovieNodeUpdateCallbackData;
 
 typedef struct aeMovieTrackMatteProviderCallbackData
