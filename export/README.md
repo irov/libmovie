@@ -1,71 +1,39 @@
 # Scripts
 
-# Atlas export script
+# Settings
 ```sh
-scripts/ae_movie_atlas.bat
+scripts/ae_movie_settings.bat
 ```
 arguments:
-* image_count
-* in_path
-* log_path
-* atlas_path
+* project_path
+* project_name
+* movie_name
+* preview
 
 results:
-* [image] - struct [name; atlas_path; aw; ah; ox; oy; ow; oh; fw; fh; x0; y0; x1; y1; x2; y2; x3; y3]
-
-# Astralax export
-```sh
-scripts/ae_movie_astralax_export.bat
-```
-arguments:
-* in_file
-* out_file
-* write_name
-* write_path
-
-results:
-* write_name
-* write_path
-* codec
-* atlas_count
-* [atlas_names] array [name]
-* [atlas_paths] array [path]
-* [atlas_codecs] array [codec]
-* [atlas_premultiplies] array [premultiplie]
-* [atlas_widths] array [width]
-* [atlas_heights] array [height]
-
-# Report export 
-```sh
-scripts/ae_movie_export_report.bat
-```
-arguments:
-* log_path
-
-# Sound export
-```sh
-scripts/ae_movie_sound_export.bat
-```
-arguments:
-* in_path
-* out_path
-* write_name
-* write_path
-
-results:
-* write_name
-* write_path
-* codec
+* api_key
+* tool_folder
+* export_path
+* export_name
+* atlas
+* polygonize_sprite
+* polygonize_square
+* image_premultiplied
+* show_complete
 
 # Image export
 ```sh
-scripts/ae_movie_image_export.bat
+scripts/ae_movie_export_image.bat
 ```
 arguments:
 * in_path
 * out_path
+* project_name
 * write_name
 * write_path
+* trim
+* in_premultiplied
+* out_premultiplied
 
 results:
 * write_name
@@ -79,13 +47,30 @@ results:
 * offset_x
 * offset_y
 
-# Video export
+# Sound export
 ```sh
-scripts/ae_movie_video_export.bat
+scripts/ae_movie_export_sound.bat
 ```
 arguments:
 * in_path
 * out_path
+* project_name
+* write_name
+* write_path
+
+results:
+* write_name
+* write_path
+* codec
+
+# Video export
+```sh
+scripts/ae_movie_export_video.bat
+```
+arguments:
+* in_path
+* out_path
+* project_name
 * write_name
 * write_path
 * alpha
@@ -103,12 +88,35 @@ results:
 * offset_x
 * offset_y
 
+# Astralax export
+```sh
+scripts/ae_movie_export_astralax.bat
+```
+arguments:
+* in_path
+* out_path
+* project_name
+* write_name
+* write_path
+
+results:
+* write_name
+* write_path
+* codec
+* atlas_count
+* [atlas_names] array [name]
+* [atlas_paths] array [path]
+* [atlas_codecs] array [codec]
+* [atlas_premultiplies] array [premultiplie]
+* [atlas_widths] array [width]
+* [atlas_heights] array [height]
+
 # Image polygonize
 ```sh
 scripts/ae_movie_image_polygonize.bat
 ```
 arguments:
-* image_path
+* in_path
 * offset_x
 * offset_y
 * width
@@ -117,9 +125,9 @@ arguments:
 results:
 * vertex_count
 * indices_count
-* positions
-* uvs
-* indices
+* [positions] array [position]
+* [uvs] array [uv]
+* [indices] array [index]
 
 # Polygon triangulate
 ```sh
@@ -127,24 +135,85 @@ scripts/ae_movie_polygon_triangulate.bat
 ```
 arguments:
 * bb
-* base_size - struct [width; height]
-* trim_size - struct [width; height]
-* trim_offset - struct [x; y]
+* base_width
+* base_height
+* trim_width
+* trim_height
+* trim_offset_x
+* trim_offset_y
 * subtract
-* points
+* [points] array [point]
 
 results:
-* data - struct [vertices_count, indices_count, [x, y], [u, v], [index]]
+* vertex_count
+* index_count
+* [positions] array [position] 
+* [uvs] array [uv]
+* [indices] array [index]
+
+# Atlas export
+```sh
+scripts/ae_movie_atlas.bat
+```
+arguments:
+* in_path
+* out_path
+* image_count
+* premultiply
+
+results:
+* [image_data] array ostruct [name; atlas_path; aw; ah; ox; oy; ow; oh; fw; fh; x0; y0; x1; y1; x2; y2; x3; y3; rotate]
+
+# Prebuild
+'''sh
+scripts/ae_movie_prebuild.bat
+'''
+arguments:
+* movie_folder
+* movie_name
+* project_name
+* preview
+
+results:
+
+# Postbuild
+'''sh
+scripts/ae_movie_postbuild.bat
+'''
+arguments:
+* movie_folder
+* movie_name
+* project_name
+* hash_crc
+* preview
+* successful
+
+results:
+
+# Postbuild
+'''sh
+scripts/ae_movie_preview.bat
+'''
+arguments:
+* project_path
+* movie_name
+* project_name
+* composition_name
+* hash_crc
+* work_area
+
+results:
 
 # Multiexport
 ```sh
-scripts/ae_movie_multiexport_script.bat
+scripts/ae_movie_multiexport.bat
 ```
 arguments:
-* export_config
+* config pure
 
 results:
 * atlas
+* image_premultiplied
 * polygonize_sprite
 * polygonize_square
 * show_complete
@@ -152,24 +221,59 @@ results:
 * [in] filepath
 * [out] filepath
 
-# Settings
+# Multiexport prebuild
 ```sh
-scripts/ae_movie_settings_script.bat
+scripts/ae_movie_multiexport_prebuild.bat
 ```
 arguments:
-* project_path
-* project_name
-* movie_name
-* preview
+* polygonize_sprite
 
 results:
-* api_key
-* tool_folder
-* export_path
-* export_name
-* atlas
-* polygonize_sprite
-* polygonize_square
-* show_complete
+
+# Multiexport postbuild
+```sh
+scripts/ae_movie_multiexport_postbuild.bat
+```
+arguments:
+* successful
+
+results:
+
+# Multiexport report
+```sh
+scripts/ae_movie_multiexport_report.bat
+```
+arguments:
+* log_path
+
+results:
+
+# Multiexport report
+```sh
+scripts/ae_movie_check_settings.bat
+```
+arguments:
+
+results:
+* check_root_file
+* check_time
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
