@@ -459,12 +459,30 @@ ae_void_t ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_q
     _q[3] = w * inv_length;
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_float_t __dot_qzw( const ae_quaternionzw_t _q1, const ae_quaternionzw_t _q2 )
+{
+    return _q1[0] * _q2[0] + _q1[1] * _q2[1];
+}
+//////////////////////////////////////////////////////////////////////////
 ae_void_t ae_linerp_qzw( ae_quaternionzw_t _q, const ae_quaternionzw_t _q1, const ae_quaternionzw_t _q2, ae_float_t _t )
 {
     ae_float_t inv_t = 1.f - _t;
 
-    ae_float_t z = _q1[0] * inv_t + _q2[0] * _t;
-    ae_float_t w = _q1[1] * inv_t + _q2[1] * _t;
+    ae_float_t dot = __dot_qzw( _q1, _q2 );
+
+    ae_float_t z;
+    ae_float_t w;
+
+    if( dot < 0.f )
+    {
+        z = _q1[0] * inv_t - _q2[0] * _t;
+        w = _q1[1] * inv_t - _q2[1] * _t;
+    }
+    else
+    {
+        z = _q1[0] * inv_t + _q2[0] * _t;
+        w = _q1[1] * inv_t + _q2[1] * _t;
+    }
 
     ae_float_t q_dot = z * z + w * w;
     ae_float_t inv_length = __inverse_sqrtf( q_dot );
@@ -472,51 +490,4 @@ ae_void_t ae_linerp_qzw( ae_quaternionzw_t _q, const ae_quaternionzw_t _q1, cons
     _q[0] = z * inv_length;
     _q[1] = w * inv_length;
 }
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __line_from_two_point_v2( ae_float_t * _line, ae_float_t _ax, ae_float_t _ay, ae_float_t _bx, ae_float_t _by )
-{
-    _line[0] = _ay - _by;
-    _line[1] = _bx - _ax;
-    _line[2] = _ax * _by - _bx * _ay;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __line_dot( ae_float_t _a, ae_float_t _b, ae_float_t _c, ae_float_t _d )
-{
-    ae_float_t dot = _a * _d - _c * _b;
 
-    return dot;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __line_intersect_v2_np( ae_float_t * _out, const ae_float_t * _l1, const ae_float_t * _l2 )
-{
-    ae_float_t zn = __line_dot( _l1[0], _l1[1], _l2[0], _l2[1] );
-
-    _out[0] = -__line_dot( _l1[2], _l1[1], _l2[2], _l2[1] ) / zn;
-    _out[1] = -__line_dot( _l1[0], _l1[2], _l2[0], _l2[2] ) / zn;
-}
-//////////////////////////////////////////////////////////////////////////
-ae_void_t ae_multiply_tetragon_uv4_v2( ae_float_t * _out, const ae_vector2_t * _uv, const ae_float_t * _p )
-{
-    const ae_float_t * A = _uv[0];
-    const ae_float_t * B = _uv[1];
-    const ae_float_t * C = _uv[2];
-    const ae_float_t * D = _uv[3];
-
-    const ae_float_t ABx = A[0] + (B[0] - A[0]) * _p[0];
-    const ae_float_t ABy = A[1] + (B[1] - A[1]) * _p[0];
-    const ae_float_t DCx = D[0] + (C[0] - D[0]) * _p[0];
-    const ae_float_t DCy = D[1] + (C[1] - D[1]) * _p[0];
-
-    const ae_float_t ADx = A[0] + (D[0] - A[0]) * _p[1];
-    const ae_float_t ADy = A[1] + (D[1] - A[1]) * _p[1];
-    const ae_float_t BCx = B[0] + (C[0] - B[0]) * _p[1];
-    const ae_float_t BCy = B[1] + (C[1] - B[1]) * _p[1];
-
-    ae_float_t uv_l1[3];
-    __line_from_two_point_v2( uv_l1, ABx, ABy, DCx, DCy );
-
-    ae_float_t uv_l2[3];
-    __line_from_two_point_v2( uv_l2, ADx, ADy, BCx, BCy );
-
-    __line_intersect_v2_np( _out, uv_l1, uv_l2 );
-}

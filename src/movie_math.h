@@ -115,6 +115,4 @@ AE_INTERNAL ae_float_t ae_fractional_f( ae_float_t value )
 ae_void_t ae_linerp_q( ae_quaternion_t _q, const ae_quaternion_t _q1, const ae_quaternion_t _q2, ae_float_t _t );
 ae_void_t ae_linerp_qzw( ae_quaternionzw_t _q, const ae_quaternionzw_t _q1, const ae_quaternionzw_t _q2, ae_float_t _t );
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_multiply_tetragon_uv4_v2( ae_float_t * _out, const ae_vector2_t * _uv, const ae_float_t * _p );
-//////////////////////////////////////////////////////////////////////////
 #endif
