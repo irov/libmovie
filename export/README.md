@@ -165,9 +165,9 @@ results:
 * [image_data] array ostruct [name; atlas_path; aw; ah; ox; oy; ow; oh; fw; fh; x0; y0; x1; y1; x2; y2; x3; y3; rotate]
 
 # Prebuild
-'''sh
+```sh
 scripts/ae_movie_prebuild.bat
-'''
+```
 arguments:
 * movie_folder
 * movie_name
@@ -177,9 +177,9 @@ arguments:
 results:
 
 # Postbuild
-'''sh
+```sh
 scripts/ae_movie_postbuild.bat
-'''
+```
 arguments:
 * movie_folder
 * movie_name
@@ -190,10 +190,10 @@ arguments:
 
 results:
 
-# Postbuild
-'''sh
+# Preview
+```sh
 scripts/ae_movie_preview.bat
-'''
+```
 arguments:
 * project_path
 * movie_name
