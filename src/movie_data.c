@@ -2150,6 +2150,25 @@ ae_float_t ae_get_movie_layer_data_stretch( const aeMovieLayerData * _layer )
     return _layer->stretch;
 }
 //////////////////////////////////////////////////////////////////////////
+const ae_viewport_t * ae_get_movie_layer_data_viewport( const aeMovieLayerData * _layer )
+{
+    const aeMovieLayerExtensions * extensions = _layer->extensions;
+
+    if( extensions == AE_NULL )
+    {
+        return AE_NULL;
+    }    
+
+    const aeMovieLayerExtensionViewport * viewport = extensions->viewport;
+
+    if( viewport == AE_NULL )
+    {
+        return AE_NULL;
+    }
+
+    return &viewport->viewport;
+}
+//////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_layer_data_socket_polygon( const aeMovieLayerData * _layerData, ae_uint32_t _frame, const ae_polygon_t ** _polygon )
 {
 #ifdef AE_MOVIE_DEBUG

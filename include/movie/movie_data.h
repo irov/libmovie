@@ -282,6 +282,14 @@ ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _la
 ae_float_t ae_get_movie_layer_data_stretch( const aeMovieLayerData * _layer );
 
 /**
+@brief Get viewport layer
+@param [in] _layer Layer.
+@return viewport.
+*/
+const ae_viewport_t * ae_get_movie_layer_data_viewport( const aeMovieLayerData * _layer );
+
+
+/**
 @brief Get polygon for a socket layer
 @param [in] _layer Layer.
 @param [in] _frame frame of polygon.
