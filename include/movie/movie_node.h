@@ -225,7 +225,6 @@ typedef struct aeMovieNodeProviderCallbackData
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
-
     
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -235,7 +234,7 @@ typedef struct aeMovieNodeProviderCallbackData
 
     /// @brief Value from 0.0 to 1.0.
     ae_float_t volume;
-
+    
     /// @brief Pointer to track matte layer, should be used to create user track matte structure inside provider.
     const aeMovieLayerData * track_matte_layer;
 } aeMovieNodeProviderCallbackData;
