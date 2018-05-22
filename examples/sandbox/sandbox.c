@@ -17,7 +17,7 @@ AE_CALLBACK ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _si
 {
     AE_UNUSED( _data );
 
-    ae_uint32_t total = _size * _count;
+    ae_size_t total = _size * _count;
 
     return malloc( total );
 }

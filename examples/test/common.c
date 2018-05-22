@@ -61,7 +61,7 @@ AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size
 
 AE_CALLBACK ae_voidptr_t stdlib_movie_alloc_n( ae_voidptr_t _data, ae_size_t _size, ae_size_t _count ) {
     AE_UNUSED( _data );
-    ae_uint32_t total = _size * _count;
+    ae_size_t total = _size * _count;
     return malloc( total );
 }
 
@@ -534,21 +534,6 @@ ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackDa
     }
 }
 
-//==================================================
-
-ae_void_t ex_create_instance( ae_void_t ) {
-    EX_LOG( "Creating library instance.\n" );
-
-    ex.instance = ae_create_movie_instance( ex.license
-        , &stdlib_movie_alloc
-        , &stdlib_movie_alloc_n
-        , &stdlib_movie_free
-        , &stdlib_movie_free_n
-        , (ae_movie_strncmp_t)AE_NULL
-        , &stdlib_movie_logerror
-        , AE_NULL );
-}
-
 //
 // This loads .AEM into a data structure which your resource manager should have a list of, similar to image or sound cache.
 //
@@ -885,7 +870,16 @@ ae_void_t ex_init( const ae_char_t * license, const ae_char_t * path, const ae_c
     // Initialize the library instance.
     //
 
-    ex_create_instance();
+    EX_LOG( "Creating library instance.\n" );
+
+    ex.instance = ae_create_movie_instance( ex.license
+        , &stdlib_movie_alloc
+        , &stdlib_movie_alloc_n
+        , &stdlib_movie_free
+        , &stdlib_movie_free_n
+        , (ae_movie_strncmp_t)AE_NULL
+        , &stdlib_movie_logerror
+        , AE_NULL );
 }
 
 //
