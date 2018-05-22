@@ -71,7 +71,6 @@ ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackDa
 // Miscellaneous & shared functions.
 //
 
-ae_void_t ex_create_instance( ae_void_t );
 ae_void_t ex_load_movie_data( ae_void_t );
 ae_void_t ex_set_composition( ae_void_t );
 ae_void_t ex_update( ae_float_t dt );
