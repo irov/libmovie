@@ -317,7 +317,9 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
             EX_LOG( " NODE_UPDATE_BEGIN\n" );
             EX_LOG( " Type:" );
 
-            switch( _callbackData->type )
+            aeMovieLayerTypeEnum layer_type = ae_get_movie_layer_data_type( _callbackData->layer );
+
+            switch( layer_type )
             {
             case AE_MOVIE_LAYER_TYPE_VIDEO:
                 EX_LOG( " video\n" );
@@ -340,7 +342,9 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
             EX_LOG( " NODE_UPDATE_UPDATE\n" );
             EX_LOG( " Type:" );
 
-            switch( _callbackData->type ) {
+            aeMovieLayerTypeEnum layer_type = ae_get_movie_layer_data_type( _callbackData->layer );
+
+            switch( layer_type ) {
             case AE_MOVIE_LAYER_TYPE_PARTICLE:
                 EX_LOG( " particle\n" );
                 break;
@@ -363,7 +367,9 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
             EX_LOG( " NODE_UPDATE_END\n" );
             EX_LOG( " Type:" );
 
-            switch( _callbackData->type )
+            aeMovieLayerTypeEnum layer_type = ae_get_movie_layer_data_type( _callbackData->layer );
+
+            switch( layer_type )
             {
             case AE_MOVIE_LAYER_TYPE_VIDEO:
                 EX_LOG( " video\n" );
@@ -553,8 +559,14 @@ ae_void_t ex_load_movie_data( ae_void_t ) {
 
     EX_LOG( "Loading movie data.\n" );
 
-    aeMovieData * movie_data = ae_create_movie_data( ex.instance, ex.resource_provider, ex.resource_deleter, AE_NULL );
+    aeMovieDataProviders data_providers;
+    ae_clear_movie_data_providers( &data_providers );
 
+    data_providers.resource_provider = ex.resource_provider;
+    data_providers.resource_deleter = ex.resource_deleter;
+
+    aeMovieData * movie_data = ae_create_movie_data( ex.instance, &data_providers, AE_NULL );
+    
     ae_uint32_t load_major_version;
     ae_uint32_t load_minor_version;
 	ae_result_t load_movie_data_result = ae_load_movie_data( movie_data, movie_stream, &load_major_version, &load_minor_version );
@@ -598,7 +610,7 @@ ae_void_t ex_set_composition( ae_void_t ) {
 
     EX_LOG( "Creating composition.\n" );
 
-    aeMovieComposition * composition = ae_create_movie_composition( ex.data, comp_data, AE_TRUE, &ex.comp_providers, AE_NULL );
+    const aeMovieComposition * composition = ae_create_movie_composition( ex.data, comp_data, AE_TRUE, &ex.comp_providers, AE_NULL );
 
     if( composition == AE_NULL ) {
         EX_LOG( "...failed.\n" );

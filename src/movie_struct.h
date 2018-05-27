@@ -34,10 +34,8 @@
 #include "movie/movie_instance.h"
 #include "movie/movie_node.h"
 
-//////////////////////////////////////////////////////////////////////////
-#ifndef AE_MOVIE_BEZIER_WARP_BASE_GRID
-#	define AE_MOVIE_BEZIER_WARP_BASE_GRID 7U
-#endif
+#include "movie_bezier.h"
+
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieBezierWarp
 {
@@ -57,6 +55,14 @@ typedef enum aeMovieLayerExtensionEnum
     AE_LAYER_EXTENSION_VIEWPORT = 7,
     AE_LAYER_EXTENSION_VOLUME = 8,
 } aeMovieLayerExtensionEnum;
+//////////////////////////////////////////////////////////////////////////
+typedef enum aeMovieNodeAnimationStateEnum
+{
+    AE_MOVIE_NODE_ANIMATE_STATIC,
+    AE_MOVIE_NODE_ANIMATE_BEGIN,
+    AE_MOVIE_NODE_ANIMATE_PROCESS,
+    AE_MOVIE_NODE_ANIMATE_END,
+} aeMovieNodeAnimationStateEnum;
 //////////////////////////////////////////////////////////////////////////
 typedef struct aeMovieLayerExtensions
 {
@@ -98,8 +104,8 @@ struct aeMovieInstance
     ae_vector2_t sprite_uv[4];
     ae_uint16_t sprite_indices[6];
 
-    ae_vector2_t * bezier_warp_uv[10];
-    ae_uint16_t * bezier_warp_indices[10];
+    const ae_vector2_t * bezier_warp_uv[AE_MOVIE_BEZIER_MAX_QUALITY];
+    const ae_uint16_t * bezier_warp_indices[AE_MOVIE_BEZIER_MAX_QUALITY];
 
     aeMovieLayerExtensions layer_extensions_default;
 };
@@ -289,10 +295,9 @@ struct aeMovieData
     const aeMovieInstance * instance;
 
     ae_string_t name;
-
-    ae_movie_data_resource_provider_t resource_provider;
-    ae_movie_data_resource_deleter_t resource_deleter;
-    ae_voidptr_t resource_ud;
+        
+    aeMovieDataProviders providers;
+    ae_voidptr_t provider_data;
 
     ae_uint32_t atlas_count;
     const aeMovieResource * const * atlases;
@@ -346,6 +351,7 @@ struct aeMovieLayerData
     ae_float_t stretch;
 
     const struct aeMovieLayerTransformation * transformation;
+    const struct aeMovieLayerCache * cache;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerExtensionTimeremap
@@ -461,6 +467,27 @@ struct aeMovieLayerExtensionPolygon
 
     const ae_polygon_t * polygons;
 
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieResourceImageCache
+{
+    ae_voidptr_t uv_cache_data;
+    ae_voidptr_t mesh_uv_cache_data;
+    ae_voidptr_t bezier_warp_uv_cache_data[AE_MOVIE_BEZIER_MAX_QUALITY];
+
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieResourceVideoCache
+{
+    ae_voidptr_t uv_cache_data;
+    ae_voidptr_t bezier_warp_uv_cache_data[AE_MOVIE_BEZIER_MAX_QUALITY];
+
+};
+//////////////////////////////////////////////////////////////////////////
+struct aeMovieLayerCache
+{
+    ae_voidptr_t immutable_mesh_uv_cache_data;
+    ae_voidptr_t * mesh_uv_cache_data;
 };
 //////////////////////////////////////////////////////////////////////////
 #define AE_RESULT( Function, Args ) { ae_result_t result = (Function) Args; if( result != AE_RESULT_SUCCESSFUL ) { return result;}}

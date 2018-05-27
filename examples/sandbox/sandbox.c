@@ -89,7 +89,13 @@ int main( int argc, char *argv[] )
 
     const aeMovieInstance * instance = ae_create_movie_instance( "0e41faff7d430be811df87466106e7a9b36cc3ea", &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, (ae_movie_strncmp_t)AE_NULL, &stdlib_movie_logerror, AE_NULL );
 
-    aeMovieData * movie_data = ae_create_movie_data( instance, &__resource_provider, &__resource_deleter, AE_NULL );
+    aeMovieDataProviders data_providers;
+    ae_clear_movie_data_providers( &data_providers );
+
+    data_providers.resource_provider = &__resource_provider;
+    data_providers.resource_deleter = &__resource_deleter;
+
+    aeMovieData * movie_data = ae_create_movie_data( instance, &data_providers, AE_NULL );
 
     FILE * f = fopen( "ui.aem", "rb" );
 
@@ -131,7 +137,7 @@ int main( int argc, char *argv[] )
     aeMovieCompositionProviders providers;
     memset( &providers, 0, sizeof( providers ) );
 
-    aeMovieComposition * composition = ae_create_movie_composition( movie_data, compositionData, AE_TRUE, &providers, AE_NULL );
+    const aeMovieComposition * composition = ae_create_movie_composition( movie_data, compositionData, AE_TRUE, &providers, AE_NULL );
 
     //while( 1 )
     //{

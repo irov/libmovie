@@ -27,8 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_MOVIE_SKELETON_H_
-#define MOVIE_MOVIE_SKELETON_H_
+#ifndef MOVIE_SKELETON_H_
+#define MOVIE_SKELETON_H_
 
 #include "movie_type.h"
 #include "movie_instance.h"

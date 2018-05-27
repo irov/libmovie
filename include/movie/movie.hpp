@@ -27,8 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_MOVIE_HPP_
-#define MOVIE_MOVIE_HPP_
+#ifndef MOVIE_HPP_
+#define MOVIE_HPP_
 
 extern "C" {
     #include "movie.h"

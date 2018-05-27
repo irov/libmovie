@@ -24,15 +24,15 @@ typedef struct {
 	//
 
     const aeMovieInstance * instance;
-	aeMovieData * data;
-	aeMovieComposition * composition;
+    aeMovieData * data;
+    const aeMovieComposition * composition;
 
 	//
 	// Callbacks for data loading & setup.
 	//
 
-	ae_movie_data_resource_provider_t resource_provider;
-    ae_movie_data_resource_deleter_t resource_deleter;
+	ae_movie_data_callback_resource_provider_t resource_provider;
+    ae_movie_data_callback_resource_deleter_t resource_deleter;
 	aeMovieCompositionProviders comp_providers;
 } examples_t;
 

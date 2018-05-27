@@ -27,8 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_MOVIE_H_
-#define MOVIE_MOVIE_H_
+#ifndef MOVIE_H_
+#define MOVIE_H_
 
 #include "movie_version.h"
 #include "movie_type.h"

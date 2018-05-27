@@ -27,8 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_MOVIE_RESOURCE_H_
-#define MOVIE_MOVIE_RESOURCE_H_
+#ifndef MOVIE_RESOURCE_H_
+#define MOVIE_RESOURCE_H_
 
 #include "movie/movie_type.h"
 
@@ -53,9 +53,16 @@ typedef struct aeMovieResourceVideo
     ae_float_t width;
     ae_float_t height;
 
-    ae_bool_t alpha;
+    ae_float_t trim_width;
+    ae_float_t trim_height;
+    ae_float_t offset_x;
+    ae_float_t offset_y;
+
+    ae_bool_t has_alpha_channel;
     ae_time_t frameRate; //No TIMESCALE
     ae_time_t duration; //No TIMESCALE
+    
+    const struct aeMovieResourceVideoCache * cache;
 
 } aeMovieResourceVideo;
 
@@ -77,7 +84,7 @@ typedef struct aeMovieResourceImage
     ae_string_t path;
     ae_uint32_t codec;
 
-    ae_bool_t premultiplied;
+    ae_bool_t is_premultiplied;
 
     ae_float_t base_width;
     ae_float_t base_height;
@@ -86,11 +93,13 @@ typedef struct aeMovieResourceImage
     ae_float_t offset_x;
     ae_float_t offset_y;
 
-    const ae_vector2_t * uv;
+    const ae_vector2_t * uvs;
     const ae_mesh_t * mesh;
 
     const struct aeMovieResourceImage * atlas_image;
     ae_bool_t atlas_rotate;
+    
+    const struct aeMovieResourceImageCache * cache;
 
 } aeMovieResourceImage;
 

@@ -35,20 +35,23 @@ ADD_FILTER(
 public
 	${INCLUDE_DIR}/movie/movie.h
     ${INCLUDE_DIR}/movie/movie.hpp
-    ${INCLUDE_DIR}/movie/movie_node.h
+    ${INCLUDE_DIR}/movie/movie_config.h
     ${INCLUDE_DIR}/movie/movie_data.h
     ${INCLUDE_DIR}/movie/movie_instance.h
+    ${INCLUDE_DIR}/movie/movie_node.h
     ${INCLUDE_DIR}/movie/movie_resource.h
     ${INCLUDE_DIR}/movie/movie_skeleton.h
     ${INCLUDE_DIR}/movie/movie_type.h
-    ${INCLUDE_DIR}/movie/movie_typedef.h
-    ${INCLUDE_DIR}/movie/movie_config.h 
-    ${INCLUDE_DIR}/movie/movie_version.h
+    ${INCLUDE_DIR}/movie/movie_typedef.h    
+    ${INCLUDE_DIR}/movie/movie_version.h    
 )
 
 ADD_FILTER(
 source
+    ${SOURCE_DIR}/movie_bezier.c
+    ${SOURCE_DIR}/movie_bezier.h
 	${SOURCE_DIR}/movie_data.c
+    ${SOURCE_DIR}/movie_debug.h
     ${SOURCE_DIR}/movie_instance.c
     ${SOURCE_DIR}/movie_math.c
     ${SOURCE_DIR}/movie_math.h
@@ -59,8 +62,7 @@ source
     ${SOURCE_DIR}/movie_stream.h
     ${SOURCE_DIR}/movie_struct.h
     ${SOURCE_DIR}/movie_transformation.c
-    ${SOURCE_DIR}/movie_transformation.h
-    ${SOURCE_DIR}/movie_debug.h    
+    ${SOURCE_DIR}/movie_transformation.h    
 )
 
 INCLUDE_DIRECTORIES( ${PROJECT_NAME} ${INCLUDE_DIR} ) 

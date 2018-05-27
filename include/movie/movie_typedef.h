@@ -27,8 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_MOVIE_TYPEDEF_H_
-#define MOVIE_MOVIE_TYPEDEF_H_
+#ifndef MOVIE_TYPEDEF_H_
+#define MOVIE_TYPEDEF_H_
 
 typedef struct aeMovieInstance aeMovieInstance;
 typedef struct aeMovieCompositionAnimation aeMovieCompositionAnimation;
@@ -37,6 +37,7 @@ typedef struct aeMovieComposition aeMovieComposition;
 typedef struct aeMovieCompositionCamera aeMovieCompositionCamera;
 typedef struct aeMovieCompositionData aeMovieCompositionData;
 typedef struct aeMovieData aeMovieData;
+typedef struct aeMovieNode aeMovieNode;
 typedef struct aeMovieLayerData aeMovieLayerData;
 
 typedef struct aeMovieLayerExtensionTimeremap aeMovieLayerExtensionTimeremap;

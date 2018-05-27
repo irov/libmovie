@@ -27,30 +27,48 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_DEBUG_H_
-#define MOVIE_DEBUG_H_
+#ifndef MOVIE_BEZIER_H_
+#define MOVIE_BEZIER_H_
 
 #include "movie/movie_type.h"
+#include "movie/movie_node.h"
 
-AE_INTERNAL ae_void_t __movie_break_point( ae_void_t )
+//////////////////////////////////////////////////////////////////////////
+#define AE_MOVIE_BEZIER_MAX_QUALITY (10U)
+#define AE_MOVIE_BEZIER_WARP_BASE_GRID (7U)
+
+typedef struct ae_bezier_t
 {
-    //Breakpoint
-    ae_uint32_t breakpoint_this;
-    (ae_void_t)breakpoint_this;
+    ae_float_t ta;
+    ae_float_t tb;
+    ae_float_t tc;
+    ae_float_t td;
+} ae_bezier_t;
+
+
+AE_INTERNAL ae_uint32_t get_bezier_warp_line_count( ae_uint32_t _quality )
+{
+    ae_uint32_t line_count = AE_MOVIE_BEZIER_WARP_BASE_GRID + _quality * 2;
+
+    return line_count;
 }
 
-#ifdef AE_MOVIE_DEBUG
-#   define AE_RETURN_ERROR_RESULT(Result) __movie_break_point(); return Result
-#else
-#   define AE_RETURN_ERROR_RESULT(Result) return Result
-#endif
+AE_INTERNAL ae_uint32_t get_bezier_warp_vertex_count( ae_uint32_t _quality )
+{
+    ae_uint32_t line_count = get_bezier_warp_line_count( _quality );
+    ae_uint32_t vertex_count = line_count * line_count;
 
+    return vertex_count;
+}
 
+AE_INTERNAL ae_uint32_t get_bezier_warp_index_count( ae_uint32_t _quality )
+{
+    ae_uint32_t line_count = get_bezier_warp_line_count( _quality );
+    ae_uint32_t index_count = (line_count - 1) * (line_count - 1) * 6;
 
-#ifdef AE_MOVIE_DEBUG
-#	define AE_MOVIE_PANIC_MEMORY(Memory, Result) {if(Memory == AE_NULL) {__movie_break_point(); return Result;}}
-#else
-#   define AE_MOVIE_PANIC_MEMORY(Memory, Result)
-#endif
+    return index_count;
+}
+
+ae_void_t make_layer_bezier_warp_vertices( const struct aeMovieInstance * _instance, const struct aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render );
 
 #endif
