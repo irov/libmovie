@@ -797,7 +797,7 @@ static ae_void_t __memory_copy( ae_voidptr_t _data, ae_constvoidptr_t _src, ae_v
 typedef struct em_resource_image_t
 {
     GLuint texture_id;
-    ae_bool_t premultiplied;
+    ae_bool_t is_premultiplied;
 } em_resource_image_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_resource_sound_t
@@ -847,7 +847,7 @@ static GLuint __cache_resource_image( em_player_t * em_player, const ae_char_t *
     return texture_id;
 }
 //////////////////////////////////////////////////////////////////////////
-static ae_bool_t __ae_movie_data_resource_provider( const aeMovieResource * _resource, ae_voidptrptr_t _rp, ae_voidptr_t _ud )
+static ae_bool_t __movie_data_resource_provider( const aeMovieResource * _resource, ae_voidptrptr_t _rp, ae_voidptr_t _ud )
 {
     em_player_t * em_player = (em_player_t *)_ud;
 
@@ -867,17 +867,17 @@ static ae_bool_t __ae_movie_data_resource_provider( const aeMovieResource * _res
 
             if( r->atlas_image == AE_NULL )
             {
-                GLuint texture_id = __cache_resource_image( em_player, r->path, r->codec, r->premultiplied );
+                GLuint texture_id = __cache_resource_image( em_player, r->path, r->codec, r->is_premultiplied );
 
                 resource_image->texture_id = texture_id;
-                resource_image->premultiplied = r->premultiplied;
+                resource_image->is_premultiplied = r->is_premultiplied;
             }
             else
             {
                 em_resource_image_t * image_atlas = (em_resource_image_t *)r->atlas_image->data;
 
                 resource_image->texture_id = image_atlas->texture_id;
-                resource_image->premultiplied = r->premultiplied;
+                resource_image->is_premultiplied = r->is_premultiplied;
             }
 
             *_rp = resource_image;
@@ -930,7 +930,7 @@ static ae_bool_t __ae_movie_data_resource_provider( const aeMovieResource * _res
     return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __ae_movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
+static void __movie_data_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud )
 {
     em_player_t * em_player = (em_player_t *)_ud;
 
@@ -986,7 +986,13 @@ typedef struct em_movie_data_t
 //////////////////////////////////////////////////////////////////////////
 em_movie_data_t * em_create_movie_data( em_player_t * _player, const uint8_t * _data )
 {    
-    aeMovieData * movie_data = ae_create_movie_data( _player->instance, &__ae_movie_data_resource_provider, &__ae_movie_data_resource_deleter, _player );
+    aeMovieDataProviders providers;
+    ae_clear_movie_data_providers( &providers );
+
+    providers.resource_provider = &__movie_data_resource_provider;
+    providers.resource_deleter = &__movie_data_resource_deleter;
+
+    aeMovieData * movie_data = ae_create_movie_data( _player->instance, &providers, _player );
 
     if( movie_data == em_nullptr )
     {
@@ -1181,6 +1187,8 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
 {
     em_player_t * em_player = (em_player_t *)_data;
 
+    aeMovieLayerTypeEnum layer_type = ae_get_movie_layer_data_type( _callbackData->layer );
+
     switch( _callbackData->state )
     {
     case AE_MOVIE_STATE_UPDATE_PROCESS:
@@ -1189,7 +1197,7 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
         }break;
     case AE_MOVIE_STATE_UPDATE_BEGIN:
         {
-            switch( _callbackData->type )
+            switch( layer_type )
             {
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
@@ -1209,7 +1217,7 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
         }break;
     case AE_MOVIE_STATE_UPDATE_END:
         {
-            switch( _callbackData->type )
+            switch( layer_type )
             {
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
@@ -1229,7 +1237,7 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
         }break;
     case AE_MOVIE_STATE_UPDATE_PAUSE:
         {
-            switch( _callbackData->type )
+            switch( layer_type )
             {
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
@@ -1249,7 +1257,7 @@ static ae_void_t __ae_movie_composition_node_update( const aeMovieNodeUpdateCall
         }break;
     case AE_MOVIE_STATE_UPDATE_RESUME:
         {
-            switch( _callbackData->type )
+            switch( layer_type )
             {
             case AE_MOVIE_LAYER_TYPE_SOUND:
                 {
@@ -1570,7 +1578,7 @@ static ae_void_t __ae_movie_callback_track_matte_deleter( const aeMovieTrackMatt
 //////////////////////////////////////////////////////////////////////////
 typedef struct em_movie_composition_t
 {
-    aeMovieComposition * composition;
+    const aeMovieComposition * composition;
     
     GLuint opengl_vertex_buffer_id;
     GLuint opengl_indices_buffer_id;
@@ -1616,7 +1624,7 @@ em_movie_composition_t * em_create_movie_composition( em_player_t * _player, em_
     providers.track_matte_update = &__ae_movie_callback_track_matte_update;
     providers.track_matte_deleter = &__ae_movie_callback_track_matte_deleter;
 
-    aeMovieComposition * composition = ae_create_movie_composition( ae_movie_data, compositionData, AE_TRUE, &providers, _player );
+    const aeMovieComposition * composition = ae_create_movie_composition( ae_movie_data, compositionData, AE_TRUE, &providers, _player );
 
     if( composition == AE_NULL )
     {
@@ -1690,49 +1698,49 @@ void em_remove_movie_composition_work_area( em_movie_composition_t * _compositio
 //////////////////////////////////////////////////////////////////////////
 void em_play_movie_composition( em_movie_composition_t * _composition, float _time )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_play_movie_composition( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_stop_movie_composition( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_stop_movie_composition( ae_movie_composition );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_pause_movie_composition( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_pause_movie_composition( ae_movie_composition );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_resume_movie_composition( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_resume_movie_composition( ae_movie_composition );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_interrupt_movie_composition( em_movie_composition_t * _composition, uint32_t _skip )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_interrupt_movie_composition( ae_movie_composition, _skip );
 }
 //////////////////////////////////////////////////////////////////////////
 void em_set_movie_composition_time( em_movie_composition_t * _composition, float _time )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_set_movie_composition_time( ae_movie_composition, _time );
 }
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_time( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     float time = ae_get_movie_composition_time( ae_movie_composition );
 
@@ -1741,7 +1749,7 @@ float em_get_movie_composition_time( em_movie_composition_t * _composition )
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_duration( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     float duration = ae_get_movie_composition_duration( ae_movie_composition );
 
@@ -1750,7 +1758,7 @@ float em_get_movie_composition_duration( em_movie_composition_t * _composition )
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_width( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
 
@@ -1761,7 +1769,7 @@ float em_get_movie_composition_width( em_movie_composition_t * _composition )
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_height( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
 
@@ -1772,7 +1780,7 @@ float em_get_movie_composition_height( em_movie_composition_t * _composition )
 //////////////////////////////////////////////////////////////////////////
 uint32_t em_get_movie_composition_frame_count( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     const aeMovieCompositionData * ae_movie_composition_data = ae_get_movie_composition_composition_data( ae_movie_composition );
 
@@ -1783,7 +1791,7 @@ uint32_t em_get_movie_composition_frame_count( em_movie_composition_t * _composi
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_in_loop( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_float_t in;
     ae_float_t out;
@@ -1794,7 +1802,7 @@ float em_get_movie_composition_in_loop( em_movie_composition_t * _composition )
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_out_loop( em_movie_composition_t * _composition )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_float_t in;
     ae_float_t out;
@@ -1805,7 +1813,7 @@ float em_get_movie_composition_out_loop( em_movie_composition_t * _composition )
 //////////////////////////////////////////////////////////////////////////
 uint32_t em_has_movie_composition_node( em_movie_composition_t * _composition, const char * _layer )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     uint32_t exist = ae_has_movie_composition_node_any( ae_movie_composition, _layer );
 
@@ -1814,7 +1822,7 @@ uint32_t em_has_movie_composition_node( em_movie_composition_t * _composition, c
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_node_in_time( em_movie_composition_t * _composition, const char * _layer )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_float_t in;
     ae_float_t out;
@@ -1825,7 +1833,7 @@ float em_get_movie_composition_node_in_time( em_movie_composition_t * _compositi
 //////////////////////////////////////////////////////////////////////////
 float em_get_movie_composition_node_out_time( em_movie_composition_t * _composition, const char * _layer )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_float_t in;
     ae_float_t out;
@@ -1836,14 +1844,14 @@ float em_get_movie_composition_node_out_time( em_movie_composition_t * _composit
 //////////////////////////////////////////////////////////////////////////
 void em_set_movie_composition_node_enable( em_movie_composition_t * _composition, const char * _layer, uint32_t _enable )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_set_movie_composition_node_enable_any( ae_movie_composition, _layer, _enable );
 }
 //////////////////////////////////////////////////////////////////////////
 uint32_t em_get_movie_composition_node_enable( em_movie_composition_t * _composition, const char * _layer )
 {
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_bool_t enable;
     if( ae_get_movie_composition_node_enable_any( ae_movie_composition, _layer, &enable ) == AE_FALSE )
@@ -1861,7 +1869,7 @@ uint32_t em_get_movie_composition_node_enable( em_movie_composition_t * _composi
 //////////////////////////////////////////////////////////////////////////
 void em_update_movie_composition( em_player_t * _player, em_movie_composition_t * _composition, float _time )
 {
-    aeMovieComposition * ae_movie_composition = (aeMovieComposition *)_composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     ae_update_movie_composition( ae_movie_composition, _time );
 }
@@ -1877,7 +1885,7 @@ static ae_bool_t __em_render_set_blend( aeMovieRenderMesh * mesh )
         {
             const em_resource_image_t * resource_image = (const em_resource_image_t *)mesh->resource_data;
                         
-            texture_premultiplied = resource_image->premultiplied;
+            texture_premultiplied = resource_image->is_premultiplied;
         }
     default:
         break;
@@ -1965,7 +1973,7 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
 
     GLCALL( glViewport, (0, 0, (GLsizei)player_width, (GLsizei)player_height) );
 
-    aeMovieComposition * ae_movie_composition = _composition->composition;
+    const aeMovieComposition * ae_movie_composition = _composition->composition;
 
     uint32_t mesh_iterator = 0;
 
