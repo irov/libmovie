@@ -27,8 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_MOVIE_DATA_H_
-#define MOVIE_MOVIE_DATA_H_
+#ifndef MOVIE_DATA_H_
+#define MOVIE_DATA_H_
 
 #include "movie_type.h"
 #include "movie_typedef.h"
@@ -103,21 +103,51 @@ typedef enum aeMovieCompositionFlag
 @{
 */
 
+typedef struct aeMovieDataCacheUVProviderCallbackData
+{
+    const aeMovieResource * resource;
+
+    ae_uint32_t vertex_count;
+    const ae_vector2_t * uvs;
+
+} aeMovieDataCacheUVProviderCallbackData;
+
+typedef struct aeMovieDataCacheUVDeleterCallbackData
+{
+    ae_voidptr_t uv_cache_data;
+
+} aeMovieDataCacheUVDeleterCallbackData;
+
 /**
 @brief Callback to allocate a new resource given by the descriptor.
 @param [in] _resource Description of the resource to load.
 @param [in] _data Object which will hold the resource reference after loading.
 @return Reference to the created resource.
 */
-typedef ae_bool_t( *ae_movie_data_resource_provider_t )(const aeMovieResource * _resource, ae_voidptrptr_t _rd, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_data_resource_deleter_t )(aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_data_callback_resource_provider_t )(const aeMovieResource * _resource, ae_voidptrptr_t _rd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_data_callback_resource_deleter_t )(aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud);
+
+typedef ae_bool_t( *ae_movie_data_callback_cache_uv_provider_t )(const aeMovieDataCacheUVProviderCallbackData * _callbackData, ae_voidptrptr_t _cud, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_data_callback_cache_uv_deleter_t )(const aeMovieDataCacheUVDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+
+typedef struct aeMovieDataProviders
+{
+    ae_movie_data_callback_resource_provider_t resource_provider;
+    ae_movie_data_callback_resource_deleter_t resource_deleter;
+
+    ae_movie_data_callback_cache_uv_provider_t cache_uv_provider;
+    ae_movie_data_callback_cache_uv_deleter_t cache_uv_deleter;
+
+} aeMovieDataProviders;
+
+ae_void_t ae_clear_movie_data_providers( aeMovieDataProviders * _providers );
 
 /**
 @brief Allocate a data structure to load movie file into.
 @param [in] _instance Instance.
 @return Pointer to the created structure.
 */
-aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data );
+aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, const aeMovieDataProviders * _providers, ae_voidptr_t _data );
 
 /**
 @brief Release data.
@@ -204,11 +234,9 @@ ae_bool_t ae_has_movie_composition_data( const aeMovieData * _movieData, const a
 */
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 
-
 typedef ae_bool_t( *ae_movie_layer_data_visitor_t )(const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layer, ae_voidptr_t _ud);
 
 ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visitor_t _visitor, ae_voidptr_t _ud );
-
 
 /**
 @param [in] _layer Layer.

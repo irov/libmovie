@@ -32,7 +32,7 @@
 #include "movie_struct.h"
 
 //////////////////////////////////////////////////////////////////////////
-AE_CALLBACK ae_int32_t __ae_strncmp( ae_voidptr_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count )
+AE_CALLBACK ae_int32_t __movie_strncmp( ae_voidptr_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count )
 {
     AE_UNUSED( _data );
 
@@ -58,7 +58,7 @@ AE_CALLBACK ae_int32_t __ae_strncmp( ae_voidptr_t _data, const ae_char_t * _src,
     return 0;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_CALLBACK ae_void_t __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )
+AE_CALLBACK ae_void_t __movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _code, const ae_char_t * _message, ... )
 {
     AE_UNUSED( _data );
     AE_UNUSED( _code );
@@ -69,7 +69,7 @@ AE_CALLBACK ae_void_t __ae_movie_logerror( ae_voidptr_t _data, aeMovieErrorCode 
 AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance )
 {
     ae_uint16_t i;
-    for( i = 0; i != 10U; ++i )
+    for( i = 0; i != AE_MOVIE_BEZIER_MAX_QUALITY; ++i )
     {
         ae_uint16_t line_count = AE_MOVIE_BEZIER_WARP_BASE_GRID + i * 2;
 
@@ -166,12 +166,12 @@ const aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae
 
     if( instance->strncmp == AE_NULL )
     {
-        instance->strncmp = &__ae_strncmp;
+        instance->strncmp = &__movie_strncmp;
     }
 
     if( instance->logger == AE_NULL )
     {
-        instance->logger = &__ae_movie_logerror;
+        instance->logger = &__movie_logerror;
     }
 
     ae_float_t * sprite_uv = &instance->sprite_uv[0][0];
@@ -204,12 +204,12 @@ const aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae
 ae_void_t ae_delete_movie_instance( const aeMovieInstance * _instance )
 {
     ae_uint32_t i;
-    for( i = 0; i != 10U; ++i )
+    for( i = 0; i != AE_MOVIE_BEZIER_MAX_QUALITY; ++i )
     {
-        ae_vector2_t * bezier_warp_uv = _instance->bezier_warp_uv[i];
+        const ae_vector2_t * bezier_warp_uv = _instance->bezier_warp_uv[i];
         (*_instance->memory_free_n)(_instance->instance_data, bezier_warp_uv);
 
-        ae_uint16_t * bezier_warp_indices = _instance->bezier_warp_indices[i];
+        const ae_uint16_t * bezier_warp_indices = _instance->bezier_warp_indices[i];
         (*_instance->memory_free_n)(_instance->instance_data, bezier_warp_indices);
     }
 

@@ -32,11 +32,12 @@
 #include "movie/movie_version.h"
 
 #include "movie_transformation.h"
+#include "movie_bezier.h"
 #include "movie_memory.h"
 #include "movie_stream.h"
 
 //////////////////////////////////////////////////////////////////////////
-aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_data_resource_provider_t _provider, ae_movie_data_resource_deleter_t _deleter, ae_voidptr_t _data )
+aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, const aeMovieDataProviders * _providers, ae_voidptr_t _data )
 {
     aeMovieData * movie = AE_NEW( _instance, aeMovieData );
 
@@ -49,9 +50,8 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_
 
     movie->name = AE_NULL;
 
-    movie->resource_provider = _provider;
-    movie->resource_deleter = _deleter;
-    movie->resource_ud = _data;
+    movie->providers = *_providers;
+    movie->provider_data = _data;
 
     movie->atlas_count = 0;
     movie->atlases = AE_NULL;
@@ -65,18 +65,18 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, ae_movie_
     return movie;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __ae_delete_mesh_t( const aeMovieInstance * _instance, const ae_mesh_t * _mesh )
+AE_INTERNAL ae_void_t __delete_mesh_t( const aeMovieInstance * _instance, const ae_mesh_t * _mesh )
 {
     AE_DELETEN( _instance, _mesh->positions );
     AE_DELETEN( _instance, _mesh->uvs );
     AE_DELETEN( _instance, _mesh->indices );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __ae_delete_layer_mesh_t( const aeMovieInstance * _instance, const aeMovieLayerExtensionMesh * _layerMesh, ae_uint32_t _count )
+AE_INTERNAL ae_void_t __delete_layer_mesh_t( const aeMovieInstance * _instance, const aeMovieLayerExtensionMesh * _layerMesh, ae_uint32_t _count )
 {
     if( _layerMesh->immutable == AE_TRUE )
     {
-        __ae_delete_mesh_t( _instance, &_layerMesh->immutable_mesh );
+        __delete_mesh_t( _instance, &_layerMesh->immutable_mesh );
     }
     else
     {
@@ -86,33 +86,40 @@ AE_INTERNAL ae_void_t __ae_delete_layer_mesh_t( const aeMovieInstance * _instanc
         {
             const ae_mesh_t * mesh = it_mesh;
 
-            __ae_delete_mesh_t( _instance, mesh );
+            __delete_mesh_t( _instance, mesh );
         }
 
         AE_DELETEN( _instance, _layerMesh->meshes );
     }
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __ae_delete_property_value( const aeMovieInstance * _instance, const struct aeMoviePropertyValue * _property )
+AE_INTERNAL ae_void_t __delete_property_value( const aeMovieInstance * _instance, const struct aeMoviePropertyValue * _property )
 {
     AE_DELETEN( _instance, _property->values );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __ae_delete_property_color_channel( const aeMovieInstance * _instance, const struct aeMoviePropertyColorChannel * _property )
+AE_INTERNAL ae_void_t __delete_property_color_channel( const aeMovieInstance * _instance, const struct aeMoviePropertyColorChannel * _property )
 {
     AE_DELETEN( _instance, _property->values );
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __ae_delete_property_color( const aeMovieInstance * _instance, const struct aeMoviePropertyColor * _property )
+AE_INTERNAL ae_void_t __delete_property_color( const aeMovieInstance * _instance, const struct aeMoviePropertyColor * _property )
 {
-    __ae_delete_property_color_channel( _instance, _property->color_channel_r );
+    __delete_property_color_channel( _instance, _property->color_channel_r );
     AE_DELETEN( _instance, _property->color_channel_r );
 
-    __ae_delete_property_color_channel( _instance, _property->color_channel_g );
+    __delete_property_color_channel( _instance, _property->color_channel_g );
     AE_DELETEN( _instance, _property->color_channel_g );
 
-    __ae_delete_property_color_channel( _instance, _property->color_channel_b );
+    __delete_property_color_channel( _instance, _property->color_channel_b );
     AE_DELETEN( _instance, _property->color_channel_b );
+}
+AE_INTERNAL ae_void_t __callback_cache_uv_deleter( const aeMovieData * _movieData, ae_voidptr_t _data )
+{
+    aeMovieDataCacheUVDeleterCallbackData callbackData;
+    callbackData.uv_cache_data = _data;
+
+    (*_movieData->providers.cache_uv_deleter)(&callbackData, _movieData->provider_data);
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, const aeMovieResource * _resource )
@@ -139,59 +146,88 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
 
             AE_DELETE_STRING( instance, resource->path );
 
+            if( resource->cache != AE_NULL && _movieData->providers.cache_uv_deleter != AE_NULL )
+            {
+                __callback_cache_uv_deleter( _movieData, resource->cache->uv_cache_data );
+
+                for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+                {
+                    ae_voidptr_t uv_cache_data = resource->cache->bezier_warp_uv_cache_data[quality];
+
+                    __callback_cache_uv_deleter( _movieData, uv_cache_data );
+                }
+
+                AE_DELETE( instance, resource->cache );
+            }
+
         }break;
     case AE_MOVIE_RESOURCE_SOUND:
         {
-            const aeMovieResourceSound * resource = (const aeMovieResourceSound *)_resource;
+            const aeMovieResourceSound * resource_sound = (const aeMovieResourceSound *)_resource;
 
-            AE_DELETE_STRING( instance, resource->path );
+            AE_DELETE_STRING( instance, resource_sound->path );
 
         }break;
     case AE_MOVIE_RESOURCE_IMAGE:
         {
-            const aeMovieResourceImage * resource = (const aeMovieResourceImage *)_resource;
+            const aeMovieResourceImage * resource_image = (const aeMovieResourceImage *)_resource;
 
-            AE_DELETE_STRING( instance, resource->path );
+            AE_DELETE_STRING( instance, resource_image->path );
 
-            if( resource->uv != instance->sprite_uv )
+            if( resource_image->uvs != instance->sprite_uv )
             {
-                AE_DELETEN( instance, resource->uv );
+                AE_DELETEN( instance, resource_image->uvs );
             }
 
-            if( resource->mesh != AE_NULL )
+            if( resource_image->mesh != AE_NULL )
             {
-                __ae_delete_mesh_t( instance, resource->mesh );
+                __delete_mesh_t( instance, resource_image->mesh );
 
-                AE_DELETE( instance, resource->mesh );
+                AE_DELETE( instance, resource_image->mesh );
+            }
+
+            if( resource_image->cache != AE_NULL && _movieData->providers.cache_uv_deleter != AE_NULL )
+            {
+                __callback_cache_uv_deleter( _movieData, resource_image->cache->uv_cache_data );
+                __callback_cache_uv_deleter( _movieData, resource_image->cache->mesh_uv_cache_data );
+
+                for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+                {
+                    ae_voidptr_t uv_cache_data = resource_image->cache->bezier_warp_uv_cache_data[quality];
+
+                    __callback_cache_uv_deleter( _movieData, uv_cache_data );
+                }
+
+                AE_DELETE( instance, resource_image->cache );
             }
 
         }break;
     case AE_MOVIE_RESOURCE_SEQUENCE:
         {
-            const aeMovieResourceSequence * resource = (const aeMovieResourceSequence *)_resource;
+            const aeMovieResourceSequence * resource_sequence = (const aeMovieResourceSequence *)_resource;
 
-            AE_DELETEN( instance, resource->images );
+            AE_DELETEN( instance, resource_sequence->images );
 
         }break;
     case AE_MOVIE_RESOURCE_PARTICLE:
         {
-            const aeMovieResourceParticle * resource = (const aeMovieResourceParticle *)_resource;
+            const aeMovieResourceParticle * resource_particle = (const aeMovieResourceParticle *)_resource;
 
-            AE_DELETE_STRING( instance, resource->path );
+            AE_DELETE_STRING( instance, resource_particle->path );
 
         }break;
     case AE_MOVIE_RESOURCE_SLOT:
         {
-            const aeMovieResourceSlot * resource = (const aeMovieResourceSlot *)_resource;
+            const aeMovieResourceSlot * resource_slot = (const aeMovieResourceSlot *)_resource;
 
-            AE_UNUSED( resource );
+            AE_UNUSED( resource_slot );
 
         }break;
     }
 
-    if( _movieData->resource_deleter != AE_NULL )
+    if( _movieData->providers.resource_deleter != AE_NULL )
     {
-        (*_movieData->resource_deleter)(type, _resource->data, _movieData->resource_ud);
+        (*_movieData->providers.resource_deleter)(type, _resource->data, _movieData->provider_data);
     }
 
     AE_DELETE_STRING( instance, _resource->name );
@@ -244,6 +280,24 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
         {
             const aeMovieLayerData * layer = it_layer;
 
+            if( layer->cache != AE_NULL && _movieData->providers.cache_uv_deleter != AE_NULL )
+            {
+                __callback_cache_uv_deleter( _movieData, layer->cache->immutable_mesh_uv_cache_data );
+
+                ae_uint32_t frame_count = layer->frame_count;
+
+                for( ae_uint32_t index = 0; index != frame_count; ++index )
+                {
+                    ae_voidptr_t uv_cache_data = layer->cache->mesh_uv_cache_data[index];
+
+                    __callback_cache_uv_deleter( _movieData, uv_cache_data );
+                }
+
+                AE_DELETEN( instance, layer->cache->mesh_uv_cache_data );
+
+                AE_DELETE( instance, layer->cache );
+            }
+
             const aeMovieLayerExtensions * extensions = layer->extensions;
 
             if( extensions->timeremap != AE_NULL )
@@ -259,7 +313,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
             {
                 const aeMovieLayerExtensionMesh * mesh = extensions->mesh;
 
-                __ae_delete_layer_mesh_t( instance, mesh, layer->frame_count );
+                __delete_layer_mesh_t( instance, mesh, layer->frame_count );
 
                 AE_DELETE( instance, extensions->mesh );
             }
@@ -279,7 +333,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 const struct aeMoviePropertyColor * property_color = color_vertex->property_color;
 
-                __ae_delete_property_color( instance, property_color );
+                __delete_property_color( instance, property_color );
 
                 AE_DELETE( instance, property_color );
 
@@ -322,7 +376,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
                         {
                             const struct aeMovieLayerShaderParameterSlider * parameter_slider = (const struct aeMovieLayerShaderParameterSlider *)parameter;
 
-                            __ae_delete_property_value( instance, parameter_slider->property_value );
+                            __delete_property_value( instance, parameter_slider->property_value );
 
                             AE_DELETE( instance, parameter_slider->property_value );
                         }break;
@@ -330,7 +384,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
                         {
                             const struct aeMovieLayerShaderParameterColor * parameter_color = (const struct aeMovieLayerShaderParameterColor *)parameter;
 
-                            __ae_delete_property_color( instance, parameter_color->property_color );
+                            __delete_property_color( instance, parameter_color->property_color );
 
                             AE_DELETE( instance, parameter_color->property_color );
                         }break;
@@ -460,31 +514,6 @@ AE_INTERNAL ae_bool_t __find_movie_data_composition_layer_position_by_index( con
     }
 
     return AE_FALSE;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layers, aeMovieLayerData * _layer )
-{
-    if( _layer->has_track_matte == AE_TRUE )
-    {
-        ae_uint32_t layer_position;
-        if( __find_movie_data_composition_layer_position_by_index( _compositionData, _layers, _layer->index, &layer_position ) == AE_FALSE )
-        {
-            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
-        }
-
-        if( layer_position + 1 >= _compositionData->layer_count )
-        {
-            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
-        }
-
-        _layer->track_matte_layer = _compositionData->layers + layer_position + 1U;
-    }
-    else
-    {
-        _layer->track_matte_layer = AE_NULL;
-    }
-
-    return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __load_movie_property_value( aeMovieStream * _stream, const aeMovieLayerData * _layer, struct aeMoviePropertyValue * _property )
@@ -1233,6 +1262,8 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
         }
     }
 
+    _layer->cache = AE_NULL;
+
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1252,6 +1283,31 @@ AE_INTERNAL ae_result_t __load_movie_data_composition_layers( const aeMovieData 
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layers, aeMovieLayerData * _layer )
+{
+    if( _layer->has_track_matte == AE_TRUE )
+    {
+        ae_uint32_t layer_position;
+        if( __find_movie_data_composition_layer_position_by_index( _compositionData, _layers, _layer->index, &layer_position ) == AE_FALSE )
+        {
+            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
+        }
+
+        if( layer_position + 1 >= _compositionData->layer_count )
+        {
+            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
+        }
+
+        _layer->track_matte_layer = _compositionData->layers + layer_position + 1U;
+    }
+    else
+    {
+        _layer->track_matte_layer = AE_NULL;
+    }
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __setup_movie_data_composition_layers( const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layers )
 {
     aeMovieLayerData * it_layer = _layers;
@@ -1261,6 +1317,103 @@ AE_INTERNAL ae_result_t __setup_movie_data_composition_layers( const aeMovieComp
         aeMovieLayerData * layer = it_layer;
 
         AE_RESULT( __setup_movie_data_layer_track_matte, (_compositionData, _layers, layer) );
+    }
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __callback_cache_uv_provider( const aeMovieData * _movieData, ae_voidptrptr_t _cu, const aeMovieResource * _resource, ae_uint32_t _count, const ae_vector2_t * _uvs )
+{
+    aeMovieDataCacheUVProviderCallbackData callbackData;
+    callbackData.resource = _resource;
+    callbackData.vertex_count = _count;
+    callbackData.uvs = _uvs;
+
+    if( (*_movieData->providers.cache_uv_provider)(&callbackData, _cu, _movieData->provider_data) == AE_FALSE )
+    {
+        AE_RETURN_ERROR_RESULT( AE_RESULT_INTERNAL_ERROR );
+    }
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __setup_movie_data_layer_cache( const aeMovieData * _movieData, aeMovieLayerData * _layer )
+{
+    const aeMovieInstance * instance = _movieData->instance;
+
+    aeMovieResourceTypeEnum resource_type = _layer->resource->type;
+
+    switch( resource_type )
+    {
+    case AE_MOVIE_RESOURCE_IMAGE:
+        {
+            if( _layer->extensions->mesh != AE_NULL )
+            {
+                struct aeMovieLayerCache * cache = AE_NEW( instance, struct aeMovieLayerCache );
+
+                cache->immutable_mesh_uv_cache_data = AE_NULL;
+                cache->mesh_uv_cache_data = AE_NULL;
+
+                if( _layer->extensions->mesh->immutable == AE_TRUE )
+                {
+                    const ae_mesh_t * immutable_mesh = &_layer->extensions->mesh->immutable_mesh;
+
+                    ae_voidptr_t cu_immutable_mesh = AE_NULL;
+                    AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_immutable_mesh, _layer->resource, immutable_mesh->vertex_count, immutable_mesh->uvs) );
+
+                    cache->immutable_mesh_uv_cache_data = cu_immutable_mesh;
+                }
+                else
+                {
+                    ae_uint32_t layer_frame_count = _layer->frame_count;
+
+                    ae_voidptr_t * mesh_uv_cache_data = AE_NEWN( instance, ae_voidptr_t, layer_frame_count );
+
+                    for( ae_uint32_t index = 0; index != layer_frame_count; ++index )
+                    {
+                        const ae_mesh_t * mesh = _layer->extensions->mesh->meshes + index;
+
+                        if( mesh->vertex_count == 0 )
+                        {
+                            mesh_uv_cache_data[index] = AE_NULL;
+
+                            continue;
+                        }
+
+                        ae_voidptr_t cu_mesh = AE_NULL;
+                        AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_mesh, _layer->resource, mesh->vertex_count, mesh->uvs) );
+
+                        mesh_uv_cache_data[index] = cu_mesh;
+                    }
+
+                    cache->mesh_uv_cache_data = mesh_uv_cache_data;
+                }
+
+                _layer->cache = cache;
+            }
+        }break;
+    default:
+        {
+        }break;
+    }
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __setup_movie_data_composition_cache( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layers )
+{
+    aeMovieLayerData * it_layer = _layers;
+    aeMovieLayerData * it_layer_end = _layers + _compositionData->layer_count;
+    for( ; it_layer != it_layer_end; ++it_layer )
+    {
+        aeMovieLayerData * layer = it_layer;
+
+        if( layer->resource == AE_NULL )
+        {
+            continue;
+        }
+
+        AE_RESULT( __setup_movie_data_layer_cache, (_movieData, layer) );
     }
 
     return AE_RESULT_SUCCESSFUL;
@@ -1368,6 +1521,8 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
 
     AE_RESULT( __setup_movie_data_composition_layers, (_compositionData, layers) );
 
+    AE_RESULT( __setup_movie_data_composition_cache, (_movieData, _compositionData, layers) );
+
     _compositionData->layers = layers;
 
     return AE_RESULT_SUCCESSFUL;
@@ -1408,7 +1563,7 @@ aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_mo
     return stream;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_size_t __ae_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size )
+AE_INTERNAL ae_size_t __movie_read_buffer( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size )
 {
     aeMovieStream * stream = (aeMovieStream *)_data;
 
@@ -1436,7 +1591,7 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
     AE_MOVIE_PANIC_MEMORY( stream, AE_NULL );
 
     stream->instance = _instance;
-    stream->memory_read = &__ae_read_buffer;
+    stream->memory_read = &__movie_read_buffer;
     stream->memory_copy = _copy;
     stream->read_data = stream;
     stream->copy_data = _data;
@@ -1561,6 +1716,14 @@ const ae_char_t * ae_get_result_string_info( ae_result_t _result )
     return "invalid result";
 }
 //////////////////////////////////////////////////////////////////////////
+ae_void_t ae_clear_movie_data_providers( aeMovieDataProviders * _providers )
+{
+    _providers->resource_provider = 0;
+    _providers->resource_deleter = 0;
+    _providers->cache_uv_provider = 0;
+    _providers->cache_uv_deleter = 0;
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovieStream * _stream, const aeMovieResource ** _atlases, const aeMovieResource ** _resources, aeMovieResource ** _resource )
 {
     const aeMovieInstance * instance = _movieData->instance;
@@ -1625,7 +1788,7 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
             AE_READF( _stream, resource->width );
             AE_READF( _stream, resource->height );
 
-            resource->alpha = AE_READB( _stream );
+            resource->has_alpha_channel = AE_READB( _stream );
 
             AE_READF( _stream, resource->frameRate );
             AE_READF( _stream, resource->duration );
@@ -1639,6 +1802,13 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
                 {
                 case 0:
                     {
+                    }break;
+                case 1:
+                    {
+                        AE_READF( _stream, resource->trim_width );
+                        AE_READF( _stream, resource->trim_height );
+                        AE_READF( _stream, resource->offset_x );
+                        AE_READF( _stream, resource->offset_y );
                     }break;
                 default:
                     {
@@ -1698,7 +1868,7 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
             AE_READ_STRING( _stream, resource->path );
             resource->codec = AE_READ8( _stream );
 
-            resource->premultiplied = AE_READB( _stream );
+            resource->is_premultiplied = AE_READB( _stream );
             resource->atlas_image = AE_NULL;
             resource->atlas_rotate = AE_FALSE;
 
@@ -1709,8 +1879,9 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
             resource->trim_height = resource->base_height;
             resource->offset_x = 0.f;
             resource->offset_y = 0.f;
-            resource->uv = instance->sprite_uv;
+            resource->uvs = instance->sprite_uv;
             resource->mesh = AE_NULL;
+            resource->cache = AE_NULL;
 
             for( ;;)
             {
@@ -1740,7 +1911,7 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
                         AE_READF2( _stream, uv[2] );
                         AE_READF2( _stream, uv[3] );
 
-                        resource->uv = (const ae_vector2_t *)uv;
+                        resource->uvs = (const ae_vector2_t *)uv;
                     }break;
                 case 3:
                     {
@@ -1917,10 +2088,10 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
     new_resource->type = type;
     new_resource->name = name;
 
-    if( _movieData->resource_provider != AE_NULL )
+    if( _movieData->providers.resource_provider != AE_NULL )
     {
-        ae_voidptr_t resource_data;
-        if( (*_movieData->resource_provider)(new_resource, &resource_data, _movieData->resource_ud) == AE_FALSE )
+        ae_voidptr_t resource_data = AE_NULL;
+        if( (*_movieData->providers.resource_provider)(new_resource, &resource_data, _movieData->provider_data) == AE_FALSE )
         {
             return AE_RESULT_INTERNAL_ERROR;
         }
@@ -1933,6 +2104,82 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
     }
 
     *_resource = new_resource;
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, aeMovieResource * _resource )
+{
+    const aeMovieInstance * instance = _movieData->instance;
+
+    aeMovieResourceTypeEnum resource_type = _resource->type;
+
+    switch( resource_type )
+    {
+    case AE_MOVIE_RESOURCE_IMAGE:
+        {
+            aeMovieResourceImage * resource_image = (aeMovieResourceImage *)_resource;
+            
+            struct aeMovieResourceImageCache * cache = AE_NEW( instance, struct aeMovieResourceImageCache );
+
+            ae_voidptr_t cu_sprite = AE_NULL;
+            AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_sprite, _resource, 4, resource_image->uvs) );
+
+            cache->uv_cache_data = cu_sprite;
+
+            if( resource_image->mesh != AE_NULL )
+            {
+                ae_voidptr_t cu_mesh = AE_NULL;
+                AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_mesh, _resource, resource_image->mesh->vertex_count, resource_image->mesh->uvs) );
+
+                cache->mesh_uv_cache_data = cu_mesh;
+            }
+            else
+            {
+                cache->mesh_uv_cache_data = AE_NULL;
+            }
+
+            for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            {                
+                ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
+                const ae_vector2_t * uvs = instance->bezier_warp_uv[quality];
+
+                ae_voidptr_t cu_bezier = AE_NULL;
+                AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_bezier, _resource, vertex_count, uvs) );
+
+                cache->bezier_warp_uv_cache_data[quality] = cu_bezier;
+            }
+
+            resource_image->cache = cache;            
+        }break;
+    case AE_MOVIE_RESOURCE_VIDEO:
+        {
+            aeMovieResourceVideo * resource_video = (aeMovieResourceVideo *)_resource;
+
+            struct aeMovieResourceVideoCache * cache = AE_NEW( instance, struct aeMovieResourceVideoCache );
+            
+            ae_voidptr_t cu_sprite = AE_NULL;
+            AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_sprite, _resource, 4, instance->sprite_uv) );
+
+            cache->uv_cache_data = cu_sprite;
+
+            for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            {
+                ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
+                const ae_vector2_t * uvs = instance->bezier_warp_uv[quality];
+
+                ae_voidptr_t cu_bezier = AE_NULL;
+                AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_bezier, _resource, vertex_count, uvs) );
+
+                cache->bezier_warp_uv_cache_data[quality] = cu_bezier;
+            }
+
+            resource_video->cache = cache;
+        }break;
+    default:
+        {
+        }break;
+    }
 
     return AE_RESULT_SUCCESSFUL;
 }
@@ -1985,7 +2232,12 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     for( ; it_resource != it_resource_end; ++it_resource )
     {
         aeMovieResource * new_resource;
-        __load_movie_resource( _movieData, _stream, atlases, resources, &new_resource );
+        AE_RESULT( __load_movie_resource, (_movieData, _stream, atlases, resources, &new_resource) );
+
+        if( _movieData->providers.cache_uv_provider != AE_NULL )
+        {
+            AE_RESULT( __cache_movie_resource_data, (_movieData, new_resource) );
+        }
 
         *it_resource = new_resource;
     }
@@ -2271,7 +2523,7 @@ ae_uint32_t ae_get_movie_composition_data_event_count( const aeMovieCompositionD
     return count;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_bool_t __ae_get_composition_data_event_name( const aeMovieCompositionData * _compositionData, ae_uint32_t * _iterator, ae_uint32_t _index, const ae_char_t ** _name )
+AE_INTERNAL ae_bool_t __get_composition_data_event_name( const aeMovieCompositionData * _compositionData, ae_uint32_t * _iterator, ae_uint32_t _index, const ae_char_t ** _name )
 {
     const aeMovieLayerData * it_layer = _compositionData->layers;
     const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
@@ -2290,7 +2542,7 @@ AE_INTERNAL ae_bool_t __ae_get_composition_data_event_name( const aeMovieComposi
         }
         else if( type == AE_MOVIE_LAYER_TYPE_MOVIE )
         {
-            if( __ae_get_composition_data_event_name( it_layer->sub_composition_data, _iterator, _index, _name ) == AE_TRUE )
+            if( __get_composition_data_event_name( it_layer->sub_composition_data, _iterator, _index, _name ) == AE_TRUE )
             {
                 return AE_TRUE;
             }
@@ -2304,7 +2556,7 @@ const ae_char_t * ae_get_movie_composition_data_event_name( const aeMovieComposi
 {
     ae_uint32_t iterator = 0U;
     const ae_char_t * name;
-    if( __ae_get_composition_data_event_name( _compositionData, &iterator, _index, &name ) == AE_FALSE )
+    if( __get_composition_data_event_name( _compositionData, &iterator, _index, &name ) == AE_FALSE )
     {
         return AE_NULL;
     }

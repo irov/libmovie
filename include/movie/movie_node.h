@@ -27,8 +27,8 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_MOVIE_NODE_H_
-#define MOVIE_MOVIE_NODE_H_
+#ifndef MOVIE_NODE_H_
+#define MOVIE_NODE_H_
 
 #include "movie_type.h"
 #include "movie_typedef.h"
@@ -92,6 +92,8 @@ typedef struct aeMovieRenderMesh
     @brief Texture coordinates.
     */
     const ae_vector2_t * uv;
+
+    ae_voidptr_t uv_cache_data;
 
     /**
     @brief Triangle indices.
@@ -244,8 +246,8 @@ typedef struct aeMovieNodeDeleterCallbackData
     ae_uint32_t index;
 
     ae_voidptr_t element;
-
     const aeMovieLayerData * layer;
+
     const aeMovieLayerData * track_matte_layer;
 } aeMovieNodeDeleterCallbackData;
 
@@ -254,8 +256,8 @@ typedef struct aeMovieNodeUpdateCallbackData
     ae_uint32_t index;
 
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
-
+    const aeMovieLayerData * layer;
+    
     ae_bool_t loop;
     aeMovieStateUpdateEnum state;
     ae_time_t offset;
@@ -278,7 +280,7 @@ typedef struct aeMovieTrackMatteProviderCallbackData
     ae_uint32_t index;
 
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
+    const aeMovieLayerData * layer;
 
     ae_bool_t loop;
     ae_time_t offset;
@@ -302,7 +304,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     ae_uint32_t index;
 
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
+    const aeMovieLayerData * layer;
 
     ae_bool_t loop;
     aeMovieStateUpdateEnum state;
@@ -327,7 +329,7 @@ typedef struct aeMovieTrackMatteDeleterCallbackData
     ae_uint32_t index;
 
     ae_voidptr_t element;
-    aeMovieLayerTypeEnum type;
+    const aeMovieLayerData * layer;
 
     ae_voidptr_t track_matte_data;
 
@@ -453,53 +455,53 @@ typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
 
 } aeMovieCompositionSceneEffectUpdateCallbackData;
 
-typedef ae_bool_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_composition_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_bool_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_composition_callback_camera_provider_t )(const aeMovieCameraProviderCallbackData * _callbackData, ae_voidptrptr_t _cd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_bool_t( *ae_movie_callback_track_matte_provider_t )(const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptrptr_t _tmd, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_track_matte_deleter_t )(const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_composition_callback_track_matte_provider_t )(const aeMovieTrackMatteProviderCallbackData * _callbackData, ae_voidptrptr_t _tmd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_track_matte_deleter_t )(const aeMovieTrackMatteDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_track_matte_update_t )(const aeMovieTrackMatteUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_bool_t( *ae_movie_callback_shader_provider_t )(const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptrptr_t _sd, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_shader_deleter_t )(const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_shader_property_update_t )(const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_composition_callback_shader_provider_t )(const aeMovieShaderProviderCallbackData * _callbackData, ae_voidptrptr_t _sd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_shader_deleter_t )(const aeMovieShaderDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_shader_property_update_t )(const aeMovieShaderPropertyUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_void_t( *ae_movie_callback_composition_event_t )(const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_composition_event_t )(const aeMovieCompositionEventCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_composition_state_t )(const aeMovieCompositionStateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_bool_t( *ae_movie_callback_scene_effect_provider_t )(const aeMovieCompositionSceneEffectProviderCallbackData * _callbackData, ae_voidptrptr_t _sed, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_scene_effect_deleter_t )(const aeMovieCompositionSceneEffectDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
-typedef ae_void_t( *ae_movie_callback_scene_effect_update_t )(const aeMovieCompositionSceneEffectUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_composition_callback_scene_effect_provider_t )(const aeMovieCompositionSceneEffectProviderCallbackData * _callbackData, ae_voidptrptr_t _sed, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_scene_effect_deleter_t )(const aeMovieCompositionSceneEffectDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_scene_effect_update_t )(const aeMovieCompositionSceneEffectUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
 typedef struct aeMovieCompositionProviders
 {
-    ae_movie_callback_node_provider_t node_provider;
-    ae_movie_callback_node_deleter_t node_deleter;
-    ae_movie_callback_node_update_t node_update;
+    ae_movie_composition_callback_node_provider_t node_provider;
+    ae_movie_composition_callback_node_deleter_t node_deleter;
+    ae_movie_composition_callback_node_update_t node_update;
 
-    ae_movie_callback_camera_provider_t camera_provider;
-    ae_movie_callback_camera_deleter_t camera_deleter;
-    ae_movie_callback_camera_update_t camera_update;
+    ae_movie_composition_callback_camera_provider_t camera_provider;
+    ae_movie_composition_callback_camera_deleter_t camera_deleter;
+    ae_movie_composition_callback_camera_update_t camera_update;
 
-    ae_movie_callback_track_matte_provider_t track_matte_provider;
-    ae_movie_callback_track_matte_update_t track_matte_update;
-    ae_movie_callback_track_matte_deleter_t track_matte_deleter;
+    ae_movie_composition_callback_track_matte_provider_t track_matte_provider;
+    ae_movie_composition_callback_track_matte_update_t track_matte_update;
+    ae_movie_composition_callback_track_matte_deleter_t track_matte_deleter;
 
-    ae_movie_callback_shader_provider_t shader_provider;
-    ae_movie_callback_shader_deleter_t shader_deleter;
-    ae_movie_callback_shader_property_update_t shader_property_update;
+    ae_movie_composition_callback_shader_provider_t shader_provider;
+    ae_movie_composition_callback_shader_deleter_t shader_deleter;
+    ae_movie_composition_callback_shader_property_update_t shader_property_update;
     
-    ae_movie_callback_composition_event_t composition_event;
-    ae_movie_callback_composition_state_t composition_state;
+    ae_movie_composition_callback_composition_event_t composition_event;
+    ae_movie_composition_callback_composition_state_t composition_state;
 
-    ae_movie_callback_scene_effect_provider_t scene_effect_provider;
-    ae_movie_callback_scene_effect_deleter_t scene_effect_deleter;
-    ae_movie_callback_scene_effect_update_t scene_effect_update;
+    ae_movie_composition_callback_scene_effect_provider_t scene_effect_provider;
+    ae_movie_composition_callback_scene_effect_deleter_t scene_effect_deleter;
+    ae_movie_composition_callback_scene_effect_update_t scene_effect_update;
 
 } aeMovieCompositionProviders;
 
@@ -514,7 +516,7 @@ ae_void_t ae_clear_movie_composition_providers( aeMovieCompositionProviders * _p
 @param [in] _data Link to the object that will hold the data providers give.
 @return A composition or AE_NULL if failed.
 */
-aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * providers, ae_voidptr_t _data );
+const aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * _providers, ae_voidptr_t _data );
 
 /**
 @brief Release a composition from memory.
@@ -671,7 +673,7 @@ ae_void_t ae_get_movie_composition_in_out_loop( const aeMovieComposition * _comp
 @param [in] _composition Composition.
 @param [in] _timing Time offset since the last update in milliseconds.
 */
-ae_void_t ae_update_movie_composition( aeMovieComposition * _composition, ae_time_t _timing );
+ae_void_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing );
 
 // compositions
 /// @}

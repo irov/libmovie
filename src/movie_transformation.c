@@ -130,7 +130,7 @@ AE_INTERNAL ae_float_t __get_movie_layer_transformation_property( ae_constvoidpt
         }break;
     }
 
-    __ae_break_point();
+    __movie_break_point();
 
     return 0.f;
 }
@@ -202,7 +202,7 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_
     ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
-#define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
+#define AE_STREAM_PROPERTY(Mask, Name)\
 	if( _mask & Mask )\
 	{\
 		AE_READ( _stream, _transformation->immutable.Name );\
@@ -217,21 +217,21 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __load_movie_layer_transformation2d( aeMovieStream * _stream, ae_uint32_t _mask, aeMovieLayerTransformation2D * _transformation )
 {
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
 
     if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
     {
@@ -253,26 +253,26 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation2d( aeMovieStream * _st
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __load_movie_layer_transformation3d( aeMovieStream * _stream, ae_uint32_t _mask, aeMovieLayerTransformation3D * _transformation )
 {
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, anchor_point_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, anchor_point_z );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, scale_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, scale_z );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
 
     if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
     {
@@ -291,8 +291,6 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation3d( aeMovieStream * _st
 
     return AE_RESULT_SUCCESSFUL;
 }
-//////////////////////////////////////////////////////////////////////////
-#undef AE_MOVIE_STREAM_PROPERTY
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation_interpolate_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
 {
@@ -1091,32 +1089,20 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-#define AE_MOVIE_STREAM_PROPERTY(Mask, Name)\
-	if( _mask & Mask )\
-	{\
-		AE_READ( _stream, _transformation->immutable.Name );\
-		if( _transformation->timeline != AE_NULL ) {_transformation->timeline->Name = AE_NULL;}\
-	}\
-	else\
-	{\
-		_transformation->immutable.Name = 0.f;\
-		_transformation->timeline->Name = __load_movie_layer_transformation_timeline(_stream, #Name);\
-	}
-//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __load_camera_transformation_property( aeMovieStream * _stream, ae_uint32_t _mask, aeMovieCompositionCamera * _transformation )
 {
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_X, target_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Y, target_y );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Z, target_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_X, target_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Y, target_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Z, target_z );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z );
 
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
-    AE_MOVIE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
 
     return AE_RESULT_SUCCESSFUL;
 }
