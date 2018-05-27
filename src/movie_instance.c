@@ -92,7 +92,7 @@ AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance 
             }
         }
 
-        _instance->bezier_warp_uv[i] = bezier_warp_uv;
+        _instance->bezier_warp_uv[i] = (const ae_vector2_t *)bezier_warp_uv;
 
         ae_uint16_t index_count = (line_count - 1) * (line_count - 1) * 6;
         ae_uint16_t * bezier_warp_indices = _instance->memory_alloc_n( _instance->instance_data, sizeof( ae_uint16_t ), index_count );
@@ -114,7 +114,7 @@ AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance 
             }
         }
         
-        _instance->bezier_warp_indices[i] = bezier_warp_indices;
+        _instance->bezier_warp_indices[i] = (const ae_uint16_t *)bezier_warp_indices;
     }
 }
 //////////////////////////////////////////////////////////////////////////
