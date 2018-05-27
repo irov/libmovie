@@ -286,14 +286,17 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 ae_uint32_t frame_count = layer->frame_count;
 
-                for( ae_uint32_t index = 0; index != frame_count; ++index )
+                if( layer->cache->mesh_uv_cache_data != AE_NULL )
                 {
-                    ae_voidptr_t uv_cache_data = layer->cache->mesh_uv_cache_data[index];
+                    for( ae_uint32_t index = 0; index != frame_count; ++index )
+                    {
+                        ae_voidptr_t uv_cache_data = layer->cache->mesh_uv_cache_data[index];
 
-                    __callback_cache_uv_deleter( _movieData, uv_cache_data );
+                        __callback_cache_uv_deleter( _movieData, uv_cache_data );
+                    }
+
+                    AE_DELETEN( instance, layer->cache->mesh_uv_cache_data );
                 }
-
-                AE_DELETEN( instance, layer->cache->mesh_uv_cache_data );
 
                 AE_DELETE( instance, layer->cache );
             }
