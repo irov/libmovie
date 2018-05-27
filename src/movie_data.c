@@ -150,7 +150,8 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
             {
                 __callback_cache_uv_deleter( _movieData, resource->cache->uv_cache_data );
 
-                for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+                ae_uint32_t quality = 0;
+                for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
                 {
                     ae_voidptr_t uv_cache_data = resource->cache->bezier_warp_uv_cache_data[quality];
 
@@ -191,7 +192,8 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
                 __callback_cache_uv_deleter( _movieData, resource_image->cache->uv_cache_data );
                 __callback_cache_uv_deleter( _movieData, resource_image->cache->mesh_uv_cache_data );
 
-                for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+                ae_uint32_t quality = 0;
+                for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
                 {
                     ae_voidptr_t uv_cache_data = resource_image->cache->bezier_warp_uv_cache_data[quality];
 
@@ -288,7 +290,8 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 if( layer->cache->mesh_uv_cache_data != AE_NULL )
                 {
-                    for( ae_uint32_t index = 0; index != frame_count; ++index )
+                    ae_uint32_t index = 0;
+                    for( ; index != frame_count; ++index )
                     {
                         ae_voidptr_t uv_cache_data = layer->cache->mesh_uv_cache_data[index];
 
@@ -1372,7 +1375,8 @@ AE_INTERNAL ae_result_t __setup_movie_data_layer_cache( const aeMovieData * _mov
 
                     ae_voidptr_t * mesh_uv_cache_data = AE_NEWN( instance, ae_voidptr_t, layer_frame_count );
 
-                    for( ae_uint32_t index = 0; index != layer_frame_count; ++index )
+                    ae_uint32_t index = 0;
+                    for( ; index != layer_frame_count; ++index )
                     {
                         const ae_mesh_t * mesh = _layer->extensions->mesh->meshes + index;
 
@@ -2142,7 +2146,8 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
                 cache->mesh_uv_cache_data = AE_NULL;
             }
 
-            for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            ae_uint32_t quality = 0;
+            for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
             {                
                 ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
                 const ae_vector2_t * uvs = instance->bezier_warp_uv[quality];
@@ -2166,7 +2171,8 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
 
             cache->uv_cache_data = cu_sprite;
 
-            for( ae_uint32_t quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            ae_uint32_t quality = 0;
+            for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
             {
                 ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
                 const ae_vector2_t * uvs = instance->bezier_warp_uv[quality];
