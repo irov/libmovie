@@ -391,6 +391,11 @@ ae_void_t ae_movie_make_transformation2d_m4( ae_matrix4_t _out, const ae_vector2
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
 }
+#ifdef LIBMOVIE_EXTERNAL_INVERSE_SQRTF
+extern ae_float_t libmovie_external_inverse_sqrtf( ae_float_t );
+
+#define __inverse_sqrtf libmovie_external_inverse_sqrtf
+#else
 //////////////////////////////////////////////////////////////////////////
 union __inverse_sqrtf_alias_cast_t
 {
@@ -405,7 +410,7 @@ AE_INTERNAL ae_float_t __inverse_sqrtf( ae_float_t _number )
     union __inverse_sqrtf_alias_cast_t i_cast;
     i_cast.raw = _number;
     ae_uint32_t i = i_cast.data;
-    
+
     i = 0x5F3759DF - (i >> 1);
 
     union __inverse_sqrtf_alias_cast_t f_cast;
@@ -418,6 +423,7 @@ AE_INTERNAL ae_float_t __inverse_sqrtf( ae_float_t _number )
 
     return y;
 }
+#endif
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_float_t __dot_q( const ae_quaternion_t _q1, const ae_quaternion_t _q2 )
 {
