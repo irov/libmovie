@@ -125,8 +125,8 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
             ae_bezier_t bu;
             __bezier_setup( &bu, du );
 
-            const ae_float_t x = __bezier_warp_x( _bezierWarp, &bu, &bv );
-            const ae_float_t y = __bezier_warp_y( _bezierWarp, &bu, &bv );
+            ae_float_t x = __bezier_warp_x( _bezierWarp, &bu, &bv );
+            ae_float_t y = __bezier_warp_y( _bezierWarp, &bu, &bv );
 
             ae_vector2_t position;
             position[0] = x;
