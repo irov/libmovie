@@ -1528,7 +1528,10 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
 
     AE_RESULT( __setup_movie_data_composition_layers, (_compositionData, layers) );
 
-    AE_RESULT( __setup_movie_data_composition_cache, (_movieData, _compositionData, layers) );
+    if( _movieData->providers.cache_uv_provider != AE_NULL )
+    {
+        AE_RESULT( __setup_movie_data_composition_cache, (_movieData, _compositionData, layers) );
+    }
 
     _compositionData->layers = layers;
 
