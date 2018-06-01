@@ -877,7 +877,7 @@ static ae_bool_t __movie_data_resource_provider( const aeMovieResource * _resour
                 em_resource_image_t * image_atlas = (em_resource_image_t *)r->atlas_image->data;
 
                 resource_image->texture_id = image_atlas->texture_id;
-                resource_image->is_premultiplied = r->is_premultiplied;
+                resource_image->is_premultiplied = image_atlas->is_premultiplied;
             }
 
             *_rp = resource_image;

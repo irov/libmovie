@@ -4095,6 +4095,8 @@ const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposi
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_visit_movie_sub_composition( const aeMovieComposition * _composition, ae_movie_sub_composition_visitor_t _visitor, ae_voidptr_t _ud )
 {
+    ae_uint32_t subcomposition_iterator = 0U;
+
     const aeMovieSubComposition *it_subcomposition = _composition->subcompositions;
     const aeMovieSubComposition *it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
     for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
@@ -4103,10 +4105,12 @@ ae_bool_t ae_visit_movie_sub_composition( const aeMovieComposition * _compositio
 
         const aeMovieLayerData * layer = subcomposition->layer;
         
-        if( (*_visitor)(_composition, layer->name, subcomposition, _ud) == AE_FALSE )
+        if( (*_visitor)(_composition, subcomposition_iterator, layer->name, subcomposition, _ud) == AE_FALSE )
         {
             return AE_FALSE;
         }
+
+        ++subcomposition_iterator;
     }
 
     return AE_TRUE;
