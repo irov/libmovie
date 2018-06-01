@@ -882,7 +882,7 @@ ae_bool_t ae_has_movie_sub_composition( const aeMovieComposition * _composition,
 const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name );
 
 
-typedef ae_bool_t( *ae_movie_sub_composition_visitor_t )(const aeMovieComposition * _compositionData, const ae_char_t * _name, const aeMovieSubComposition * _subcomposition, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_sub_composition_visitor_t )(const aeMovieComposition * _compositionData, ae_uint32_t _index, const ae_char_t * _name, const aeMovieSubComposition * _subcomposition, ae_voidptr_t _ud);
 
 ae_bool_t ae_visit_movie_sub_composition( const aeMovieComposition * _composition, ae_movie_sub_composition_visitor_t _visitor, ae_voidptr_t _ud );
 
