@@ -212,8 +212,8 @@ ae_bool_t ex_callback_camera_provider( const aeMovieCameraProviderCallbackData *
 	return AE_TRUE;
 }
 
-ae_bool_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _data ) {
-    AE_UNUSED( _nd );
+ae_bool_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, aeMovieNodeProviderOutData * _outData, ae_voidptr_t _data ) {
+    AE_UNUSED( _outData );
     AE_UNUSED( _data );
 
 	EX_LOG( "Node provider callback.\n" );

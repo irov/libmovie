@@ -166,6 +166,7 @@ struct aeMovieNode
     ae_uint32_t animate;
 
     ae_uint32_t update_revision;
+    ae_matrix4_t * offset_matrix;
     ae_matrix4_t matrix;
 
     ae_color_t composition_color;

@@ -772,11 +772,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
 
         if( _interpolate == AE_TRUE )
         {
-            ae_movie_make_layer_transformation_interpolate( _node->matrix, layer->transformation, _frameId, _t );
+            ae_movie_make_layer_transformation_interpolate( _node->matrix, _node->offset_matrix, layer->transformation, _frameId, _t );
         }
         else
         {
-            ae_movie_make_layer_transformation_fixed( _node->matrix, layer->transformation, _frameId );
+            ae_movie_make_layer_transformation_fixed( _node->matrix, _node->offset_matrix, layer->transformation, _frameId );
         }
 
         if( layer->sub_composition_data != AE_NULL )
@@ -823,11 +823,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( const aeMovieCompo
 
     if( _interpolate == AE_TRUE )
     {
-        ae_movie_make_layer_transformation_interpolate( local_matrix, layer->transformation, _frameId, _t );
+        ae_movie_make_layer_transformation_interpolate( local_matrix, _node->offset_matrix, layer->transformation, _frameId, _t );
     }
     else
     {
-        ae_movie_make_layer_transformation_fixed( local_matrix, layer->transformation, _frameId );
+        ae_movie_make_layer_transformation_fixed( local_matrix, _node->offset_matrix, layer->transformation, _frameId );
     }
 
     ae_mul_m4_m4_r( _node->matrix, local_matrix, node_relative->matrix );
@@ -1701,13 +1701,29 @@ AE_INTERNAL ae_bool_t __setup_movie_composition_element( aeMovieComposition * _c
         callbackData.opacity = node->opacity;
         callbackData.track_matte_layer = track_matte_layer;
 
-        ae_voidptr_t element_data;        
-        if( (*_composition->providers.node_provider)(&callbackData, &element_data, _composition->provider_data) == AE_FALSE )
+        aeMovieNodeProviderOutData out_data;
+        out_data.element_data = AE_NULL;
+        out_data.use_offset_matrix = AE_FALSE;
+
+        if( (*_composition->providers.node_provider)(&callbackData, &out_data, _composition->provider_data) == AE_FALSE )
         {
             return AE_FALSE;
         }
 
-        node->element_data = element_data;
+        node->element_data = out_data.element_data;
+        
+        if( out_data.use_offset_matrix == AE_TRUE )
+        {
+            ae_matrix4_t * offset_matrix = AE_NEW( _composition->movie_data->instance, ae_matrix4_t );
+
+            ae_copy_m4( *offset_matrix, out_data.offset_matrix );
+
+            node->offset_matrix = offset_matrix;
+        }
+        else
+        {
+            node->offset_matrix = AE_NULL;
+        }
     }
 
     return AE_TRUE;
@@ -1756,10 +1772,10 @@ AE_CALLBACK ae_void_t __dummy_ae_movie_camera_update( const aeMovieCameraUpdateC
 
 }
 //////////////////////////////////////////////////////////////////////////
-AE_CALLBACK ae_bool_t __dummy_ae_movie_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _data )
+AE_CALLBACK ae_bool_t __dummy_ae_movie_node_provider( const aeMovieNodeProviderCallbackData * _callbackData, aeMovieNodeProviderOutData * _outData, ae_voidptr_t _data )
 {
     AE_UNUSED( _callbackData );
-    AE_UNUSED( _nd );
+    AE_UNUSED( _outData );
     AE_UNUSED( _data );
 
     return AE_TRUE;
@@ -2039,6 +2055,18 @@ ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
     }
 
     AE_DELETEN( instance, _composition->subcompositions );
+
+    aeMovieNode *it_node = _composition->nodes;
+    aeMovieNode *it_node_end = _composition->nodes + _composition->node_count;
+    for( ; it_node != it_node_end; ++it_node )
+    {
+        aeMovieNode * node = it_node;
+
+        if( node->offset_matrix != AE_NULL )
+        {
+            AE_DELETE( instance, node->offset_matrix );
+        }
+    }
 
     AE_DELETEN( instance, _composition->nodes );
 

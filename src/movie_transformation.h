@@ -142,8 +142,8 @@ typedef struct aeMovieLayerTransformation3DTimeline
 
 struct aeMovieLayerTransformation;
 
-typedef void( *ae_movie_make_layer_transformation_intepolate_t )(ae_matrix4_t _out, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t);
-typedef void( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix4_t _out, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index);
+typedef void( *ae_movie_make_layer_transformation_intepolate_t )(ae_matrix4_t _out, const ae_matrix4_t * _offset, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t);
+typedef void( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix4_t _out, const ae_matrix4_t * _offset, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index);
 
 #define AE_MOVIE_LAYER_TRANSFORMATION_BASE()\
     ae_uint32_t immutable_property_mask;\
@@ -181,8 +181,8 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovieCompositionCamera * _camera );
 void ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
 ae_color_channel_t ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
-void ae_movie_make_layer_transformation_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t );
-void ae_movie_make_layer_transformation_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index );
+void ae_movie_make_layer_transformation_interpolate( ae_matrix4_t _out, const ae_matrix4_t * _offset, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t );
+void ae_movie_make_layer_transformation_fixed( ae_matrix4_t _out, const ae_matrix4_t * _offset, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index );
 void ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 
 #endif

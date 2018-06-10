@@ -235,6 +235,15 @@ typedef struct aeMovieNodeProviderCallbackData
     const aeMovieLayerData * track_matte_layer;
 } aeMovieNodeProviderCallbackData;
 
+typedef struct aeMovieNodeProviderOutData
+{
+    ae_voidptr_t element_data;
+
+    ae_bool_t use_offset_matrix;
+    ae_matrix4_t offset_matrix;
+
+} aeMovieNodeProviderOutData;
+
 typedef struct aeMovieNodeDeleterCallbackData
 {
     ae_voidptr_t element;
@@ -279,7 +288,7 @@ typedef struct aeMovieTrackMatteProviderCallbackData
     /// @brief Value from 0.0 to 1.0.
     ae_color_channel_t opacity;
 
-    aeMovieRenderMesh * mesh;
+    const aeMovieRenderMesh * mesh;
 
     ae_track_matte_mode_t track_matte_mode;
 } aeMovieTrackMatteProviderCallbackData;
@@ -397,7 +406,7 @@ typedef ae_bool_t( *ae_movie_callback_camera_provider_t )(const aeMovieCameraPro
 typedef ae_void_t( *ae_movie_callback_camera_deleter_t )(const aeMovieCameraDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_callback_camera_update_t )(const aeMovieCameraUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
-typedef ae_bool_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud);
+typedef ae_bool_t( *ae_movie_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, aeMovieNodeProviderOutData * _outData, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
 
@@ -790,7 +799,6 @@ ae_bool_t ae_set_movie_composition_node_enable_any( const aeMovieComposition * _
 @return TRUE if the node is found.
 */
 ae_bool_t ae_get_movie_composition_node_enable_any( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_bool_t * _enable );
-
 
 // compositions
 /// @}

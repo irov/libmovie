@@ -1111,9 +1111,9 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
         AE_RESULT_PANIC_MEMORY( transformation );
     }
-
+    
     AE_RESULT( ae_movie_load_layer_transformation, (_stream, transformation, _layer->threeD) );
-
+        
     _layer->transformation = transformation;
 
     if( _layer->is_track_matte == AE_TRUE )
