@@ -1718,7 +1718,7 @@ AE_INTERNAL ae_bool_t __setup_movie_composition_element( aeMovieComposition * _c
 
             ae_copy_m4( *offset_matrix, out_data.offset_matrix );
 
-            node->offset_matrix = offset_matrix;
+            node->offset_matrix = (const ae_matrix4_t *)offset_matrix;
         }
         else
         {
