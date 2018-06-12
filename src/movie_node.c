@@ -3238,7 +3238,7 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing )
+ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing )
 {
     ae_time_t timescale_timing = AE_TIME_INSCALE( _timing );
 
@@ -3296,6 +3296,8 @@ ae_void_t ae_update_movie_composition( const aeMovieComposition * _composition, 
             (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
         }
     }
+
+    return composition_end;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, aeMovieCompositionAnimation * _animation, ae_float_t _time, const aeMovieSubComposition * _subcomposition )

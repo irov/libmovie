@@ -673,7 +673,7 @@ ae_void_t ae_get_movie_composition_in_out_loop( const aeMovieComposition * _comp
 @param [in] _composition Composition.
 @param [in] _timing Time offset since the last update in milliseconds.
 */
-ae_void_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing );
+ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing );
 
 // compositions
 /// @}
