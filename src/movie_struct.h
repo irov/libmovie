@@ -178,7 +178,7 @@ struct aeMovieNode
     ae_matrix4_t matrix;
 
     ae_color_t composition_color;
-    ae_float_t composition_opactity;
+    ae_float_t composition_opacity;
        
     ae_color_t color;
     ae_color_channel_t opacity;
@@ -191,7 +191,6 @@ struct aeMovieNode
     ae_voidptr_t element_data;
     ae_voidptr_t shader_data;
     ae_voidptr_t track_matte_data;
-    ae_voidptr_t cache_uv_data;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieComposition

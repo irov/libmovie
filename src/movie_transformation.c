@@ -1198,14 +1198,16 @@ ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instanc
     }
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_layer_matrix_interpolate( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+ae_void_t ae_movie_make_layer_matrix( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_bool_t _interpolate, ae_uint32_t _index, ae_float_t _t )
 {
-    (*_transformation->transforamtion_interpolate_matrix)(_out, _transformation, _index, _t);    
-}
-//////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_layer_matrix_fixed( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
-{
-    (*_transformation->transforamtion_fixed_matrix)(_out, _transformation, _index);
+    if( _interpolate == AE_TRUE )
+    {
+        (*_transformation->transforamtion_interpolate_matrix)(_out, _transformation, _index, _t);
+    }
+    else
+    {
+        (*_transformation->transforamtion_fixed_matrix)(_out, _transformation, _index);
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t )
