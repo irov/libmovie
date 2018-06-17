@@ -8,6 +8,7 @@ set(CMAKE_C_FLAGS  "-s EXPORT_NAME=\"'AEMovie'\" -s MODULARIZE=1 \
 --memory-init-file 0 \
 --emit-symbol-map \
 --post-js ../src/em_libmovie_post.js \
+-s WASM=0 \
 -s TOTAL_MEMORY=33554432 \
 -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['memcpy','memset','malloc','free','strlen']\" \
 ")
