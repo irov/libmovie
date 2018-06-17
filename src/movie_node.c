@@ -250,6 +250,8 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
+
+                _render->uv = instance->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
             }
             else
             {
@@ -302,6 +304,8 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
+
+                _render->uv = resource_image->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
 
                 if( resource_image->cache != AE_NULL )
                 {
@@ -360,6 +364,8 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
 
+                _render->uv = instance->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
+
                 if( resource_video->cache != AE_NULL )
                 {
                     _render->uv_cache_data = resource_video->cache->bezier_warp_uv_cache_data[layer->extensions->bezier_warp->quality];
@@ -404,6 +410,8 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
+
+                _render->uv = resource_image->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
 
                 if( resource_image->cache != AE_NULL )
                 {

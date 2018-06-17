@@ -94,6 +94,7 @@ typedef struct aeMovieResourceImage
     ae_float_t offset_y;
 
     const ae_vector2_t * uvs;
+    const ae_vector2_t * bezier_warp_uvs[AE_MOVIE_BEZIER_MAX_QUALITY];
     const ae_mesh_t * mesh;
 
     const struct aeMovieResourceImage * atlas_image;

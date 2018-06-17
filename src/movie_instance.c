@@ -30,6 +30,7 @@
 #include "movie/movie_instance.h"
 
 #include "movie_struct.h"
+#include "movie_memory.h"
 
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_int32_t __movie_strncmp( ae_voidptr_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count )
@@ -68,15 +69,15 @@ AE_CALLBACK ae_void_t __movie_logerror( ae_voidptr_t _data, aeMovieErrorCode _co
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance )
 {
-    ae_uint16_t i;
-    for( i = 0; i != AE_MOVIE_BEZIER_MAX_QUALITY; ++i )
+    ae_uint32_t quality = 0;
+    for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
     {
-        ae_uint16_t line_count = AE_MOVIE_BEZIER_WARP_BASE_GRID + i * 2;
+        ae_uint32_t line_count = get_bezier_warp_line_count( quality );
+        ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
 
-        ae_uint32_t vertex_count = line_count * line_count;        
-        ae_vector2_t * bezier_warp_uv = _instance->memory_alloc_n( _instance->instance_data, sizeof( ae_vector2_t ), vertex_count );
+        ae_vector2_t * bezier_warp_uvs = AE_NEWN( _instance, ae_vector2_t, vertex_count );
                 
-        ae_vector2_t * bezier_warp_uv_iterator = bezier_warp_uv;
+        ae_vector2_t * bezier_warp_uvs_iterator = bezier_warp_uvs;
         
         ae_float_t grid_invf = 1.f / (ae_float_t)(line_count - 1);
 
@@ -86,35 +87,38 @@ AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance 
             ae_uint32_t u = 0;
             for( ; u != line_count; ++u )
             {
-                ae_vector2_t * uv = bezier_warp_uv_iterator++;
+                ae_vector2_t * uv = bezier_warp_uvs_iterator++;
                 (*uv)[0] = (ae_float_t)u * grid_invf;
                 (*uv)[1] = (ae_float_t)v * grid_invf;
             }
         }
 
-        _instance->bezier_warp_uv[i] = (const ae_vector2_t *)bezier_warp_uv;
+        _instance->bezier_warp_uvs[quality] = (const ae_vector2_t *)bezier_warp_uvs;
 
-        ae_uint16_t index_count = (line_count - 1) * (line_count - 1) * 6;
-        ae_uint16_t * bezier_warp_indices = _instance->memory_alloc_n( _instance->instance_data, sizeof( ae_uint16_t ), index_count );
+        ae_uint32_t index_count = (line_count - 1) * (line_count - 1) * 6;
+        ae_uint16_t * bezier_warp_indices = AE_NEWN( _instance, ae_uint16_t, index_count );
 
         ae_uint16_t * bezier_warp_indices_iterator = bezier_warp_indices;
 
+        ae_uint16_t uv_count = (ae_uint16_t)line_count;
+        ae_uint16_t uv_count_one = uv_count - 1;        
+
         ae_uint16_t v2 = 0;
-        for( ; v2 != line_count - 1; ++v2 )
+        for( ; v2 != uv_count_one; ++v2 )
         {
             ae_uint16_t u2 = 0;
-            for( ; u2 != line_count - 1; ++u2 )
+            for( ; u2 != uv_count_one; ++u2 )
             {
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * line_count + 0U;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * line_count + 0U;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * line_count + 1U;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * line_count + 1U;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * line_count + 0U;
-                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * line_count + 1U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * uv_count + 0U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * uv_count + 0U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * uv_count + 1U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 0U) * uv_count + 1U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * uv_count + 0U;
+                *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * uv_count + 1U;
             }
         }
         
-        _instance->bezier_warp_indices[i] = (const ae_uint16_t *)bezier_warp_indices;
+        _instance->bezier_warp_indices[quality] = (const ae_uint16_t *)bezier_warp_indices;
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -206,7 +210,7 @@ ae_void_t ae_delete_movie_instance( const aeMovieInstance * _instance )
     ae_uint32_t i;
     for( i = 0; i != AE_MOVIE_BEZIER_MAX_QUALITY; ++i )
     {
-        const ae_vector2_t * bezier_warp_uv = _instance->bezier_warp_uv[i];
+        const ae_vector2_t * bezier_warp_uv = _instance->bezier_warp_uvs[i];
         (*_instance->memory_free_n)(_instance->instance_data, bezier_warp_uv);
 
         const ae_uint16_t * bezier_warp_indices = _instance->bezier_warp_indices[i];

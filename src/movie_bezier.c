@@ -141,7 +141,6 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
         dv += grid_invf;
     }
 
-    _render->uv = _instance->bezier_warp_uv[_quality];
     _render->indices = _instance->bezier_warp_indices[_quality];
 }
 //////////////////////////////////////////////////////////////////////////

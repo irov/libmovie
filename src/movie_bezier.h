@@ -31,11 +31,8 @@
 #define MOVIE_BEZIER_H_
 
 #include "movie/movie_type.h"
+#include "movie/movie_config.h"
 #include "movie/movie_node.h"
-
-//////////////////////////////////////////////////////////////////////////
-#define AE_MOVIE_BEZIER_MAX_QUALITY (10U)
-#define AE_MOVIE_BEZIER_WARP_BASE_GRID (7U)
 
 typedef struct ae_bezier_t
 {

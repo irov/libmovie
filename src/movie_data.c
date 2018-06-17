@@ -179,6 +179,17 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
             {
                 AE_DELETEN( instance, resource_image->uvs );
             }
+            
+            ae_uint32_t index_bezier_warp_uv = 0;
+            for( ; index_bezier_warp_uv != AE_MOVIE_BEZIER_MAX_QUALITY; ++index_bezier_warp_uv )
+            {
+                const ae_vector2_t * uvs = resource_image->bezier_warp_uvs[index_bezier_warp_uv];
+
+                if( uvs != instance->bezier_warp_uvs[index_bezier_warp_uv] )
+                {
+                    AE_DELETEN( instance, uvs );
+                }
+            }
 
             if( resource_image->mesh != AE_NULL )
             {
@@ -1890,6 +1901,15 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
             resource->offset_x = 0.f;
             resource->offset_y = 0.f;
             resource->uvs = instance->sprite_uv;
+
+            ae_uint32_t quality_default_bezier_warp = 0;
+            for( ; quality_default_bezier_warp != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality_default_bezier_warp )
+            {
+                const ae_vector2_t * uvs = instance->bezier_warp_uvs[quality_default_bezier_warp];
+
+                resource->bezier_warp_uvs[quality_default_bezier_warp] = uvs;
+            }
+
             resource->mesh = AE_NULL;
             resource->cache = AE_NULL;
 
@@ -1922,6 +1942,31 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
                         AE_READF2( _stream, uv[3] );
 
                         resource->uvs = (const ae_vector2_t *)uv;
+
+                        ae_float_t u_base = resource->uvs[0][0];
+                        ae_float_t v_base = resource->uvs[0][1];
+
+                        ae_float_t u_width = resource->uvs[1][0] - u_base;
+                        ae_float_t v_width = resource->uvs[3][1] - v_base;
+
+                        ae_uint16_t quality_bezier_warp = 0U;
+                        for( ; quality_bezier_warp != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality_bezier_warp )
+                        {
+                            ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality_bezier_warp );
+
+                            ae_vector2_t * bezier_warp_uvs = AE_NEWN( instance, ae_vector2_t, vertex_count );
+
+                            const ae_vector2_t * uvs = instance->bezier_warp_uvs[quality_bezier_warp];
+
+                            ae_uint32_t index_vertex = 0U;
+                            for( ; index_vertex != vertex_count; ++index_vertex )
+                            {
+                                bezier_warp_uvs[index_vertex][0] = u_base + uvs[index_vertex][0] * u_width;
+                                bezier_warp_uvs[index_vertex][1] = v_base + uvs[index_vertex][1] * v_width;
+                            }
+
+                            resource->bezier_warp_uvs[quality_bezier_warp] = (const ae_vector2_t *)bezier_warp_uvs;
+                        }
                     }break;
                 case 3:
                     {
@@ -2153,7 +2198,7 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
             for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
             {                
                 ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
-                const ae_vector2_t * uvs = instance->bezier_warp_uv[quality];
+                const ae_vector2_t * uvs = instance->bezier_warp_uvs[quality];
 
                 ae_voidptr_t cu_bezier = AE_NULL;
                 AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_bezier, _resource, vertex_count, uvs) );
@@ -2178,7 +2223,7 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
             for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
             {
                 ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
-                const ae_vector2_t * uvs = instance->bezier_warp_uv[quality];
+                const ae_vector2_t * uvs = instance->bezier_warp_uvs[quality];
 
                 ae_voidptr_t cu_bezier = AE_NULL;
                 AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_bezier, _resource, vertex_count, uvs) );

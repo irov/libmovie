@@ -31,7 +31,6 @@
 #define MOVIE_STRUCT_H_
 
 #include "movie/movie_type.h"
-#include "movie/movie_instance.h"
 #include "movie/movie_node.h"
 
 #include "movie_bezier.h"
@@ -104,7 +103,7 @@ struct aeMovieInstance
     ae_vector2_t sprite_uv[4];
     ae_uint16_t sprite_indices[6];
 
-    const ae_vector2_t * bezier_warp_uv[AE_MOVIE_BEZIER_MAX_QUALITY];
+    const ae_vector2_t * bezier_warp_uvs[AE_MOVIE_BEZIER_MAX_QUALITY];
     const ae_uint16_t * bezier_warp_indices[AE_MOVIE_BEZIER_MAX_QUALITY];
 
     aeMovieLayerExtensions layer_extensions_default;
