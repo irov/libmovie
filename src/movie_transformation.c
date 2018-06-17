@@ -107,12 +107,12 @@ AE_INTERNAL ae_float_t __get_movie_layer_transformation_property( ae_constvoidpt
             ae_float_t block_begin = property_ae_float_t[1];
             ae_float_t block_end = property_ae_float_t[2];
 
-            ae_float_t block_add = (block_end - block_begin) * block_inv;
-
             ae_uint32_t block_index = _index - property_index;
             ae_float_t block_index_f = (ae_float_t)block_index;
 
-            ae_float_t block_value = block_begin + block_add * block_index_f;
+            ae_float_t block_t = block_index_f * block_inv;
+            
+            ae_float_t block_value = block_begin + (block_end - block_begin) * block_t;
 
             return block_value;
         }break;
