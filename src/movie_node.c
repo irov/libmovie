@@ -3334,7 +3334,7 @@ AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _
         return;
     }
 
-    ae_bool_t animation_end = ae_equal_f_f( _time, duration );
+    ae_bool_t animation_end = ae_equal_f_f( _time, lastFrame );
 
     ae_uint32_t update_revision = __inc_composition_update_revision( _composition );
 
