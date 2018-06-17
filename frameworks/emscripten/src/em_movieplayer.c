@@ -2033,14 +2033,14 @@ void em_render_movie_composition( em_player_t * _player, em_movie_composition_t 
                     {
                         em_render_vertex_t * v = vertices + index;
 
-                        const float * mesh_position = mesh.position[index];
+                        const ae_float_t * mesh_position = mesh.position[index];
                         v->position[0] = mesh_position[0];
                         v->position[1] = mesh_position[1];
                         v->position[2] = mesh_position[2];
 
                         v->color = color;
 
-                        const float * mesh_uv = mesh.uv[index];
+                        const ae_float_t * mesh_uv = mesh.uv[index];
 
                         v->uv0[0] = mesh_uv[0];
                         v->uv0[1] = mesh_uv[1];
