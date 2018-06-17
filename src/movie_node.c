@@ -3163,7 +3163,7 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
 
                 __update_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, begin_time, AE_TRUE );
 
-                update_revision = __inc_composition_update_revision( _composition );
+                __inc_composition_update_revision( _composition );
 
                 _animation->time = last_time;
                 _animation->play = AE_FALSE;
@@ -3208,6 +3208,8 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
                 _animation->time = new_composition_time;
 
                 __update_movie_composition_node( _composition, _compositionData, _animation, _subcomposition, update_revision, new_begin_time, AE_FALSE );
+
+                __inc_composition_update_revision( _composition );
 
                 if( _composition->providers.composition_state != AE_NULL )
                 {
