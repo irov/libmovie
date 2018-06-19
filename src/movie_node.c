@@ -1210,6 +1210,18 @@ AE_INTERNAL ae_bool_t __setup_movie_subcomposition( aeMovieComposition * _compos
     return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t __setup_movie_node_initialize( aeMovieNode * _nodes, uint32_t _count )
+{
+    aeMovieNode *it_node = _nodes;
+    aeMovieNode *it_node_end = _nodes + _count;
+    for( ; it_node != it_node_end; ++it_node )
+    {
+        aeMovieNode * node = it_node;
+
+        node->offset_matrix = AE_NULL;
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __setup_movie_node_relative( aeMovieNode * _nodes, ae_uint32_t * _iterator, const aeMovieCompositionData * _compositionData, aeMovieNode * _parent )
 {
     ae_uint32_t begin_index = *_iterator;
@@ -1598,6 +1610,8 @@ AE_INTERNAL ae_void_t __setup_movie_node_matrix2( const aeMovieComposition * _co
             continue;
         }
 
+        node->offset_matrix = AE_NULL;
+
         ae_float_t t = 0.f;
         ae_uint32_t frameId = __get_movie_frame_time( _animation, node, _composition->interpolate, &t );
 
@@ -1917,6 +1931,8 @@ aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData
     aeMovieNode * nodes = AE_NEWN( _movieData->instance, aeMovieNode, node_count );
 
     AE_MOVIE_PANIC_MEMORY( nodes, AE_NULL );
+
+    __setup_movie_node_initialize( nodes, node_count );
 
     composition->nodes = nodes;
 
