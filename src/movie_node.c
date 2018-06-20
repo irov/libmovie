@@ -1011,11 +1011,11 @@ AE_INTERNAL ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _compo
 
         aeMovieNode * node = _composition->nodes + ((*_node_iterator)++);
 
+        node->subcomposition = _subcomposition;
+
         const aeMovieLayerData * node_layer = node->layer;
 
         aeMovieLayerTypeEnum layer_type = node_layer->type;
-
-        node->subcomposition = _subcomposition;
 
         switch( layer_type )
         {
@@ -1074,6 +1074,14 @@ AE_INTERNAL ae_bool_t __setup_movie_subcomposition( aeMovieComposition * _compos
 {
     ae_uint32_t subcomposition_count = __get_movie_subcomposition_count( _composition );
 
+    if( subcomposition_count == 0U )
+    {
+        _composition->subcomposition_count = 0U;
+        _composition->subcompositions = AE_NULL;
+
+        return AE_TRUE;
+    }
+
     aeMovieSubComposition * subcompositions = AE_NEWN( _composition->movie_data->instance, aeMovieSubComposition, subcomposition_count );
 
     AE_MOVIE_PANIC_MEMORY( subcompositions, AE_FALSE );
@@ -1100,6 +1108,7 @@ AE_INTERNAL ae_void_t __setup_movie_node_initialize( aeMovieNode * _nodes, uint3
     {
         aeMovieNode * node = it_node;
 
+        node->subcomposition = AE_NULL;
         node->volume = 1.f;
     }
 }
