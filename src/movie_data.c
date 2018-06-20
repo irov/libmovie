@@ -1226,7 +1226,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
             }break;
         case AE_MOVIE_LAYER_TYPE_SOCKET:
             {
-                _layer->renderable = AE_FALSE;
+                _layer->renderable = AE_TRUE;
             }break;
         case AE_MOVIE_LAYER_TYPE_SHAPE:
             {
