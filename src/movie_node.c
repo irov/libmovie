@@ -2662,6 +2662,19 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_normal_state( const aeMovi
         else
         {
             _node->animate = AE_MOVIE_NODE_ANIMATE_STATIC;
+
+            aeMovieNodeUpdateCallbackData callbackData;
+            callbackData.element = _node->element_data;
+            callbackData.layer = layer;
+            callbackData.loop = _loop;
+            callbackData.state = AE_MOVIE_STATE_UPDATE_SKIP;
+            callbackData.offset = AE_TIME_OUTSCALE( 0.f );
+            callbackData.matrix = _node->matrix;
+            callbackData.color = _node->color;
+            callbackData.opacity = _node->opacity;
+            callbackData.volume = _node->volume;
+
+            (*_composition->providers.node_update)(&callbackData, _composition->provider_data);
         }
     }
 }
@@ -3381,9 +3394,13 @@ AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _
 
     ae_float_t lastFrame = duration - _compositionData->frameDuration;
 
-    if( _time > lastFrame )
+    ae_bool_t animation_end = AE_FALSE;
+
+    if( _time + f_neps >= lastFrame )
     {
-        _time = lastFrame;
+        _time = lastFrame + f_neps;
+
+        animation_end = AE_TRUE;
     }
 
     ae_float_t current_animation_time = _animation->time;
@@ -3392,9 +3409,7 @@ AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _
     {
         return;
     }
-
-    ae_bool_t animation_end = ae_equal_f_f( _time, lastFrame );
-
+    
     ae_uint32_t update_revision = __inc_composition_update_revision( _composition );
 
     if( current_animation_time > _time )
