@@ -1,0 +1,17 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+project(nativefiledialog)
+SET (LIB_TYPE STATIC)
+
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/include)
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+if(WIN32)
+	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_win.cpp)
+endif()
+
+include_directories(
+	${INCLUDE_DIR}
+	)
+
+install(TARGETS nativefiledialog DESTINATION lib)
+install(FILES ${INCLUDE_DIR}/nfd.h DESTINATION include)
