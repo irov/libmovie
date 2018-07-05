@@ -154,7 +154,7 @@ AE_INTERNAL ae_void_t __make_quaternion_m4( ae_matrix4_t _m, const ae_quaternion
     _m[3 * 4 + 0] = 0.f;
     _m[3 * 4 + 1] = 0.f;
     _m[3 * 4 + 2] = 0.f;
-    _m[3 * 4 + 3] = 1.0f;
+    _m[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaternionzw_t _quaternion )
@@ -184,7 +184,7 @@ AE_INTERNAL ae_void_t __make_quaternionzw_m4( ae_matrix4_t _m, const ae_quaterni
     _m[3 * 4 + 0] = 0.f;
     _m[3 * 4 + 1] = 0.f;
     _m[3 * 4 + 2] = 0.f;
-    _m[3 * 4 + 3] = 1.0f;
+    _m[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __make_transformation2d_anchor_scale_m4( ae_matrix4_t _m, const ae_vector2_t _anchor, const ae_vector2_t _scale )
