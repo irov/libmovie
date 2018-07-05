@@ -2270,7 +2270,7 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     for( ; it_atlas != it_atlas_end; ++it_atlas )
     {
         aeMovieResource * new_atlas;
-        __load_movie_resource( _movieData, _stream, AE_NULL, atlases, &new_atlas );
+        AE_RESULT( __load_movie_resource, (_movieData, _stream, AE_NULL, atlases, &new_atlas) );
 
         *it_atlas = new_atlas;
     }
