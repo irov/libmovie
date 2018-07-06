@@ -31,15 +31,18 @@ matrix:
 script:
     # libmovie
     - mkdir build_cmake
-    - cd build_cmake
+    - pushd build_cmake
     - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=FALSE
     - cmake --build .
     - ctest --output-on-failure
+    - popd
     
     # moview
-    - cd tools/moview
+    - pushd tools/moview
     - mkdir build_cmake
-    - cd build_cmake
+    - pushd build_cmake
     - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU
     - cmake --build .
     - ctest --output-on-failure
+    - popd
+    - popd
