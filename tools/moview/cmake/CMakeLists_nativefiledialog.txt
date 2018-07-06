@@ -9,6 +9,14 @@ if(WIN32)
 	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_win.cpp)
 endif()
 
+if(UNIX)
+	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_gtk.cpp)
+endif()
+
+if(APPLE)
+	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_cocoa.m)
+endif()
+
 include_directories(
 	${INCLUDE_DIR}
 	)
