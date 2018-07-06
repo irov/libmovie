@@ -112,7 +112,7 @@ bool Movie::LoadFromFile( const std::string& fileName, const std::string& licens
     }
 
     fseek( f, 0, SEEK_END );
-    const uint32_t fileLen = static_cast<uint32_t>(ftell( f ));
+    uint32_t fileLen = static_cast<uint32_t>(ftell( f ));
     fseek( f, 0, SEEK_SET );
 
     std::vector<uint8_t> buffer( fileLen );
@@ -141,7 +141,7 @@ bool Movie::LoadFromFile( const std::string& fileName, const std::string& licens
     return true;
 }
 //////////////////////////////////////////////////////////////////////////
-bool Movie::LoadFromMemory( const void* data, const size_t dataLength, const std::string& baseFolder, const std::string& licenseHash )
+bool Movie::LoadFromMemory( const void* data, size_t dataLength, const std::string& baseFolder, const std::string& licenseHash )
 {
     this->Close();
 
@@ -287,7 +287,7 @@ uint32_t Movie::GetMainCompositionsCount() const
     return size;
 }
 //////////////////////////////////////////////////////////////////////////
-std::string Movie::GetMainCompositionNameByIdx( const uint32_t idx ) const 
+std::string Movie::GetMainCompositionNameByIdx( uint32_t idx ) const 
 {
     if( idx >= mCompositionDatas.size() )
     {
@@ -301,7 +301,7 @@ std::string Movie::GetMainCompositionNameByIdx( const uint32_t idx ) const
     return result;
 }
 //////////////////////////////////////////////////////////////////////////
-Composition* Movie::OpenMainCompositionByIdx( const uint32_t idx ) const 
+Composition* Movie::OpenMainCompositionByIdx( uint32_t idx ) const 
 {
     if( idx >= mCompositionDatas.size() )
     {
@@ -335,7 +335,7 @@ uint32_t Movie::FindMainCompositionIdx( Composition* composition ) const
     }
 
     const std::string & compName = composition->GetName();
-    const uint32_t count = this->GetMainCompositionsCount();
+    uint32_t count = this->GetMainCompositionsCount();
 
     for( uint32_t i = 0, end = count; i < end; ++i )
     {
@@ -460,7 +460,7 @@ bool Movie::OnProvideResource( const aeMovieResource* _resource, void** _rd, voi
     return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-void Movie::OnDeleteResource( const size_t _type, void* _data, void* _ud ) 
+void Movie::OnDeleteResource( uint32_t _type, void* _data, void* _ud )
 {
     AE_UNUSED( _type );
     AE_UNUSED( _data );

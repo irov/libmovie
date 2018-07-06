@@ -332,7 +332,7 @@ void Viewer::DoUI()
     }
 
     // If we have more then 1 main composition - let's allow user to choose one to play
-    const uint32_t numMainCompositions = mMovie.GetMainCompositionsCount();
+    uint32_t numMainCompositions = mMovie.GetMainCompositionsCount();
 
     if( numMainCompositions > 0 ) 
     {
@@ -437,8 +437,8 @@ void Viewer::DoUI()
         nextY += ImGui::GetWindowHeight();
         ImGui::End();
 
-        const uint32_t numSubCompositions = mComposition->GetNumSubCompositions();
-        if( numSubCompositions ) 
+        uint32_t numSubCompositions = mComposition->GetNumSubCompositions();
+        if( numSubCompositions != 0 ) 
         {
             ImGui::SetNextWindowPos( ImVec2( static_cast<float>(mWindowWidth) - rightPanelWidth, nextY ) );
             ImGui::SetNextWindowSize( ImVec2( rightPanelWidth, panelHeight ) );

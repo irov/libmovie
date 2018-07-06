@@ -12,7 +12,7 @@ static uint32_t FNV1A_Hash( const std::string& str )
 {
     uint32_t result = 0;
     const char * traitName = str.c_str();
-    const uint32_t len = str.length();
+    uint32_t len = str.length();
     uint32_t mult = 1u, c = 816753u;
     for( uint32_t i = 0; i < len; ++i )
     {
@@ -85,7 +85,7 @@ GLuint ResourcesManager::GetWhiteTexture() const
 //////////////////////////////////////////////////////////////////////////
 ResourceTexture* ResourcesManager::GetTextureRes( const std::string& fileName )
 {
-    const uint32_t hash = FNV1A_Hash( fileName );
+    uint32_t hash = FNV1A_Hash( fileName );
 
     ResourcesTable::iterator it = mResources.find( hash );
     if( it != mResources.end() && it->second->type == Resource::Texture )
@@ -102,7 +102,7 @@ ResourceTexture* ResourcesManager::GetTextureRes( const std::string& fileName )
 //////////////////////////////////////////////////////////////////////////
 ResourceImage* ResourcesManager::GetImageRes( const std::string& imageName )
 {
-    const uint32_t hash = FNV1A_Hash( imageName );
+    uint32_t hash = FNV1A_Hash( imageName );
 
     ResourcesTable::iterator it = mResources.find( hash );
     if( it != mResources.end() && it->second->type == Resource::Image )
@@ -178,7 +178,7 @@ ResourceTexture* ResourcesManager::LoadTextureRes( const std::string& fileName )
 
     stbi_image_free( data );
 
-    const uint32_t hash = FNV1A_Hash( fileName );
+    uint32_t hash = FNV1A_Hash( fileName );
     mResources.insert( { hash, texture } );
 
     return texture;

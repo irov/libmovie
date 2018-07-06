@@ -15,15 +15,15 @@ public:
 
 public:
     bool LoadFromFile( const std::string& fileName, const std::string& licenseHash );
-    bool LoadFromMemory( const void* data, const size_t dataLength, const std::string& baseFolder, const std::string& licenseHash );
+    bool LoadFromMemory( const void* data, size_t dataLength, const std::string& baseFolder, const std::string& licenseHash );
     void Close();
 
     Composition * OpenComposition( const std::string& name );
     void CloseComposition( Composition* composition );
 
     uint32_t GetMainCompositionsCount() const;
-    std::string GetMainCompositionNameByIdx( const uint32_t idx ) const;
-    Composition * OpenMainCompositionByIdx( const uint32_t idx ) const;
+    std::string GetMainCompositionNameByIdx( uint32_t idx ) const;
+    Composition * OpenMainCompositionByIdx( uint32_t idx ) const;
 
     uint32_t FindMainCompositionIdx( Composition* composition ) const;
 
@@ -33,7 +33,7 @@ protected:
     void AddCompositionData( const aeMovieCompositionData* compositionData );
 
     bool OnProvideResource( const aeMovieResource* _resource, void** _rd, void* _ud );
-    void OnDeleteResource( const uint32_t _type, void* _data, void* _ud );
+    void OnDeleteResource( uint32_t _type, void* _data, void* _ud );
 
 protected:
     const aeMovieInstance * mMovieInstance;
