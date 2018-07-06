@@ -1,7 +1,11 @@
 #include "Composition.h"
 #include "ResourcesManager.h"
-//////////////////////////////////////////////////////////////////////////
+
 #include "Logger.h"
+
+#include <cmath>
+#include <string.h>
+
 //////////////////////////////////////////////////////////////////////////
 static void MakeOrtho2DMat( float left, float right, float top, float bottom, float zNear, float zFar, float mat[16] )
 {
@@ -150,10 +154,10 @@ void main() {                                          \n\
 //////////////////////////////////////////////////////////////////////////
 static uint32_t FloatColorToUint( ae_color_t color, ae_color_channel_t alpha )
 {
-    const uint32_t r = static_cast<uint32_t>(std::floorf( color.r * 255.f + 0.5f ));
-    const uint32_t g = static_cast<uint32_t>(std::floorf( color.g * 255.5f ));
-    const uint32_t b = static_cast<uint32_t>(std::floorf( color.b * 255.5f ));
-    const uint32_t a = static_cast<uint32_t>(std::floorf( alpha * 255.5f ));
+    uint32_t r = static_cast<uint32_t>(std::floorf( color.r * 255.5f ));
+    uint32_t g = static_cast<uint32_t>(std::floorf( color.g * 255.5f ));
+    uint32_t b = static_cast<uint32_t>(std::floorf( color.b * 255.5f ));
+    uint32_t a = static_cast<uint32_t>(std::floorf( alpha * 255.5f ));
 
     return (a << 24) | (b << 16) | (g << 8) | r;
 }
@@ -437,7 +441,7 @@ uint32_t Composition::GetNumSubCompositions() const
     return size;
 }
 //////////////////////////////////////////////////////////////////////////
-const char * Composition::GetSubCompositionName( const size_t idx ) const
+const char * Composition::GetSubCompositionName( uint32_t idx ) const
 {
     const aeMovieSubComposition* subcomposition = mSubCompositions[idx];
 
@@ -446,7 +450,7 @@ const char * Composition::GetSubCompositionName( const size_t idx ) const
     return name;
 }
 //////////////////////////////////////////////////////////////////////////
-void Composition::PlaySubComposition( const uint32_t idx )
+void Composition::PlaySubComposition( uint32_t idx )
 {
     VectorMovieSubComposition::size_type size = mSubCompositions.size();
 
@@ -467,7 +471,7 @@ void Composition::PlaySubComposition( const uint32_t idx )
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void Composition::PauseSubComposition( const uint32_t idx )
+void Composition::PauseSubComposition( uint32_t idx )
 {
     VectorMovieSubComposition::size_type size = mSubCompositions.size();
 
@@ -481,7 +485,7 @@ void Composition::PauseSubComposition( const uint32_t idx )
     ae_pause_movie_sub_composition( mComposition, subComposition );
 }
 //////////////////////////////////////////////////////////////////////////
-void Composition::StopSubComposition( const uint32_t idx )
+void Composition::StopSubComposition( uint32_t idx )
 {
     VectorMovieSubComposition::size_type size = mSubCompositions.size();
 
@@ -495,7 +499,7 @@ void Composition::StopSubComposition( const uint32_t idx )
     ae_stop_movie_sub_composition( mComposition, subComposition );
 }
 //////////////////////////////////////////////////////////////////////////
-void Composition::SetTimeSubComposition( const uint32_t idx, float time )
+void Composition::SetTimeSubComposition( uint32_t idx, float time )
 {
     VectorMovieSubComposition::size_type size = mSubCompositions.size();
 
@@ -509,7 +513,7 @@ void Composition::SetTimeSubComposition( const uint32_t idx, float time )
     ae_set_movie_sub_composition_time( mComposition, subComposition, static_cast<ae_time_t>(time) );
 }
 //////////////////////////////////////////////////////////////////////////
-void Composition::SetLoopSubComposition( const size_t idx, bool toLoop ) {
+void Composition::SetLoopSubComposition( uint32_t idx, bool toLoop ) {
     VectorMovieSubComposition::size_type size = mSubCompositions.size();
 
     if( idx >= size )
@@ -522,7 +526,7 @@ void Composition::SetLoopSubComposition( const size_t idx, bool toLoop ) {
     ae_set_movie_sub_composition_loop( subComposition, toLoop ? AE_TRUE : AE_FALSE );
 }
 //////////////////////////////////////////////////////////////////////////
-bool Composition::IsLoopedSubComposition( const size_t idx ) const
+bool Composition::IsLoopedSubComposition( uint32_t idx ) const
 {
     VectorMovieSubComposition::size_type size = mSubCompositions.size();
 
@@ -943,8 +947,8 @@ void Composition::EndDraw()
 //////////////////////////////////////////////////////////////////////////
 void Composition::DrawMesh( const aeMovieRenderMesh* mesh, const ResourceImage* imageRGB, const ResourceImage* imageA, const float* alternativeUV )
 {
-    const uint32_t verticesLeft = kMaxVerticesToDraw - mNumVertices;
-    const uint32_t indicesLeft = kMaxIndicesToDraw - mNumIndices;
+    uint32_t verticesLeft = kMaxVerticesToDraw - mNumVertices;
+    uint32_t indicesLeft = kMaxIndicesToDraw - mNumIndices;
 
     GLuint newTextureRGB = ResourcesManager::Instance().GetWhiteTexture();
     if( imageRGB != nullptr && imageRGB->textureRes != nullptr )

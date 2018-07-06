@@ -48,13 +48,13 @@ public:
 
     // sub compositions
     uint32_t GetNumSubCompositions() const;
-    const char * GetSubCompositionName( const uint32_t idx ) const;
-    void PlaySubComposition( const uint32_t idx );
-    void PauseSubComposition( const uint32_t idx );
-    void StopSubComposition( const uint32_t idx );
-    void SetTimeSubComposition( const uint32_t idx, float time );
-    void SetLoopSubComposition( const uint32_t idx, bool toLoop );
-    bool IsLoopedSubComposition( const uint32_t idx ) const;
+    const char * GetSubCompositionName( uint32_t idx ) const;
+    void PlaySubComposition( uint32_t idx );
+    void PauseSubComposition( uint32_t idx );
+    void StopSubComposition( uint32_t idx );
+    void SetTimeSubComposition( uint32_t idx, float time );
+    void SetLoopSubComposition( uint32_t idx, bool toLoop );
+    bool IsLoopedSubComposition( uint32_t idx ) const;
 
 protected:
     bool Create( const aeMovieData* moviewData, const aeMovieCompositionData* compData );
