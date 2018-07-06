@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 3.0)
 
-if(WIN32)
+if(WIN32)    
+    set(CMAKE_STATIC_LIBRARY_PREFIX)
     set(CMAKE_STATIC_LIBRARY_SUFFIX .lib)
 endif()
 
 if(UNIX)
+    set(CMAKE_STATIC_LIBRARY_PREFIX lib)
     set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
 endif()
 
 if(APPLE)
+    set(CMAKE_STATIC_LIBRARY_PREFIX lib)
     set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
 endif()
 
