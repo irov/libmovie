@@ -10,7 +10,7 @@ if(WIN32)
 endif()
 
 if(UNIX)
-	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_gtk.cpp)
+	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_gtk.c)
 endif()
 
 if(APPLE)
