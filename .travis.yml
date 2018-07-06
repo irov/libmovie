@@ -12,7 +12,7 @@ compiler:
     - clang
     
 before_install:
-    - sudo apt-get install xorg-dev libglu1-mesa-dev
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install xorg-dev libglu1-mesa-dev; fi
 
 
 env:
