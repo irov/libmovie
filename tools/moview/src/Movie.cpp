@@ -9,6 +9,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <algorithm>
+
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_voidptr_t my_alloc( ae_voidptr_t, ae_size_t _size ) 
 {
