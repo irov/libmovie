@@ -3,7 +3,7 @@
 
 #include "Logger.h"
 
-#include <cmath>
+#include <math.h>
 #include <string.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -154,10 +154,10 @@ void main() {                                          \n\
 //////////////////////////////////////////////////////////////////////////
 static uint32_t FloatColorToUint( ae_color_t color, ae_color_channel_t alpha )
 {
-    uint32_t r = static_cast<uint32_t>(std::floorf( color.r * 255.5f ));
-    uint32_t g = static_cast<uint32_t>(std::floorf( color.g * 255.5f ));
-    uint32_t b = static_cast<uint32_t>(std::floorf( color.b * 255.5f ));
-    uint32_t a = static_cast<uint32_t>(std::floorf( alpha * 255.5f ));
+    uint32_t r = static_cast<uint32_t>(::floorf( color.r * 255.5f ));
+    uint32_t g = static_cast<uint32_t>(::floorf( color.g * 255.5f ));
+    uint32_t b = static_cast<uint32_t>(::floorf( color.b * 255.5f ));
+    uint32_t a = static_cast<uint32_t>(::floorf( alpha * 255.5f ));
 
     return (a << 24) | (b << 16) | (g << 8) | r;
 }
