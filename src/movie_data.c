@@ -1686,12 +1686,12 @@ ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _major, 
     return result;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_movie_sdk_major_version( ae_void_t )
+ae_uint32_t ae_get_movie_sdk_major_version()
 {
     return AE_MOVIE_SDK_MAJOR_VERSION;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_uint32_t ae_get_movie_sdk_minor_version( ae_void_t )
+ae_uint32_t ae_get_movie_sdk_minor_version()
 {
     return AE_MOVIE_SDK_MINOR_VERSION;
 }
