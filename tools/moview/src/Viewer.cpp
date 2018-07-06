@@ -448,7 +448,7 @@ void Viewer::DoUI()
                 {
                     std::string guiID = std::to_string( i );
                     std::string fullName = guiID + ") " + mComposition->GetSubCompositionName( i ) + ":";
-                    ImGui::Text( fullName.c_str() );
+                    ImGui::Text( "%s", fullName.c_str() );
 
                     std::string btnPlayNameAndId = std::string( "Play##" ) + guiID;
                     std::string btnPauseNameAndId = std::string( "Pause##" ) + guiID;

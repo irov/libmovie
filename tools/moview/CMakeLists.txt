@@ -1,5 +1,17 @@
 cmake_minimum_required(VERSION 3.0)
 
+if(WIN32)
+    set(CMAKE_STATIC_LIBRARY_SUFFIX .lib)
+endif()
+
+if(UNIX)
+    set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
+endif()
+
+if(APPLE)
+    set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
+endif()
+
 set(LIBMOVIE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 set(DEPENDENCIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
 
