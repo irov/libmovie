@@ -5,21 +5,24 @@ SET (LIB_TYPE STATIC)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/include)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-if(WIN32)
-	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_win.cpp)
-endif()
-
-if(UNIX)
-	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_gtk.c)
-endif()
-
-if(APPLE)
-	add_library(nativefiledialog ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_cocoa.m)
-endif()
-
 include_directories(
 	${INCLUDE_DIR}
 	)
 
-install(TARGETS nativefiledialog DESTINATION lib)
+if(WIN32)
+	add_library(${PROJECT_NAME} ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_win.cpp)
+endif()
+
+if(UNIX)
+	add_library(${PROJECT_NAME} ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_gtk.c)
+	target_link_libraries(${PROJECT_NAME} gtk+-3.0)
+endif()
+
+if(APPLE)
+	add_library(${PROJECT_NAME} ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_cocoa.m)
+endif()
+	
+
+
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(FILES ${INCLUDE_DIR}/nfd.h DESTINATION include)
