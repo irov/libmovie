@@ -5,6 +5,8 @@
 
 #include "Logger.h"
 
+#include <string.h>
+#include <stdarg.h>
 #include <stdio.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -380,8 +382,7 @@ Composition* Movie::OpenDefaultComposition()
 //////////////////////////////////////////////////////////////////////////
 void Movie::AddCompositionData( const aeMovieCompositionData* compositionData ) 
 {
-    // Hacky way to find compositions ;)
-    if( std::find( mCompositionDatas.begin(), mCompositionDatas.end(), compositionData ) != mCompositionDatas.end() ) 
+    if( std::find( mCompositionDatas.cbegin(), mCompositionDatas.cend(), compositionData ) != mCompositionDatas.cend() ) 
     {
         return;        
     }
