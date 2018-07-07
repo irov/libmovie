@@ -75,7 +75,7 @@ if(UNIX)
     endif()
     
     find_package( Threads )
-    target_link_libraries(${CMAKE_THREAD_LIBS_INIT})
+    target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 target_link_libraries(${PROJECT_NAME}
