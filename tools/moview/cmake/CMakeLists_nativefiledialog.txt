@@ -13,7 +13,7 @@ if(WIN32)
 	add_library(${PROJECT_NAME} ${LIB_TYPE} ${SOURCE_DIR}/nfd_common.c ${SOURCE_DIR}/nfd_win.cpp)
 endif()
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
 	FIND_PACKAGE(PkgConfig REQUIRED)
 	PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
 	
