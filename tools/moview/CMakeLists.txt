@@ -19,6 +19,7 @@ endif()
 set(LIBMOVIE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 set(DEPENDENCIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
 
+include(cmake/macro.cmake)
 include(cmake/glad_download.cmake)
 include(cmake/glfw_download.cmake)
 include(cmake/imgui_download.cmake)
@@ -85,6 +86,10 @@ if(UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
     
     target_link_libraries(${PROJECT_NAME} ${GTK3_LIBRARIES})
+endif()
+
+if(APPLE)
+    add_apple_framework(${PROJECT_NAME} Cocoa)
 endif()
 
 target_link_libraries(${PROJECT_NAME}

@@ -393,6 +393,9 @@ void Composition::Draw( const DrawMode mode )
                         this->DrawMesh( &render_mesh, imageRes, nullptr, nullptr );
                     }
                 } break;
+            default:
+                {
+                }break;
             }
         }
         else
@@ -427,6 +430,9 @@ void Composition::Draw( const DrawMode mode )
                         this->DrawMesh( &track_matte_mesh, matteImageRes, imageRes, alternativeUV );
                     }
                 } break;
+            default:
+                {
+                }break;
             }
         }
     }
@@ -1215,6 +1221,9 @@ void Composition::OnUpdateTrackMatte( const aeMovieTrackMatteUpdateCallbackData*
                 memcpy( desc->matrix, _callbackData->matrix, sizeof( desc->matrix ) );
                 desc->mesh = _callbackData->mesh[0];
             }
+        }break;
+    default:
+        {
         }break;
     }
 }
