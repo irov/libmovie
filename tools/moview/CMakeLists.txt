@@ -91,6 +91,7 @@ endif()
 if(APPLE)
     add_apple_framework(${PROJECT_NAME} Cocoa)
     add_apple_framework(${PROJECT_NAME} IOKit)
+    add_apple_framework(${PROJECT_NAME} CoreVideo)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
