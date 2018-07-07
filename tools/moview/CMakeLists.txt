@@ -60,9 +60,16 @@ target_link_libraries(${PROJECT_NAME}
 	movie
 	glad
 	glfw
+    ${glfw_LIBRARIES}
 	imgui
 	nativefiledialog
 )
+
+if(UNIX)
+    MESSAGE("test")
+    MESSAGE(${glfw_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
+endif()
 
 add_dependencies(${PROJECT_NAME}
 	glad_download
