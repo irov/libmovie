@@ -8,6 +8,7 @@ endif()
 if(UNIX)
     set(CMAKE_STATIC_LIBRARY_PREFIX lib)
     set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed")
 endif()
 
 if(APPLE)
