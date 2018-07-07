@@ -56,6 +56,23 @@ add_executable(${PROJECT_NAME}
 	${files_sources}
 )
 
+if(UNIX)
+    find_library(RT_LIBRARY rt)
+    target_link_libraries(${PROJECT_NAME} ${RT_LIBRARY})
+
+    find_library(MATH_LIBRARY m)
+    target_link_libraries(${PROJECT_NAME} ${MATH_LIBRARY})
+    
+    target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
+    
+    find_package(X11 REQUIRED)
+    target_link_libraries(${PROJECT_NAME} ${X11_X11_LIB} ${CMAKE_THREAD_LIBS_INIT} ${X11_Xrandr_LIB} ${X11_Xinerama_LIB} ${X11_Xcursor_LIB})
+    
+    if(X11_xf86vmode_FOUND)
+        target_link_libraries(${PROJECT_NAME} ${X11_Xxf86vm_LIB})
+    endif()
+endif()
+
 target_link_libraries(${PROJECT_NAME}
 	movie
 	glad
@@ -64,12 +81,6 @@ target_link_libraries(${PROJECT_NAME}
 	imgui
 	nativefiledialog
 )
-
-if(UNIX)
-    MESSAGE("test")
-    MESSAGE(${glfw_LIBRARIES})
-    target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
-endif()
 
 add_dependencies(${PROJECT_NAME}
 	glad_download
