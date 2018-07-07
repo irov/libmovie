@@ -5,7 +5,7 @@ if(WIN32)
     set(CMAKE_STATIC_LIBRARY_SUFFIX .lib)
 endif()
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
     set(CMAKE_STATIC_LIBRARY_PREFIX lib)
     set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
     set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed")
@@ -52,7 +52,7 @@ include_directories(
 	${DEPENDENCIES_DIR}/stb
 )
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
 	FIND_PACKAGE(PkgConfig REQUIRED)
 	PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
         
@@ -64,7 +64,7 @@ add_executable(${PROJECT_NAME}
 	${files_sources}
 )
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
     MESSAGE("Add Unix library")
     find_library(RT_LIBRARY rt)
     target_link_libraries(${PROJECT_NAME} ${RT_LIBRARY})
