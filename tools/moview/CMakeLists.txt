@@ -68,11 +68,14 @@ if(UNIX)
     target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
     
     find_package(X11 REQUIRED)
-    target_link_libraries(${PROJECT_NAME} ${X11_X11_LIB} ${CMAKE_THREAD_LIBS_INIT} ${X11_Xrandr_LIB} ${X11_Xinerama_LIB} ${X11_Xcursor_LIB})
+    target_link_libraries(${PROJECT_NAME} ${X11_X11_LIB} ${X11_Xrandr_LIB} ${X11_Xinerama_LIB} ${X11_Xcursor_LIB})
     
     if(X11_xf86vmode_FOUND)
         target_link_libraries(${PROJECT_NAME} ${X11_Xxf86vm_LIB})
     endif()
+    
+    find_package( Threads )
+    target_link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 target_link_libraries(${PROJECT_NAME}
