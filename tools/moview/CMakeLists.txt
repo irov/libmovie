@@ -24,12 +24,12 @@ include(cmake/imgui_download.cmake)
 include(cmake/nativefiledialog_download.cmake)
 include(cmake/stb_image_download.cmake)
 
-project( moview )
-
 set(LIBMOVIE_EXTERNAL_BUILD ON CACHE BOOL "LIBMOVIE_EXTERNAL_BUILD" FORCE)
 set(LIBMOVIE_EXAMPLES_BUILD OFF CACHE BOOL "LIBMOVIE_EXAMPLES_BUILD" FORCE)
 set(LIBMOVIE_INSTALL ON CACHE BOOL "LIBMOVIE_INSTALL" FORCE)
 add_subdirectory(${LIBMOVIE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/movie)
+
+project( moview )
 
 ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 
@@ -59,18 +59,14 @@ add_executable(${PROJECT_NAME}
 if(UNIX)
     MESSAGE("Add Unix library")
     find_library(RT_LIBRARY rt)
-    MESSAGE(${RT_LIBRARY})
     target_link_libraries(${PROJECT_NAME} ${RT_LIBRARY})
 
     find_library(MATH_LIBRARY m)
-    MESSAGE(${MATH_LIBRARY})
     target_link_libraries(${PROJECT_NAME} ${MATH_LIBRARY})
     
-    MESSAGE(${CMAKE_DL_LIBS})
     target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
     
     find_package(X11 REQUIRED)
-    MESSAGE(${X11_X11_LIB})
     target_link_libraries(${PROJECT_NAME} ${X11_X11_LIB} ${CMAKE_THREAD_LIBS_INIT} ${X11_Xrandr_LIB} ${X11_Xinerama_LIB} ${X11_Xcursor_LIB})
     
     if(X11_xf86vmode_FOUND)
@@ -82,7 +78,6 @@ target_link_libraries(${PROJECT_NAME}
 	movie
 	glad
 	glfw
-    ${glfw_LIBRARIES}
 	imgui
 	nativefiledialog
 )
