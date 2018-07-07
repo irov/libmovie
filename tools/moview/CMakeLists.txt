@@ -52,6 +52,13 @@ include_directories(
 	${DEPENDENCIES_DIR}/stb
 )
 
+if(UNIX)
+	FIND_PACKAGE(PkgConfig REQUIRED)
+	PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
+        
+	LINK_DIRECTORIES(${GTK3_LIBRARY_DIRS})
+endif()
+
 add_executable(${PROJECT_NAME}	
 	${files_headers} 
 	${files_sources}
@@ -76,6 +83,8 @@ if(UNIX)
     
     find_package( Threads )
     target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
+    
+    target_link_libraries(${PROJECT_NAME} ${GTK3_LIBRARIES})
 endif()
 
 target_link_libraries(${PROJECT_NAME}
