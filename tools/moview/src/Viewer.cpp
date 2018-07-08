@@ -8,14 +8,22 @@
 #include "nfd.h"
 
 #include <algorithm>
+#include <chrono>
+
 #include <stdio.h>
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
-static float GetCurrentTimeSeconds() 
+static uint64_t GetCurrentTimeSeconds()
 {
-    clock_t c = clock();
-    return static_cast<float>(c) / static_cast<float>(CLOCKS_PER_SEC);
+    std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point::duration epoch = tp.time_since_epoch();
+
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+
+    uint64_t ms64 = (uint64_t)ms.count();
+
+    return ms64;
 }
 //////////////////////////////////////////////////////////////////////////
 Viewer::Viewer()
@@ -126,7 +134,7 @@ void Viewer::Finalize()
 //////////////////////////////////////////////////////////////////////////
 void Viewer::Loop()
 {
-    float timeLast = GetCurrentTimeSeconds();
+    uint64_t timeLast = GetCurrentTimeSeconds();
 
     while( !glfwWindowShouldClose( mWindow ) && !mShouldExit )
     {
@@ -135,8 +143,8 @@ void Viewer::Loop()
         glClearColor( mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.f );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        float timeNow = GetCurrentTimeSeconds();
-        float dt = timeNow - timeLast;
+        uint64_t timeNow = GetCurrentTimeSeconds();
+        float dt = (float)(timeNow - timeLast) / 1000.f;
         timeLast = timeNow;
 
         ImGui_ImplGlfwGL3_NewFrame();
