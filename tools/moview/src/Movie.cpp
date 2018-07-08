@@ -86,6 +86,8 @@ AE_CALLBACK ae_bool_t my_resource_provider( const aeMovieResource * _resource, a
     AE_UNUSED( _resource );
     AE_UNUSED( _rd );
     AE_UNUSED( _ud );
+
+    return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t my_resource_deleter( aeMovieResourceTypeEnum _type, ae_voidptr_t _data, ae_voidptr_t _ud ) 
