@@ -4,12 +4,13 @@ if(WIN32)
     if(MINGW)
         set(CMAKE_STATIC_LIBRARY_PREFIX lib)
         set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
+        
+        set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
     else()
         set(CMAKE_STATIC_LIBRARY_PREFIX)
         set(CMAKE_STATIC_LIBRARY_SUFFIX .lib)
     endif()    
 endif()
-
 
 if(UNIX AND NOT APPLE)
     set(CMAKE_STATIC_LIBRARY_PREFIX lib)
