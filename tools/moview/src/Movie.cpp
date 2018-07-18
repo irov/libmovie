@@ -414,21 +414,22 @@ bool Movie::OnProvideResource( const aeMovieResource* _resource, void** _rd, voi
 
             std::string fullPath = mBaseFolder + ae_image->path;
 
+            ResourceImage* image = ResourcesManager::Instance().GetImageRes( ae_image->name );
+
             if( ae_image->atlas_image == AE_NULL ) 
             {
-                *_rd = reinterpret_cast<ae_voidptr_t>(ResourcesManager::Instance().GetTextureRes( fullPath ));
+                image->textureRes = ResourcesManager::Instance().GetTextureRes( fullPath );
             }
             else
             {
                 std::string texturePath = mBaseFolder + ae_image->atlas_image->path;
-
-                ResourceImage* image = ResourcesManager::Instance().GetImageRes( ae_image->name );
-
-                image->textureRes = ResourcesManager::Instance().GetTextureRes( texturePath );
-                image->premultAlpha = (ae_image->is_premultiplied == AE_TRUE);
-
-                *_rd = reinterpret_cast<ae_voidptr_t>(image);
+                
+                image->textureRes = ResourcesManager::Instance().GetTextureRes( texturePath );                
             }
+
+            image->premultAlpha = (ae_image->is_premultiplied == AE_TRUE);
+
+            *_rd = reinterpret_cast<ae_voidptr_t>(image);
         } break;
     case AE_MOVIE_RESOURCE_SEQUENCE:
         {
