@@ -224,7 +224,8 @@ float Composition::GetCurrentPlayTime() const
     return ae_get_movie_composition_time( mComposition );
 }
 //////////////////////////////////////////////////////////////////////////
-void Composition::SetCurrentPlayTime( float time ) const {
+void Composition::SetCurrentPlayTime( float time ) const 
+{
     if( mComposition == nullptr )
     {
         return;
@@ -233,7 +234,8 @@ void Composition::SetCurrentPlayTime( float time ) const {
     ae_set_movie_composition_time( mComposition, time );
 }
 //////////////////////////////////////////////////////////////////////////
-bool Composition::IsPlaying() const {
+bool Composition::IsPlaying() const 
+{
     if( mComposition == nullptr )
     {
         return false;
@@ -1126,6 +1128,12 @@ bool Composition::OnProvideNode( const aeMovieNodeProviderCallbackData* _callbac
         case AE_MOVIE_LAYER_TYPE_IMAGE:
             {
                 ViewerLogger << " image" << std::endl;
+
+                ae_voidptr_t rd = ae_get_movie_layer_data_resource_data( _callbackData->layer );
+
+                ResourceImage* resourceImage = reinterpret_cast<ResourceImage*>(rd);
+
+                *_nd = reinterpret_cast<ae_voidptr_t>(resourceImage);
             }break;
         default:
             {

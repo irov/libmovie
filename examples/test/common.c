@@ -386,6 +386,9 @@ ae_void_t ex_callback_node_update( const aeMovieNodeUpdateCallbackData * _callba
                 break;
             }
         }break;
+    case AE_MOVIE_STATE_UPDATE_SKIP:
+        {
+        }break;
     }
 }
 
@@ -423,31 +426,37 @@ ae_void_t ex_callback_track_matte_update( const aeMovieTrackMatteUpdateCallbackD
     {
     case AE_MOVIE_STATE_UPDATE_BEGIN:
         {
-            EX_LOG( " NODE_UPDATE_BEGIN\n" );
+            EX_LOG( " AE_MOVIE_STATE_UPDATE_BEGIN\n" );
 
             // Should update track_matte_data->mesh with callback one.
         }break;
     case AE_MOVIE_STATE_UPDATE_PROCESS:
         {
-            EX_LOG( " NODE_UPDATE_UPDATE\n" );
+            EX_LOG( " AE_MOVIE_STATE_UPDATE_PROCESS\n" );
 
             // Should update track_matte_data->mesh with callback one.
         }break;
     case AE_MOVIE_STATE_UPDATE_PAUSE:
         {
-            EX_LOG( " NODE_UPDATE_PAUSE\n" );
+            EX_LOG( " AE_MOVIE_STATE_UPDATE_PAUSE\n" );
 
             // Should update track_matte_data->mesh with callback one.
         }break;
     case AE_MOVIE_STATE_UPDATE_RESUME:
         {
-            EX_LOG( " NODE_UPDATE_RESUME\n" );
+            EX_LOG( " AE_MOVIE_STATE_UPDATE_RESUME\n" );
 
             // Should update track_matte_data->mesh with callback one.
         }break;
     case AE_MOVIE_STATE_UPDATE_END:
         {
-            EX_LOG( " NODE_UPDATE_END\n" );
+            EX_LOG( " AE_MOVIE_STATE_UPDATE_END\n" );
+
+            // Do nothing.
+        }break;
+    case AE_MOVIE_STATE_UPDATE_SKIP:
+        {
+            EX_LOG( " AE_MOVIE_STATE_UPDATE_SKIP\n" );
 
             // Do nothing.
         }break;
