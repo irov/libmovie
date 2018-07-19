@@ -73,7 +73,7 @@ bool Viewer::Initialize( int argc, char** argv )
 
     mWindow = glfwCreateWindow( static_cast<int>(mWindowWidth),
         static_cast<int>(mWindowHeight),
-        "libMovie - GLFW viewer",
+        "libMOVIEW viewer",
         nullptr,
         nullptr );
 
@@ -83,6 +83,7 @@ bool Viewer::Initialize( int argc, char** argv )
 
         return false;
     }
+
 
     glfwMakeContextCurrent( mWindow );
     gladLoadGLLoader( reinterpret_cast<GLADloadproc>(glfwGetProcAddress) );
