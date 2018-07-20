@@ -27,6 +27,9 @@ protected:
     void ShutdownMovie();
     bool ReloadMovie();
     void DoUI();
+    void CalcScaleToFitComposition();
+    void CenterCompositionOnScreen();
+    void OnNewCompositionOpened();
 
 protected:
     GLFWwindow * mWindow;
