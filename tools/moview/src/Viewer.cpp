@@ -254,11 +254,7 @@ bool Viewer::ReloadMovie()
         mComposition = mCompositionName.empty() ? mMovie.OpenDefaultComposition() : mMovie.OpenComposition( mCompositionName );
 
         if( mComposition ) {
-            mCompositionName = mComposition->GetName();
-            ViewerLogger << "Composition \"" << mCompositionName << "\" loaded successfully" << std::endl;
-            ViewerLogger << " Duration: " << mComposition->GetDuration() << " seconds" << std::endl;
-            mComposition->SetLoop( mToLoopPlay );
-            mComposition->Play();
+            OnNewCompositionOpened();
 
             this->SaveSession();
             mManualPlayPos = 0.f;
@@ -297,25 +293,30 @@ void Viewer::DoUI()
         char licenseHash[1024] = { 0 };
         char compositionName[1024] = { 0 };
 
-        if( !mMovieFilePath.empty() ) {
+        if( !mMovieFilePath.empty() )
+        {
             memcpy( moviePath, mMovieFilePath.c_str(), mMovieFilePath.length() );
         }
-        if( !mLicenseHash.empty() ) {
+        if( !mLicenseHash.empty() )
+        {
             memcpy( licenseHash, mLicenseHash.c_str(), mLicenseHash.length() );
         }
 
         ImGui::Text( "Movie file path:" );
         ImGui::PushItemWidth( leftPanelWidth - 50.f );
         {
-            if( ImGui::InputText( "##FilePath", moviePath, sizeof( moviePath ) - 1 ) ) {
+            if( ImGui::InputText( "##FilePath", moviePath, sizeof( moviePath ) - 1 ) )
+            {
                 mMovieFilePath = moviePath;
             }
         }
         ImGui::PopItemWidth();
         ImGui::SameLine();
-        if( ImGui::Button( "..." ) ) {
+        if( ImGui::Button( "..." ) )
+        {
             nfdchar_t* outPath = nullptr;
-            if( NFD_OKAY == NFD_OpenDialog( "aem", nullptr, &outPath ) ) {
+            if( NFD_OKAY == NFD_OpenDialog( "aem", nullptr, &outPath ) )
+            {
                 mMovieFilePath = outPath;
                 free( outPath );
                 openNewMovie = true;
@@ -325,7 +326,8 @@ void Viewer::DoUI()
         ImGui::Text( "Licence hash:" );
         ImGui::PushItemWidth( leftPanelWidth - 50.f );
         {
-            if( ImGui::InputText( "##LicenseHash", licenseHash, sizeof( licenseHash ) - 1 ) ) {
+            if( ImGui::InputText( "##LicenseHash", licenseHash, sizeof( licenseHash ) - 1 ) )
+            {
                 mLicenseHash = licenseHash;
             }
         }
@@ -364,8 +366,7 @@ void Viewer::DoUI()
                 mLastCompositionIdx = static_cast<uint32_t>(option);
                 mMovie.CloseComposition( mComposition );
                 mComposition = mMovie.OpenMainCompositionByIdx( mLastCompositionIdx );
-                mComposition->SetLoop( mToLoopPlay );
-                mComposition->Play();
+                OnNewCompositionOpened();
                 mManualPlayPos = 0.f;
             }
         }
@@ -380,6 +381,18 @@ void Viewer::DoUI()
         ImGui::Text( "%.1f FPS (%.3f ms)", ImGui::GetIO().Framerate, 1000.f / ImGui::GetIO().Framerate );
         ImGui::Checkbox( "Draw normal", &mShowNormal );
         ImGui::Checkbox( "Draw wireframe", &mShowWireframe );
+        {
+            float contentScale = (mComposition == nullptr) ? 1.0f : mComposition->GetContentScale();
+            ImGui::Text("Content scale:");
+            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.92f);
+            ImGui::SliderFloat("##ContentScale", &contentScale, 0.0f, 10.0f);
+            ImGui::PopItemWidth();
+            if( mComposition )
+            {
+                mComposition->SetContentScale(contentScale);
+                CenterCompositionOnScreen();
+            }
+        }
         ImGui::Text( "Background color:" );
         ImGui::ColorEdit3( "##BkgColor", mBackgroundColor );
     }
@@ -498,5 +511,73 @@ void Viewer::DoUI()
             }
             ImGui::End();
         }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::CalcScaleToFitComposition()
+{
+    if( mComposition )
+    {
+        const float wndWidth = static_cast<float>(mWindowWidth);
+        const float wndHeight = static_cast<float>(mWindowHeight);
+
+        // Now we need to scale and position our content so that it's centered and fits the screen
+        const float contentWidth = mComposition->GetWidth();
+        const float contentHeight = mComposition->GetHeight();
+
+        float scale = 1.0f;
+        if( contentWidth > wndWidth || contentHeight > wndHeight )
+        {
+            // Content's size is bigger then the window, scaling needed
+            const float dW = contentWidth - wndWidth;
+            const float dH = contentHeight - wndHeight;
+
+            if( dW > dH )
+            {
+                scale = wndWidth / contentWidth;
+            }
+            else
+            {
+                scale = wndHeight / contentHeight;
+            }
+        }
+
+        mComposition->SetContentScale(scale);
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::CenterCompositionOnScreen()
+{
+    if (mComposition) {
+        const float wndWidth = static_cast<float>(mWindowWidth);
+        const float wndHeight = static_cast<float>(mWindowHeight);
+
+        const float contentWidth = mComposition->GetWidth();
+        const float contentHeight = mComposition->GetHeight();
+        const float contentScale = mComposition->GetContentScale();
+
+        const float offX = (wndWidth - (contentWidth * contentScale)) * 0.5f;
+        const float offY = (wndHeight - (contentHeight * contentScale)) * 0.5f;
+
+        mComposition->SetContentOffset(offX, offY);
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::OnNewCompositionOpened()
+{
+    if( mComposition )
+    {
+        mComposition->SetViewportSize(static_cast<float>(mWindowWidth), static_cast<float>(mWindowHeight));
+
+        mCompositionName = mComposition->GetName();
+        ViewerLogger << "Composition \"" << mCompositionName << "\" loaded successfully" << std::endl;
+        ViewerLogger << " Duration: " << mComposition->GetDuration() << " seconds" << std::endl;
+
+        mComposition->SetLoop(mToLoopPlay);
+        mComposition->Play();
+
+        // Now we need to scale and position our content so that it's centered and fits the screen
+        CalcScaleToFitComposition();
+        CenterCompositionOnScreen();
     }
 }
