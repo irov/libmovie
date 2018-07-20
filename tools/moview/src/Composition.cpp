@@ -82,6 +82,7 @@ static void CalcPointUV( float * _out, const float * _a, const float * _b, const
 //////////////////////////////////////////////////////////////////////////
 static const uint32_t kMaxVerticesToDraw = 4 * 1024;
 static const uint32_t kMaxIndicesToDraw = 6 * 1024;
+static const float    kSomeSmallFloat = 0.000001f;
 //////////////////////////////////////////////////////////////////////////
 struct DrawVertex
 {
@@ -105,11 +106,14 @@ layout(location = 1) in vec2 inUV0;                    \n\
 layout(location = 2) in vec2 inUV1;                    \n\
 layout(location = 3) in vec4 inColor;                  \n\
 uniform mat4 uWVP;                                     \n\
+uniform float uScale;                                  \n\
+uniform vec2 uOffset;                                  \n\
 out vec2 v2fUV0;                                       \n\
 out vec2 v2fUV1;                                       \n\
 out vec4 v2fColor;                                     \n\
 void main() {                                          \n\
-    gl_Position = uWVP * vec4(inPos, 1.0);             \n\
+    vec3 p = inPos * uScale + vec3(uOffset, 0.0);      \n\
+    gl_Position = uWVP * vec4(p, 1.0);                 \n\
     v2fUV0 = inUV0;                                    \n\
     v2fUV1 = inUV1;                                    \n\
     v2fColor = inColor;                                \n\
@@ -139,9 +143,12 @@ static const char* sWireVertexShader = "#version 330   \n\
 layout(location = 0) in vec3 inPos;                    \n\
 layout(location = 3) in vec4 inColor;                  \n\
 uniform mat4 uWVP;                                     \n\
+uniform float uScale;                                  \n\
+uniform vec2 uOffset;                                  \n\
 out vec4 v2fColor;                                     \n\
 void main() {                                          \n\
-    gl_Position = uWVP * vec4(inPos, 1.0);             \n\
+    vec3 p = inPos * uScale + vec3(uOffset, 0.0);      \n\
+    gl_Position = uWVP * vec4(p, 1.0);                 \n\
     v2fColor = inColor;                                \n\
 }                                                      \n";
 //////////////////////////////////////////////////////////////////////////
@@ -185,6 +192,11 @@ Composition::Composition()
     , mVerticesData( nullptr )
     , mIndicesData( nullptr )
     , mDrawMode( DrawMode::Solid )
+    , mViewportWidth( 1.f )
+    , mViewportHeight(1.f )
+    , mContentScale( 1.f )
+    , mContentOffX( 0.f )
+    , mContentOffY( 0.f )
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -197,6 +209,124 @@ Composition::~Composition()
     }
 
     this->DestroyDrawingData();
+}
+//////////////////////////////////////////////////////////////////////////
+void Composition::SetViewportSize( const float width, const float height )
+{
+    mViewportWidth = width < kSomeSmallFloat ? kSomeSmallFloat : width;
+    mViewportHeight = height < kSomeSmallFloat ? kSomeSmallFloat : height;
+
+    const float left = 0.f;
+    const float right = mViewportWidth;
+    const float bottom = mViewportHeight;
+    const float top = 0.f;
+    const float zNear = -1.f;
+    const float zFar = 1.f;
+
+    float projOrtho[16];
+    MakeOrtho2DMat( left, right, top, bottom, zNear, zFar, projOrtho );
+
+    if( mShader )
+    {
+        glUseProgram( mShader );
+        GLint mvpLoc = glGetUniformLocation( mShader, "uWVP" );
+        if( mvpLoc >= 0 )
+        {
+            glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, projOrtho );
+        }
+    }
+
+    if( mWireShader )
+    {
+        glUseProgram( mWireShader );
+        GLint mvpLoc = glGetUniformLocation( mWireShader, "uWVP" );
+        if( mvpLoc >= 0 )
+        {
+            glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, projOrtho );
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Composition::SetContentScale( const float scale )
+{
+    mContentScale = scale < kSomeSmallFloat ? kSomeSmallFloat : scale;
+
+    if( mShader )
+    {
+        glUseProgram( mShader );
+        GLint scaleLoc = glGetUniformLocation( mShader, "uScale" );
+        if( scaleLoc >= 0 )
+        {
+            glUniform1f( scaleLoc, mContentScale );
+        }
+    }
+
+    if( mWireShader )
+    {
+        glUseProgram( mWireShader );
+        GLint scaleLoc = glGetUniformLocation( mWireShader, "uScale" );
+        if( scaleLoc >= 0 )
+        {
+            glUniform1f( scaleLoc, mContentScale );
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+float Composition::GetContentScale() const
+{
+    return mContentScale;
+}
+//////////////////////////////////////////////////////////////////////////
+void Composition::SetContentOffset( const float offX, const float offY )
+{
+    mContentOffX = offX;
+    mContentOffY = offY;
+
+    if( mShader )
+    {
+        glUseProgram( mShader );
+        GLint offLoc = glGetUniformLocation( mShader, "uOffset" );
+        if( offLoc >= 0 )
+        {
+            glUniform2f( offLoc, mContentOffX, mContentOffY );
+        }
+    }
+
+    if( mWireShader )
+    {
+        glUseProgram( mWireShader );
+        GLint offLoc = glGetUniformLocation( mWireShader, "uOffset" );
+        if( offLoc >= 0 )
+        {
+            glUniform2f( offLoc, mContentOffX, mContentOffY );
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+float Composition::GetWidth() const
+{
+    if( mComposition )
+    {
+        const aeMovieCompositionData* data = ae_get_movie_composition_composition_data( mComposition );
+        return ae_get_movie_composition_data_width( data );
+    }
+    else
+    {
+        return 0.f;
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+float Composition::GetHeight() const
+{
+    if( mComposition )
+    {
+        const aeMovieCompositionData* data = ae_get_movie_composition_composition_data( mComposition );
+        return ae_get_movie_composition_data_height( data );
+    }
+    else
+    {
+        return 0.f;
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 const std::string & Composition::GetName() const
@@ -439,12 +569,12 @@ void Composition::Draw( const DrawMode mode )
         }
     }
 
-    this->EndDraw();
+    EndDraw();
 }
 //////////////////////////////////////////////////////////////////////////
 uint32_t Composition::GetNumSubCompositions() const
 {
-    uint32_t size = mSubCompositions.size();
+    uint32_t size = static_cast<uint32_t>(mSubCompositions.size());
 
     return size;
 }
@@ -839,15 +969,10 @@ bool Composition::CreateDrawingData()
         return false;
     }
 
-    float left = 0.f;
-    float right = ae_get_movie_composition_data_width( data );
-    float bottom = ae_get_movie_composition_data_height( data );
-    float top = 0.f;
-    float zNear = -1.f;
-    float zFar = 1.f;
-
-    float projOrtho[16];
-    MakeOrtho2DMat( left, right, top, bottom, zNear, zFar, projOrtho );
+    // Set initial ortho matrix, scale & offset
+    SetViewportSize( mViewportWidth, mViewportHeight );
+    SetContentScale( mContentScale );
+    SetContentOffset( mContentOffX, mContentOffY );
 
     glUseProgram( mShader );
 
@@ -855,12 +980,6 @@ bool Composition::CreateDrawingData()
     if( mIsPremultAlphaUniform >= 0 )
     {
         glUniform1i( mIsPremultAlphaUniform, GL_FALSE );
-    }
-
-    GLint mvpLoc = glGetUniformLocation( mShader, "uWVP" );
-    if( mvpLoc >= 0 )
-    {
-        glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, projOrtho );
     }
 
     GLint texLocRGB = glGetUniformLocation( mShader, "uTextureRGB" );
@@ -873,14 +992,6 @@ bool Composition::CreateDrawingData()
     if( texLocA >= 0 )
     {
         glUniform1i( texLocA, kTextureASlot );
-    }
-
-    glUseProgram( mWireShader );
-
-    mvpLoc = glGetUniformLocation( mWireShader, "uWVP" );
-    if( mvpLoc >= 0 )
-    {
-        glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, projOrtho );
     }
 
     // create vertex buffer

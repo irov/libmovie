@@ -288,7 +288,7 @@ void Movie::CloseComposition( Composition* composition )
 //////////////////////////////////////////////////////////////////////////
 uint32_t Movie::GetMainCompositionsCount() const
 {
-    VectorMovieCompositionData::size_type size = mCompositionDatas.size();
+    uint32_t size = static_cast<uint32_t>(mCompositionDatas.size());
 
     return size;
 }
