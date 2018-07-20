@@ -70,9 +70,25 @@ if(UNIX AND NOT APPLE)
 	LINK_DIRECTORIES(${GTK3_LIBRARY_DIRS})
 endif()
 
+set(resources_sources )
+
+if(WIN32)
+    if(MINGW)
+        # resource compilation for mingw
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/moview_rc.o
+                           COMMAND windres.exe -I${CMAKE_CURRENT_SOURCE_DIR}/src
+                                               -i${CMAKE_CURRENT_SOURCE_DIR}/src/moview.rc
+                                               -o ${CMAKE_CURRENT_BINARY_DIR}/moview_rc.o)
+        set(resources_sources ${resources_sources} ${CMAKE_CURRENT_BINARY_DIR}/moview_rc.o)
+    else()
+        set(resources_sources ${resources_sources} ${CMAKE_CURRENT_SOURCE_DIR}/src/moview.rc)
+    endif()
+endif()
+
 add_executable(${PROJECT_NAME}	
 	${files_headers} 
 	${files_sources}
+    ${resources_sources}
 )
 
 if(UNIX AND NOT APPLE)

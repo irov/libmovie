@@ -179,7 +179,7 @@ AE_INTERNAL ae_float_t __get_movie_layer_transformation_property( ae_constvoidpt
             ae_float_t block_end = property_ae_float_t[1];
 
             ae_uint32_t block_index = _index - property_index;
-            ae_float_t block_index_f = index256_to_float[block_index];
+            const ae_float_t block_index_f = index256_to_float[block_index];
 
             ae_float_t block_t = block_index_f * block_inv;
 
