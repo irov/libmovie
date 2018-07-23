@@ -14,6 +14,8 @@
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
+static const char * g_default_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
+//////////////////////////////////////////////////////////////////////////
 static uint64_t GetCurrentTimeSeconds()
 {
     std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
@@ -37,7 +39,7 @@ Viewer::Viewer()
     , mComposition( nullptr )
     , mLastCompositionIdx( 0 )
 {
-    mLicenseHash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
+    mLicenseHash = g_default_hash;
     mSessionFileName = "session.txt";
 
     mBackgroundColor[0] = 0.412f;
@@ -329,6 +331,11 @@ void Viewer::DoUI()
             if( ImGui::InputText( "##LicenseHash", licenseHash, sizeof( licenseHash ) - 1 ) )
             {
                 mLicenseHash = licenseHash;
+
+                if( mLicenseHash.empty() == true )
+                {
+                    mLicenseHash = g_default_hash;
+                }
             }
         }
         ImGui::PopItemWidth();
