@@ -1,0 +1,17 @@
+@echo off
+
+set "PROJECT=moview"
+set "CONFIGURATION=Release"
+set "SOLUTION_TYPE=MINGW"
+set "SOLUTION_DIR=..\solutions\%PROJECT%_%SOLUTION_TYPE%_%CONFIGURATION%"
+
+@pushd ..
+@mkdir %SOLUTION_DIR%
+@pushd %SOLUTION_DIR%
+CMake -G "MinGW Makefiles" "%CD%\..\.." -DCMAKE_CONFIGURATION_TYPES:STRING=%CONFIGURATION% -DCMAKE_BUILD_TYPE:STRING=%CONFIGURATION% -D%SOLUTION_TYPE%:BOOLEAN=ON
+
+mingw32-make.exe
+@popd
+
+@echo on
+@pause
