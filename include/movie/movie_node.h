@@ -352,9 +352,9 @@ typedef struct aeMovieShaderProviderCallbackData
 
 typedef struct aeMovieShaderPropertyUpdateCallbackData
 {
-    ae_voidptr_t element;
-
     ae_uint32_t index;
+
+    ae_voidptr_t element;
 
     ae_string_t name;
     ae_string_t uniform;
@@ -368,6 +368,7 @@ typedef struct aeMovieShaderPropertyUpdateCallbackData
 typedef struct aeMovieShaderDeleterCallbackData
 {
     ae_uint32_t index;
+
     ae_voidptr_t element;
 
     ae_string_t name;
@@ -441,8 +442,6 @@ typedef struct aeMovieCompositionSceneEffectDeleterCallbackData
 
 typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
 {
-    ae_uint32_t index;
-
     ae_voidptr_t element;
 
     /// @brief Additional transform, e.g.
