@@ -222,13 +222,13 @@ typedef struct aeMovieNodeProviderCallbackData
     ae_uint32_t index;
 
     const aeMovieLayerData * layer;
-    
+
     /// @brief if node incessantly timeline
     ae_bool_t incessantly;
 
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix4_ptr_t matrix;
-    
+
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
 
@@ -237,7 +237,7 @@ typedef struct aeMovieNodeProviderCallbackData
 
     /// @brief Value from 0.0 to 1.0.
     ae_float_t volume;
-    
+
     /// @brief Pointer to track matte layer, should be used to create user track matte structure inside provider.
     const aeMovieLayerData * track_matte_layer;
 } aeMovieNodeProviderCallbackData;
@@ -258,7 +258,7 @@ typedef struct aeMovieNodeUpdateCallbackData
 
     ae_voidptr_t element;
     const aeMovieLayerData * layer;
-    
+
     ae_bool_t loop;
     aeMovieStateUpdateEnum state;
     ae_time_t offset;
@@ -326,7 +326,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
 } aeMovieTrackMatteUpdateCallbackData;
 
 typedef struct aeMovieTrackMatteDeleterCallbackData
-{    
+{
     ae_uint32_t index;
 
     ae_voidptr_t element;
@@ -495,7 +495,7 @@ typedef struct aeMovieCompositionProviders
     ae_movie_composition_callback_shader_provider_t shader_provider;
     ae_movie_composition_callback_shader_deleter_t shader_deleter;
     ae_movie_composition_callback_shader_property_update_t shader_property_update;
-    
+
     ae_movie_composition_callback_composition_event_t composition_event;
     ae_movie_composition_callback_composition_state_t composition_state;
 
@@ -543,7 +543,7 @@ typedef struct aeMovieCompositionRenderInfo
     ae_uint32_t max_render_node;
     ae_uint32_t max_vertex_count;
     ae_uint32_t max_index_count;
-    
+
 } aeMovieCompositionRenderInfo;
 
 /**

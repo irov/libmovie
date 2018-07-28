@@ -61,7 +61,7 @@ typedef struct aeMovieResourceVideo
     ae_bool_t has_alpha_channel;
     ae_time_t frameRate; //No TIMESCALE
     ae_time_t duration; //No TIMESCALE
-    
+
     const struct aeMovieResourceVideoCache * cache;
 
 } aeMovieResourceVideo;
@@ -99,7 +99,7 @@ typedef struct aeMovieResourceImage
 
     const struct aeMovieResourceImage * atlas_image;
     ae_bool_t atlas_rotate;
-    
+
     const struct aeMovieResourceImageCache * cache;
 
 } aeMovieResourceImage;

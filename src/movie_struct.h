@@ -178,7 +178,7 @@ struct aeMovieNode
 
     ae_color_t composition_color;
     ae_float_t composition_opacity;
-       
+
     ae_color_t color;
     ae_color_channel_t opacity;
 
@@ -207,7 +207,7 @@ struct aeMovieComposition
 
     ae_uint32_t node_count;
     aeMovieNode * nodes;
-    
+
     aeMovieNode * scene_effect_node;
     ae_voidptr_t scene_effect_data;
 
@@ -293,7 +293,7 @@ struct aeMovieData
     const aeMovieInstance * instance;
 
     ae_string_t name;
-        
+
     aeMovieDataProviders providers;
     ae_voidptr_t provider_data;
 
