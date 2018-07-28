@@ -15,10 +15,14 @@ results:
 * tool_folder
 * export_path
 * export_name
+* allow_atlas
 * atlas
 * polygonize_sprite
-* polygonize_square
+* polygonize_sprite_square
+* allow_image_premultiplied
 * image_premultiplied
+* allow_sha1
+* use_sha1
 * show_complete
 
 ## Image export
@@ -54,9 +58,11 @@ scripts/ae_movie_export_sound.bat
 arguments:
 * in_path
 * out_path
+* out_work
 * project_name
 * write_name
 * write_path
+* use_sha1
 
 results:
 * write_name
@@ -70,10 +76,12 @@ scripts/ae_movie_export_video.bat
 arguments:
 * in_path
 * out_path
+* out_work
 * project_name
 * write_name
 * write_path
 * alpha
+* use_sha1
 
 results:
 * write_name
@@ -95,9 +103,11 @@ scripts/ae_movie_export_astralax.bat
 arguments:
 * in_path
 * out_path
+* out_work
 * project_name
 * write_name
 * write_path
+* use_sha1
 
 results:
 * write_name
