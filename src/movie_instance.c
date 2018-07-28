@@ -76,9 +76,9 @@ AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance 
         ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
 
         ae_vector2_t * bezier_warp_uvs = AE_NEWN( _instance, ae_vector2_t, vertex_count );
-                
+
         ae_vector2_t * bezier_warp_uvs_iterator = bezier_warp_uvs;
-        
+
         ae_float_t grid_invf = 1.f / (ae_float_t)(line_count - 1);
 
         ae_uint32_t v = 0;
@@ -101,7 +101,7 @@ AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance 
         ae_uint16_t * bezier_warp_indices_iterator = bezier_warp_indices;
 
         ae_uint16_t uv_count = (ae_uint16_t)line_count;
-        ae_uint16_t uv_count_one = uv_count - 1;        
+        ae_uint16_t uv_count_one = uv_count - 1;
 
         ae_uint16_t v2 = 0;
         for( ; v2 != uv_count_one; ++v2 )
@@ -117,7 +117,7 @@ AE_INTERNAL ae_void_t __instance_setup_bezier_warp( aeMovieInstance * _instance 
                 *bezier_warp_indices_iterator++ = u2 + (v2 + 1U) * uv_count + 1U;
             }
         }
-        
+
         _instance->bezier_warp_indices[quality] = (const ae_uint16_t *)bezier_warp_indices;
     }
 }
@@ -199,7 +199,7 @@ const aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae
     *sprite_indices++ = 2;
 
     __instance_setup_bezier_warp( instance );
-    
+
     __clear_layer_extensions( &instance->layer_extensions_default );
 
     return instance;

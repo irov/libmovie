@@ -565,7 +565,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
     }
 
     const aeMovieLayerData * node_layer = _node->layer;
-    
+
 #	ifdef AE_MOVIE_DEBUG	
     if( __test_error_composition_layer_frame( _composition->movie_data->instance
         , _compositionData
@@ -577,7 +577,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
         return;
     }
 #	endif
-    
+
     const struct aeMovieLayerTransformation * layer_transformation = node_layer->transformation;
 
     ae_color_channel_t local_r = 1.f;
@@ -609,7 +609,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
     if( node_relative == AE_NULL )
     {
         ae_movie_make_layer_matrix( _node->matrix, layer_transformation, _interpolate, _frameId, _t );
-        
+
         if( node_layer->sub_composition_data != AE_NULL )
         {
             _node->composition_color.r = local_r;
@@ -635,7 +635,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
 
         return;
     }
-        
+
     if( _subcomposition == node_relative->subcomposition )
     {
         const aeMovieLayerData * node_relative_relative = node_relative->layer;
@@ -646,7 +646,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
         ae_bool_t interpolate_relative = (frame_relative + 1 == node_relative_relative->frame_count) ? AE_FALSE : _interpolate;
 
         __update_movie_composition_node_matrix( node_relative, _revision, _composition, _compositionData, _animation, _subcomposition, frame_relative, interpolate_relative, t_relative );
-    }    
+    }
 
     ae_matrix4_t local_matrix;
 
@@ -731,7 +731,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_shader( aeMovieNode * _nod
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.index = index;
-                callbackData.element = _node->shader_data;                
+                callbackData.element = _node->shader_data;
                 callbackData.name = parameter_slider->name;
                 callbackData.uniform = parameter_slider->uniform;
                 callbackData.type = parameter_slider->type;
@@ -754,7 +754,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_shader( aeMovieNode * _nod
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.index = index;
-                callbackData.element = _node->shader_data;                
+                callbackData.element = _node->shader_data;
                 callbackData.name = parameter_color->name;
                 callbackData.uniform = parameter_color->uniform;
                 callbackData.type = parameter_color->type;
@@ -2898,14 +2898,14 @@ AE_INTERNAL ae_void_t __refresh_movie_composition_matrix( const aeMovieCompositi
         if( node_layer->type == AE_MOVIE_LAYER_TYPE_EVENT )
         {
             continue;
-        }        
+        }
 
         ae_float_t frameDurationInv = node_layer->composition_data->frameDurationInv;
 
         ae_float_t frame_time = node->current_time / node->stretch * frameDurationInv;
 
         ae_uint32_t frameId = (ae_uint32_t)frame_time;
-                        
+
         ae_float_t t = 0.f;
         if( composition_interpolate == AE_TRUE )
         {
@@ -3424,7 +3424,7 @@ AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _
     {
         return;
     }
-    
+
     ae_uint32_t update_revision = __inc_composition_update_revision( _composition );
 
     if( current_animation_time > _time )
@@ -3607,7 +3607,7 @@ ae_void_t ae_set_movie_composition_time( const aeMovieComposition * _composition
 
         aeMovieCompositionAnimation * subcomposition_animation = subcomposition->animation;
         const aeMovieCompositionData * subcomposition_composition_data = subcomposition->composition_data;
-        
+
         __refresh_movie_composition_matrix( _composition, subcomposition_composition_data, subcomposition_animation, subcomposition );
     }
 }

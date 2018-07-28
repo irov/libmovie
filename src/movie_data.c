@@ -179,7 +179,7 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
             {
                 AE_DELETEN( instance, resource_image->uvs );
             }
-            
+
             ae_uint32_t index_bezier_warp_uv = 0;
             for( ; index_bezier_warp_uv != AE_MOVIE_BEZIER_MAX_QUALITY; ++index_bezier_warp_uv )
             {
@@ -1159,7 +1159,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
     _layer->parent_index = parent_index;
 
-    
+
     AE_READF( _stream, _layer->in_time );
     AE_READF( _stream, _layer->out_time );
     AE_READF( _stream, _layer->start_time );
@@ -1682,7 +1682,7 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
 ae_result_t ae_check_movie_data( aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
 {
     ae_result_t result = __check_movie_data( _stream, _major, _minor );
-    
+
     return result;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2174,7 +2174,7 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
     case AE_MOVIE_RESOURCE_IMAGE:
         {
             aeMovieResourceImage * resource_image = (aeMovieResourceImage *)_resource;
-            
+
             struct aeMovieResourceImageCache * cache = AE_NEW( instance, struct aeMovieResourceImageCache );
 
             ae_voidptr_t cu_sprite = AE_NULL;
@@ -2196,7 +2196,7 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
 
             ae_uint32_t quality = 0;
             for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
-            {                
+            {
                 ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
                 const ae_vector2_t * uvs = instance->bezier_warp_uvs[quality];
 
@@ -2206,14 +2206,14 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
                 cache->bezier_warp_uv_cache_data[quality] = cu_bezier;
             }
 
-            resource_image->cache = cache;            
+            resource_image->cache = cache;
         }break;
     case AE_MOVIE_RESOURCE_VIDEO:
         {
             aeMovieResourceVideo * resource_video = (aeMovieResourceVideo *)_resource;
 
             struct aeMovieResourceVideoCache * cache = AE_NEW( instance, struct aeMovieResourceVideoCache );
-            
+
             ae_voidptr_t cu_sprite = AE_NULL;
             AE_RESULT( __callback_cache_uv_provider, (_movieData, &cu_sprite, _resource, 4, instance->sprite_uv) );
 
@@ -2466,7 +2466,7 @@ const ae_viewport_t * ae_get_movie_layer_data_viewport( const aeMovieLayerData *
     if( extensions == AE_NULL )
     {
         return AE_NULL;
-    }    
+    }
 
     const aeMovieLayerExtensionViewport * viewport = extensions->viewport;
 

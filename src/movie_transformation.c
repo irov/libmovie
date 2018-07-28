@@ -37,13 +37,13 @@ AE_INTERNAL ae_constvoidptr_t __load_movie_layer_transformation_timeline( aeMovi
 {
     AE_UNUSED( _doc );
 
-    ae_uint32_t zp_data_size ;
+    ae_uint32_t zp_data_size;
     AE_READ( _stream, zp_data_size );
 
     ae_uint32_t hashmask_iterator = AE_READ8( _stream );
 
     ae_voidptr_t timeline = AE_NEWV( _stream->instance, zp_data_size, _doc );
-    
+
     AE_MOVIE_PANIC_MEMORY( timeline, AE_NULL );
 
     AE_READV( _stream, timeline, (ae_size_t)zp_data_size );
@@ -127,7 +127,7 @@ AE_INTERNAL ae_float_t __get_movie_layer_transformation_property( ae_constvoidpt
     ae_uint32_t property_index = 0U;
 
     const ae_uint32_t * property_ae_uint32_t = (const ae_uint32_t *)_property;
-    
+
     ae_uint32_t zp_block_type_count_data = *(property_ae_uint32_t++);
 
     ae_uint32_t zp_block_type = zp_block_type_count_data >> 24U;
@@ -167,7 +167,7 @@ AE_INTERNAL ae_float_t __get_movie_layer_transformation_property( ae_constvoidpt
             ae_float_t block_index_f = (ae_float_t)block_index;
 
             ae_float_t block_t = block_index_f * block_inv;
-            
+
             ae_float_t block_value = block_begin + (block_end - block_begin) * block_t;
 
             return block_value;
@@ -229,7 +229,7 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation2d_immutable( ae_matrix4_
     ae_vector2_t scale;
     scale[0] = _transformation->immutable.scale_x;
     scale[1] = _transformation->immutable.scale_y;
-    
+
     ae_quaternionzw_t quaternionzw;
     quaternionzw[0] = _transformation->immutable.quaternion_z;
     quaternionzw[1] = _transformation->immutable.quaternion_w;
@@ -238,7 +238,7 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation2d_immutable( ae_matrix4_
     skew[0] = _transformation->immutable.skew;
     skew[1] = _transformation->immutable.skew_quaternion_z;
     skew[2] = _transformation->immutable.skew_quaternion_w;
-        
+
     ae_movie_make_transformation2d_m4( _out, position, anchor_point, scale, quaternionzw, skew );
 }
 //////////////////////////////////////////////////////////////////////////
@@ -269,7 +269,7 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_
     skew[0] = _transformation->immutable.skew;
     skew[1] = _transformation->immutable.skew_quaternion_z;
     skew[2] = _transformation->immutable.skew_quaternion_w;
-    
+
     ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
@@ -307,7 +307,7 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation2d( aeMovieStream * _st
     if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
     {
         ae_matrix4_t * immutable_matrix = AE_NEW( _stream->instance, ae_matrix4_t );
-        
+
         AE_MOVIE_PANIC_MEMORY( immutable_matrix, AE_RESULT_INVALID_MEMORY );
 
         __make_movie_layer_transformation2d_immutable( *immutable_matrix, _transformation );
@@ -721,7 +721,7 @@ AE_CALLBACK ae_void_t __make_layer_transformation3d_interpolate_wq( ae_matrix4_t
     ae_vector3_t position;
     ae_vector3_t scale;
     ae_skew_t skew;
-    
+
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_x, anchor_point[0] );
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_y, anchor_point[1] );
     AE_INTERPOLATE_PROPERTY( transformation3d, anchor_point_z, anchor_point[2] );
@@ -979,7 +979,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
             AE_RESULT_PANIC_MEMORY( timeline );
         }
-        
+
         transformation2d->timeline = timeline;
 
         AE_RESULT( __load_movie_layer_transformation2d, (_stream, immutable_property_mask, transformation2d) );
@@ -990,7 +990,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
             transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_immutable;
         }
         else
-        {            
+        {
             ae_uint32_t fixed_transformation = 0;
 
             if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW )
@@ -1083,7 +1083,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
             ae_uint32_t fixed_transformation = 0;
 
             if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW )
-            {                
+            {
                 ae_float_t skew = transformation3d->immutable.skew;
 
                 if( skew == 0.f )

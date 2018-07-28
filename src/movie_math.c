@@ -204,8 +204,8 @@ AE_INTERNAL ae_void_t __make_transformation2d_anchor_scale_m4( ae_matrix4_t _m, 
     _m[2 * 4 + 2] = 1.f;
     _m[2 * 4 + 3] = 0.f;
 
-    _m[3 * 4 + 0] = - _anchor[0] * _scale[0];
-    _m[3 * 4 + 1] = - _anchor[1] * _scale[1];
+    _m[3 * 4 + 0] = -_anchor[0] * _scale[0];
+    _m[3 * 4 + 1] = -_anchor[1] * _scale[1];
     _m[3 * 4 + 2] = 0.f;
     _m[3 * 4 + 3] = 1.f;
 }
@@ -227,9 +227,9 @@ AE_INTERNAL ae_void_t __make_transformation3d_anchor_scale_m4( ae_matrix4_t _m, 
     _m[2 * 4 + 2] = _scale[2];
     _m[2 * 4 + 3] = 0.f;
 
-    _m[3 * 4 + 0] = - _anchor[0] * _scale[0];
-    _m[3 * 4 + 1] = - _anchor[1] * _scale[1];
-    _m[3 * 4 + 2] = - _anchor[2] * _scale[2];
+    _m[3 * 4 + 0] = -_anchor[0] * _scale[0];
+    _m[3 * 4 + 1] = -_anchor[1] * _scale[1];
+    _m[3 * 4 + 2] = -_anchor[2] * _scale[2];
     _m[3 * 4 + 3] = 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -319,9 +319,9 @@ ae_void_t ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vecto
 {
     ae_matrix4_t m4_anchor_scale;
     __make_transformation3d_anchor_scale_m4( m4_anchor_scale, _anchor, _scale );
-    
+
     __apply_transformation_skew_m4( _out, m4_anchor_scale, _skew );
-    
+
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
     _out[3 * 4 + 2] += _position[2];
@@ -333,7 +333,7 @@ ae_void_t ae_movie_make_transformation3d_m4wsk( ae_matrix4_t _out, const ae_vect
     __make_transformation3d_anchor_scale_m4( m4_anchor_scale, _anchor, _scale );
 
     __apply_transformation3d_rotate_m4( _out, m4_anchor_scale, _quaternion );
-    
+
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
     _out[3 * 4 + 2] += _position[2];
@@ -342,7 +342,7 @@ ae_void_t ae_movie_make_transformation3d_m4wsk( ae_matrix4_t _out, const ae_vect
 ae_void_t ae_movie_make_transformation3d_m4wskq( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale )
 {
     __make_transformation3d_anchor_scale_m4( _out, _anchor, _scale );
-    
+
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
     _out[3 * 4 + 2] += _position[2];
@@ -365,7 +365,7 @@ ae_void_t ae_movie_make_transformation2d_m4wsk( ae_matrix4_t _out, const ae_vect
     __make_transformation2d_anchor_scale_m4( m4_anchor_scale, _anchor, _scale );
 
     __apply_transformation2d_rotate_m4( _out, m4_anchor_scale, _quaternion );
-    
+
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
 }
@@ -373,7 +373,7 @@ ae_void_t ae_movie_make_transformation2d_m4wsk( ae_matrix4_t _out, const ae_vect
 ae_void_t ae_movie_make_transformation2d_m4wskq( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale )
 {
     __make_transformation2d_anchor_scale_m4( _out, _anchor, _scale );
-     
+
     _out[3 * 4 + 0] += _position[0];
     _out[3 * 4 + 1] += _position[1];
 }
