@@ -29,6 +29,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 IF(LIBMOVIE_COVERAGE AND CMAKE_COMPILER_IS_GNUCXX)
     include(CodeCoverage)
     setup_target_for_coverage(${PROJECT_NAME}_coverage tests coverage)
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 ENDIF()
 
 MACRO( ADD_FILTER group_name )
@@ -141,3 +142,8 @@ if(LIBMOVIE_EXAMPLES_BUILD)
 
     TARGET_LINK_LIBRARIES( test3 movie )    
 endif()
+
+include(CTest)
+enable_testing()
+
+add_subdirectory(tests)
