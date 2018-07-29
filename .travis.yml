@@ -52,5 +52,14 @@ script:
     - popd
     - popd
     
+    - gcov src/movie_bezier.c
+    - gcov src/movie_data.c
+    - gcov src/movie_instance.c
+    - gcov src/movie_math.c
+    - gcov src/movie_node.c
+    - gcov src/movie_skeleton.c
+    - gcov src/movie_stream.c
+    - gcov src/movie_transformation.c
+    
 after_success:
   - bash <(curl -s https://codecov.io/bash)
