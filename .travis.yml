@@ -29,13 +29,10 @@ matrix:
           compiler: gcc
 
         - os: osx
-          env: TARGET_CPU=x86 BUILD_CONFIGURATION=Debug BUILD_COVERAGE=FALSE
-
-        - os: osx
-          env: TARGET_CPU=x86 BUILD_CONFIGURATION=Debug BUILD_COVERAGE=TRUE
+          env: TARGET_CPU=x86
           
-        - os: osx
-          env: TARGET_CPU=x86 BUILD_CONFIGURATION=Release
+        - compiler: clang
+          env: BUILD_COVERAGE=TRUE
 
 script:
     # libmovie
