@@ -24,10 +24,9 @@ IF( NOT LIBMOVIE_EXTERNAL_BUILD )
     endif()
 ENDIF()
 
-IF(LIBMOVIE_COVERAGE)
-    SET(GCC_COVERAGE_COMPILE_FLAGS "-coverage -fprofile-arcs -ftest-coverage")
-    
-    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+IF(LIBMOVIE_COVERAGE AND CMAKE_COMPILER_IS_GNUCXX)
+    include(CodeCoverage)
+    setup_target_for_coverage(${PROJECT_NAME}_coverage tests coverage)
 ENDIF()
 
 MACRO( ADD_FILTER group_name )
