@@ -66,9 +66,11 @@ script:
     - popd    
     
 after_success:
-  - pushd ${TRAVIS_BUILD_DIR}
-  - lcov --directory . --capture --output-file coverage.info # capture coverage info
-  - lcov --list coverage.info #debug info  
+  - if [[ "$BUILD_COVERAGE" == "TRUE" ]]; then
+        pushd ${TRAVIS_BUILD_DIR}
+        lcov --directory . --capture --output-file coverage.info # capture coverage info
+        cov --list coverage.info #debug info  
 
-  - bash <(curl -s https://codecov.io/bash)
-  - popd
+        bash <(curl -s https://codecov.io/bash)
+        popd
+  - fi
