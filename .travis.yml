@@ -37,7 +37,7 @@ script:
     # libmovie
     - mkdir build_cmake
     - pushd build_cmake
-    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=FALSE
+    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=TRUE -DLIBMOVIE_COVERAGE:BOOL=TRUE
     - cmake --build .
     - ctest --output-on-failure
     - popd
@@ -52,6 +52,7 @@ script:
     - popd
     - popd
     
+    # codecov
     - gcov src/movie_bezier.c
     - gcov src/movie_data.c
     - gcov src/movie_instance.c
