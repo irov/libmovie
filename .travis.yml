@@ -25,13 +25,16 @@ env:
 
 matrix:
     exclude:
-        - os:       osx
+        - os: osx
           compiler: gcc
 
-        - os:  osx
-          env: TARGET_CPU=x86 BUILD_CONFIGURATION=Debug
+        - os: osx
+          env: TARGET_CPU=x86 BUILD_CONFIGURATION=Debug BUILD_COVERAGE=FALSE
 
-        - os:  osx
+        - os: osx
+          env: TARGET_CPU=x86 BUILD_CONFIGURATION=Debug BUILD_COVERAGE=TRUE
+          
+        - os: osx
           env: TARGET_CPU=x86 BUILD_CONFIGURATION=Release
 
 script:
@@ -51,17 +54,12 @@ script:
     - cmake --build .
     - ctest --output-on-failure
     - popd
-    - popd
-    
-    # codecov
-    - gcov src/movie_bezier.c
-    - gcov src/movie_data.c
-    - gcov src/movie_instance.c
-    - gcov src/movie_math.c
-    - gcov src/movie_node.c
-    - gcov src/movie_skeleton.c
-    - gcov src/movie_stream.c
-    - gcov src/movie_transformation.c
+    - popd    
     
 after_success:
+  - pushd ${TRAVIS_BUILD_DIR}
+  - lcov --directory . --capture --output-file coverage.info # capture coverage info
+  - lcov --list coverage.info #debug info  
+
   - bash <(curl -s https://codecov.io/bash)
+  - popd
