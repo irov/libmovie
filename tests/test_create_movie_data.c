@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-static const ae_char_t * ex_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
+static const ae_char_t * test_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
 
 AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
     AE_UNUSED( _data );
@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
     AE_UNUSED( argc );
     AE_UNUSED( argv );
 
-    const aeMovieInstance * instance = ae_create_movie_instance( ex_example_license_hash
+    const aeMovieInstance * instance = ae_create_movie_instance( test_example_license_hash
         , &stdlib_movie_alloc
         , &stdlib_movie_alloc_n
         , &stdlib_movie_free
@@ -43,6 +43,13 @@ int main( int argc, char *argv[] )
     {
         return EXIT_FAILURE;
     }
+
+    aeMovieDataProviders data_providers;
+    ae_clear_movie_data_providers( &data_providers );
+
+    aeMovieData * movieData = ae_create_movie_data( instance, &data_providers, AE_NULL );
+
+    ae_delete_movie_data( movieData );
 
     ae_delete_movie_instance( instance );
 

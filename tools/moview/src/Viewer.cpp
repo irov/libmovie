@@ -8,6 +8,7 @@
 #include "nfd.h"
 
 #include <algorithm>
+#include <thread>
 #include <chrono>
 
 #include <stdio.h>
@@ -38,6 +39,7 @@ Viewer::Viewer()
     , mToLoopPlay( false )
     , mComposition( nullptr )
     , mLastCompositionIdx( 0 )
+    , mWindowFocus( true )
 {
     mLicenseHash = g_default_hash;
     mSessionFileName = "session.txt";
@@ -51,6 +53,13 @@ Viewer::~Viewer()
 {
 }
 //////////////////////////////////////////////////////////////////////////
+static void GLFW_WindowFocusCallback( GLFWwindow * _window, int _focus )
+{
+    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer( _window ));
+
+    viewer->setFocus( _focus == 1 );
+}
+//////////////////////////////////////////////////////////////////////////
 bool Viewer::Initialize( int argc, char** argv )
 {
     this->LoadSession();
@@ -59,7 +68,7 @@ bool Viewer::Initialize( int argc, char** argv )
         mMovieFilePath = argv[1];
         mCompositionName = argv[2];
         mToLoopPlay = (strcmp( argv[3], "1" ) == 0);
-        mLicenseHash = argv[4];        
+        mLicenseHash = argv[4];
     }
 
     if( glfwInit() == 0 )
@@ -86,6 +95,8 @@ bool Viewer::Initialize( int argc, char** argv )
         return false;
     }
 
+    glfwSetWindowUserPointer( mWindow, this );
+
 
     glfwMakeContextCurrent( mWindow );
     gladLoadGLLoader( reinterpret_cast<GLADloadproc>(glfwGetProcAddress) );
@@ -95,6 +106,7 @@ bool Viewer::Initialize( int argc, char** argv )
     glfwSetCharCallback( mWindow, ImGui_ImplGlfw_CharCallback );
     glfwSetKeyCallback( mWindow, ImGui_ImplGlfw_KeyCallback );
     glfwSetMouseButtonCallback( mWindow, ImGui_ImplGlfw_MouseButtonCallback );
+    glfwSetWindowFocusCallback( mWindow, GLFW_WindowFocusCallback );
 
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
@@ -105,7 +117,7 @@ bool Viewer::Initialize( int argc, char** argv )
 
     ResourcesManager::Instance().Initialize();
 
-    if( !mMovieFilePath.empty() && !mLicenseHash.empty() ) 
+    if( !mMovieFilePath.empty() && !mLicenseHash.empty() )
     {
         this->ReloadMovie();
     }
@@ -143,6 +155,13 @@ void Viewer::Loop()
     {
         glfwPollEvents();
 
+        if( mWindowFocus == false )
+        {
+            std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+
+            continue;
+        }
+
         glClearColor( mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.f );
         glClear( GL_COLOR_BUFFER_BIT );
 
@@ -152,25 +171,25 @@ void Viewer::Loop()
 
         ImGui_ImplGlfwGL3_NewFrame();
 
-        if( mComposition ) 
+        if( mComposition )
         {
             if( mComposition->IsPlaying() )
             {
                 mComposition->Update( dt );
             }
 
-            if( mShowNormal || mShowWireframe ) 
+            if( mShowNormal || mShowWireframe )
             {
                 Composition::DrawMode drawMode;
-                if( mShowNormal && mShowWireframe ) 
+                if( mShowNormal && mShowWireframe )
                 {
                     drawMode = Composition::DrawMode::SolidWithWireOverlay;
                 }
-                else if( mShowWireframe ) 
+                else if( mShowWireframe )
                 {
                     drawMode = Composition::DrawMode::Wireframe;
                 }
-                else 
+                else
                 {
                     drawMode = Composition::DrawMode::Solid;
                 }
@@ -185,6 +204,8 @@ void Viewer::Loop()
         ImGui_ImplGlfwGL3_RenderDrawData( ImGui::GetDrawData() );
 
         glfwSwapBuffers( mWindow );
+
+        std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -234,7 +255,7 @@ void Viewer::LoadSession()
 //////////////////////////////////////////////////////////////////////////
 void Viewer::ShutdownMovie()
 {
-    if( mComposition ) 
+    if( mComposition )
     {
         mMovie.CloseComposition( mComposition );
         mComposition = nullptr;
@@ -343,7 +364,7 @@ void Viewer::DoUI()
     nextY += ImGui::GetWindowHeight();
     ImGui::End();
 
-    if( openNewMovie && !mMovieFilePath.empty() && !mLicenseHash.empty() ) 
+    if( openNewMovie && !mMovieFilePath.empty() && !mLicenseHash.empty() )
     {
         mCompositionName.clear();
         this->ReloadMovie();
@@ -352,7 +373,7 @@ void Viewer::DoUI()
     // If we have more then 1 main composition - let's allow user to choose one to play
     uint32_t numMainCompositions = mMovie.GetMainCompositionsCount();
 
-    if( numMainCompositions > 0 ) 
+    if( numMainCompositions > 0 )
     {
         ImGui::SetNextWindowPos( ImVec2( 0.f, nextY ) );
         ImGui::SetNextWindowSize( ImVec2( leftPanelWidth, panelHeight ) );
@@ -368,7 +389,7 @@ void Viewer::DoUI()
                 ImGui::RadioButton( fullLabel.c_str(), &option, static_cast<int>(i) );
             }
 
-            if( static_cast<uint32_t>(option) != mLastCompositionIdx ) 
+            if( static_cast<uint32_t>(option) != mLastCompositionIdx )
             {
                 mLastCompositionIdx = static_cast<uint32_t>(option);
                 mMovie.CloseComposition( mComposition );
@@ -390,13 +411,13 @@ void Viewer::DoUI()
         ImGui::Checkbox( "Draw wireframe", &mShowWireframe );
         {
             float contentScale = (mComposition == nullptr) ? 1.0f : mComposition->GetContentScale();
-            ImGui::Text("Content scale:");
-            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.92f);
-            ImGui::SliderFloat("##ContentScale", &contentScale, 0.0f, 10.0f);
+            ImGui::Text( "Content scale:" );
+            ImGui::PushItemWidth( ImGui::GetWindowWidth() * 0.92f );
+            ImGui::SliderFloat( "##ContentScale", &contentScale, 0.0f, 10.0f );
             ImGui::PopItemWidth();
             if( mComposition )
             {
-                mComposition->SetContentScale(contentScale);
+                mComposition->SetContentScale( contentScale );
                 CenterCompositionOnScreen();
             }
         }
@@ -406,7 +427,7 @@ void Viewer::DoUI()
     nextY += ImGui::GetWindowHeight();
     ImGui::End();
 
-    if( mComposition ) 
+    if( mComposition )
     {
         ImGui::SetNextWindowPos( ImVec2( static_cast<float>(mWindowWidth) - rightPanelWidth, nextY ) );
         ImGui::SetNextWindowSize( ImVec2( rightPanelWidth, panelHeight ) );
@@ -429,9 +450,9 @@ void Viewer::DoUI()
             ImGui::PopItemWidth();
             mComposition->SetCurrentPlayTime( mManualPlayPos );
 
-            if( ImGui::Button( "Play" ) ) 
+            if( ImGui::Button( "Play" ) )
             {
-                if( mComposition->IsEndedPlay() ) 
+                if( mComposition->IsEndedPlay() )
                 {
                     mManualPlayPos = 0.f;
                 }
@@ -458,7 +479,7 @@ void Viewer::DoUI()
 
             bool loopComposition = mComposition->IsLooped();
             ImGui::Checkbox( "Loop composition", &loopComposition );
-            if( loopComposition != mComposition->IsLooped() ) 
+            if( loopComposition != mComposition->IsLooped() )
             {
                 mComposition->SetLoop( loopComposition );
             }
@@ -467,13 +488,13 @@ void Viewer::DoUI()
         ImGui::End();
 
         uint32_t numSubCompositions = mComposition->GetNumSubCompositions();
-        if( numSubCompositions != 0 ) 
+        if( numSubCompositions != 0 )
         {
             ImGui::SetNextWindowPos( ImVec2( static_cast<float>(mWindowWidth) - rightPanelWidth, nextY ) );
             ImGui::SetNextWindowSize( ImVec2( rightPanelWidth, panelHeight ) );
             ImGui::Begin( "Sub compositions:", nullptr, kPanelFlags );
             {
-                for( uint32_t i = 0; i < numSubCompositions; ++i ) 
+                for( uint32_t i = 0; i < numSubCompositions; ++i )
                 {
                     std::string guiID = std::to_string( i );
                     std::string fullName = guiID + ") " + mComposition->GetSubCompositionName( i ) + ":";
@@ -484,12 +505,12 @@ void Viewer::DoUI()
                     std::string btnStopNameAndId = std::string( "Stop##" ) + guiID;
                     std::string btnRewindNameAndId = std::string( "Rewind##" ) + guiID;
 
-                    if( ImGui::Button( btnPlayNameAndId.c_str() ) ) 
+                    if( ImGui::Button( btnPlayNameAndId.c_str() ) )
                     {
                         mComposition->PlaySubComposition( i );
                     }
                     ImGui::SameLine();
-                    if( ImGui::Button( btnPauseNameAndId.c_str() ) ) 
+                    if( ImGui::Button( btnPauseNameAndId.c_str() ) )
                     {
                         mComposition->PauseSubComposition( i );
                     }
@@ -549,13 +570,13 @@ void Viewer::CalcScaleToFitComposition()
             }
         }
 
-        mComposition->SetContentScale(scale);
+        mComposition->SetContentScale( scale );
     }
 }
 //////////////////////////////////////////////////////////////////////////
 void Viewer::CenterCompositionOnScreen()
 {
-    if (mComposition) {
+    if( mComposition ) {
         const float wndWidth = static_cast<float>(mWindowWidth);
         const float wndHeight = static_cast<float>(mWindowHeight);
 
@@ -566,7 +587,7 @@ void Viewer::CenterCompositionOnScreen()
         const float offX = (wndWidth - (contentWidth * contentScale)) * 0.5f;
         const float offY = (wndHeight - (contentHeight * contentScale)) * 0.5f;
 
-        mComposition->SetContentOffset(offX, offY);
+        mComposition->SetContentOffset( offX, offY );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -574,17 +595,22 @@ void Viewer::OnNewCompositionOpened()
 {
     if( mComposition )
     {
-        mComposition->SetViewportSize(static_cast<float>(mWindowWidth), static_cast<float>(mWindowHeight));
+        mComposition->SetViewportSize( static_cast<float>(mWindowWidth), static_cast<float>(mWindowHeight) );
 
         mCompositionName = mComposition->GetName();
         ViewerLogger << "Composition \"" << mCompositionName << "\" loaded successfully" << std::endl;
         ViewerLogger << " Duration: " << mComposition->GetDuration() << " seconds" << std::endl;
 
-        mComposition->SetLoop(mToLoopPlay);
+        mComposition->SetLoop( mToLoopPlay );
         mComposition->Play();
 
         // Now we need to scale and position our content so that it's centered and fits the screen
         CalcScaleToFitComposition();
         CenterCompositionOnScreen();
     }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::setFocus( bool _value )
+{
+    mWindowFocus = _value;
 }

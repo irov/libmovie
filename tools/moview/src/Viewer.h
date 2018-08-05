@@ -31,6 +31,9 @@ protected:
     void CenterCompositionOnScreen();
     void OnNewCompositionOpened();
 
+public:
+    void setFocus( bool _focus );
+
 protected:
     GLFWwindow * mWindow;
 
@@ -51,6 +54,7 @@ protected:
     bool mShowNormal;
     bool mShowWireframe;
     bool mShouldExit;
+    bool mWindowFocus;
     float mManualPlayPos;
 
 };
