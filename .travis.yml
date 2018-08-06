@@ -45,6 +45,7 @@ addons:
     apt:
         packages:
             - lcov
+            - cov
 
 script:
     # libmovie
