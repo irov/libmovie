@@ -5,7 +5,7 @@
 #include <string.h>
 
 static const ae_char_t * test_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
-static const ae_char_t * test_example_file_path = "../../../examples/resources/Knight/Knight.aem";
+static const ae_char_t * test_example_file_path = "examples/resources/Knight/Knight.aem";
 
 AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
     AE_UNUSED( _data );
@@ -51,7 +51,7 @@ int main( int argc, char *argv[] )
 {
     AE_UNUSED( argc );
     AE_UNUSED( argv );
-
+        
     const aeMovieInstance * instance = ae_create_movie_instance( test_example_license_hash
         , &stdlib_movie_alloc
         , &stdlib_movie_alloc_n
@@ -71,7 +71,13 @@ int main( int argc, char *argv[] )
 
     aeMovieData * movieData = ae_create_movie_data( instance, &data_providers, AE_NULL );
 
-    FILE * f = fopen( test_example_file_path, "rb" );
+    char full_example_file_path[256];
+    sprintf( full_example_file_path, "%s/../%s"
+        , argv[1]
+        , test_example_file_path 
+    );
+
+    FILE * f = fopen( full_example_file_path, "rb" );
 
     if( f == NULL )
     {
@@ -81,6 +87,8 @@ int main( int argc, char *argv[] )
     aeMovieStream * movie_stream = ae_create_movie_stream( instance, &__read_file, &__memory_copy, f );
 
     ae_delete_movie_stream( movie_stream );
+
+    fclose( f );
 
     ae_delete_movie_data( movieData );
 
