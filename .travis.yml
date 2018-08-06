@@ -45,7 +45,6 @@ addons:
     apt:
         packages:
             - lcov
-            - cov
 
 script:
     # libmovie
@@ -69,7 +68,7 @@ script:
 after_success:
     - pushd ${TRAVIS_BUILD_DIR}
     - lcov --directory . --capture --output-file coverage.info # capture coverage info
-    - cov --list coverage.info #debug info  
+    - lcov --list coverage.info #debug info  
     - bash <(curl -s https://codecov.io/bash)
     - popd
   
