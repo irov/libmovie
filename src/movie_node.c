@@ -1236,7 +1236,7 @@ AE_INTERNAL ae_void_t __setup_movie_node_time( aeMovieNode * _nodes, ae_uint32_t
             }
         }
 
-        node->stretch = _stretch;
+        node->stretch = _stretch * layer->stretch;
 
         switch( layer->type )
         {
@@ -2964,13 +2964,14 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         ae_uint32_t indexOut = (ae_uint32_t)(out_time * frameDurationInv + 0.001f);
 
         ae_float_t current_time = (endFrame >= indexOut) ? out_time - node->in_time + node->start_time : animation_time - node->in_time + node->start_time;
-        ae_float_t frame_time = current_time / node->stretch * frameDurationInv;
+        ae_float_t stretch_time = current_time / node->stretch;
+        ae_float_t frame_time = stretch_time * frameDurationInv;
 
         ae_uint32_t frameId = (ae_uint32_t)frame_time;
 
         if( node_layer->type == AE_MOVIE_LAYER_TYPE_EVENT )
         {
-            node->current_time = current_time;
+            node->current_time = stretch_time;
 
             __update_movie_composition_node_matrix( node, _revision, _composition, _compositionData, _animation, _subcomposition, frameId, AE_FALSE, 0.f );
 
@@ -3034,11 +3035,11 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         {
             if( node->incessantly == AE_TRUE )
             {
-                node->current_time = current_time;
+                node->current_time = stretch_time;
 
                 __update_movie_composition_node_matrix( node, _revision, _composition, _compositionData, _animation, _subcomposition, frameId, AE_FALSE, 0.f );
 
-                __update_movie_composition_node_state( _composition, node, enumerator, AE_TRUE, AE_TRUE, current_time, composition_interpolate );
+                __update_movie_composition_node_state( _composition, node, enumerator, AE_TRUE, AE_TRUE, stretch_time, composition_interpolate );
 
                 node->update_revision = _revision;
                 node->active = AE_TRUE;
@@ -3051,7 +3052,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
             continue;
         }
 
-        node->current_time = current_time;
+        node->current_time = stretch_time;
 
         ae_bool_t node_loop = ((animation_loop == AE_TRUE && animation_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || (node_layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
 

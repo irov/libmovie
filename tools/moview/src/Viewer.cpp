@@ -155,13 +155,6 @@ void Viewer::Loop()
     {
         glfwPollEvents();
 
-        if( mWindowFocus == false )
-        {
-            std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
-
-            continue;
-        }
-
         glClearColor( mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.f );
         glClear( GL_COLOR_BUFFER_BIT );
 
@@ -175,7 +168,7 @@ void Viewer::Loop()
         {
             if( mComposition->IsPlaying() )
             {
-                mComposition->Update( dt );
+                mComposition->Update( dt < 0.1f ? dt : 0.1f );
             }
 
             if( mShowNormal || mShowWireframe )
@@ -204,7 +197,7 @@ void Viewer::Loop()
         ImGui_ImplGlfwGL3_RenderDrawData( ImGui::GetDrawData() );
 
         glfwSwapBuffers( mWindow );
-
+        
         std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
     }
 }
