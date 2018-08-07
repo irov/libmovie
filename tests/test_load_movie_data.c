@@ -52,16 +52,16 @@ int main( int argc, char *argv[] )
     AE_UNUSED( argc );
     AE_UNUSED( argv );
         
-    const aeMovieInstance * instance = ae_create_movie_instance( test_example_license_hash
+    const aeMovieInstance * movieInstance = ae_create_movie_instance( test_example_license_hash
         , &stdlib_movie_alloc
         , &stdlib_movie_alloc_n
         , &stdlib_movie_free
         , &stdlib_movie_free_n
-        , (ae_movie_strncmp_t)AE_NULL
-        , (ae_movie_logger_t)AE_NULL
+        , (ae_movie_strncmp_t)AE_FNULL
+        , (ae_movie_logger_t)AE_FNULL
         , AE_NULL );
 
-    if( instance == AE_NULL )
+    if( movieInstance == AE_NULL )
     {
         return EXIT_FAILURE;
     }
@@ -69,7 +69,7 @@ int main( int argc, char *argv[] )
     aeMovieDataProviders data_providers;
     ae_clear_movie_data_providers( &data_providers );
 
-    aeMovieData * movieData = ae_create_movie_data( instance, &data_providers, AE_NULL );
+    aeMovieData * movieData = ae_create_movie_data( movieInstance, &data_providers, AE_NULL );
 
     char full_example_file_path[256];
     sprintf( full_example_file_path, "%s/../%s"
@@ -84,15 +84,25 @@ int main( int argc, char *argv[] )
         return EXIT_FAILURE;
     }
 
-    aeMovieStream * movie_stream = ae_create_movie_stream( instance, &__read_file, &__memory_copy, f );
+    aeMovieStream * movieStream = ae_create_movie_stream( movieInstance, &__read_file, &__memory_copy, f );
 
-    ae_delete_movie_stream( movie_stream );
 
+    ae_uint32_t load_major_version;
+    ae_uint32_t load_minor_version;
+    ae_result_t load_movie_data_result = ae_load_movie_data( movieData, movieStream, &load_major_version, &load_minor_version );
+
+    ae_delete_movie_stream( movieStream );
+
+    if( load_movie_data_result != AE_RESULT_SUCCESSFUL )
+    {
+        return EXIT_FAILURE;
+    }
+     
     fclose( f );
 
     ae_delete_movie_data( movieData );
 
-    ae_delete_movie_instance( instance );
+    ae_delete_movie_instance( movieInstance );
 
     return EXIT_SUCCESS;
 }

@@ -178,7 +178,7 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
 @brief Release stream.
 @param [in] _stream Stream.
 */
-ae_void_t ae_delete_movie_stream( aeMovieStream * _stream );
+ae_void_t ae_delete_movie_stream( const aeMovieStream * _stream );
 
 /**
 @brief Fills movie data structure and loads resources through provider.

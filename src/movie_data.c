@@ -1623,7 +1623,7 @@ aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance
     return stream;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_delete_movie_stream( aeMovieStream * _stream )
+ae_void_t ae_delete_movie_stream( const aeMovieStream * _stream )
 {
     AE_DELETE( _stream->instance, _stream );
 }

@@ -30,16 +30,16 @@ int main( int argc, char *argv[] )
     AE_UNUSED( argc );
     AE_UNUSED( argv );
 
-    const aeMovieInstance * instance = ae_create_movie_instance( test_example_license_hash
+    const aeMovieInstance * movieInstance = ae_create_movie_instance( test_example_license_hash
         , &stdlib_movie_alloc
         , &stdlib_movie_alloc_n
         , &stdlib_movie_free
         , &stdlib_movie_free_n
-        , (ae_movie_strncmp_t)AE_NULL
-        , (ae_movie_logger_t)AE_NULL
+        , (ae_movie_strncmp_t)AE_FNULL
+        , (ae_movie_logger_t)AE_FNULL
         , AE_NULL );
 
-    if( instance == AE_NULL )
+    if( movieInstance == AE_NULL )
     {
         return EXIT_FAILURE;
     }
@@ -47,11 +47,11 @@ int main( int argc, char *argv[] )
     aeMovieDataProviders data_providers;
     ae_clear_movie_data_providers( &data_providers );
 
-    aeMovieData * movieData = ae_create_movie_data( instance, &data_providers, AE_NULL );
+    aeMovieData * movieData = ae_create_movie_data( movieInstance, &data_providers, AE_NULL );
 
     ae_delete_movie_data( movieData );
 
-    ae_delete_movie_instance( instance );
+    ae_delete_movie_instance( movieInstance );
 
     return EXIT_SUCCESS;
 }
