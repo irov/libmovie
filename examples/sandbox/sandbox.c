@@ -87,7 +87,14 @@ int main( int argc, char *argv[] )
     AE_UNUSED( argc );
     AE_UNUSED( argv );
 
-    const aeMovieInstance * instance = ae_create_movie_instance( "52ad6f051099762d0a0787b4eb2d07c8a0ee4491", &stdlib_movie_alloc, &stdlib_movie_alloc_n, &stdlib_movie_free, &stdlib_movie_free_n, (ae_movie_strncmp_t)AE_NULL, &stdlib_movie_logerror, AE_NULL );
+    const aeMovieInstance * instance = ae_create_movie_instance( "52ad6f051099762d0a0787b4eb2d07c8a0ee4491"
+        , &stdlib_movie_alloc
+        , &stdlib_movie_alloc_n
+        , &stdlib_movie_free
+        , &stdlib_movie_free_n
+        , (ae_movie_strncmp_t)AE_FNULL
+        , &stdlib_movie_logerror
+        , AE_NULL );
 
     aeMovieDataProviders data_providers;
     ae_clear_movie_data_providers( &data_providers );

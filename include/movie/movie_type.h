@@ -64,10 +64,12 @@ typedef ae_float_t ae_matrix4_t[16];
 
 typedef const ae_float_t * ae_vector3_ptr_t;
 typedef const ae_float_t * ae_matrix4_ptr_t;
+typedef void( *ae_func_t )(void);
 
 static const ae_bool_t AE_TRUE = 1;
 static const ae_bool_t AE_FALSE = 0;
 static const ae_voidptr_t AE_NULL = 0;
+static const ae_func_t AE_FNULL = 0;
 
 
 typedef ae_float_t ae_color_channel_t;

@@ -165,6 +165,8 @@ struct aeMovieNode
 
     ae_float_t stretch;
     ae_float_t current_time;
+    ae_uint32_t current_frame;
+    ae_float_t current_frame_t;
 
     ae_bool_t active;
     ae_bool_t ignore;
