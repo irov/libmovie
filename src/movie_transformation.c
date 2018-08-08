@@ -273,8 +273,13 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_
     ae_movie_make_transformation3d_m4( _out, position, anchor_point, scale, quaternion, skew );
 }
 //////////////////////////////////////////////////////////////////////////
-#define AE_STREAM_PROPERTY(Mask, Name)\
-	if( _mask & Mask )\
+#define AE_STREAM_PROPERTY(Mask, Name, Default)\
+    if( identity_property_mask & Mask )\
+    {\
+        _transformation->immutable.Name = Default;\
+        if( _transformation->timeline != AE_NULL ) {_transformation->timeline->Name = AE_NULL;}\
+    }\
+	else if( immutable_property_mask & Mask )\
 	{\
 		AE_READ( _stream, _transformation->immutable.Name );\
 		if( _transformation->timeline != AE_NULL ) {_transformation->timeline->Name = AE_NULL;}\
@@ -286,25 +291,28 @@ AE_INTERNAL ae_void_t __make_movie_layer_transformation3d_immutable( ae_matrix4_
         AE_RESULT_PANIC_MEMORY(_transformation->timeline->Name);\
 	}
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __load_movie_layer_transformation2d( aeMovieStream * _stream, ae_uint32_t _mask, aeMovieLayerTransformation2D * _transformation )
+AE_INTERNAL ae_result_t __load_movie_layer_transformation2d( aeMovieStream * _stream, aeMovieLayerTransformation2D * _transformation )
 {
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
+    ae_uint32_t immutable_property_mask = _transformation->immutable_property_mask;
+    ae_uint32_t identity_property_mask = _transformation->identity_property_mask;
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y, 0.f );
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y, 0.f );
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x, 1.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y, 1.f );
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w, 1.f );
 
-    if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w, 1.f );
+
+    if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
     {
         ae_matrix4_t * immutable_matrix = AE_NEW( _stream->instance, ae_matrix4_t );
 
@@ -322,30 +330,33 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation2d( aeMovieStream * _st
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __load_movie_layer_transformation3d( aeMovieStream * _stream, ae_uint32_t _mask, aeMovieLayerTransformation3D * _transformation )
+AE_INTERNAL ae_result_t __load_movie_layer_transformation3d( aeMovieStream * _stream, aeMovieLayerTransformation3D * _transformation )
 {
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, anchor_point_z );
+    ae_uint32_t immutable_property_mask = _transformation->immutable_property_mask;
+    ae_uint32_t identity_property_mask = _transformation->identity_property_mask;
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X, anchor_point_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y, anchor_point_y, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z, anchor_point_z, 0.f );
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, scale_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z, 0.f );
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_X, scale_x, 1.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Y, scale_y, 1.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SCALE_Z, scale_z, 1.f );
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w, 1.f );
 
-    if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW, skew, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z, skew_quaternion_z, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W, skew_quaternion_w, 1.f );
+
+    if( (_transformation->immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
     {
         ae_matrix4_t * immutable_matrix = AE_NEW( _stream->instance, ae_matrix4_t );
 
@@ -361,6 +372,21 @@ AE_INTERNAL ae_result_t __load_movie_layer_transformation3d( aeMovieStream * _st
     }
 
     return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_CALLBACK ae_void_t __make_layer_transformation_interpolate_identity( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
+{
+    AE_UNUSED( _out );
+    AE_UNUSED( _transformation );
+    AE_UNUSED( _index );
+    AE_UNUSED( _t );
+}
+//////////////////////////////////////////////////////////////////////////
+AE_CALLBACK ae_void_t __make_layer_transformation_fixed_identity( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index )
+{
+    AE_UNUSED( _out );
+    AE_UNUSED( _transformation );
+    AE_UNUSED( _index );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t __make_layer_transformation_interpolate_immutable( ae_matrix4_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t )
@@ -967,13 +993,18 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
     _transformation->immutable_property_mask = immutable_property_mask;
 
+    ae_uint32_t identity_property_mask;
+    AE_READ( _stream, identity_property_mask );
+        
+    _transformation->identity_property_mask = identity_property_mask;
+
     if( _threeD == AE_FALSE )
     {
         aeMovieLayerTransformation2D * transformation2d = (aeMovieLayerTransformation2D *)_transformation;
 
         aeMovieLayerTransformation2DTimeline * timeline = AE_NULL;
 
-        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) != AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
+        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) != AE_MOVIE_IMMUTABLE_SUPER_ALL )
         {
             timeline = AE_NEW( _stream->instance, aeMovieLayerTransformation2DTimeline );
 
@@ -982,25 +1013,25 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
         transformation2d->timeline = timeline;
 
-        AE_RESULT( __load_movie_layer_transformation2d, (_stream, immutable_property_mask, transformation2d) );
+        AE_RESULT( __load_movie_layer_transformation2d, (_stream, transformation2d) );
 
-        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_ALL )
+        if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
         {
-            transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_immutable;
-            transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_immutable;
+            _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_identity;
+            _transformation->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_identity;
+        }
+        else if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
+        {
+            _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_immutable;
+            _transformation->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_immutable;
         }
         else
         {
             ae_uint32_t fixed_transformation = 0;
 
-            if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW )
+            if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW )
             {
-                ae_float_t skew = transformation2d->immutable.skew;
-
-                if( skew == 0.f )
-                {
-                    fixed_transformation += 0x00000001;
-                }
+                fixed_transformation += 0x00000001;
             }
 
             if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION )
@@ -1021,33 +1052,33 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
             {
             case 0:
                 {
-                    transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate;
-                    transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed;
                 }break;
             case 1:
                 {
-                    transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wsk;
-                    transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wsk;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wsk;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wsk;
                 }break;
             case 2:
                 {
-                    transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wq;
-                    transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wq;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wq;
                 }break;
             case 3:
                 {
-                    transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wskq;
-                    transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wskq;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wskq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wskq;
                 }break;
             case 4:
                 {
-                    transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_fq;
-                    transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_fq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed;
                 }break;
             case 5:
                 {
-                    transformation2d->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wskfq;
-                    transformation2d->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wsk;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation2d_interpolate_wskfq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation2d_fixed_wsk;
                 }break;
             default:
                 {
@@ -1062,7 +1093,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
         aeMovieLayerTransformation3DTimeline * timeline = AE_NULL;
 
-        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) != AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
+        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) != AE_MOVIE_IMMUTABLE_SUPER_ALL )
         {
             timeline = AE_NEW( _stream->instance, aeMovieLayerTransformation3DTimeline );
 
@@ -1071,12 +1102,17 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
         transformation3d->timeline = timeline;
 
-        AE_RESULT( __load_movie_layer_transformation3d, (_stream, immutable_property_mask, transformation3d) );
+        AE_RESULT( __load_movie_layer_transformation3d, (_stream, transformation3d) );
 
-        if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_ALL )
+        if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
         {
-            transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_immutable;
-            transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_immutable;
+            _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_identity;
+            _transformation->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_identity;
+        }
+        else if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
+        {
+            _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation_interpolate_immutable;
+            _transformation->transforamtion_fixed_matrix = &__make_layer_transformation_fixed_immutable;
         }
         else
         {
@@ -1110,33 +1146,33 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
             {
             case 0:
                 {
-                    transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate;
-                    transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed;
                 }break;
             case 1:
                 {
-                    transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wsk;
-                    transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wsk;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wsk;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wsk;
                 }break;
             case 2:
                 {
-                    transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wq;
-                    transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wq;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wq;
                 }break;
             case 3:
                 {
-                    transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wskq;
-                    transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wskq;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wskq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wskq;
                 }break;
             case 4:
                 {
-                    transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_fq;
-                    transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_fq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed;
                 }break;
             case 5:
                 {
-                    transformation3d->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wskfq;
-                    transformation3d->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wsk;
+                    _transformation->transforamtion_interpolate_matrix = &__make_layer_transformation3d_interpolate_wskfq;
+                    _transformation->transforamtion_fixed_matrix = &__make_layer_transformation3d_fixed_wsk;
                 }break;
             default:
                 {
@@ -1146,34 +1182,42 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
         }
     }
 
-    if( immutable_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
+    if( identity_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
+    {
+        _transformation->immutable_opacity = 1.f;
+        _transformation->timeline_opacity = AE_NULL;
+    }
+    else if( immutable_property_mask & AE_MOVIE_IMMUTABLE_OPACITY )
     {
         AE_READF( _stream, _transformation->immutable_opacity );
         _transformation->timeline_opacity = AE_NULL;
     }
     else
     {
-        _transformation->immutable_opacity = 0.f;
+        _transformation->immutable_opacity = 1.f;
         _transformation->timeline_opacity = __load_movie_layer_transformation_timeline( _stream, "immutable_opacity" );
     }
 
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_result_t __load_camera_transformation_property( aeMovieStream * _stream, ae_uint32_t _mask, aeMovieCompositionCamera * _transformation )
+AE_INTERNAL ae_result_t __load_camera_transformation_property( aeMovieStream * _stream, aeMovieCompositionCamera * _transformation )
 {
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_X, target_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Y, target_y );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Z, target_z );
+    ae_uint32_t immutable_property_mask = _transformation->immutable_property_mask;
+    ae_uint32_t identity_property_mask = _transformation->identity_property_mask;
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_X, target_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Y, target_y, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_TARGET_Z, target_z, 1.f );
 
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z );
-    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_X, position_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Y, position_y, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_POSITION_Z, position_z, 0.f );
+
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_X, quaternion_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Y, quaternion_y, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_Z, quaternion_z, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_IMMUTABLE_QUATERNION_W, quaternion_w, 1.f );
 
     return AE_RESULT_SUCCESSFUL;
 }
@@ -1184,6 +1228,11 @@ ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovi
     AE_READ( _stream, immutable_property_mask );
 
     _camera->immutable_property_mask = immutable_property_mask;
+
+    ae_uint32_t identity_property_mask;
+    AE_READ( _stream, identity_property_mask );
+
+    _camera->identity_property_mask = identity_property_mask;
 
     aeMovieCompositionCameraTimeline * timeline = AE_NULL;
 
@@ -1196,7 +1245,7 @@ ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovi
 
     _camera->timeline = timeline;
 
-    AE_RESULT( __load_camera_transformation_property, (_stream, immutable_property_mask, _camera) );
+    AE_RESULT( __load_camera_transformation_property, (_stream, _camera) );
 
     return AE_RESULT_SUCCESSFUL;
 }
