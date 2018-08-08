@@ -620,11 +620,17 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
         __update_movie_composition_node_matrix( node_relative, _revision, _composition, _compositionData, _animation, _subcomposition, frame_relative, interpolate_relative, t_relative );
     }
 
-    ae_matrix4_t local_matrix;
+    if( (layer_transformation->identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
+    {
+        ae_copy_m4( _node->matrix, node_relative->matrix );
+    }
+    else
+    {
+        ae_matrix4_t local_matrix;
+        ae_movie_make_layer_matrix( local_matrix, layer_transformation, _interpolate, _frameId, _t );
 
-    ae_movie_make_layer_matrix( local_matrix, layer_transformation, _interpolate, _frameId, _t );
-
-    ae_mul_m4_m4_r( _node->matrix, local_matrix, node_relative->matrix );
+        ae_mul_m4_m4_r( _node->matrix, local_matrix, node_relative->matrix );
+    }
 
     if( node_layer->sub_composition_data != AE_NULL )
     {
@@ -1487,12 +1493,17 @@ AE_INTERNAL ae_void_t __setup_movie_node_matrix2( const aeMovieComposition * _co
             continue;
         }
 
-        const aeMovieLayerData * layer = node->layer;
+        const aeMovieLayerData * node_layer = node->layer;
 
         ae_float_t t = 0.f;
         ae_uint32_t frameId = __get_movie_frame_time( _animation, node, _composition->interpolate, &t );
 
-        ae_bool_t node_interpolate = (frameId + 1 == layer->frame_count) ? AE_FALSE : _composition->interpolate;
+        ae_bool_t node_interpolate = (frameId + 1 == node_layer->frame_count) ? AE_FALSE : _composition->interpolate;
+
+        if( (node_layer->transformation->identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL) == AE_MOVIE_IMMUTABLE_SUPER_ALL )
+        { 
+            ae_ident_m4( node->matrix );
+        }
 
         __update_movie_composition_node_matrix( node, update_revision, _composition, _compositionData, _animation, _subcomposition, frameId, node_interpolate, t );
     }

@@ -256,6 +256,7 @@ struct aeMovieCompositionCamera
     ae_float_t fov;
 
     ae_uint32_t immutable_property_mask;
+    ae_uint32_t identity_property_mask;
 
     aeMovieCompositionCameraImuttable immutable;
     aeMovieCompositionCameraTimeline * timeline;

@@ -14,10 +14,11 @@ environment:
 
 build_script:
 - mkdir build_cmake
-- cd build_cmake
+- pushd build_cmake
 - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=FALSE
 - cmake --build .
 - ctest --output-on-failure
+- popd
 
 test_script:
 - ctest --build-config %env_cmake_configuration%
