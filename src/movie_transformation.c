@@ -1029,23 +1029,18 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
         {
             ae_uint32_t fixed_transformation = 0;
 
-            if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW )
+            if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_SKEW )
             {
                 fixed_transformation += 0x00000001;
             }
 
-            if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_TWO_D_QUATERNION )
+            if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION )
             {
-                ae_float_t qw = transformation2d->immutable.quaternion_w;
-
-                if( qw == 1.f )
-                {
-                    fixed_transformation += 0x00000002;
-                }
-                else
-                {
-                    fixed_transformation += 0x00000004;
-                }
+                fixed_transformation += 0x00000002;
+            }
+            else if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION )
+            {
+                fixed_transformation += 0x00000004;
             }
 
             switch( fixed_transformation )
@@ -1118,30 +1113,20 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
         {
             ae_uint32_t fixed_transformation = 0;
 
-            if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_D_SKEW )
+            if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_SKEW) == AE_MOVIE_IMMUTABLE_SUPER_ALL_SKEW )
             {
-                ae_float_t skew = transformation3d->immutable.skew;
-
-                if( skew == 0.f )
-                {
-                    fixed_transformation += 0x00000001;
-                }
+                fixed_transformation += 0x00000001;
             }
 
-            if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_THREE_D_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_THREE_D_QUATERNION )
+            if( (identity_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION )
             {
-                ae_float_t qw = transformation3d->immutable.quaternion_w;
-
-                if( qw == 1.f )
-                {
-                    fixed_transformation += 0x00000002;
-                }
-                else
-                {
-                    fixed_transformation += 0x00000004;
-                }
+                fixed_transformation += 0x00000002;
+            } 
+            else if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION) == AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION )
+            {
+                fixed_transformation += 0x00000004;
             }
-
+            
             switch( fixed_transformation )
             {
             case 0:
@@ -1236,7 +1221,7 @@ ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovi
 
     aeMovieCompositionCameraTimeline * timeline = AE_NULL;
 
-    if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_CAMERA_ALL) != AE_MOVIE_IMMUTABLE_SUPER_CAMERA_ALL )
+    if( (immutable_property_mask & AE_MOVIE_IMMUTABLE_SUPER_ALL_CAMERA) != AE_MOVIE_IMMUTABLE_SUPER_ALL_CAMERA )
     {
         timeline = AE_NEW( _stream->instance, aeMovieCompositionCameraTimeline );
 

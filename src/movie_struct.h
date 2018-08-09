@@ -297,6 +297,8 @@ struct aeMovieData
 
     ae_string_t name;
 
+    ae_bool_t common_store;
+
     aeMovieDataProviders providers;
     ae_voidptr_t provider_data;
 
