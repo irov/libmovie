@@ -478,7 +478,7 @@ AE_INTERNAL ae_result_t __load_movie_data_composition_camera( aeMovieStream * _s
         ae_float_t width = _compositionData->width;
         ae_float_t height = _compositionData->height;
 
-        camera->immutable_property_mask = AE_MOVIE_IMMUTABLE_SUPER_CAMERA_ALL;
+        camera->immutable_property_mask = AE_MOVIE_IMMUTABLE_SUPER_ALL_CAMERA;
 
         camera->immutable.position_x = width * 0.5f;
         camera->immutable.position_y = height * 0.5f;
@@ -2258,6 +2258,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
 
     AE_READ_STRING( _stream, _movieData->name );
 
+    _movieData->common_store = AE_READB( _stream );
+
     ae_uint32_t atlas_count = AE_READZ( _stream );
 
     _movieData->atlas_count = atlas_count;
@@ -2326,6 +2328,13 @@ const ae_char_t * ae_get_movie_name( const aeMovieData * _movieData )
     const ae_char_t * name = _movieData->name;
 
     return name;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_is_movie_common_store( const aeMovieData * _movieData )
+{
+    ae_bool_t common_store = _movieData->common_store;
+
+    return common_store;
 }
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_has_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name )
