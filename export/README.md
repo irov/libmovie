@@ -40,6 +40,7 @@ arguments:
 * out_premultiplied
 
 results:
+* out_path
 * write_name
 * write_path
 * codec
