@@ -414,7 +414,7 @@ bool Movie::OnProvideResource( const aeMovieResource* _resource, void** _rd, voi
 
             std::string fullPath = mBaseFolder + ae_image->path;
 
-            ResourceImage* image = ResourcesManager::Instance().GetImageRes( ae_image->name );
+            ResourceImage* image = ResourcesManager::Instance().GetImageRes( ae_image->path );
 
             if( ae_image->atlas_image == AE_NULL ) 
             {
