@@ -17,8 +17,9 @@ results:
 * export_name
 * allow_atlas
 * atlas
-* polygonize_sprite
-* polygonize_sprite_square
+* image_polygonize
+* image_polygonize_tolerance
+* image_polygonize_minimum_square
 * allow_image_premultiplied
 * image_premultiplied
 * allow_sha1
@@ -225,8 +226,8 @@ arguments:
 results:
 * atlas
 * image_premultiplied
-* polygonize_sprite
-* polygonize_square
+* image_polygonize
+* image_polygonize_square
 * show_complete
 * break_if_failed
 * [in] filepath
@@ -237,7 +238,7 @@ results:
 scripts/ae_movie_multiexport_prebuild.bat
 ```
 arguments:
-* polygonize_sprite
+* image_polygonize
 
 results:
 
