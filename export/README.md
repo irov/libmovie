@@ -2,7 +2,7 @@
 
 ## Settings
 ```sh
-scripts/ae_movie_settings.bat
+scripts/ae_movie_settings.py
 ```
 arguments:
 * project_path
@@ -25,10 +25,14 @@ results:
 * allow_sha1
 * use_sha1
 * show_complete
+* disable_script_export_astralax
+* disable_script_export_image
+* disable_script_export_sound
+* disable_script_export_video
 
 ## Image export
 ```sh
-scripts/ae_movie_export_image.bat
+scripts/ae_movie_export_image.py
 ```
 arguments:
 * in_path
@@ -55,7 +59,7 @@ results:
 
 ## Sound export
 ```sh
-scripts/ae_movie_export_sound.bat
+scripts/ae_movie_export_sound.py
 ```
 arguments:
 * in_path
@@ -73,7 +77,7 @@ results:
 
 ## Video export
 ```sh
-scripts/ae_movie_export_video.bat
+scripts/ae_movie_export_video.py
 ```
 arguments:
 * in_path
@@ -100,7 +104,7 @@ results:
 
 ## Astralax export
 ```sh
-scripts/ae_movie_export_astralax.bat
+scripts/ae_movie_export_astralax.py
 ```
 arguments:
 * in_path
@@ -125,7 +129,7 @@ results:
 
 ## Image polygonize
 ```sh
-scripts/ae_movie_image_polygonize.bat
+scripts/ae_movie_image_polygonize.py
 ```
 arguments:
 * in_path
@@ -136,14 +140,14 @@ arguments:
 
 results:
 * vertex_count
-* indices_count
+* index_count
 * [positions] array [position]
 * [uvs] array [uv]
 * [indices] array [index]
 
 ## Polygon triangulate
 ```sh
-scripts/ae_movie_polygon_triangulate.bat
+scripts/ae_movie_polygon_triangulate.py
 ```
 arguments:
 * bb
@@ -165,7 +169,7 @@ results:
 
 ## Atlas export
 ```sh
-scripts/ae_movie_atlas.bat
+scripts/ae_movie_atlas.py
 ```
 arguments:
 * in_path
@@ -178,7 +182,7 @@ results:
 
 ## Prebuild
 ```sh
-scripts/ae_movie_prebuild.bat
+scripts/ae_movie_prebuild.py
 ```
 arguments:
 * movie_folder
@@ -190,7 +194,7 @@ results:
 
 ## Postbuild
 ```sh
-scripts/ae_movie_postbuild.bat
+scripts/ae_movie_postbuild.py
 ```
 arguments:
 * movie_folder
@@ -204,7 +208,7 @@ results:
 
 ## Preview
 ```sh
-scripts/ae_movie_preview.bat
+scripts/ae_movie_preview.py
 ```
 arguments:
 * project_path
@@ -218,10 +222,10 @@ results:
 
 ## Multiexport
 ```sh
-scripts/ae_movie_multiexport.bat
+scripts/ae_movie_multiexport.py
 ```
 arguments:
-* config pure
+* cfg_path
 
 results:
 * atlas
@@ -235,7 +239,7 @@ results:
 
 ## Multiexport prebuild
 ```sh
-scripts/ae_movie_multiexport_prebuild.bat
+scripts/ae_movie_multiexport_prebuild.py
 ```
 arguments:
 * image_polygonize
@@ -244,7 +248,7 @@ results:
 
 ## Multiexport postbuild
 ```sh
-scripts/ae_movie_multiexport_postbuild.bat
+scripts/ae_movie_multiexport_postbuild.py
 ```
 arguments:
 * successful
@@ -253,7 +257,7 @@ results:
 
 ## Multiexport report
 ```sh
-scripts/ae_movie_multiexport_report.bat
+scripts/ae_movie_multiexport_report.py
 ```
 arguments:
 * log_path
@@ -262,7 +266,7 @@ results:
 
 ## Multiexport report
 ```sh
-scripts/ae_movie_check_settings.bat
+scripts/ae_movie_check_settings.py
 ```
 arguments:
 
