@@ -61,25 +61,25 @@ AE_INTERNAL ae_float_t ae_minimax_f_f( ae_float_t _v, ae_float_t _min, ae_float_
     return (_v > _min) ? ((_v < _max) ? _v : _max) : _min;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
+AE_INTERNAL ae_void_t ae_mul_v3_v2_m34( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix34_t _b )
 {
-    _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _b[3 * 4 + 0];
-    _out[1] = _a[0] * _b[0 * 4 + 1] + _a[1] * _b[1 * 4 + 1] + _b[3 * 4 + 1];
-    _out[2] = _a[0] * _b[0 * 4 + 2] + _a[1] * _b[1 * 4 + 2] + _b[3 * 4 + 2];
+    _out[0] = _a[0] * _b[0 * 3 + 0] + _a[1] * _b[1 * 3 + 0] + _b[3 * 3 + 0];
+    _out[1] = _a[0] * _b[0 * 3 + 1] + _a[1] * _b[1 * 3 + 1] + _b[3 * 3 + 1];
+    _out[2] = _a[0] * _b[0 * 3 + 2] + _a[1] * _b[1 * 3 + 2] + _b[3 * 3 + 2];
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_mul_m4_m4_r( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b );
-ae_void_t ae_mul_m4_m4( ae_matrix4_t _out, const ae_matrix4_t _a, const ae_matrix4_t _b );
-ae_void_t ae_ident_m4( ae_matrix4_t _out );
-ae_void_t ae_copy_m4( ae_matrix4_t _out, const ae_matrix4_t _in );
-ae_void_t ae_movie_make_transformation3d_m4( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion, const ae_skew_t _skew );
-ae_void_t ae_movie_make_transformation3d_m4wq( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_skew_t _skew );
-ae_void_t ae_movie_make_transformation3d_m4wsk( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion );
-ae_void_t ae_movie_make_transformation3d_m4wskq( ae_matrix4_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale );
-ae_void_t ae_movie_make_transformation2d_m4( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion, const ae_skew_t _skew );
-ae_void_t ae_movie_make_transformation2d_m4wq( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_skew_t _skew );
-ae_void_t ae_movie_make_transformation2d_m4wsk( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion );
-ae_void_t ae_movie_make_transformation2d_m4wskq( ae_matrix4_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale );
+ae_void_t ae_mul_m34_m34_r( ae_matrix34_t _out, const ae_matrix34_t _a, const ae_matrix34_t _b );
+ae_void_t ae_mul_m34_m34( ae_matrix34_t _out, const ae_matrix34_t _a, const ae_matrix34_t _b );
+ae_void_t ae_ident_m34( ae_matrix34_t _out );
+ae_void_t ae_copy_m34( ae_matrix34_t _out, const ae_matrix34_t _in );
+ae_void_t ae_movie_make_transformation3d_m34( ae_matrix34_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion, const ae_skew_t _skew );
+ae_void_t ae_movie_make_transformation3d_m34wq( ae_matrix34_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_skew_t _skew );
+ae_void_t ae_movie_make_transformation3d_m34wsk( ae_matrix34_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale, const ae_quaternion_t _quaternion );
+ae_void_t ae_movie_make_transformation3d_m34wskq( ae_matrix34_t _out, const ae_vector3_t _position, const ae_vector3_t _anchor, const ae_vector3_t _scale );
+ae_void_t ae_movie_make_transformation2d_m34( ae_matrix34_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion, const ae_skew_t _skew );
+ae_void_t ae_movie_make_transformation2d_m34wq( ae_matrix34_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_skew_t _skew );
+ae_void_t ae_movie_make_transformation2d_m34wsk( ae_matrix34_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale, const ae_quaternionzw_t _quaternion );
+ae_void_t ae_movie_make_transformation2d_m34wskq( ae_matrix34_t _out, const ae_vector2_t _position, const ae_vector2_t _anchor, const ae_vector2_t _scale );
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_float_t ae_linerp_f1( ae_float_t _in1, ae_float_t _in2, ae_float_t _t )
 {

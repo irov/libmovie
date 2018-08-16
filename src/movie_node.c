@@ -53,7 +53,7 @@ AE_INTERNAL ae_uint32_t __inc_composition_update_revision( const aeMovieComposit
     return update_revision;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_matrix34_t _matrix, aeMovieRenderMesh * _render )
 {
     _render->vertexCount = _mesh->vertex_count;
     _render->indexCount = _mesh->index_count;
@@ -63,14 +63,14 @@ AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_ma
     ae_uint32_t i = 0;
     for( ; i != vertex_count; ++i )
     {
-        ae_mul_v3_v2_m4( _render->position[i], _mesh->positions[i], _matrix );
+        ae_mul_v3_v2_m34( _render->position[i], _mesh->positions[i], _matrix );
     }
 
     _render->uv = _mesh->uvs;
     _render->indices = _mesh->indices;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __make_layer_sprite_vertices( const aeMovieInstance * _instance, ae_float_t _offset_x, ae_float_t _offset_y, ae_float_t _width, ae_float_t _height, const ae_matrix4_t _matrix, const ae_vector2_t * _uv, aeMovieRenderMesh * _render )
+AE_INTERNAL ae_void_t __make_layer_sprite_vertices( const aeMovieInstance * _instance, ae_float_t _offset_x, ae_float_t _offset_y, ae_float_t _width, ae_float_t _height, const ae_matrix34_t _matrix, const ae_vector2_t * _uv, aeMovieRenderMesh * _render )
 {
     ae_vector2_t v_position[4];
 
@@ -88,16 +88,16 @@ AE_INTERNAL ae_void_t __make_layer_sprite_vertices( const aeMovieInstance * _ins
     _render->vertexCount = 4;
     _render->indexCount = 6;
 
-    ae_mul_v3_v2_m4( _render->position[0], v_position[0], _matrix );
-    ae_mul_v3_v2_m4( _render->position[1], v_position[1], _matrix );
-    ae_mul_v3_v2_m4( _render->position[2], v_position[2], _matrix );
-    ae_mul_v3_v2_m4( _render->position[3], v_position[3], _matrix );
+    ae_mul_v3_v2_m34( _render->position[0], v_position[0], _matrix );
+    ae_mul_v3_v2_m34( _render->position[1], v_position[1], _matrix );
+    ae_mul_v3_v2_m34( _render->position[2], v_position[2], _matrix );
+    ae_mul_v3_v2_m34( _render->position[3], v_position[3], _matrix );
 
     _render->uv = _uv;
     _render->indices = _instance->sprite_indices;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __make_layer_mesh_vertices( const aeMovieLayerExtensionMesh * _extensionMesh, ae_uint32_t _frame, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+AE_INTERNAL ae_void_t __make_layer_mesh_vertices( const aeMovieLayerExtensionMesh * _extensionMesh, ae_uint32_t _frame, const ae_matrix34_t _matrix, aeMovieRenderMesh * _render )
 {
     const ae_mesh_t * mesh = (_extensionMesh->immutable == AE_TRUE) ? &_extensionMesh->immutable_mesh : (_extensionMesh->meshes + _frame);
 
@@ -620,11 +620,10 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
         __update_movie_composition_node_matrix( node_relative, _revision, _composition, _compositionData, _animation, _subcomposition, frame_relative, interpolate_relative, t_relative );
     }
 
-    ae_matrix4_t local_matrix;
-
+    ae_matrix34_t local_matrix;
     ae_movie_make_layer_matrix( local_matrix, layer_transformation, _interpolate, _frameId, _t );
 
-    ae_mul_m4_m4_r( _node->matrix, local_matrix, node_relative->matrix );
+    ae_mul_m34_m34_r( _node->matrix, local_matrix, node_relative->matrix );
 
     if( node_layer->sub_composition_data != AE_NULL )
     {

@@ -1469,10 +1469,10 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
     _compositionData->offset_point[1] = 0.f;
     _compositionData->offset_point[2] = 0.f;
 
-    _compositionData->bounds[0] = 0.f;
-    _compositionData->bounds[1] = 0.f;
-    _compositionData->bounds[2] = 0.f;
-    _compositionData->bounds[3] = 0.f;
+    _compositionData->bounds.begin_x = 0.f;
+    _compositionData->bounds.begin_y = 0.f;
+    _compositionData->bounds.end_x = 0.f;
+    _compositionData->bounds.end_y = 0.f;
 
     _compositionData->camera = AE_NULL;
 
