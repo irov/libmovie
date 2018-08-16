@@ -100,7 +100,7 @@ AE_INTERNAL ae_float_t __get_bezier_warp_grid_invf( ae_uint32_t _quality )
     return grid_invf;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _instance, ae_uint32_t _quality, const aeMovieBezierWarp * _bezierWarp, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _instance, ae_uint32_t _quality, const aeMovieBezierWarp * _bezierWarp, const ae_matrix34_t _matrix, aeMovieRenderMesh * _render )
 {
     ae_uint32_t line_count = get_bezier_warp_line_count( _quality );
     ae_float_t grid_invf = __get_bezier_warp_grid_invf( _quality );
@@ -132,7 +132,7 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
             position[0] = x;
             position[1] = y;
 
-            ae_mul_v3_v2_m4( *positions++, position, _matrix );
+            ae_mul_v3_v2_m34( *positions++, position, _matrix );
 
             du += grid_invf;
         }
@@ -164,7 +164,7 @@ AE_INTERNAL ae_void_t __setup_bezier_beziers( aeMovieBezierWarp * _bezier, const
     ae_linerp_f2( _bezier->beziers[7], _current[7], _next[7], _t );
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix34_t _matrix, aeMovieRenderMesh * _render )
 {
     if( _layerBezierWarp->immutable == AE_TRUE )
     {

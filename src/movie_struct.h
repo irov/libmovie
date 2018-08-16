@@ -176,7 +176,7 @@ struct aeMovieNode
     ae_uint32_t animate;
 
     ae_uint32_t update_revision;
-    ae_matrix4_t matrix;
+    ae_matrix34_t matrix;
 
     ae_color_t composition_color;
     ae_float_t composition_opacity;
@@ -282,7 +282,7 @@ struct aeMovieCompositionData
     ae_vector2_t loop_segment;
     ae_vector3_t anchor_point;
     ae_vector3_t offset_point;
-    ae_vector4_t bounds;
+    ae_viewport_t bounds;
 
     const aeMovieCompositionCamera * camera;
 
