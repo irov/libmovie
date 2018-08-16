@@ -898,7 +898,7 @@ ae_void_t ex_init( const ae_char_t * license, const ae_char_t * path, const ae_c
         , &stdlib_movie_alloc_n
         , &stdlib_movie_free
         , &stdlib_movie_free_n
-        , (ae_movie_strncmp_t)AE_FNULL
+        , (ae_movie_strncmp_t)AE_FUNCTION_NULL
         , &stdlib_movie_logerror
         , AE_NULL );
 }
