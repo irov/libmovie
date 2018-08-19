@@ -67,6 +67,7 @@ script:
     - popd
     - popd
 
+    - mkdir sonar_build
     - sonar-scanner
     
     
