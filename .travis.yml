@@ -45,7 +45,9 @@ addons:
     apt:
         packages:
             - lcov
-
+    sonarcloud:
+        organization: "irov-github"
+        
 script:
     # libmovie
     - mkdir build_cmake
@@ -63,7 +65,14 @@ script:
     - cmake --build .
     - ctest --output-on-failure
     - popd
-    - popd    
+    - popd
+
+    - sonar-scanner
+    
+    
+cache:
+    directories:
+    - '$HOME/.sonar/cache'
     
 after_success:
     - pushd ${TRAVIS_BUILD_DIR}
