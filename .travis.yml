@@ -54,8 +54,7 @@ script:
     - pushd build_cmake
     - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=TRUE -DLIBMOVIE_TEST:BOOL=TRUE -DLIBMOVIE_COVERAGE:BOOL=$BUILD_COVERAGE
     - cmake --build .
-    - ctest --output-on-failure
-    - sonar-scanner -X
+    - ctest --output-on-failure    
     - popd
     
     # moview
@@ -68,7 +67,7 @@ script:
     - popd
     - popd
     
-    
+    - sonar-scanner -X
 cache:
     directories:
     - '$HOME/.sonar/cache'
