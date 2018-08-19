@@ -67,15 +67,16 @@ script:
     - popd
     - popd
     
-    - sonar-scanner -X
 cache:
     directories:
     - '$HOME/.sonar/cache'
     
 after_success:
     - pushd ${TRAVIS_BUILD_DIR}
-    - lcov --directory . --capture --output-file coverage.info # capture coverage info
-    - lcov --list coverage.info #debug info  
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then build-wrapper-linux-x86-64 --out-dir bw-output make all; fi
+    - lcov --directory . --capture --output-file coverage.info
+    - lcov --list coverage.info
     - bash <(curl -s https://codecov.io/bash)
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sonar-scanner -X; fi
     - popd
   
