@@ -6,3 +6,5 @@ Framework for render After Effects composition
 
 Code coverage done right!
 [![codecov](https://codecov.io/gh/irov/libmovie/branch/master/graph/badge.svg)](https://codecov.io/gh/irov/libmovie)
+
+![sonar](https://sonarcloud.io/api/project_badges/measure?project=com.wondeland.libmovie&metric=alert_status)
