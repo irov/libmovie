@@ -52,7 +52,7 @@ int main( int argc, char *argv[] )
 {
     AE_UNUSED( argc );
     AE_UNUSED( argv );
-        
+
     const aeMovieInstance * movieInstance = ae_create_movie_instance( test_example_license_hash
         , &stdlib_movie_alloc
         , &stdlib_movie_alloc_n
@@ -75,7 +75,7 @@ int main( int argc, char *argv[] )
     char full_example_file_path[256];
     sprintf( full_example_file_path, "%s/../%s"
         , argv[1]
-        , test_example_file_path 
+        , test_example_file_path
     );
 
     FILE * f = fopen( full_example_file_path, "rb" );
@@ -98,7 +98,7 @@ int main( int argc, char *argv[] )
     {
         return EXIT_FAILURE;
     }
-         
+
     fclose( f );
 
     const aeMovieCompositionData * movieCompositionData = ae_get_movie_composition_data( movieData, test_example_composition_name );
@@ -123,6 +123,12 @@ int main( int argc, char *argv[] )
     while( ae_is_play_movie_composition( movieComposition ) == AE_TRUE )
     {
         ae_update_movie_composition( movieComposition, 0.01f );
+
+        ae_uint32_t iterator = 0;
+        aeMovieRenderMesh movieRenderMesh;
+        while( ae_compute_movie_mesh( movieComposition, &iterator, &movieRenderMesh ) == AE_TRUE )
+        {
+        }
     }
 
     ae_delete_movie_composition( movieComposition );
