@@ -156,7 +156,7 @@ AE_INTERNAL ae_uint32_t __compute_movie_node_frame( const aeMovieNode * _node, a
     return frame;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composition, const aeMovieNode * _node, aeMovieRenderMesh * _render, ae_bool_t _interpolate, ae_bool_t _trackmatte )
+AE_INTERNAL ae_void_t __compute_movie_render_mesh( const aeMovieComposition * _composition, const aeMovieNode * _node, aeMovieRenderMesh * _render, ae_bool_t _interpolate, ae_bool_t _trackmatte )
 {
     const aeMovieData * movie_data = _composition->movie_data;
     const aeMovieInstance * instance = movie_data->instance;
@@ -272,6 +272,18 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             if( layer->extensions->mesh != AE_NULL )
             {
                 __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, _render );
+
+                if( layer->cache != AE_NULL )
+                {
+                    if( layer->extensions->mesh->immutable == AE_TRUE )
+                    {
+                        _render->uv_cache_data = layer->cache->immutable_mesh_uv_cache_data;
+                    }
+                    else
+                    {
+                        _render->uv_cache_data = layer->cache->mesh_uv_cache_data[frame];
+                    }
+                }
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
@@ -867,7 +879,7 @@ AE_INTERNAL ae_bool_t __setup_movie_node_track_matte2( aeMovieComposition * _com
         if( layer->is_track_matte == AE_TRUE && _composition->providers.track_matte_provider != AE_NULL )
         {
             aeMovieRenderMesh mesh;
-            __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
+            __compute_movie_render_mesh( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
             aeMovieTrackMatteProviderCallbackData callbackData;
             callbackData.index = enumerator;
@@ -2237,7 +2249,7 @@ AE_INTERNAL ae_void_t __notify_stop_nodies( const aeMovieComposition * _composit
                 if( _composition->providers.track_matte_update != AE_NULL )
                 {
                     aeMovieRenderMesh mesh;
-                    __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
+                    __compute_movie_render_mesh( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
                     aeMovieTrackMatteUpdateCallbackData callbackData;
                     callbackData.index = enumerator;
@@ -2325,7 +2337,7 @@ AE_INTERNAL ae_void_t __notify_pause_nodies( const aeMovieComposition * _composi
                 if( _composition->providers.track_matte_update != AE_NULL )
                 {
                     aeMovieRenderMesh mesh;
-                    __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
+                    __compute_movie_render_mesh( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
                     aeMovieTrackMatteUpdateCallbackData callbackData;
                     callbackData.index = enumerator;
@@ -2438,7 +2450,7 @@ AE_INTERNAL ae_void_t __notify_resume_nodies( const aeMovieComposition * _compos
                 if( _composition->providers.track_matte_update != AE_NULL )
                 {
                     aeMovieRenderMesh mesh;
-                    __compute_movie_node( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
+                    __compute_movie_render_mesh( _composition, node, &mesh, _composition->interpolate, AE_TRUE );
 
                     aeMovieTrackMatteUpdateCallbackData callbackData;
                     callbackData.index = enumerator;
@@ -2680,7 +2692,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_track_matte_state( const a
     }
 
     aeMovieRenderMesh mesh;
-    __compute_movie_node( _composition, _node, &mesh, _interpolate, AE_TRUE );
+    __compute_movie_render_mesh( _composition, _node, &mesh, _interpolate, AE_TRUE );
 
     aeMovieTrackMatteUpdateCallbackData callbackData;
     callbackData.index = _index;
@@ -3838,7 +3850,7 @@ ae_bool_t ae_compute_movie_mesh( const aeMovieComposition * _composition, ae_uin
 
         *_iterator = iterator + 1U;
 
-        __compute_movie_node( _composition, node, _render, composition_interpolate, AE_FALSE );
+        __compute_movie_render_mesh( _composition, node, _render, composition_interpolate, AE_FALSE );
 
         return AE_TRUE;
     }

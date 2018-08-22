@@ -6,6 +6,7 @@
 
 static const ae_char_t * test_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
 static const ae_char_t * test_example_file_path = "examples/resources/Knight/Knight.aem";
+static const ae_char_t * test_example_composition_name = "Knight";
 
 AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
     AE_UNUSED( _data );
@@ -101,6 +102,25 @@ int main( int argc, char *argv[] )
     ae_delete_movie_stream( movieStream );
      
     fclose( f );
+
+    const aeMovieCompositionData * movieCompositionData = ae_get_movie_composition_data( movieData, test_example_composition_name );
+
+    if( movieCompositionData == AE_NULL )
+    {
+        return EXIT_FAILURE;
+    }
+
+    aeMovieCompositionProviders movieCompositionProviders;
+    ae_clear_movie_composition_providers( &movieCompositionProviders );
+
+    const aeMovieComposition * movieComposition = ae_create_movie_composition( movieData, movieCompositionData, AE_TRUE, &movieCompositionProviders, AE_NULL );
+
+    if( movieComposition == AE_NULL )
+    {
+        return EXIT_FAILURE;
+    }
+
+    ae_delete_movie_composition( movieComposition );
 
     ae_delete_movie_data( movieData );
 
