@@ -97,8 +97,6 @@ int main( int argc, char *argv[] )
     {
         return EXIT_FAILURE;
     }
-
-    ae_delete_movie_stream( movieStream );
      
     fclose( f );
 
