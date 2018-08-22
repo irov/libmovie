@@ -98,9 +98,7 @@ int main( int argc, char *argv[] )
     {
         return EXIT_FAILURE;
     }
-
-    ae_delete_movie_stream( movieStream );
-     
+         
     fclose( f );
 
     const aeMovieCompositionData * movieCompositionData = ae_get_movie_composition_data( movieData, test_example_composition_name );
