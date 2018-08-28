@@ -1255,7 +1255,7 @@ AE_INTERNAL ae_void_t __setup_movie_node_incessantly( aeMovieComposition * _comp
             continue;
         }
 
-        if( ae_has_movie_layer_data_param( layer, AE_MOVIE_LAYER_PARAM_LOOP ) == AE_TRUE )
+        if( ae_has_movie_layer_data_option( layer, AE_MOVIE_LAYER_PARAM_LOOP ) == AE_TRUE )
         {
             node->incessantly = AE_TRUE;
 
@@ -1296,14 +1296,14 @@ AE_INTERNAL ae_void_t __setup_movie_node_incessantly2( aeMovieNode * _nodes, ae_
         case AE_MOVIE_LAYER_TYPE_MOVIE:
         case AE_MOVIE_LAYER_TYPE_SUB_MOVIE:
             {
-                ae_bool_t param_loop = ae_has_movie_layer_data_param( layer, AE_MOVIE_LAYER_PARAM_LOOP );
+                ae_bool_t layer_incessantly = ae_is_movie_layer_data_incessantly( layer );
 
                 if( _incessantly == AE_TRUE )
                 {
-                    param_loop = AE_TRUE;
+                    layer_incessantly = AE_TRUE;
                 }
 
-                __setup_movie_node_incessantly2( _nodes, _iterator, layer->sub_composition_data, param_loop );
+                __setup_movie_node_incessantly2( _nodes, _iterator, layer->sub_composition_data, layer_incessantly );
             }break;
         default:
             {
@@ -3046,7 +3046,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         node->current_time = stretch_time;
         node->current_frame = frameId;
 
-        ae_bool_t node_loop = ((animation_loop == AE_TRUE && animation_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || (node_layer->params & AE_MOVIE_LAYER_PARAM_LOOP)) ? AE_TRUE : AE_FALSE;
+        ae_bool_t node_loop = ((animation_loop == AE_TRUE && animation_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || node_layer->incessantly);
 
         if( beginFrame < indexIn && endFrame >= indexIn && endFrame < indexOut )
         {

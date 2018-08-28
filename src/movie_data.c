@@ -1173,7 +1173,36 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
     _layer->blend_mode = blend_mode;
 
     _layer->threeD = AE_READB( _stream );
-    AE_READ( _stream, _layer->params );
+
+    _layer->incessantly = AE_FALSE;
+
+    _layer->options_count = 0U;
+    
+    for( ;;)
+    {
+        ae_uint32_t option_value;
+        AE_READ( _stream, option_value );
+
+        if( option_value == 'loop' )
+        {
+            _layer->incessantly = AE_TRUE;
+        }
+
+        if( option_value != 0U )
+        {
+            if( _layer->options_count == AE_MOVIE_LAYER_MAX_OPTIONS )
+            {
+                return AE_RESULT_INVALID_DATA;
+            }
+
+            _layer->options[_layer->options_count] = option_value;
+            _layer->options_count++;            
+        }
+        else
+        {
+            break;
+        }
+    }    
 
     _layer->play_count = AE_READZ( _stream );
 
@@ -2423,9 +2452,27 @@ ae_bool_t ae_is_movie_layer_data_threeD( const aeMovieLayerData * _layer )
     return _layer->threeD;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_has_movie_layer_data_param( const aeMovieLayerData * _layer, ae_uint32_t _param )
+ae_bool_t ae_is_movie_layer_data_incessantly( const aeMovieLayerData * _layer )
 {
-    return ((_layer->params & _param) == _param);
+    return _layer->incessantly;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_has_movie_layer_data_option( const aeMovieLayerData * _layer, ae_uint32_t _option )
+{
+    ae_uint32_t index = 0;
+    for( ; index != _layer->options_count; ++index )
+    {
+        ae_uint32_t option_value = _layer->options[index];
+
+        if( option_value != _option )
+        {
+            continue;
+        }
+
+        return AE_TRUE;
+    }
+    
+    return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
 const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData * _layer )

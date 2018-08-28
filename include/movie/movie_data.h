@@ -270,10 +270,16 @@ ae_bool_t ae_is_movie_layer_data_threeD( const aeMovieLayerData * _layer );
 
 /**
 @param [in] _layer Layer.
-@param [in] _param param.
-@return TRUE if the layer has this param.
+@return TRUE if the layer data is incessantly.
 */
-ae_bool_t ae_has_movie_layer_data_param( const aeMovieLayerData * _layer, ae_uint32_t _param );
+ae_bool_t ae_is_movie_layer_data_incessantly( const aeMovieLayerData * _layer );
+
+/**
+@param [in] _layer Layer.
+@param [in] _option option identity.
+@return TRUE if the layer has this option.
+*/
+ae_bool_t ae_has_movie_layer_data_option( const aeMovieLayerData * _layer, ae_uint32_t _option );
 
 /**
 @param [in] _layer Layer.
