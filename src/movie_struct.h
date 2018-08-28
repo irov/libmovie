@@ -347,7 +347,11 @@ struct aeMovieLayerData
 
     ae_blend_mode_t blend_mode;
     ae_bool_t threeD;
-    ae_uint32_t params;
+
+    ae_bool_t incessantly;
+
+    ae_uint32_t options_count;
+    ae_uint32_t options[AE_MOVIE_LAYER_MAX_OPTIONS];
 
     ae_uint32_t play_count;
 

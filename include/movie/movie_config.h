@@ -55,7 +55,17 @@
 
 #define AE_UNUSED(Var) ((ae_void_t)Var)
 
-#define AE_MOVIE_BEZIER_MAX_QUALITY (10U)
-#define AE_MOVIE_BEZIER_WARP_BASE_GRID (7U)
+#ifndef AE_MOVIE_BEZIER_MAX_QUALITY
+#   define AE_MOVIE_BEZIER_MAX_QUALITY (10U)
+#endif
+
+#ifndef AE_MOVIE_BEZIER_WARP_BASE_GRID
+#   define AE_MOVIE_BEZIER_WARP_BASE_GRID (7U)
+#endif 
+
+
+#ifndef AE_MOVIE_LAYER_MAX_OPTIONS
+#   define AE_MOVIE_LAYER_MAX_OPTIONS (8U)
+#endif
 
 #endif
