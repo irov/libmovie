@@ -1131,8 +1131,6 @@ void Composition::DrawMesh( const aeMovieRenderMesh* mesh, const ResourceImage* 
 
     mNumVertices += mesh->vertexCount;
     mNumIndices += mesh->indexCount;
-
-    this->FlushDraw();
 }
 //////////////////////////////////////////////////////////////////////////
 void Composition::FlushDraw()

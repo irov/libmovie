@@ -33,9 +33,16 @@ protected:
 
 public:
     void setFocus( bool _focus );
+    void setMinimized( bool _minimized );
+    void onScroll( float _scrollY );
+    void onKey( int _key, int _action, int _mods );
+    void onMouseButton( int _button, int _action, int _mods );
+    void setCursorPos( float _posX, float _posY );
 
 protected:
     GLFWwindow * mWindow;
+    GLFWcursor * mArrowCursor;
+    GLFWcursor * mHandCursor;
 
     uint32_t mWindowWidth;
     uint32_t mWindowHeight;
@@ -55,6 +62,13 @@ protected:
     bool mShowWireframe;
     bool mShouldExit;
     bool mWindowFocus;
+    bool mWindowMinimized;
     float mManualPlayPos;
+
+    float mContentOffset[2];
+
+    bool mSpaceKeyDown;
+    bool mLMBDown;
+    float mLastMousePos[2];
 
 };
