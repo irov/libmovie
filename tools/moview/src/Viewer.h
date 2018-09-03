@@ -29,6 +29,8 @@ protected:
     void DoUI();
     void CalcScaleToFitComposition();
     void CenterCompositionOnScreen();
+    void OffsetScene( float _dx, float _dy );
+    void ScaleAroundPoint( float _scale, float _x, float _y );
     void OnNewCompositionOpened();
 
 public:

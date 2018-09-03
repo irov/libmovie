@@ -112,7 +112,7 @@ out vec2 v2fUV0;                                       \n\
 out vec2 v2fUV1;                                       \n\
 out vec4 v2fColor;                                     \n\
 void main() {                                          \n\
-    vec3 p = inPos * uScale + vec3(uOffset, 0.0);      \n\
+    vec3 p = vec3(inPos.xy + uOffset, 0.0) * uScale;   \n\
     gl_Position = uWVP * vec4(p, 1.0);                 \n\
     v2fUV0 = inUV0;                                    \n\
     v2fUV1 = inUV1;                                    \n\
@@ -147,7 +147,7 @@ uniform float uScale;                                  \n\
 uniform vec2 uOffset;                                  \n\
 out vec4 v2fColor;                                     \n\
 void main() {                                          \n\
-    vec3 p = inPos * uScale + vec3(uOffset, 0.0);      \n\
+    vec3 p = vec3(inPos.xy + uOffset, 0.0) * uScale;   \n\
     gl_Position = uWVP * vec4(p, 1.0);                 \n\
     v2fColor = inColor;                                \n\
 }                                                      \n";
