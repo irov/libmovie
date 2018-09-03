@@ -17,6 +17,10 @@
 //////////////////////////////////////////////////////////////////////////
 static const char * g_default_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
 //////////////////////////////////////////////////////////////////////////
+static const float g_ContentScaleMin  = 0.1f;
+static const float g_ContentScaleMax  = 10.f;
+static const float g_ContentScaleStep = 0.1f;
+//////////////////////////////////////////////////////////////////////////
 static uint64_t GetCurrentTimeSeconds()
 {
     std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
@@ -29,8 +33,64 @@ static uint64_t GetCurrentTimeSeconds()
     return ms64;
 }
 //////////////////////////////////////////////////////////////////////////
+static bool CompareFloats( const float _a, const float _b )
+{
+    return std::fabsf( _a - _b ) <= FLT_EPSILON;
+}
+//////////////////////////////////////////////////////////////////////////
+static void GLFW_WindowFocusCallback( GLFWwindow * _window, int _focus )
+{
+    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer( _window ));
+
+    viewer->setFocus( _focus == GLFW_TRUE );
+}
+//////////////////////////////////////////////////////////////////////////
+static void GLFW_WindowIconifyCallback( GLFWwindow * _window, int _iconified )
+{
+    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer(_window));
+
+    viewer->setMinimized( _iconified == GLFW_TRUE );
+}
+//////////////////////////////////////////////////////////////////////////
+static void GLFW_MouseScrollCallback( GLFWwindow * _window, double _scrollX, double _scrollY )
+{
+    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer(_window));
+
+    viewer->onScroll( static_cast<float>(_scrollY) );
+
+    ImGui_ImplGlfw_ScrollCallback( _window, _scrollX, _scrollY );
+}
+//////////////////////////////////////////////////////////////////////////
+static void GLFW_KeyCallback( GLFWwindow * _window, int _key, int _scancode, int _action, int _mods )
+{
+    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer(_window));
+
+    viewer->onKey( _key, _action, _mods );
+
+    ImGui_ImplGlfw_KeyCallback( _window, _key, _scancode, _action, _mods );
+}
+//////////////////////////////////////////////////////////////////////////
+static void GLFW_MouseButtonCallback( GLFWwindow * _window, int _button, int _action, int _mods )
+{
+    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer(_window));
+
+    viewer->onMouseButton( _button, _action, _mods );
+
+    ImGui_ImplGlfw_MouseButtonCallback( _window, _button, _action, _mods );
+}
+//////////////////////////////////////////////////////////////////////////
+static void GLFW_CursorPosCallback( GLFWwindow * _window, double _posX, double _posY )
+{
+    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer(_window));
+
+    viewer->setCursorPos( static_cast<float>(_posX), static_cast<float>(_posY) );
+}
+//////////////////////////////////////////////////////////////////////////
 Viewer::Viewer()
-    : mWindowWidth( 1280 )
+    : mWindow( nullptr )
+    , mArrowCursor( nullptr )
+    , mHandCursor( nullptr )
+    , mWindowWidth( 1280 )
     , mWindowHeight( 720 )
     , mShowNormal( true )
     , mShowWireframe( false )
@@ -40,9 +100,18 @@ Viewer::Viewer()
     , mComposition( nullptr )
     , mLastCompositionIdx( 0 )
     , mWindowFocus( true )
+    , mWindowMinimized( false )
+    , mSpaceKeyDown( false )
+    , mLMBDown( false )
 {
     mLicenseHash = g_default_hash;
     mSessionFileName = "session.txt";
+
+    mContentOffset[0] = 0.f;
+    mContentOffset[1] = 0.f;
+
+    mLastMousePos[0] = 0.f;
+    mLastMousePos[1] = 0.f;
 
     mBackgroundColor[0] = 0.412f;
     mBackgroundColor[1] = 0.796f;
@@ -53,18 +122,12 @@ Viewer::~Viewer()
 {
 }
 //////////////////////////////////////////////////////////////////////////
-static void GLFW_WindowFocusCallback( GLFWwindow * _window, int _focus )
-{
-    Viewer * viewer = reinterpret_cast<Viewer *>(glfwGetWindowUserPointer( _window ));
-
-    viewer->setFocus( _focus == 1 );
-}
-//////////////////////////////////////////////////////////////////////////
 bool Viewer::Initialize( int argc, char** argv )
 {
     this->LoadSession();
 
-    if( argc == 5 ) {
+    if( argc == 5 )
+    {
         mMovieFilePath = argv[1];
         mCompositionName = argv[2];
         mToLoopPlay = (strcmp( argv[3], "1" ) == 0);
@@ -102,16 +165,25 @@ bool Viewer::Initialize( int argc, char** argv )
     gladLoadGLLoader( reinterpret_cast<GLADloadproc>(glfwGetProcAddress) );
     glfwSwapInterval( 1 ); // enable v-sync
 
-    glfwSetScrollCallback( mWindow, ImGui_ImplGlfw_ScrollCallback );
+    glfwSetScrollCallback( mWindow, GLFW_MouseScrollCallback );
     glfwSetCharCallback( mWindow, ImGui_ImplGlfw_CharCallback );
-    glfwSetKeyCallback( mWindow, ImGui_ImplGlfw_KeyCallback );
-    glfwSetMouseButtonCallback( mWindow, ImGui_ImplGlfw_MouseButtonCallback );
+    glfwSetKeyCallback( mWindow, GLFW_KeyCallback );
+    glfwSetMouseButtonCallback( mWindow, GLFW_MouseButtonCallback );
+    glfwSetCursorPosCallback( mWindow, GLFW_CursorPosCallback );
     glfwSetWindowFocusCallback( mWindow, GLFW_WindowFocusCallback );
+    glfwSetWindowIconifyCallback( mWindow, GLFW_WindowIconifyCallback );
+
+    mArrowCursor = glfwCreateStandardCursor( GLFW_ARROW_CURSOR );
+    mHandCursor = glfwCreateStandardCursor( GLFW_HAND_CURSOR );
+
+    glfwSetInputMode( mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
+    glfwSetCursor( mWindow, mArrowCursor );
 
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::GetIO().IniFilename = nullptr; // disable "imgui.ini"
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange; // tell ImGui to not interfere with our cursors
     ImGui_ImplGlfwGL3_Init( mWindow, false );
     ImGui::StyleColorsClassic();
 
@@ -143,6 +215,10 @@ void Viewer::Finalize()
     ImGui_ImplGlfwGL3_Shutdown();
     ImGui::DestroyContext();
 
+    glfwSetCursor( mWindow, nullptr );
+    glfwDestroyCursor( mArrowCursor );
+    glfwDestroyCursor( mHandCursor );
+
     glfwDestroyWindow( mWindow );
     glfwTerminate();
 }
@@ -155,50 +231,57 @@ void Viewer::Loop()
     {
         glfwPollEvents();
 
-        glClearColor( mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.f );
-        glClear( GL_COLOR_BUFFER_BIT );
-
-        uint64_t timeNow = GetCurrentTimeSeconds();
-        float dt = (float)(timeNow - timeLast) / 1000.f;
-        timeLast = timeNow;
-
-        ImGui_ImplGlfwGL3_NewFrame();
-
-        if( mComposition )
+        if( !mWindowMinimized && mWindowFocus )
         {
-            if( mComposition->IsPlaying() )
-            {
-                mComposition->Update( dt < 0.1f ? dt : 0.1f );
-            }
+            glClearColor( mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.f );
+            glClear( GL_COLOR_BUFFER_BIT );
 
-            if( mShowNormal || mShowWireframe )
+            uint64_t timeNow = GetCurrentTimeSeconds();
+            float dt = (float)(timeNow - timeLast) / 1000.f;
+            timeLast = timeNow;
+
+            ImGui_ImplGlfwGL3_NewFrame();
+
+            if( mComposition )
             {
-                Composition::DrawMode drawMode;
-                if( mShowNormal && mShowWireframe )
+                if( mComposition->IsPlaying() )
                 {
-                    drawMode = Composition::DrawMode::SolidWithWireOverlay;
-                }
-                else if( mShowWireframe )
-                {
-                    drawMode = Composition::DrawMode::Wireframe;
-                }
-                else
-                {
-                    drawMode = Composition::DrawMode::Solid;
+                    mComposition->Update( dt < 0.1f ? dt : 0.1f );
                 }
 
-                mComposition->Draw( drawMode );
+                if( mShowNormal || mShowWireframe )
+                {
+                    Composition::DrawMode drawMode;
+                    if( mShowNormal && mShowWireframe )
+                    {
+                        drawMode = Composition::DrawMode::SolidWithWireOverlay;
+                    }
+                    else if( mShowWireframe )
+                    {
+                        drawMode = Composition::DrawMode::Wireframe;
+                    }
+                    else
+                    {
+                        drawMode = Composition::DrawMode::Solid;
+                    }
+
+                    mComposition->Draw( drawMode );
+                }
             }
+
+            this->DoUI();
+
+            ImGui::Render();
+            ImGui_ImplGlfwGL3_RenderDrawData( ImGui::GetDrawData() );
+
+            glfwSwapBuffers( mWindow );
+
+            std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
         }
-
-        this->DoUI();
-
-        ImGui::Render();
-        ImGui_ImplGlfwGL3_RenderDrawData( ImGui::GetDrawData() );
-
-        glfwSwapBuffers( mWindow );
-        
-        std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+        else
+        {
+            std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+        }
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -266,10 +349,12 @@ bool Viewer::ReloadMovie()
 
     ResourcesManager::Instance().Initialize();
 
-    if( mMovie.LoadFromFile( mMovieFilePath, mLicenseHash ) ) {
+    if( mMovie.LoadFromFile( mMovieFilePath, mLicenseHash ) )
+    {
         mComposition = mCompositionName.empty() ? mMovie.OpenDefaultComposition() : mMovie.OpenComposition( mCompositionName );
 
-        if( mComposition ) {
+        if( mComposition )
+        {
             OnNewCompositionOpened();
 
             this->SaveSession();
@@ -279,11 +364,13 @@ bool Viewer::ReloadMovie()
 
             result = true;
         }
-        else {
+        else
+        {
             ViewerLogger << "Failed to open the default composition" << std::endl;
         }
     }
-    else {
+    else
+    {
         ViewerLogger << "Failed to load the movie" << std::endl;
     }
 
@@ -399,21 +486,35 @@ void Viewer::DoUI()
     ImGui::SetNextWindowSize( ImVec2( rightPanelWidth, 0.f ) );
     ImGui::Begin( "Viewer:", nullptr, kPanelFlags );
     {
+        const float wndWidth = static_cast<float>(mWindowWidth);
+        const float wndHeight = static_cast<float>(mWindowHeight);
+
         ImGui::Text( "%.1f FPS (%.3f ms)", ImGui::GetIO().Framerate, 1000.f / ImGui::GetIO().Framerate );
         ImGui::Checkbox( "Draw normal", &mShowNormal );
         ImGui::Checkbox( "Draw wireframe", &mShowWireframe );
         {
             float contentScale = (mComposition == nullptr) ? 1.0f : mComposition->GetContentScale();
+            const float oldScale = contentScale;
             ImGui::Text( "Content scale:" );
             ImGui::PushItemWidth( ImGui::GetWindowWidth() * 0.92f );
-            ImGui::SliderFloat( "##ContentScale", &contentScale, 0.0f, 10.0f );
+            ImGui::SliderFloat( "##ContentScale", &contentScale, g_ContentScaleMin, g_ContentScaleMax );
             ImGui::PopItemWidth();
-            if( mComposition )
+            if( !CompareFloats( oldScale, contentScale ) && mComposition )
             {
-                mComposition->SetContentScale( contentScale );
-                CenterCompositionOnScreen();
+                ScaleAroundPoint( contentScale, wndWidth * 0.5f, wndHeight * 0.5f );
             }
         }
+
+        if( ImGui::Button( "Reset scale" ) )
+        {
+            ScaleAroundPoint( 1.f, wndWidth * 0.5f, wndHeight * 0.5f );
+        }
+        ImGui::SameLine();
+        if( ImGui::Button( "Reset offset" ) )
+        {
+            CenterCompositionOnScreen();
+        }
+
         ImGui::Text( "Background color:" );
         ImGui::ColorEdit3( "##BkgColor", mBackgroundColor );
     }
@@ -569,18 +670,40 @@ void Viewer::CalcScaleToFitComposition()
 //////////////////////////////////////////////////////////////////////////
 void Viewer::CenterCompositionOnScreen()
 {
-    if( mComposition ) {
+    if( mComposition )
+    {
         const float wndWidth = static_cast<float>(mWindowWidth);
         const float wndHeight = static_cast<float>(mWindowHeight);
 
-        const float contentWidth = mComposition->GetWidth();
-        const float contentHeight = mComposition->GetHeight();
-        const float contentScale = mComposition->GetContentScale();
+        const float scale = mComposition->GetContentScale();
+        const float contentWidth = mComposition->GetWidth() * scale;
+        const float contentHeight = mComposition->GetHeight() * scale;
 
-        const float offX = (wndWidth - (contentWidth * contentScale)) * 0.5f;
-        const float offY = (wndHeight - (contentHeight * contentScale)) * 0.5f;
+        const float dx = (wndWidth - contentWidth) * 0.5f;
+        const float dy = (wndHeight - contentHeight) * 0.5f;
 
-        mComposition->SetContentOffset( offX, offY );
+        mContentOffset[0] = 0.f;
+        mContentOffset[1] = 0.f;
+        OffsetScene( dx, dy );
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::OffsetScene( float _dx, float _dy )
+{
+    const float scale = mComposition->GetContentScale();
+
+    mContentOffset[0] += _dx / scale;
+    mContentOffset[1] += _dy / scale;
+
+    mComposition->SetContentOffset( mContentOffset[0], mContentOffset[1] );
+}
+void Viewer::ScaleAroundPoint( float _scale, float _x, float _y )
+{
+    if( mComposition )
+    {
+        OffsetScene( -_x, -_y );
+        mComposition->SetContentScale( _scale );
+        OffsetScene( _x, _y );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -588,7 +711,7 @@ void Viewer::OnNewCompositionOpened()
 {
     if( mComposition )
     {
-        mComposition->SetViewportSize( static_cast<float>(mWindowWidth), static_cast<float>(mWindowHeight) );
+        mComposition->SetViewportSize( static_cast<float>( mWindowWidth ), static_cast<float>( mWindowHeight ) );
 
         mCompositionName = mComposition->GetName();
         ViewerLogger << "Composition \"" << mCompositionName << "\" loaded successfully" << std::endl;
@@ -607,3 +730,81 @@ void Viewer::setFocus( bool _value )
 {
     mWindowFocus = _value;
 }
+//////////////////////////////////////////////////////////////////////////
+void Viewer::setMinimized( bool _minimized )
+{
+    mWindowMinimized = _minimized;
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::onScroll( float _scrollY )
+{
+    if( mComposition )
+    {
+        float contentScale = mComposition->GetContentScale();
+        contentScale += _scrollY * g_ContentScaleStep;
+        contentScale = std::max( g_ContentScaleMin, contentScale );
+        contentScale = std::min( g_ContentScaleMax, contentScale );
+
+        ScaleAroundPoint( contentScale, mLastMousePos[0], mLastMousePos[1] );
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::onKey( int _key, int _action, int _mods )
+{
+    AE_UNUSED( _mods );
+
+    if( _key == GLFW_KEY_SPACE )
+    {
+        if( _action == GLFW_PRESS )
+        {
+            mSpaceKeyDown = true;
+
+            glfwSetCursor( mWindow, mHandCursor );
+        }
+        else if( _action == GLFW_RELEASE )
+        {
+            mSpaceKeyDown = false;
+
+            glfwSetCursor( mWindow, mArrowCursor );
+        }
+    }
+    else if( _key == GLFW_KEY_F5 )
+    {
+        if( _action == GLFW_PRESS )
+        {
+            ReloadMovie();
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::onMouseButton( int _button, int _action, int _mods )
+{
+    AE_UNUSED( _mods );
+
+    if( _button == GLFW_MOUSE_BUTTON_LEFT )
+    {
+        if( _action == GLFW_PRESS )
+        {
+            mLMBDown = true;
+        }
+        else if( _action == GLFW_RELEASE )
+        {
+            mLMBDown = false;
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::setCursorPos( float _posX, float _posY )
+{
+    if( mSpaceKeyDown && mLMBDown && mComposition )
+    {
+        const float dx =_posX - mLastMousePos[0];
+        const float dy =_posY - mLastMousePos[1];
+
+        OffsetScene( dx, dy );
+    }
+
+    mLastMousePos[0] = _posX;
+    mLastMousePos[1] = _posY;
+}
+//////////////////////////////////////////////////////////////////////////
