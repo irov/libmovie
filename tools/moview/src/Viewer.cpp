@@ -486,6 +486,9 @@ void Viewer::DoUI()
     ImGui::SetNextWindowSize( ImVec2( rightPanelWidth, 0.f ) );
     ImGui::Begin( "Viewer:", nullptr, kPanelFlags );
     {
+        const float wndWidth = static_cast<float>(mWindowWidth);
+        const float wndHeight = static_cast<float>(mWindowHeight);
+
         ImGui::Text( "%.1f FPS (%.3f ms)", ImGui::GetIO().Framerate, 1000.f / ImGui::GetIO().Framerate );
         ImGui::Checkbox( "Draw normal", &mShowNormal );
         ImGui::Checkbox( "Draw wireframe", &mShowWireframe );
@@ -498,14 +501,13 @@ void Viewer::DoUI()
             ImGui::PopItemWidth();
             if( !CompareFloats( oldScale, contentScale ) && mComposition )
             {
-                mComposition->SetContentScale( contentScale );
-                CenterCompositionOnScreen();
+                ScaleAroundPoint( contentScale, wndWidth * 0.5f, wndHeight * 0.5f );
             }
         }
 
         if( ImGui::Button( "Reset scale" ) )
         {
-            mComposition->SetContentScale( 1.f );
+            ScaleAroundPoint( 1.f, wndWidth * 0.5f, wndHeight * 0.5f );
         }
         ImGui::SameLine();
         if( ImGui::Button( "Reset offset" ) )
@@ -673,14 +675,35 @@ void Viewer::CenterCompositionOnScreen()
         const float wndWidth = static_cast<float>(mWindowWidth);
         const float wndHeight = static_cast<float>(mWindowHeight);
 
-        const float contentWidth = mComposition->GetWidth();
-        const float contentHeight = mComposition->GetHeight();
-        const float contentScale = mComposition->GetContentScale();
+        const float scale = mComposition->GetContentScale();
+        const float contentWidth = mComposition->GetWidth() * scale;
+        const float contentHeight = mComposition->GetHeight() * scale;
 
-        mContentOffset[0] = ((wndWidth - (contentWidth * contentScale)) * 0.5f);
-        mContentOffset[1] = ((wndHeight - (contentHeight * contentScale)) * 0.5f);
+        const float dx = (wndWidth - contentWidth) * 0.5f;
+        const float dy = (wndHeight - contentHeight) * 0.5f;
 
-        mComposition->SetContentOffset( mContentOffset[0], mContentOffset[1] );
+        mContentOffset[0] = 0.f;
+        mContentOffset[1] = 0.f;
+        OffsetScene( dx, dy );
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::OffsetScene( float _dx, float _dy )
+{
+    const float scale = mComposition->GetContentScale();
+
+    mContentOffset[0] += _dx / scale;
+    mContentOffset[1] += _dy / scale;
+
+    mComposition->SetContentOffset( mContentOffset[0], mContentOffset[1] );
+}
+void Viewer::ScaleAroundPoint( float _scale, float _x, float _y )
+{
+    if( mComposition )
+    {
+        OffsetScene( -_x, -_y );
+        mComposition->SetContentScale( _scale );
+        OffsetScene( _x, _y );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -688,7 +711,7 @@ void Viewer::OnNewCompositionOpened()
 {
     if( mComposition )
     {
-        mComposition->SetViewportSize( static_cast<float>(mWindowWidth), static_cast<float>(mWindowHeight) );
+        mComposition->SetViewportSize( static_cast<float>( mWindowWidth ), static_cast<float>( mWindowHeight ) );
 
         mCompositionName = mComposition->GetName();
         ViewerLogger << "Composition \"" << mCompositionName << "\" loaded successfully" << std::endl;
@@ -721,8 +744,8 @@ void Viewer::onScroll( float _scrollY )
         contentScale += _scrollY * g_ContentScaleStep;
         contentScale = std::max( g_ContentScaleMin, contentScale );
         contentScale = std::min( g_ContentScaleMax, contentScale );
-        mComposition->SetContentScale( contentScale );
-        CenterCompositionOnScreen();
+
+        ScaleAroundPoint( contentScale, mLastMousePos[0], mLastMousePos[1] );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -775,10 +798,10 @@ void Viewer::setCursorPos( float _posX, float _posY )
 {
     if( mSpaceKeyDown && mLMBDown && mComposition )
     {
-        mContentOffset[0] += _posX - mLastMousePos[0];
-        mContentOffset[1] += _posY - mLastMousePos[1];
+        const float dx =_posX - mLastMousePos[0];
+        const float dy =_posY - mLastMousePos[1];
 
-        mComposition->SetContentOffset( mContentOffset[0], mContentOffset[1] );
+        OffsetScene( dx, dy );
     }
 
     mLastMousePos[0] = _posX;
