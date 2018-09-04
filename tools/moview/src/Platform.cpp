@@ -29,6 +29,7 @@ inline std::string UnicodeToUtf8( const std::wstring & _unicode )
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <string.h>
