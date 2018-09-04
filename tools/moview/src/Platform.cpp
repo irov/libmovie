@@ -31,6 +31,7 @@ inline std::string UnicodeToUtf8( const std::wstring & _unicode )
 #include <sys/stat.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <string.h>
 
 static int do_mkdir( const char * path, mode_t mode )
 {
@@ -288,7 +289,7 @@ namespace Platform
                  ERROR_ALREADY_EXISTS == result );
 #else
         const mode_t mode = 0755;
-        int ret = do_mkpath( path.c_str(), mode );
+        int ret = do_mkpath( _path.c_str(), mode );
         return ( ret == 0 );
 #endif
     }
@@ -317,7 +318,7 @@ namespace Platform
         }
         else
         {   // if failed = then fallback to default one
-            result = getHome() + "/.local/share";
+            result = get_home() + "/.local/share";
         }
 #endif
 
