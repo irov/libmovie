@@ -3,6 +3,7 @@
 #include "ResourcesManager.h"
 #include "Composition.h"
 #include "Logger.h"
+#include "Platform.h"
 
 #include "imgui_impl_glfw_gl3_glad.h"
 #include "nfd.h"
@@ -124,6 +125,13 @@ Viewer::~Viewer()
 //////////////////////////////////////////////////////////////////////////
 bool Viewer::Initialize( int argc, char** argv )
 {
+    // Create our config save folders and make full path to session.txt
+    std::string cfgSaveFolder = Platform::PathConcat( Platform::PathConcat( Platform::GetAppDataFolder(), "irov" ), "moview" );
+    Platform::CreateDirs( cfgSaveFolder );
+
+    mSessionFileName = Platform::PathConcat( cfgSaveFolder, mSessionFileName );
+    //////
+
     this->LoadSession();
 
     if( argc == 5 )
@@ -141,9 +149,9 @@ bool Viewer::Initialize( int argc, char** argv )
 
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
-    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
+    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
-    glfwWindowHint( GLFW_RESIZABLE, GL_FALSE );
+    glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
 
     mWindow = glfwCreateWindow( static_cast<int>(mWindowWidth),
         static_cast<int>(mWindowHeight),

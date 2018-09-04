@@ -4,12 +4,12 @@ if(WIN32)
     if(MINGW)
         set(CMAKE_STATIC_LIBRARY_PREFIX lib)
         set(CMAKE_STATIC_LIBRARY_SUFFIX .a)
-        
+
         set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
     else()
         set(CMAKE_STATIC_LIBRARY_PREFIX)
         set(CMAKE_STATIC_LIBRARY_SUFFIX .lib)
-    endif()    
+    endif()
 endif()
 
 if(UNIX AND NOT APPLE)
@@ -52,7 +52,7 @@ set(MOVIEW_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 file(GLOB files_headers ${MOVIEW_SOURCE_DIR}/*.h)
 file(GLOB files_sources ${MOVIEW_SOURCE_DIR}/*.cpp)
-		
+
 include_directories(
 	${MOVIEW_INCLUDE_DIR}
 	${GLFW_INCLUDE_DIR}
@@ -66,7 +66,7 @@ include_directories(
 if(UNIX AND NOT APPLE)
 	FIND_PACKAGE(PkgConfig REQUIRED)
 	PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
-        
+
 	LINK_DIRECTORIES(${GTK3_LIBRARY_DIRS})
 endif()
 
@@ -85,8 +85,8 @@ if(WIN32)
     endif()
 endif()
 
-add_executable(${PROJECT_NAME}	
-	${files_headers} 
+add_executable(${PROJECT_NAME}
+	${files_headers}
 	${files_sources}
     ${resources_sources}
 )
@@ -98,19 +98,19 @@ if(UNIX AND NOT APPLE)
 
     find_library(MATH_LIBRARY m)
     target_link_libraries(${PROJECT_NAME} ${MATH_LIBRARY})
-    
+
     target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
-    
+
     find_package(X11 REQUIRED)
     target_link_libraries(${PROJECT_NAME} ${X11_X11_LIB} ${X11_Xrandr_LIB} ${X11_Xinerama_LIB} ${X11_Xcursor_LIB})
-    
+
     if(X11_xf86vmode_FOUND)
         target_link_libraries(${PROJECT_NAME} ${X11_Xxf86vm_LIB})
     endif()
-    
+
     find_package( Threads )
     target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
-    
+
     target_link_libraries(${PROJECT_NAME} ${GTK3_LIBRARIES})
 endif()
 
@@ -118,6 +118,12 @@ if(APPLE)
     add_apple_framework(${PROJECT_NAME} Cocoa)
     add_apple_framework(${PROJECT_NAME} IOKit)
     add_apple_framework(${PROJECT_NAME} CoreVideo)
+endif()
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME}
+        shlwapi
+    )
 endif()
 
 target_link_libraries(${PROJECT_NAME}

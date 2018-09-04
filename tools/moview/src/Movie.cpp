@@ -5,6 +5,8 @@
 
 #include "Logger.h"
 
+#include "Platform.h"
+
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -110,20 +112,20 @@ Movie::~Movie()
 //////////////////////////////////////////////////////////////////////////
 bool Movie::LoadFromFile( const std::string& fileName, const std::string& licenseHash )
 {
-    FILE* f = fopen( fileName.c_str(), "rb" );
-    
-    if( f == NULL )
+    Handle f = Platform::FOpen( fileName, Platform::FOMode::Read );
+
+    if( f == nullptr )
     {
         return false;
     }
 
-    fseek( f, 0, SEEK_END );
-    uint32_t fileLen = static_cast<uint32_t>(ftell( f ));
-    fseek( f, 0, SEEK_SET );
+    Platform::FSeek( 0, Platform::SeekOrigin::End, f );
+    const size_t fileLen = Platform::FTell( f );
+    Platform::FSeek( 0, Platform::SeekOrigin::Begin, f );
 
     std::vector<uint8_t> buffer( fileLen );
-    fread( buffer.data(), 1, fileLen, f );
-    fclose( f );
+    Platform::FRead( buffer.data(), fileLen, f );
+    Platform::FClose( f );
 
     std::string baseFolder;
 
