@@ -31,7 +31,8 @@ include(cmake/glad_download.cmake)
 include(cmake/glfw_download.cmake)
 include(cmake/imgui_download.cmake)
 include(cmake/nativefiledialog_download.cmake)
-include(cmake/stb_image_download.cmake)
+include(cmake/stb_libs_download.cmake)
+include(cmake/alsoft_download.cmake)
 
 set(LIBMOVIE_EXTERNAL_BUILD ON CACHE BOOL "LIBMOVIE_EXTERNAL_BUILD" FORCE)
 set(LIBMOVIE_EXAMPLES_BUILD OFF CACHE BOOL "LIBMOVIE_EXAMPLES_BUILD" FORCE)
@@ -54,13 +55,14 @@ file(GLOB files_headers ${MOVIEW_SOURCE_DIR}/*.h)
 file(GLOB files_sources ${MOVIEW_SOURCE_DIR}/*.cpp)
 
 include_directories(
-	${MOVIEW_INCLUDE_DIR}
-	${GLFW_INCLUDE_DIR}
-	${IMGUI_INCLUDE_DIR}
-	${GLAD_INCLUDE_DIR}
-	${NATIVEFILEDIALOG_INCLUDE_DIR}
-	${LIBMOVIE_DIR}/include
-	${DEPENDENCIES_DIR}/stb
+    ${MOVIEW_INCLUDE_DIR}
+    ${GLFW_INCLUDE_DIR}
+    ${IMGUI_INCLUDE_DIR}
+    ${GLAD_INCLUDE_DIR}
+    ${NATIVEFILEDIALOG_INCLUDE_DIR}
+    ${LIBMOVIE_DIR}/include
+    ${DEPENDENCIES_DIR}/stb
+    ${ALSOFT_INCLUDE_DIR}
 )
 
 if(UNIX AND NOT APPLE)
@@ -86,8 +88,8 @@ if(WIN32)
 endif()
 
 add_executable(${PROJECT_NAME}
-	${files_headers}
-	${files_sources}
+    ${files_headers}
+    ${files_sources}
     ${resources_sources}
 )
 
@@ -127,16 +129,18 @@ if(WIN32)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
-	movie
-	glad
-	glfw
-	imgui
-	nativefiledialog
+    movie
+    glad
+    glfw
+    imgui
+    nativefiledialog
+    alsoft
 )
 
 add_dependencies(${PROJECT_NAME}
-	glad_download
+    glad_download
     glfw_download
-	imgui_download
-	nativefiledialog_download
+    imgui_download
+    nativefiledialog_download
+    alsoft_download
 )

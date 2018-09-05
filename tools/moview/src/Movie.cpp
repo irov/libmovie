@@ -7,6 +7,8 @@
 
 #include "Platform.h"
 
+#include "Sound.h"
+
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -448,8 +450,14 @@ bool Movie::OnProvideResource( const aeMovieResource* _resource, void** _rd, voi
         {
             const aeMovieResourceSound * r = (const aeMovieResourceSound *)_resource;
 
+            std::string fullPath = mBaseFolder + r->path;
+
+            ResourceSound * sound = ResourcesManager::Instance().GetSoundRes( fullPath );
+
             ViewerLogger << "Resource type: sound." << std::endl;
             ViewerLogger << " path        : '" << r->path << "'" << std::endl;
+
+            *_rd = reinterpret_cast<ae_voidptr_t>( sound );
         } break;
     case AE_MOVIE_RESOURCE_SLOT:
         {
