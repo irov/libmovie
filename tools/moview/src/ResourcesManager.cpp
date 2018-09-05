@@ -1,4 +1,6 @@
 #include "ResourcesManager.h"
+#include "Sound.h"
+#include "Platform.h"
 
 //////////////////////////////////////////////////////////////////////////
 #define STB_IMAGE_IMPLEMENTATION
@@ -68,8 +70,17 @@ void ResourcesManager::Shutdown()
 
         if( res->type == Resource::Texture )
         {
-            ResourceTexture* tex = static_cast<ResourceTexture*>(res);
+            ResourceTexture * tex = static_cast<ResourceTexture*>( res );
             glDeleteTextures( 1, &tex->texture );
+        }
+        else if( res->type == Resource::Sound )
+        {
+            ResourceSound * sndRes = static_cast<ResourceSound*>( res );
+            if( sndRes->sound )
+            {
+                sndRes->sound->Destroy();
+                delete sndRes->sound;
+            }
         }
 
         delete res;
@@ -90,7 +101,7 @@ ResourceTexture* ResourcesManager::GetTextureRes( const std::string& fileName )
     ResourcesTable::iterator it = mResources.find( hash );
     if( it != mResources.end() && it->second->type == Resource::Texture )
     {
-        ResourceTexture* texture = static_cast<ResourceTexture*>(it->second);
+        ResourceTexture* texture = static_cast<ResourceTexture*>( it->second );
 
         return texture;
     }
@@ -107,7 +118,7 @@ ResourceImage* ResourcesManager::GetImageRes( const std::string& imageName )
     ResourcesTable::iterator it = mResources.find( hash );
     if( it != mResources.end() && it->second->type == Resource::Image )
     {
-        ResourceImage* image = static_cast<ResourceImage*>(it->second);
+        ResourceImage* image = static_cast<ResourceImage*>( it->second );
 
         return image;
     }
@@ -116,6 +127,23 @@ ResourceImage* ResourcesManager::GetImageRes( const std::string& imageName )
     mResources.insert( { hash, image } );
 
     return image;
+}
+//////////////////////////////////////////////////////////////////////////
+ResourceSound* ResourcesManager::GetSoundRes( const std::string& fileName )
+{
+    uint32_t hash = FNV1A_Hash( fileName );
+
+    ResourcesTable::iterator it = mResources.find( hash );
+    if( it != mResources.end() && it->second->type == Resource::Sound )
+    {
+        ResourceSound * sound = static_cast<ResourceSound*>( it->second );
+
+        return sound;
+    }
+
+    ResourceSound * sound = LoadSoundRes( fileName );
+
+    return sound;
 }
 //////////////////////////////////////////////////////////////////////////
 ResourceTexture* ResourcesManager::LoadTextureRes( const std::string& fileName )
@@ -182,4 +210,27 @@ ResourceTexture* ResourcesManager::LoadTextureRes( const std::string& fileName )
     mResources.insert( { hash, texture } );
 
     return texture;
+}
+
+ResourceSound * ResourcesManager::LoadSoundRes( const std::string& fileName )
+{
+    if( !Platform::CheckIfExists( fileName ) )
+    {
+        return nullptr;
+    }
+
+    Sound * sound = new Sound();
+    if( !sound->LoadFromFile( fileName ) )
+    {
+        delete sound;
+        return nullptr;
+    }
+
+    ResourceSound * soundRes = new ResourceSound();
+    soundRes->sound = sound;
+
+    uint32_t hash = FNV1A_Hash(fileName);
+    mResources.insert( { hash, soundRes } );
+
+    return soundRes;
 }

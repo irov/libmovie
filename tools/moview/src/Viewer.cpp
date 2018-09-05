@@ -4,6 +4,7 @@
 #include "Composition.h"
 #include "Logger.h"
 #include "Platform.h"
+#include "Sound.h"
 
 #include "imgui_impl_glfw_gl3_glad.h"
 #include "nfd.h"
@@ -140,6 +141,16 @@ bool Viewer::Initialize( int argc, char** argv )
         mCompositionName = argv[2];
         mToLoopPlay = (strcmp( argv[3], "1" ) == 0);
         mLicenseHash = argv[4];
+    }
+
+    if( !SoundDevice::Instance().Initialize() )
+    {
+        ViewerLogger << "Failed to initialize sound device !!!" << std::endl;
+        return false;
+    }
+    else
+    {
+        ViewerLogger << "Sound device successfully initialized:" << std::endl << SoundDevice::Instance().GetDeviceString() << std::endl;
     }
 
     if( glfwInit() == 0 )
