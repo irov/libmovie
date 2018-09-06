@@ -35,7 +35,7 @@ include(cmake/stb_libs_download.cmake)
 
 if(WIN32)
     include(cmake/alsoft_download.cmake)
-endif()    
+endif()
 
 set(LIBMOVIE_EXTERNAL_BUILD ON CACHE BOOL "LIBMOVIE_EXTERNAL_BUILD" FORCE)
 set(LIBMOVIE_EXAMPLES_BUILD OFF CACHE BOOL "LIBMOVIE_EXAMPLES_BUILD" FORCE)
@@ -117,7 +117,7 @@ if(UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
 
     target_link_libraries(${PROJECT_NAME} ${GTK3_LIBRARIES})
-    
+
     find_package(OpenAL REQUIRED)
     target_link_libraries(${PROJECT_NAME} ${OPENAL_LIBRARY})
 endif()
@@ -126,6 +126,7 @@ if(APPLE)
     add_apple_framework(${PROJECT_NAME} Cocoa)
     add_apple_framework(${PROJECT_NAME} IOKit)
     add_apple_framework(${PROJECT_NAME} CoreVideo)
+    add_apple_framework(${PROJECT_NAME} OpenAL)
 endif()
 
 if(WIN32)
@@ -133,7 +134,7 @@ if(WIN32)
         shlwapi
         alsoft
     )
-    
+
     add_dependencies(${PROJECT_NAME}
         alsoft_download
     )
