@@ -37,7 +37,7 @@ static uint64_t GetCurrentTimeSeconds()
 //////////////////////////////////////////////////////////////////////////
 static bool CompareFloats( const float _a, const float _b )
 {
-    return std::fabs( _a - _b ) <= FLT_EPSILON;
+    return std::abs( _a - _b ) <= FLT_EPSILON;
 }
 //////////////////////////////////////////////////////////////////////////
 static void GLFW_WindowFocusCallback( GLFWwindow * _window, int _focus )

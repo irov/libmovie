@@ -32,7 +32,10 @@ include(cmake/glfw_download.cmake)
 include(cmake/imgui_download.cmake)
 include(cmake/nativefiledialog_download.cmake)
 include(cmake/stb_libs_download.cmake)
-include(cmake/alsoft_download.cmake)
+
+if(WIN32)
+    include(cmake/alsoft_download.cmake)
+endif()    
 
 set(LIBMOVIE_EXTERNAL_BUILD ON CACHE BOOL "LIBMOVIE_EXTERNAL_BUILD" FORCE)
 set(LIBMOVIE_EXAMPLES_BUILD OFF CACHE BOOL "LIBMOVIE_EXAMPLES_BUILD" FORCE)
@@ -114,6 +117,9 @@ if(UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
 
     target_link_libraries(${PROJECT_NAME} ${GTK3_LIBRARIES})
+    
+    find_package(OpenAL REQUIRED)
+    target_link_libraries(${PROJECT_NAME} ${OPENAL_LIBRARY})
 endif()
 
 if(APPLE)
@@ -125,6 +131,11 @@ endif()
 if(WIN32)
     target_link_libraries(${PROJECT_NAME}
         shlwapi
+        alsoft
+    )
+    
+    add_dependencies(${PROJECT_NAME}
+        alsoft_download
     )
 endif()
 
@@ -134,7 +145,6 @@ target_link_libraries(${PROJECT_NAME}
     glfw
     imgui
     nativefiledialog
-    alsoft
 )
 
 add_dependencies(${PROJECT_NAME}
@@ -142,5 +152,4 @@ add_dependencies(${PROJECT_NAME}
     glfw_download
     imgui_download
     nativefiledialog_download
-    alsoft_download
 )
