@@ -1,9 +1,16 @@
 #include "Sound.h"
+#include "Platform.h"
 
 #include <stb_vorbis.h>
 
-#include <AL/al.h>
-#include <AL/alc.h>
+// Stupid Apple monkeys decided to "be different"  >:(
+#ifdef PLATFORM_MACOS
+#   include <OpenAL/al.h>
+#   include <OpenAL/alc.h>
+#else
+#   include <AL/al.h>
+#   include <AL/alc.h>
+#endif
 
 Sound::Sound()
     : mNumChannels( 0 )
