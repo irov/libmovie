@@ -64,29 +64,7 @@ void ResourcesManager::Shutdown()
         mWhiteTexture = 0;
     }
 
-    for( ResourcesTable::value_type & p : mResources )
-    {
-        Resource* res = p.second;
-
-        if( res->type == Resource::Texture )
-        {
-            ResourceTexture * tex = static_cast<ResourceTexture*>( res );
-            glDeleteTextures( 1, &tex->texture );
-        }
-        else if( res->type == Resource::Sound )
-        {
-            ResourceSound * sndRes = static_cast<ResourceSound*>( res );
-            if( sndRes->sound )
-            {
-                sndRes->sound->Destroy();
-                delete sndRes->sound;
-            }
-        }
-
-        delete res;
-    }
-
-    mResources.clear();
+    PurgeAllResources();
 }
 //////////////////////////////////////////////////////////////////////////
 GLuint ResourcesManager::GetWhiteTexture() const
@@ -144,6 +122,26 @@ ResourceSound* ResourcesManager::GetSoundRes( const std::string& fileName )
     ResourceSound * sound = LoadSoundRes( fileName );
 
     return sound;
+}
+//////////////////////////////////////////////////////////////////////////
+void ResourcesManager::PurgeAllResources()
+{
+    for( ResourcesTable::value_type & p : mResources )
+    {
+        Resource* res = p.second;
+
+        if( res->type == Resource::Texture )
+        {
+            ResourceTexture * tex = static_cast<ResourceTexture*>( res );
+            glDeleteTextures( 1, &tex->texture );
+        }
+
+        delete res;
+    }
+
+    SoundDevice::Instance().DeleteAllSounds();
+
+    mResources.clear();
 }
 //////////////////////////////////////////////////////////////////////////
 ResourceTexture* ResourcesManager::LoadTextureRes( const std::string& fileName )
@@ -219,10 +217,10 @@ ResourceSound * ResourcesManager::LoadSoundRes( const std::string& fileName )
         return nullptr;
     }
 
-    Sound * sound = new Sound();
+    Sound * sound = SoundDevice::Instance().CreateSound();
     if( !sound->LoadFromFile( fileName ) )
     {
-        delete sound;
+        SoundDevice::Instance().DeleteSound( sound );
         return nullptr;
     }
 

@@ -169,6 +169,8 @@ bool SoundDevice::Initialize()
 
 void SoundDevice::Shutdown()
 {
+    DeleteAllSounds();
+
     alcMakeContextCurrent( nullptr );
     if( mALContext )
     {
@@ -183,4 +185,44 @@ void SoundDevice::Shutdown()
 const std::string& SoundDevice::GetDeviceString() const
 {
     return mDevString;
+}
+
+Sound* SoundDevice::CreateSound()
+{
+    mSounds.push_back( new Sound() );
+    return mSounds.back();
+}
+
+void SoundDevice::DeleteSound( Sound* sound )
+{
+    if( sound )
+    {
+        auto it = std::find( mSounds.begin(), mSounds.end(), sound );
+        if( it != mSounds.end() )
+        {
+            mSounds.erase( it );
+        }
+
+        sound->Destroy();
+        delete sound;
+    }
+}
+
+void SoundDevice::StopAllSounds()
+{
+    for( Sound* sound : mSounds )
+    {
+        sound->Stop();
+    }
+}
+
+void SoundDevice::DeleteAllSounds()
+{
+    for( Sound* sound : mSounds )
+    {
+        sound->Destroy();
+        delete sound;
+    }
+
+    mSounds.clear();
 }

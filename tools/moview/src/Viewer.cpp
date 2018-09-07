@@ -240,6 +240,8 @@ void Viewer::Finalize()
 
     glfwDestroyWindow( mWindow );
     glfwTerminate();
+
+    SoundDevice::Instance().Shutdown();
 }
 //////////////////////////////////////////////////////////////////////////
 void Viewer::Loop()
@@ -730,6 +732,9 @@ void Viewer::OnNewCompositionOpened()
 {
     if( mComposition )
     {
+        //#NOTE_SK: stop all sounds from current composition
+        SoundDevice::Instance().StopAllSounds();
+
         mComposition->SetViewportSize( static_cast<float>( mWindowWidth ), static_cast<float>( mWindowHeight ) );
 
         mCompositionName = mComposition->GetName();

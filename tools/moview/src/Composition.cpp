@@ -1326,6 +1326,11 @@ void Composition::OnUpdateNode( const aeMovieNodeUpdateCallbackData* _callbackDa
                 {
                     resourceSound->sound->Stop();
                 }break;
+
+            case AE_MOVIE_STATE_UPDATE_PROCESS:
+            case AE_MOVIE_STATE_UPDATE_SKIP:
+                //#NOTE_SK: should I do something here ???
+                break;
             }
         }
     }

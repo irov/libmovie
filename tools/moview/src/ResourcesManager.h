@@ -97,6 +97,8 @@ public:
     ResourceImage * GetImageRes( const std::string& imageName );
     ResourceSound * GetSoundRes( const std::string& fileName );
 
+    void PurgeAllResources();
+
 protected:
     ResourceTexture * LoadTextureRes( const std::string& fileName );
     ResourceSound * LoadSoundRes( const std::string& fileName );
