@@ -8,6 +8,7 @@
 #   include <OpenAL/al.h>
 #   include <OpenAL/alc.h>
 #else
+#   define AL_LIBTYPE_STATIC
 #   include <AL/al.h>
 #   include <AL/alc.h>
 #endif
@@ -53,7 +54,7 @@ bool Sound::LoadFromFile( const std::string & _path )
         alBufferData( mALBuffer, format, soundData, dataSize, rate );
 
         // Attach buffer to the source
-        alSourceQueueBuffers( mALSource, 1, &mALBuffer );
+        alSourcei( mALSource, AL_BUFFER, mALBuffer );
 
         // Free PCM data
         free( soundData );
@@ -69,7 +70,7 @@ void Sound::Destroy()
     if( mALSource )
     {
         alSourceStop( mALSource );
-        alSourceUnqueueBuffers( mALSource, 1, &mALBuffer );
+        alSourcei( mALSource, AL_BUFFER, 0 );
         alDeleteBuffers( 1, &mALBuffer );
         alDeleteSources( 1, &mALSource );
 
