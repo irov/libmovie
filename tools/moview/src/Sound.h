@@ -3,6 +3,7 @@
 #include "Singleton.h"
 
 #include <string>
+#include <vector>
 
 
 class Sound;
@@ -48,8 +49,16 @@ public:
 
     const std::string&  GetDeviceString() const;
 
+    Sound*              CreateSound();
+    void                DeleteSound( Sound* sound );
+
+    void                StopAllSounds();
+    void                DeleteAllSounds();
+
 private:
     void*       mALDevice;
     void*       mALContext;
     std::string mDevString;
+
+    std::vector<Sound*> mSounds;
 };
