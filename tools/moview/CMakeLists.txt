@@ -33,7 +33,7 @@ include(cmake/imgui_download.cmake)
 include(cmake/nativefiledialog_download.cmake)
 include(cmake/stb_libs_download.cmake)
 
-if(WIN32)
+if(NOT APPLE)
     include(cmake/alsoft_download.cmake)
 endif()
 
@@ -117,9 +117,6 @@ if(UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
 
     target_link_libraries(${PROJECT_NAME} ${GTK3_LIBRARIES})
-
-    find_package(OpenAL REQUIRED)
-    target_link_libraries(${PROJECT_NAME} ${OPENAL_LIBRARY})
 endif()
 
 if(APPLE)
@@ -132,6 +129,12 @@ endif()
 if(WIN32)
     target_link_libraries(${PROJECT_NAME}
         shlwapi
+        winmm
+    )
+endif()
+
+if(NOT APPLE)
+    target_link_libraries(${PROJECT_NAME}
         alsoft
     )
 
