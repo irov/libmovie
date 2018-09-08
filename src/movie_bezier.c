@@ -166,9 +166,11 @@ AE_INTERNAL ae_void_t __setup_bezier_beziers( aeMovieBezierWarp * _bezier, const
 //////////////////////////////////////////////////////////////////////////
 ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
 {
+    ae_uint32_t bezier_warp_quality = _layerBezierWarp->quality;
+
     if( _layerBezierWarp->immutable == AE_TRUE )
     {
-        __make_bezier_warp_vertices( _instance, _layerBezierWarp->quality, &_layerBezierWarp->immutable_bezier_warp, _matrix, _render );
+        __make_bezier_warp_vertices( _instance, bezier_warp_quality, &_layerBezierWarp->immutable_bezier_warp, _matrix, _render );
     }
     else
     {
@@ -176,7 +178,7 @@ ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, co
         {
             const aeMovieBezierWarp * bezier_warp = _layerBezierWarp->bezier_warps + _frame;
 
-            __make_bezier_warp_vertices( _instance, _layerBezierWarp->quality, bezier_warp, _matrix, _render );
+            __make_bezier_warp_vertices( _instance, bezier_warp_quality, bezier_warp, _matrix, _render );
         }
         else
         {
@@ -193,7 +195,17 @@ ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, co
             const ae_vector2_t * next_beziers = bezier_warp_frame_next->beziers;
             __setup_bezier_beziers( &bezierWarp, current_beziers, next_beziers, _t );
 
-            __make_bezier_warp_vertices( _instance, _layerBezierWarp->quality, &bezierWarp, _matrix, _render );
+            __make_bezier_warp_vertices( _instance, bezier_warp_quality, &bezierWarp, _matrix, _render );
         }
+    }
+
+    ae_uint32_t vertex_count = get_bezier_warp_vertex_count( bezier_warp_quality );
+
+    const ae_vector2_t * bezier_warp_uvs = _instance->bezier_warp_uvs[bezier_warp_quality];
+
+    ae_uint32_t i = 0;
+    for( ; i != vertex_count; ++i )
+    {
+        ae_copy_v2( _render->uv[i], bezier_warp_uvs[i] );
     }
 }

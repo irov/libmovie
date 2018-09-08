@@ -77,6 +77,13 @@ typedef struct aeMovieResourceSound
 
 } aeMovieResourceSound;
 
+typedef enum
+{
+    AE_MOVIE_RESOURCE_IMAGE_PREMULTIPLIED = AE_BITWISE( 0 ),
+    AE_MOVIE_RESOURCE_IMAGE_TRIM = AE_BITWISE( 1 ),
+    AE_MOVIE_RESOURCE_IMAGE_TRACKMATTE = AE_BITWISE( 2 ),
+} ae_movie_resource_image_options;
+
 typedef struct aeMovieResourceImage
 {
     AE_MOVIE_RESOURCE_BASE();
@@ -84,7 +91,7 @@ typedef struct aeMovieResourceImage
     ae_string_t path;
     ae_uint32_t codec;
 
-    ae_bool_t is_premultiplied;
+    ae_uint32_t options;
 
     ae_float_t base_width;
     ae_float_t base_height;

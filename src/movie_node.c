@@ -53,7 +53,7 @@ AE_INTERNAL ae_uint32_t __inc_composition_update_revision( const aeMovieComposit
     return update_revision;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_matrix4_t _matrix, const ae_vector2_t * _uvs, aeMovieRenderMesh * _render )
 {
     _render->vertexCount = _mesh->vertex_count;
     _render->indexCount = _mesh->index_count;
@@ -66,7 +66,37 @@ AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_ma
         ae_mul_v3_v2_m4( _render->position[i], _mesh->positions[i], _matrix );
     }
 
-    _render->uv = _mesh->uvs;
+
+    if( _uvs == AE_NULL )
+    {
+        ae_uint32_t i = 0;
+        for( ; i != vertex_count; ++i )
+        {
+            ae_copy_v2( _render->uv[i], _mesh->uvs[i] );
+        }
+    }
+    else
+    {
+        ae_float_t bx = _uvs[0][0];
+        ae_float_t by = _uvs[0][1];
+
+        ae_float_t ux = _uvs[1][0] - _uvs[0][0];
+        ae_float_t uy = _uvs[1][1] - _uvs[0][1];
+
+        ae_float_t vx = _uvs[2][0] - _uvs[1][0];
+        ae_float_t vy = _uvs[2][1] - _uvs[1][1];
+
+        ae_uint32_t i = 0;
+        for( ; i != vertex_count; ++i )
+        {
+            ae_float_t u = _mesh->uvs[i][0];
+            ae_float_t v = _mesh->uvs[i][1];
+            
+            _render->uv[i][0] = bx + ux * u + vx * v;
+            _render->uv[i][1] = by + uy * u + vy * v;
+        } 
+    }
+
     _render->indices = _mesh->indices;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -93,15 +123,19 @@ AE_INTERNAL ae_void_t __make_layer_sprite_vertices( const aeMovieInstance * _ins
     ae_mul_v3_v2_m4( _render->position[2], v_position[2], _matrix );
     ae_mul_v3_v2_m4( _render->position[3], v_position[3], _matrix );
 
-    _render->uv = _uv;
+    ae_copy_v2( _render->uv[0], _uv[0] );
+    ae_copy_v2( _render->uv[1], _uv[1] );
+    ae_copy_v2( _render->uv[2], _uv[2] );
+    ae_copy_v2( _render->uv[3], _uv[3] );
+
     _render->indices = _instance->sprite_indices;
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __make_layer_mesh_vertices( const aeMovieLayerExtensionMesh * _extensionMesh, ae_uint32_t _frame, const ae_matrix4_t _matrix, aeMovieRenderMesh * _render )
+AE_INTERNAL ae_void_t __make_layer_mesh_vertices( const aeMovieLayerExtensionMesh * _extensionMesh, ae_uint32_t _frame, const ae_matrix4_t _matrix, const ae_vector2_t * _uvs, aeMovieRenderMesh * _render )
 {
     const ae_mesh_t * mesh = (_extensionMesh->immutable == AE_TRUE) ? &_extensionMesh->immutable_mesh : (_extensionMesh->meshes + _frame);
 
-    __make_mesh_vertices( mesh, _matrix, _render );
+    __make_mesh_vertices( mesh, _matrix, _uvs, _render );
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_float_t __compute_movie_property_value( const struct aeMoviePropertyValue * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t )
@@ -206,7 +240,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
     {
     case AE_MOVIE_LAYER_TYPE_SHAPE:
         {
-            __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, _render );
+            __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, AE_NULL, _render );
 
             _render->color = _node->color;
             _render->opacity = _node->opacity;
@@ -217,13 +251,11 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
 
             if( layer->extensions->mesh != AE_NULL )
             {
-                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, _render );
+                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, AE_NULL, _render );
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
-
-                _render->uv = instance->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
             }
             else
             {
@@ -271,13 +303,11 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
 
             if( layer->extensions->mesh != AE_NULL )
             {
-                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, _render );
+                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, resource_image->uvs, _render );
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
-
-                _render->uv = resource_image->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
 
                 if( resource_image->cache != AE_NULL )
                 {
@@ -286,7 +316,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             }
             else if( resource_image->mesh != AE_NULL && _trackmatte == AE_FALSE )
             {
-                __make_mesh_vertices( resource_image->mesh, _node->matrix, _render );
+                __make_mesh_vertices( resource_image->mesh, _node->matrix, resource_image->uvs, _render );
 
                 if( resource_image->cache != AE_NULL )
                 {
@@ -318,7 +348,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
 
             if( layer->extensions->mesh != AE_NULL )
             {
-                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, _render );
+                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, AE_NULL, _render );
 
                 if( layer->cache != AE_NULL )
                 {
@@ -335,8 +365,6 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
-
-                _render->uv = instance->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
 
                 if( resource_video->cache != AE_NULL )
                 {
@@ -365,7 +393,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
 
             if( layer->extensions->mesh != AE_NULL )
             {
-                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, _render );
+                __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, resource_image->uvs, _render );
 
                 if( layer->cache != AE_NULL )
                 {
@@ -383,8 +411,6 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             {
                 make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
 
-                _render->uv = resource_image->bezier_warp_uvs[layer->extensions->bezier_warp->quality];
-
                 if( resource_image->cache != AE_NULL )
                 {
                     _render->uv_cache_data = resource_image->cache->bezier_warp_uv_cache_data[layer->extensions->bezier_warp->quality];
@@ -392,7 +418,7 @@ AE_INTERNAL ae_void_t __compute_movie_node( const aeMovieComposition * _composit
             }
             else if( resource_image->mesh != AE_NULL && _trackmatte == AE_FALSE )
             {
-                __make_mesh_vertices( resource_image->mesh, _node->matrix, _render );
+                __make_mesh_vertices( resource_image->mesh, _node->matrix, resource_image->uvs, _render );
 
                 if( resource_image->cache != AE_NULL )
                 {

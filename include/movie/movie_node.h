@@ -91,7 +91,7 @@ typedef struct aeMovieRenderMesh
     /**
     @brief Texture coordinates.
     */
-    const ae_vector2_t * uv;
+    ae_vector2_t uv[AE_MOVIE_MAX_VERTICES];
 
     ae_voidptr_t uv_cache_data;
 
