@@ -1,7 +1,7 @@
 #include "Sound.h"
 #include "Platform.h"
 
-#include <stb_vorbis.h>
+#include "stb_vorbis.h"
 
 // Stupid Apple monkeys decided to "be different"  >:(
 #ifdef PLATFORM_MACOS
