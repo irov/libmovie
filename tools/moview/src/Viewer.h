@@ -25,6 +25,16 @@ struct Settings
 
 class Viewer
 {
+private:
+    enum class PopupType : size_t
+    {
+        Error = 0,
+        Warning,
+        Info,
+
+        NumTypes
+    };
+
 public:
     Viewer();
     ~Viewer();
@@ -47,6 +57,7 @@ protected:
     void OffsetScene( float _dx, float _dy );
     void ScaleAroundPoint( float _scale, float _x, float _y );
     void OnNewCompositionOpened();
+    void ShowPopup( const std::string& _message, PopupType _type );
 
 public:
     void setFocus( bool _focus );
@@ -70,6 +81,7 @@ protected:
     Composition* mComposition;
     uint32_t mLastCompositionIdx;
 
+    std::string mAppName;
     std::string mSettingsFileName;
 
     bool mShouldExit;
@@ -83,4 +95,6 @@ protected:
     bool mLMBDown;
     float mLastMousePos[2];
 
+    std::string mPopupNessage;
+    PopupType mPopupType;
 };
