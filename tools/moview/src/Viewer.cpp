@@ -3,9 +3,17 @@
 #include "ResourcesManager.h"
 #include "Composition.h"
 #include "Logger.h"
+#include "Platform.h"
+#include "Sound.h"
 
 #include "imgui_impl_glfw_gl3_glad.h"
 #include "nfd.h"
+
+#define INI_IMPLEMENTATION
+#ifdef PLATFORM_WINDOWS
+# define INI_STRNICMP _strnicmp
+#endif
+#include "ini.h"
 
 #include <algorithm>
 #include <thread>
@@ -35,7 +43,7 @@ static uint64_t GetCurrentTimeSeconds()
 //////////////////////////////////////////////////////////////////////////
 static bool CompareFloats( const float _a, const float _b )
 {
-    return std::fabs( _a - _b ) <= FLT_EPSILON;
+    return std::abs( _a - _b ) <= FLT_EPSILON;
 }
 //////////////////////////////////////////////////////////////////////////
 static void GLFW_WindowFocusCallback( GLFWwindow * _window, int _focus )
@@ -92,11 +100,8 @@ Viewer::Viewer()
     , mHandCursor( nullptr )
     , mWindowWidth( 1280 )
     , mWindowHeight( 720 )
-    , mShowNormal( true )
-    , mShowWireframe( false )
     , mShouldExit( false )
     , mManualPlayPos( 0.f )
-    , mToLoopPlay( false )
     , mComposition( nullptr )
     , mLastCompositionIdx( 0 )
     , mWindowFocus( true )
@@ -104,18 +109,23 @@ Viewer::Viewer()
     , mSpaceKeyDown( false )
     , mLMBDown( false )
 {
-    mLicenseHash = g_default_hash;
-    mSessionFileName = "session.txt";
+    mSettings.licenseHash = g_default_hash;
+    mSettings.loopPlay = false;
+    mSettings.backgroundColor[0] = 0.412f;
+    mSettings.backgroundColor[1] = 0.796f;
+    mSettings.backgroundColor[2] = 1.f;
+    mSettings.soundVolume = 1.f;
+    mSettings.soundMuted = false;
+    mSettings.drawNormal = true;
+    mSettings.drawWireframe = false;
+
+    mSettingsFileName = "settings.ini";
 
     mContentOffset[0] = 0.f;
     mContentOffset[1] = 0.f;
 
     mLastMousePos[0] = 0.f;
     mLastMousePos[1] = 0.f;
-
-    mBackgroundColor[0] = 0.412f;
-    mBackgroundColor[1] = 0.796f;
-    mBackgroundColor[2] = 1.f;
 };
 //////////////////////////////////////////////////////////////////////////
 Viewer::~Viewer()
@@ -124,14 +134,34 @@ Viewer::~Viewer()
 //////////////////////////////////////////////////////////////////////////
 bool Viewer::Initialize( int argc, char** argv )
 {
-    this->LoadSession();
+    // Create our config save folders and make full path to session.txt
+    std::string cfgSaveFolder = Platform::PathConcat( Platform::PathConcat( Platform::GetAppDataFolder(), "irov" ), "moview" );
+    Platform::CreateDirs( cfgSaveFolder );
+
+    mSettingsFileName = Platform::PathConcat( cfgSaveFolder, mSettingsFileName );
+    //////
+
+    this->LoadSettings();
 
     if( argc == 5 )
     {
-        mMovieFilePath = argv[1];
-        mCompositionName = argv[2];
-        mToLoopPlay = (strcmp( argv[3], "1" ) == 0);
-        mLicenseHash = argv[4];
+        mSettings.movieFilePath = argv[1];
+        mSettings.compositionName = argv[2];
+        mSettings.loopPlay = (strcmp( argv[3], "1" ) == 0);
+        mSettings.licenseHash = argv[4];
+    }
+
+    if( !SoundDevice::Instance().Initialize() )
+    {
+        ViewerLogger << "Failed to initialize sound device !!!" << std::endl;
+        return false;
+    }
+    else
+    {
+        ViewerLogger << "Sound device successfully initialized:" << std::endl << SoundDevice::Instance().GetDeviceString() << std::endl;
+
+        SoundDevice::Instance().SetGlobalVolume( mSettings.soundVolume );
+        SoundDevice::Instance().SetMuted( mSettings.soundMuted );
     }
 
     if( glfwInit() == 0 )
@@ -141,9 +171,9 @@ bool Viewer::Initialize( int argc, char** argv )
 
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
-    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
+    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
-    glfwWindowHint( GLFW_RESIZABLE, GL_FALSE );
+    glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
 
     mWindow = glfwCreateWindow( static_cast<int>(mWindowWidth),
         static_cast<int>(mWindowHeight),
@@ -189,7 +219,7 @@ bool Viewer::Initialize( int argc, char** argv )
 
     ResourcesManager::Instance().Initialize();
 
-    if( !mMovieFilePath.empty() && !mLicenseHash.empty() )
+    if( !mSettings.movieFilePath.empty() && !mSettings.licenseHash.empty() )
     {
         this->ReloadMovie();
     }
@@ -205,9 +235,9 @@ bool Viewer::Initialize( int argc, char** argv )
 void Viewer::Finalize()
 {
     // save session on exit
-    if( !mMovieFilePath.empty() && !mLicenseHash.empty() )
+    if( !mSettings.movieFilePath.empty() && !mSettings.licenseHash.empty() )
     {
-        this->SaveSession();
+        this->SaveSettings();
     }
 
     this->ShutdownMovie();
@@ -221,6 +251,8 @@ void Viewer::Finalize()
 
     glfwDestroyWindow( mWindow );
     glfwTerminate();
+
+    SoundDevice::Instance().Shutdown();
 }
 //////////////////////////////////////////////////////////////////////////
 void Viewer::Loop()
@@ -233,7 +265,7 @@ void Viewer::Loop()
 
         if( !mWindowMinimized && mWindowFocus )
         {
-            glClearColor( mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.f );
+            glClearColor( mSettings.backgroundColor[0], mSettings.backgroundColor[1], mSettings.backgroundColor[2], 1.f );
             glClear( GL_COLOR_BUFFER_BIT );
 
             uint64_t timeNow = GetCurrentTimeSeconds();
@@ -249,14 +281,14 @@ void Viewer::Loop()
                     mComposition->Update( dt < 0.1f ? dt : 0.1f );
                 }
 
-                if( mShowNormal || mShowWireframe )
+                if( mSettings.drawNormal || mSettings.drawWireframe )
                 {
                     Composition::DrawMode drawMode;
-                    if( mShowNormal && mShowWireframe )
+                    if( mSettings.drawNormal && mSettings.drawWireframe )
                     {
                         drawMode = Composition::DrawMode::SolidWithWireOverlay;
                     }
-                    else if( mShowWireframe )
+                    else if( mSettings.drawWireframe )
                     {
                         drawMode = Composition::DrawMode::Wireframe;
                     }
@@ -285,47 +317,87 @@ void Viewer::Loop()
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void Viewer::SaveSession()
+void Viewer::SaveSettings()
 {
-    FILE* f = fopen( mSessionFileName.c_str(), "wt" );
-    if( f ) {
-        fprintf( f, "%s\n", mMovieFilePath.c_str() );
-        fprintf( f, "%s\n", mCompositionName.c_str() );
-        fprintf( f, "%s\n", mToLoopPlay ? "yes" : "no" );
-        fprintf( f, "%s\n", mLicenseHash.c_str() );
-        fprintf( f, "%f/%f/%f\n", mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2] );
-        fclose( f );
+    Handle hFile = Platform::FOpen( mSettingsFileName, Platform::FOMode::Write );
+    if( hFile )
+    {
+        // Create ini object and serialize our properties
+        ini_t * ini = ini_create( nullptr );
+        int section = ini_section_add( ini, "License", 0 );
+        ini_property_add( ini, section, "Hash", 0, mSettings.licenseHash.c_str(), static_cast<int>( mSettings.licenseHash.length() ) );
+
+        section = ini_section_add( ini, "Movie", 0);
+        ini_property_add( ini, section, "Path", 0, mSettings.movieFilePath.c_str(), static_cast<int>( mSettings.movieFilePath.length() ) );
+        ini_property_add( ini, section, "Composition", 0, mSettings.compositionName.c_str(), static_cast<int>( mSettings.compositionName.length() ) );
+        ini_property_add( ini, section, "Loop", 0, mSettings.loopPlay ? "true" : "false", 0 );
+
+        section = ini_section_add( ini, "Viewer", 0 );
+        std::string colorString = std::to_string( mSettings.backgroundColor[0] ) + "/" + 
+                                  std::to_string( mSettings.backgroundColor[1] ) + "/" + 
+                                  std::to_string( mSettings.backgroundColor[2] );
+        ini_property_add( ini, section, "BackgroundColor", 0, colorString.c_str(), static_cast<int>( colorString.length() ) );
+        ini_property_add( ini, section, "SoundVolume", 0, std::to_string( mSettings.soundVolume ).c_str(), 0 );
+        ini_property_add( ini, section, "SoundMuted", 0, mSettings.soundMuted ? "true" : "false", 0 );
+
+        // Query the data size
+        const int iniSize = ini_save( ini, nullptr, 0 );
+        std::vector<char> iniData( iniSize );
+        // Serialize ini to memory
+        ini_save( ini, iniData.data(), iniSize );
+        ini_destroy( ini );
+
+        // Write serialized ini to file
+
+        //#NOTE_SK: fo some inknown reason, ini.h lib adds null character to the end of the data
+        const size_t bytesToWrite = (iniData.back() == '\0') ? (iniData.size() - 1) : iniData.size();
+
+        Platform::FWrite( iniData.data(), bytesToWrite, hFile );
+        Platform::FClose( hFile );
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void Viewer::LoadSession()
+void Viewer::LoadSettings()
 {
-    FILE* f = fopen( mSessionFileName.c_str(), "rt" );
-    if( f ) {
-        char line[1025] = { 0 };
+    Handle hFile = Platform::FOpen( mSettingsFileName, Platform::FOMode::Read );
+    if( hFile )
+    {
+        // Query file size
+        Platform::FSeek( 0, Platform::SeekOrigin::End, hFile );
+        const int fileSize = static_cast<int>( Platform::FTell( hFile ) );
+        Platform::FSeek( 0, Platform::SeekOrigin::Begin, hFile );
 
-        if( fgets( line, 1024, f ) ) {
-            mMovieFilePath.assign( line, strlen( line ) - 1 );
-        }
-        if( fgets( line, 1024, f ) ) {
-            mCompositionName.assign( line, strlen( line ) - 1 );
-        }
-        if( fgets( line, 1024, f ) ) {
-            mToLoopPlay = (line[0] == 'y');
-        }
-        if( fgets( line, 1024, f ) ) {
-            mLicenseHash.assign( line, strlen( line ) - 1 );
-        }
-        if( fgets( line, 1024, f ) ) {
-            float temp[3] = { 0.f };
-            if( 3 == sscanf( line, "%f/%f/%f", &temp[0], &temp[1], &temp[2] ) ) {
-                mBackgroundColor[0] = temp[0];
-                mBackgroundColor[1] = temp[1];
-                mBackgroundColor[2] = temp[2];
-            }
-        }
+        // Load ini file data and put '\0' at the end to make C string
+        std::vector<char> iniData( fileSize + 1 );
+        Platform::FRead( iniData.data(), iniData.size(), hFile );
+        Platform::FClose( hFile );
+        iniData.back() = '\0';
 
-        fclose( f );
+        // Now parse ini and deserialize our settings
+        ini_t * ini = ini_load( iniData.data(), nullptr );
+
+        int section = ini_find_section( ini, "License", 0 );
+        mSettings.licenseHash = ini_property_value( ini, section, ini_find_property( ini, section, "Hash", 0 ) );
+
+        section = ini_find_section( ini, "Movie", 0 );
+        mSettings.movieFilePath = ini_property_value( ini, section, ini_find_property( ini, section, "Path", 0 ) );
+        mSettings.compositionName = ini_property_value( ini, section, ini_find_property( ini, section, "Composition", 0 ) );
+        mSettings.loopPlay = std::string( ini_property_value( ini, section, ini_find_property( ini, section, "Loop", 0 ) ) ) == "true";
+
+        section = ini_find_section( ini, "Viewer", 0 );
+        const char* colorString = ini_property_value( ini, section, ini_find_property( ini, section, "BackgroundColor", 0 ) );
+        if( colorString )
+        {
+            sscanf( colorString, "%f/%f/%f", &mSettings.backgroundColor[0], &mSettings.backgroundColor[1], &mSettings.backgroundColor[2] );
+        }
+        const char* volumeString = ini_property_value( ini, section, ini_find_property( ini, section, "SoundVolume", 0 ) );
+        if( volumeString )
+        {
+            mSettings.soundVolume = std::stof( volumeString );
+        }
+        mSettings.soundMuted = std::string( ini_property_value( ini, section, ini_find_property( ini, section, "SoundMuted", 0 ) ) ) == "true";
+
+        ini_destroy( ini );
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -349,15 +421,15 @@ bool Viewer::ReloadMovie()
 
     ResourcesManager::Instance().Initialize();
 
-    if( mMovie.LoadFromFile( mMovieFilePath, mLicenseHash ) )
+    if( mMovie.LoadFromFile( mSettings.movieFilePath, mSettings.licenseHash ) )
     {
-        mComposition = mCompositionName.empty() ? mMovie.OpenDefaultComposition() : mMovie.OpenComposition( mCompositionName );
+        mComposition = mSettings.compositionName.empty() ? mMovie.OpenDefaultComposition() : mMovie.OpenComposition( mSettings.compositionName );
 
         if( mComposition )
         {
             OnNewCompositionOpened();
 
-            this->SaveSession();
+            this->SaveSettings();
             mManualPlayPos = 0.f;
 
             mLastCompositionIdx = mMovie.FindMainCompositionIdx( mComposition );
@@ -396,13 +468,13 @@ void Viewer::DoUI()
         char licenseHash[1024] = { 0 };
         char compositionName[1024] = { 0 };
 
-        if( !mMovieFilePath.empty() )
+        if( !mSettings.movieFilePath.empty() )
         {
-            memcpy( moviePath, mMovieFilePath.c_str(), mMovieFilePath.length() );
+            memcpy( moviePath, mSettings.movieFilePath.c_str(), mSettings.movieFilePath.length() );
         }
-        if( !mLicenseHash.empty() )
+        if( !mSettings.licenseHash.empty() )
         {
-            memcpy( licenseHash, mLicenseHash.c_str(), mLicenseHash.length() );
+            memcpy( licenseHash, mSettings.licenseHash.c_str(), mSettings.licenseHash.length() );
         }
 
         ImGui::Text( "Movie file path:" );
@@ -410,7 +482,7 @@ void Viewer::DoUI()
         {
             if( ImGui::InputText( "##FilePath", moviePath, sizeof( moviePath ) - 1 ) )
             {
-                mMovieFilePath = moviePath;
+                mSettings.movieFilePath = moviePath;
             }
         }
         ImGui::PopItemWidth();
@@ -420,7 +492,7 @@ void Viewer::DoUI()
             nfdchar_t* outPath = nullptr;
             if( NFD_OKAY == NFD_OpenDialog( "aem", nullptr, &outPath ) )
             {
-                mMovieFilePath = outPath;
+                mSettings.movieFilePath = outPath;
                 free( outPath );
                 openNewMovie = true;
             }
@@ -431,11 +503,11 @@ void Viewer::DoUI()
         {
             if( ImGui::InputText( "##LicenseHash", licenseHash, sizeof( licenseHash ) - 1 ) )
             {
-                mLicenseHash = licenseHash;
+                mSettings.licenseHash = licenseHash;
 
-                if( mLicenseHash.empty() == true )
+                if( mSettings.licenseHash.empty() )
                 {
-                    mLicenseHash = g_default_hash;
+                    mSettings.licenseHash = g_default_hash;
                 }
             }
         }
@@ -444,9 +516,9 @@ void Viewer::DoUI()
     nextY += ImGui::GetWindowHeight();
     ImGui::End();
 
-    if( openNewMovie && !mMovieFilePath.empty() && !mLicenseHash.empty() )
+    if( openNewMovie && !mSettings.movieFilePath.empty() && !mSettings.licenseHash.empty() )
     {
-        mCompositionName.clear();
+        mSettings.compositionName.clear();
         this->ReloadMovie();
     }
 
@@ -490,8 +562,8 @@ void Viewer::DoUI()
         const float wndHeight = static_cast<float>(mWindowHeight);
 
         ImGui::Text( "%.1f FPS (%.3f ms)", ImGui::GetIO().Framerate, 1000.f / ImGui::GetIO().Framerate );
-        ImGui::Checkbox( "Draw normal", &mShowNormal );
-        ImGui::Checkbox( "Draw wireframe", &mShowWireframe );
+        ImGui::Checkbox( "Draw normal", &mSettings.drawNormal );
+        ImGui::Checkbox( "Draw wireframe", &mSettings.drawWireframe );
         {
             float contentScale = (mComposition == nullptr) ? 1.0f : mComposition->GetContentScale();
             const float oldScale = contentScale;
@@ -503,20 +575,38 @@ void Viewer::DoUI()
             {
                 ScaleAroundPoint( contentScale, wndWidth * 0.5f, wndHeight * 0.5f );
             }
+
+            if( ImGui::Button( "Reset scale" ) )
+            {
+                ScaleAroundPoint( 1.f, wndWidth * 0.5f, wndHeight * 0.5f );
+            }
+            ImGui::SameLine();
+            if( ImGui::Button( "Reset offset" ) )
+            {
+                CenterCompositionOnScreen();
+            }
         }
 
-        if( ImGui::Button( "Reset scale" ) )
         {
-            ScaleAroundPoint( 1.f, wndWidth * 0.5f, wndHeight * 0.5f );
-        }
-        ImGui::SameLine();
-        if( ImGui::Button( "Reset offset" ) )
-        {
-            CenterCompositionOnScreen();
+            ImGui::Text("Sound settings:");
+
+            bool isSoundMuted = SoundDevice::Instance().IsMuted();
+            ImGui::Checkbox( "Mute", &isSoundMuted );
+            SoundDevice::Instance().SetMuted( isSoundMuted );
+            mSettings.soundMuted = isSoundMuted;
+
+            ImGui::SameLine();
+            float soundVolume = SoundDevice::Instance().GetGlobalVolume();
+            ImGui::SliderFloat( "##SoundVolume", &soundVolume, 0.f, 1.f );
+            if( !CompareFloats( soundVolume, SoundDevice::Instance().GetGlobalVolume() ) )
+            {
+                SoundDevice::Instance().SetGlobalVolume( soundVolume );
+                mSettings.soundVolume = soundVolume;
+            }
         }
 
         ImGui::Text( "Background color:" );
-        ImGui::ColorEdit3( "##BkgColor", mBackgroundColor );
+        ImGui::ColorEdit3( "##BkgColor", mSettings.backgroundColor );
     }
     nextY += ImGui::GetWindowHeight();
     ImGui::End();
@@ -576,6 +666,7 @@ void Viewer::DoUI()
             if( loopComposition != mComposition->IsLooped() )
             {
                 mComposition->SetLoop( loopComposition );
+                mSettings.loopPlay = loopComposition;
             }
         }
         nextY += ImGui::GetWindowHeight();
@@ -711,13 +802,16 @@ void Viewer::OnNewCompositionOpened()
 {
     if( mComposition )
     {
+        //#NOTE_SK: stop all sounds from current composition
+        SoundDevice::Instance().StopAllSounds();
+
         mComposition->SetViewportSize( static_cast<float>( mWindowWidth ), static_cast<float>( mWindowHeight ) );
 
-        mCompositionName = mComposition->GetName();
-        ViewerLogger << "Composition \"" << mCompositionName << "\" loaded successfully" << std::endl;
+        mSettings.compositionName = mComposition->GetName();
+        ViewerLogger << "Composition \"" << mSettings.compositionName << "\" loaded successfully" << std::endl;
         ViewerLogger << " Duration: " << mComposition->GetDuration() << " seconds" << std::endl;
 
-        mComposition->SetLoop( mToLoopPlay );
+        mComposition->SetLoop( mSettings.loopPlay );
         mComposition->Play();
 
         // Now we need to scale and position our content so that it's centered and fits the screen

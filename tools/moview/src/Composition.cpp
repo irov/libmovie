@@ -1,5 +1,6 @@
 #include "Composition.h"
 #include "ResourcesManager.h"
+#include "Sound.h"
 
 #include "Logger.h"
 
@@ -1233,6 +1234,12 @@ bool Composition::OnProvideNode( const aeMovieNodeProviderCallbackData* _callbac
         case AE_MOVIE_LAYER_TYPE_SOUND:
             {
                 ViewerLogger << " sound" << std::endl;
+
+                ae_voidptr_t rd = ae_get_movie_layer_data_resource_data( _callbackData->layer );
+
+                ResourceSound * resourceSound = reinterpret_cast<ResourceSound*>( rd );
+
+                *_nd = reinterpret_cast<ae_voidptr_t>( resourceSound );
             }break;
         case AE_MOVIE_LAYER_TYPE_IMAGE:
             {
@@ -1240,9 +1247,9 @@ bool Composition::OnProvideNode( const aeMovieNodeProviderCallbackData* _callbac
 
                 ae_voidptr_t rd = ae_get_movie_layer_data_resource_data( _callbackData->layer );
 
-                ResourceImage* resourceImage = reinterpret_cast<ResourceImage*>(rd);
+                ResourceImage* resourceImage = reinterpret_cast<ResourceImage*>( rd );
 
-                *_nd = reinterpret_cast<ae_voidptr_t>(resourceImage);
+                *_nd = reinterpret_cast<ae_voidptr_t>( resourceImage );
             }break;
         default:
             {
@@ -1291,6 +1298,42 @@ void Composition::OnDeleteNode( const aeMovieNodeDeleterCallbackData* _callbackD
 void Composition::OnUpdateNode( const aeMovieNodeUpdateCallbackData* _callbackData )
 {
     AE_UNUSED( _callbackData );
+
+    aeMovieLayerTypeEnum layerType = ae_get_movie_layer_data_type( _callbackData->layer );
+
+    if( AE_MOVIE_LAYER_TYPE_SOUND == layerType )
+    {
+        ae_voidptr_t rd = ae_get_movie_layer_data_resource_data( _callbackData->layer );
+
+        ResourceSound * resourceSound = reinterpret_cast<ResourceSound*>( rd );
+
+        if( resourceSound && resourceSound->sound )
+        {
+            switch( _callbackData->state )
+            {
+            case AE_MOVIE_STATE_UPDATE_BEGIN:
+            case AE_MOVIE_STATE_UPDATE_RESUME:
+                {
+                    resourceSound->sound->Play();
+                }break;
+
+            case AE_MOVIE_STATE_UPDATE_PAUSE:
+                {
+                    resourceSound->sound->Pause();
+                }break;
+
+            case AE_MOVIE_STATE_UPDATE_END:
+                {
+                    resourceSound->sound->Stop();
+                }break;
+
+            case AE_MOVIE_STATE_UPDATE_PROCESS:
+            case AE_MOVIE_STATE_UPDATE_SKIP:
+                //#NOTE_SK: should I do something here ???
+                break;
+            }
+        }
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 bool Composition::OnProvideCamera( const aeMovieCameraProviderCallbackData* _callbackData, void** _cd )
