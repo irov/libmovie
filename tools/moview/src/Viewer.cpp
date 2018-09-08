@@ -445,8 +445,10 @@ bool Viewer::ReloadMovie()
     }
     else
     {
-        ViewerLogger << "Failed to load the movie!" << std::endl;
-        ShowPopup( "Failed to load the movie!", Viewer::PopupType::Error );
+        std::string errorString = "Failed to load the movie:\n\n\"" + mMovie.GetLastErrorDescription() + "\"";
+
+        ViewerLogger << errorString << std::endl;
+        ShowPopup( errorString, Viewer::PopupType::Error );
     }
 
     return result;
