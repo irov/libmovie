@@ -13,8 +13,9 @@ environment:
     env_cmake_configuration: Release
 
 build_script:
-- mkdir build_cmake
-- pushd build_cmake
-- cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=FALSE
-- cmake --build .
-- popd
+  - mkdir build_cmake
+  - pushd build_cmake
+  - cmake -G %env_cmake_generator% .. -DCMAKE_BUILD_TYPE=%env_cmake_configuration% -DLIBMOVIE_EXAMPLES_BUILD:BOOL=TRUE -DLIBMOVIE_TEST:BOOL=TRUE -DLIBMOVIE_COVERAGE:BOOL=FALSE
+  - cmake --build .
+  - ctest --output-on-failure
+  - popd
