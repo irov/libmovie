@@ -1,5 +1,7 @@
 version: '{build}'
 
+image: Visual Studio 2017
+
 environment:
   matrix:
   # Comilers matrix
@@ -15,7 +17,7 @@ environment:
 build_script:
   - mkdir build_cmake
   - pushd build_cmake
-  - cmake -G %env_cmake_generator% .. -DCMAKE_BUILD_TYPE=%env_cmake_configuration% -DLIBMOVIE_EXAMPLES_BUILD:BOOL=TRUE -DLIBMOVIE_TEST:BOOL=TRUE -DLIBMOVIE_COVERAGE:BOOL=FALSE
+  - cmake -G "%env_cmake_generator%" .. -DCMAKE_BUILD_TYPE=%env_cmake_configuration% -DLIBMOVIE_EXAMPLES_BUILD:BOOL=TRUE -DLIBMOVIE_TEST:BOOL=TRUE -DLIBMOVIE_COVERAGE:BOOL=FALSE
   - cmake --build .
   - ctest --output-on-failure
   - popd
