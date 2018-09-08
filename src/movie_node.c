@@ -60,19 +60,17 @@ AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_ma
 
     ae_uint32_t vertex_count = _mesh->vertex_count;
 
-    ae_uint32_t i = 0;
-    for( ; i != vertex_count; ++i )
+    ae_uint32_t vertex_index = 0;
+    for( ; vertex_index != vertex_count; ++vertex_index )
     {
-        ae_mul_v3_v2_m4( _render->position[i], _mesh->positions[i], _matrix );
+        ae_mul_v3_v2_m4( _render->position[vertex_index], _mesh->positions[vertex_index], _matrix );
     }
-
 
     if( _uvs == AE_NULL )
     {
-        ae_uint32_t i = 0;
-        for( ; i != vertex_count; ++i )
+        for( vertex_index = 0; vertex_index != vertex_count; ++vertex_index )
         {
-            ae_copy_v2( _render->uv[i], _mesh->uvs[i] );
+            ae_copy_v2( _render->uv[vertex_index], _mesh->uvs[vertex_index] );
         }
     }
     else
@@ -86,14 +84,13 @@ AE_INTERNAL ae_void_t __make_mesh_vertices( const ae_mesh_t * _mesh, const ae_ma
         ae_float_t vx = _uvs[2][0] - _uvs[1][0];
         ae_float_t vy = _uvs[2][1] - _uvs[1][1];
 
-        ae_uint32_t i = 0;
-        for( ; i != vertex_count; ++i )
+        for( vertex_index = 0; vertex_index != vertex_count; ++vertex_index )
         {
-            ae_float_t u = _mesh->uvs[i][0];
-            ae_float_t v = _mesh->uvs[i][1];
+            ae_float_t u = _mesh->uvs[vertex_index][0];
+            ae_float_t v = _mesh->uvs[vertex_index][1];
             
-            _render->uv[i][0] = bx + ux * u + vx * v;
-            _render->uv[i][1] = by + uy * u + vy * v;
+            _render->uv[vertex_index][0] = bx + ux * u + vx * v;
+            _render->uv[vertex_index][1] = by + uy * u + vy * v;
         } 
     }
 
