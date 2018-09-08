@@ -13,6 +13,8 @@
 #   include <AL/alc.h>
 #endif
 
+#include <algorithm>  // for std::find
+
 Sound::Sound()
     : mNumChannels( 0 )
     , mSampleRate( 0 )
