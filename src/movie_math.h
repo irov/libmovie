@@ -61,6 +61,12 @@ AE_INTERNAL ae_float_t ae_minimax_f_f( ae_float_t _v, ae_float_t _min, ae_float_
     return (_v > _min) ? ((_v < _max) ? _v : _max) : _min;
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_void_t ae_copy_v2( ae_vector2_t _out, const ae_vector2_t _in )
+{
+    _out[0] = _in[0];
+    _out[1] = _in[1];
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t ae_mul_v3_v2_m4( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix4_t _b )
 {
     _out[0] = _a[0] * _b[0 * 4 + 0] + _a[1] * _b[1 * 4 + 0] + _b[3 * 4 + 0];

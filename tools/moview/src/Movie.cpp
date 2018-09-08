@@ -427,7 +427,7 @@ bool Movie::OnProvideResource( const aeMovieResource* _resource, void** _rd, voi
                 image->textureRes = ResourcesManager::Instance().GetTextureRes( texturePath );                
             }
 
-            image->premultAlpha = (ae_image->is_premultiplied == AE_TRUE);
+            image->premultAlpha = (ae_image->options & AE_MOVIE_RESOURCE_IMAGE_PREMULTIPLIED);
 
             *_rd = reinterpret_cast<ae_voidptr_t>(image);
         } break;

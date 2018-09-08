@@ -71,6 +71,7 @@ static const ae_bool_t AE_FALSE = 0;
 static const ae_voidptr_t AE_NULL = 0;
 static const ae_func_t AE_FNULL = 0;
 
+#define AE_BITWISE(X) (1 << X)
 
 typedef ae_float_t ae_color_channel_t;
 
