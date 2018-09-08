@@ -134,6 +134,8 @@ bool Sound::IsStopped() const
 SoundDevice::SoundDevice()
     : mALDevice( nullptr )
     , mALContext( nullptr )
+    , mGlobalVolume( 1.f )
+    , mMuted( false )
 {
 }
 SoundDevice::~SoundDevice()
@@ -159,6 +161,8 @@ bool SoundDevice::Initialize()
             mDevString += alGetString( AL_RENDERER );
             mDevString += ", v";
             mDevString += alGetString( AL_VERSION );
+
+            alListenerf( AL_GAIN, 1.0f );
 
             result = true;
         }
@@ -193,18 +197,18 @@ Sound* SoundDevice::CreateSound()
     return mSounds.back();
 }
 
-void SoundDevice::DeleteSound( Sound* sound )
+void SoundDevice::DeleteSound( Sound* _sound )
 {
-    if( sound )
+    if( _sound )
     {
-        auto it = std::find( mSounds.begin(), mSounds.end(), sound );
+        auto it = std::find( mSounds.begin(), mSounds.end(), _sound );
         if( it != mSounds.end() )
         {
             mSounds.erase( it );
         }
 
-        sound->Destroy();
-        delete sound;
+        _sound->Destroy();
+        delete _sound;
     }
 }
 
@@ -225,4 +229,36 @@ void SoundDevice::DeleteAllSounds()
     }
 
     mSounds.clear();
+}
+
+void SoundDevice::SetGlobalVolume( float _volume )
+{
+    if( mGlobalVolume != _volume )
+    {
+        mGlobalVolume = _volume;
+
+        if( !mMuted )
+        {
+            alListenerf( AL_GAIN, _volume );
+        }
+    }
+}
+
+float SoundDevice::GetGlobalVolume() const
+{
+    return mGlobalVolume;
+}
+
+void SoundDevice::SetMuted( bool _muted )
+{
+    if( mMuted != _muted )
+    {
+        mMuted = _muted;
+        alListenerf( AL_GAIN, _muted ? 0.0f : mGlobalVolume );
+    }
+}
+
+bool SoundDevice::IsMuted() const
+{
+    return mMuted;
 }

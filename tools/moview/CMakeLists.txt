@@ -32,6 +32,7 @@ include(cmake/glfw_download.cmake)
 include(cmake/imgui_download.cmake)
 include(cmake/nativefiledialog_download.cmake)
 include(cmake/stb_libs_download.cmake)
+include(cmake/inih_download.cmake)
 
 if(NOT APPLE)
     include(cmake/alsoft_download.cmake)
@@ -65,6 +66,7 @@ include_directories(
     ${NATIVEFILEDIALOG_INCLUDE_DIR}
     ${LIBMOVIE_DIR}/include
     ${DEPENDENCIES_DIR}/stb
+    ${DEPENDENCIES_DIR}/inih
     ${ALSOFT_INCLUDE_DIR}
 )
 

@@ -14,7 +14,7 @@ static uint32_t FNV1A_Hash( const std::string& str )
 {
     uint32_t result = 0;
     const char * traitName = str.c_str();
-    uint32_t len = str.length();
+    uint32_t len = static_cast<uint32_t>(str.length());
     uint32_t mult = 1u, c = 816753u;
     for( uint32_t i = 0; i < len; ++i )
     {

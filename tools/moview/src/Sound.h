@@ -50,15 +50,23 @@ public:
     const std::string&  GetDeviceString() const;
 
     Sound*              CreateSound();
-    void                DeleteSound( Sound* sound );
+    void                DeleteSound( Sound* _sound );
 
     void                StopAllSounds();
     void                DeleteAllSounds();
+
+    void                SetGlobalVolume( float _volume );
+    float               GetGlobalVolume() const;
+    void                SetMuted( bool _muted );
+    bool                IsMuted() const;
 
 private:
     void*       mALDevice;
     void*       mALContext;
     std::string mDevString;
+
+    float       mGlobalVolume;
+    bool        mMuted;
 
     std::vector<Sound*> mSounds;
 };

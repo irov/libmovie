@@ -8,6 +8,21 @@
 #include <string>
 #include <stdint.h>
 
+struct Settings
+{
+    std::string movieFilePath;
+    std::string licenseHash;
+    std::string compositionName;
+    bool        loopPlay;
+    float       backgroundColor[3];
+    float       soundVolume;
+    bool        soundMuted;
+
+    // Transient settings
+    bool        drawNormal;
+    bool        drawWireframe;
+};
+
 class Viewer
 {
 public:
@@ -22,8 +37,8 @@ public:
     void Loop();
 
 protected:
-    void SaveSession();
-    void LoadSession();
+    void SaveSettings();
+    void LoadSettings();
     void ShutdownMovie();
     bool ReloadMovie();
     void DoUI();
@@ -49,19 +64,14 @@ protected:
     uint32_t mWindowWidth;
     uint32_t mWindowHeight;
 
-    std::string mMovieFilePath;
-    std::string mLicenseHash;
-    std::string mCompositionName;
-    bool mToLoopPlay;
+    Settings mSettings;
+
     Movie mMovie;
     Composition* mComposition;
     uint32_t mLastCompositionIdx;
-    float mBackgroundColor[3];
 
-    std::string mSessionFileName;
+    std::string mSettingsFileName;
 
-    bool mShowNormal;
-    bool mShowWireframe;
     bool mShouldExit;
     bool mWindowFocus;
     bool mWindowMinimized;
