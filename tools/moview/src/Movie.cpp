@@ -203,13 +203,17 @@ bool Movie::LoadFromMemory( const void* data, size_t dataLength, const std::stri
     // save the base folder, we'll need it later to look for resources
     mBaseFolder = baseFolder;
 
-    ae_uint32_t major_version;
-    ae_uint32_t minor_version;
+    ae_uint32_t major_version = 0;
+    ae_uint32_t minor_version = 0;
     ae_result_t movie_data_result = ae_load_movie_data( movie_data, stream, &major_version, &minor_version );
 
     if( movie_data_result != AE_RESULT_SUCCESSFUL ) 
     {
         mLastErrorDescription = ae_get_result_string_info( movie_data_result );
+        if( AE_RESULT_INVALID_VERSION == movie_data_result )
+        {
+            mLastErrorDescription += " (file version = " + std::to_string( major_version ) + "." + std::to_string( minor_version ) + ")";
+        }
 
         ae_delete_movie_data( movie_data );
         ae_delete_movie_stream( stream );
