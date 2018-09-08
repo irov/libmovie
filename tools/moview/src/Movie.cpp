@@ -209,6 +209,8 @@ bool Movie::LoadFromMemory( const void* data, size_t dataLength, const std::stri
 
     if( movie_data_result != AE_RESULT_SUCCESSFUL ) 
     {
+        mLastErrorDescription = ae_get_result_string_info( movie_data_result );
+
         ae_delete_movie_data( movie_data );
         ae_delete_movie_stream( stream );
         ae_delete_movie_instance( movie );
@@ -230,7 +232,7 @@ bool Movie::LoadFromMemory( const void* data, size_t dataLength, const std::stri
         {
             return AE_TRUE;
         }
-            
+
         _this->AddCompositionData( _compositionData );
 
         return AE_TRUE;
@@ -386,6 +388,11 @@ Composition* Movie::OpenDefaultComposition()
     }
 
     return result;
+}
+//////////////////////////////////////////////////////////////////////////
+const std::string& Movie::GetLastErrorDescription() const
+{
+    return mLastErrorDescription;
 }
 //////////////////////////////////////////////////////////////////////////
 void Movie::AddCompositionData( const aeMovieCompositionData* compositionData ) 
