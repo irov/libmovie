@@ -176,6 +176,8 @@ bool Viewer::Initialize( int argc, char** argv )
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
     glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
 
+    mAppName += " (lib v" + std::to_string( ae_get_movie_sdk_major_version() ) + "." + std::to_string( ae_get_movie_sdk_minor_version() ) + ")";
+
     mWindow = glfwCreateWindow( static_cast<int>(mWindowWidth),
         static_cast<int>(mWindowHeight),
         mAppName.c_str(),
