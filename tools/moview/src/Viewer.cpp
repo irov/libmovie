@@ -119,6 +119,7 @@ Viewer::Viewer()
     mSettings.drawNormal = true;
     mSettings.drawWireframe = false;
 
+    mAppName = "libMOVIEW viewer";
     mSettingsFileName = "settings.ini";
 
     mContentOffset[0] = 0.f;
@@ -175,9 +176,11 @@ bool Viewer::Initialize( int argc, char** argv )
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
     glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
 
+    mAppName += " (lib v" + std::to_string( ae_get_movie_sdk_major_version() ) + "." + std::to_string( ae_get_movie_sdk_minor_version() ) + ")";
+
     mWindow = glfwCreateWindow( static_cast<int>(mWindowWidth),
         static_cast<int>(mWindowHeight),
-        "libMOVIEW viewer",
+        mAppName.c_str(),
         nullptr,
         nullptr );
 
@@ -439,11 +442,15 @@ bool Viewer::ReloadMovie()
         else
         {
             ViewerLogger << "Failed to open the default composition" << std::endl;
+            ShowPopup( "Failed to open the default composition!", Viewer::PopupType::Error );
         }
     }
     else
     {
-        ViewerLogger << "Failed to load the movie" << std::endl;
+        std::string errorString = "Failed to load the movie:\n\n\"" + mMovie.GetLastErrorDescription() + "\"";
+
+        ViewerLogger << errorString << std::endl;
+        ShowPopup( errorString, Viewer::PopupType::Error );
     }
 
     return result;
@@ -725,6 +732,38 @@ void Viewer::DoUI()
             ImGui::End();
         }
     }
+
+    // If we have some popup to show - show it up!
+    if( !mPopupNessage.empty() )
+    {
+        static const float kPopupWidth = 350.f;
+        static const float kPopupHeight = 150.f;
+
+        ImGui::SetNextWindowPos(ImVec2((static_cast<float>(mWindowWidth) - kPopupWidth) * 0.5f,
+                                       (static_cast<float>(mWindowHeight) - kPopupHeight) * 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(kPopupWidth, 0.f));
+
+        ImGui::OpenPopup( mAppName.c_str() );
+        ImGui::BeginPopupModal( mAppName.c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+        {
+            static const ImVec4 messageColors[static_cast<size_t>(Viewer::PopupType::NumTypes)] = {
+                ImVec4( 1.f, 0.f, 0.f, 1.f ),       // Error
+                ImVec4( 0.f, 0.5f, 0.055f, 1.f ),   // Warning
+                ImVec4( 0.f, 0.f, 0.f, 1.f ),       // Info
+            };
+
+            ImGui::TextColored( messageColors[static_cast<size_t>(mPopupType)], ("\n" + mPopupNessage + "\n").c_str() );
+
+            ImGui::Separator();
+
+            if( ImGui::Button( "Close##Popup" ) )
+            {
+                mPopupNessage.clear();
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        ImGui::EndPopup();
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 void Viewer::CalcScaleToFitComposition()
@@ -818,6 +857,12 @@ void Viewer::OnNewCompositionOpened()
         CalcScaleToFitComposition();
         CenterCompositionOnScreen();
     }
+}
+//////////////////////////////////////////////////////////////////////////
+void Viewer::ShowPopup( const std::string& _message, Viewer::PopupType _type )
+{
+    mPopupType = _type;
+    mPopupNessage = _message;
 }
 //////////////////////////////////////////////////////////////////////////
 void Viewer::setFocus( bool _value )

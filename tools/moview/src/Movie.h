@@ -29,6 +29,8 @@ public:
 
     Composition * OpenDefaultComposition();
 
+    const std::string& GetLastErrorDescription() const;
+
 protected:
     void AddCompositionData( const aeMovieCompositionData* compositionData );
 
@@ -42,4 +44,6 @@ protected:
 
     typedef std::vector<const aeMovieCompositionData*> VectorMovieCompositionData;
     VectorMovieCompositionData mCompositionDatas;
+
+    std::string mLastErrorDescription;
 };
