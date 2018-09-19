@@ -1045,6 +1045,22 @@ AE_INTERNAL ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _compo
 
                 subcomposition->animation = animation;
 
+                if( _composition->providers.subcomposition_provider != AE_NULL )
+                {
+                    aeMovieSubCompositionProviderCallbackData callbackData;
+                    callbackData.layer = subcomposition->layer;
+                    callbackData.composition_data = subcomposition->composition_data;
+                    callbackData.animation = subcomposition->animation;
+
+                    ae_voidptr_t subcomposition_data = AE_NULL;
+                    if( (*_composition->providers.subcomposition_provider)(&callbackData, &subcomposition_data, _composition->provider_data) == AE_FALSE )
+                    {
+                        return AE_FALSE;
+                    }
+
+                    subcomposition->subcomposition_data = subcomposition_data;
+                }
+
                 if( __setup_movie_subcomposition2( _composition, _node_iterator, _subcompositions, _subcomposition_iterator, layer->sub_composition_data, subcomposition ) == AE_FALSE )
                 {
                     return AE_FALSE;
@@ -1679,6 +1695,9 @@ ae_void_t ae_clear_movie_composition_providers( aeMovieCompositionProviders * _p
     _providers->scene_effect_provider = 0;
     _providers->scene_effect_deleter = 0;
     _providers->scene_effect_update = 0;
+    _providers->subcomposition_provider = 0;
+    _providers->subcomposition_deleter = 0;
+    _providers->subcomposition_state = 0;
 }
 //////////////////////////////////////////////////////////////////////////
 const aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * _providers, ae_voidptr_t _data )
@@ -1899,6 +1918,14 @@ ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
     for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
     {
         const aeMovieSubComposition * subcomposition = it_subcomposition;
+
+        if( _composition->providers.subcomposition_deleter != AE_NULL )
+        {
+            aeMovieSubCompositionDeleterCallbackData callbackData;
+            callbackData.subcomposition_data = subcomposition->subcomposition_data;
+
+            (*_composition->providers.subcomposition_deleter)(&callbackData, _composition->provider_data);
+        }        
 
         AE_DELETE( instance, subcomposition->animation );
     }
@@ -2418,7 +2445,6 @@ ae_void_t ae_pause_movie_composition( const aeMovieComposition * _composition )
         aeMovieCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_PAUSE;
-        callbackData.subcomposition = AE_NULL;
 
         (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
     }
@@ -2531,7 +2557,6 @@ ae_void_t ae_resume_movie_composition( const aeMovieComposition * _composition )
         aeMovieCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_RESUME;
-        callbackData.subcomposition = AE_NULL;
 
         (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
     }
@@ -3302,17 +3327,16 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
                         {
                             aeMovieCompositionStateCallbackData callbackData;
                             callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
-                            callbackData.subcomposition = AE_NULL;
 
                             (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
                         }
                         else
                         {
-                            aeMovieCompositionStateCallbackData callbackData;
+                            aeMovieSubCompositionStateCallbackData callbackData;
                             callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
-                            callbackData.subcomposition = _subcomposition;
+                            callbackData.subcomposition_data = _subcomposition->subcomposition_data;
 
-                            (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                            (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
                         }
                     }
                 }
@@ -3340,8 +3364,10 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
     aeMovieCompositionAnimation * animation = _composition->animation;
     const aeMovieCompositionData * composition_data = _composition->composition_data;
 
+    ae_bool_t animation_play = animation->play;
+
     ae_bool_t composition_end = AE_FALSE;
-    if( animation->play == AE_TRUE && animation->pause == AE_FALSE )
+    if( animation_play == AE_TRUE && animation->pause == AE_FALSE )
     {
         composition_end = __update_movie_subcomposition( _composition, composition_data, timescale_timing, animation, AE_NULL );
         __update_movie_scene_effect( _composition, animation );
@@ -3360,6 +3386,11 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
 
         if( subcomposition_animation->play == AE_FALSE || subcomposition_animation->pause == AE_TRUE )
         {
+            if( animation_play == AE_FALSE )
+            {
+                continue;
+            }
+
             subcomposition_timing = 0.f;
         }
 
@@ -3369,11 +3400,11 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
         {
             if( _composition->providers.composition_state != AE_NULL )
             {
-                aeMovieCompositionStateCallbackData callbackData;
+                aeMovieSubCompositionStateCallbackData callbackData;
                 callbackData.state = AE_MOVIE_COMPOSITION_END;
-                callbackData.subcomposition = subcomposition;
+                callbackData.subcomposition_data = subcomposition->subcomposition_data;
 
-                (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
             }
         }
     }
@@ -3384,7 +3415,6 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
         {
             aeMovieCompositionStateCallbackData callbackData;
             callbackData.state = AE_MOVIE_COMPOSITION_END;
-            callbackData.subcomposition = AE_NULL;
 
             (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
         }
@@ -3505,7 +3535,6 @@ ae_void_t ae_play_movie_composition( const aeMovieComposition * _composition, ae
     {
         aeMovieCompositionStateCallbackData callbackData;
         callbackData.state = AE_MOVIE_COMPOSITION_PLAY;
-        callbackData.subcomposition = AE_NULL;
 
         (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
     }
@@ -3535,7 +3564,6 @@ ae_void_t ae_stop_movie_composition( const aeMovieComposition * _composition )
         aeMovieCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_STOP;
-        callbackData.subcomposition = AE_NULL;
 
         (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
     }
@@ -3579,7 +3607,6 @@ ae_void_t ae_interrupt_movie_composition( const aeMovieComposition * _compositio
         aeMovieCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_INTERRUPT;
-        callbackData.subcomposition = AE_NULL;
 
         (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
     }
@@ -4292,12 +4319,12 @@ ae_bool_t ae_stop_movie_sub_composition( const aeMovieComposition * _composition
 
     if( _composition->providers.composition_state != AE_NULL )
     {
-        aeMovieCompositionStateCallbackData callbackData;
+        aeMovieSubCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_STOP;
-        callbackData.subcomposition = _subcomposition;
+        callbackData.subcomposition_data = _subcomposition->subcomposition_data;
 
-        (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+        (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
     }
 
     return AE_TRUE;
@@ -4323,12 +4350,12 @@ ae_bool_t ae_pause_movie_sub_composition( const aeMovieComposition * _compositio
 
     if( _composition->providers.composition_state != AE_NULL )
     {
-        aeMovieCompositionStateCallbackData callbackData;
+        aeMovieSubCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_PAUSE;
-        callbackData.subcomposition = _subcomposition;
+        callbackData.subcomposition_data = _subcomposition->subcomposition_data;
 
-        (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+        (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
     }
 
     return AE_TRUE;
@@ -4354,12 +4381,12 @@ ae_bool_t ae_resume_movie_sub_composition( const aeMovieComposition * _compositi
 
     if( _composition->providers.composition_state != AE_NULL )
     {
-        aeMovieCompositionStateCallbackData callbackData;
+        aeMovieSubCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_RESUME;
-        callbackData.subcomposition = _subcomposition;
+        callbackData.subcomposition_data = _subcomposition->subcomposition_data;
 
-        (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+        (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
     }
 
     return AE_TRUE;
@@ -4399,12 +4426,12 @@ ae_void_t ae_interrupt_movie_sub_composition( const aeMovieComposition * _compos
 
     if( _composition->providers.composition_state != AE_NULL )
     {
-        aeMovieCompositionStateCallbackData callbackData;
+        aeMovieSubCompositionStateCallbackData callbackData;
 
         callbackData.state = AE_MOVIE_COMPOSITION_INTERRUPT;
-        callbackData.subcomposition = _subcomposition;
+        callbackData.subcomposition_data = _subcomposition->subcomposition_data;
 
-        (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+        (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
     }
 }
 //////////////////////////////////////////////////////////////////////////

@@ -146,6 +146,8 @@ struct aeMovieSubComposition
     const aeMovieCompositionData * composition_data;
 
     struct aeMovieCompositionAnimation * animation;
+
+    ae_voidptr_t subcomposition_data;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieNode
@@ -188,8 +190,8 @@ struct aeMovieNode
 
     ae_blend_mode_t blend_mode;
 
-    ae_voidptr_t camera_data;
     ae_voidptr_t element_data;
+    ae_voidptr_t camera_data;    
     ae_voidptr_t shader_data;
     ae_voidptr_t track_matte_data;
 };
