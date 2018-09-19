@@ -1,3 +1,4 @@
+
 Framework for render After Effects composition
 
 |         | Linux  | Mac OS | Windows |
@@ -9,3 +10,6 @@ Code coverage done right!
 
 Sonar quality gate!
 [![sonar](https://sonarcloud.io/api/project_badges/measure?project=com.wondeland.libmovie&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.wondeland.libmovie)
+
+Code Review by CodeFactor!
+[![CodeFactor](https://www.codefactor.io/repository/github/irov/libmovie/badge)](https://www.codefactor.io/repository/github/irov/libmovie)
