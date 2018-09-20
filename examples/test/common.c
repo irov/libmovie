@@ -489,38 +489,6 @@ ae_void_t ex_callback_composition_state( const aeMovieCompositionStateCallbackDa
     EX_LOG( " State:" );
 
     //
-    // If it references a subcomposition, then we should only work with that.
-    //
-
-    if( _callbackData->subcomposition != AE_NULL ) {
-        switch( _callbackData->state ) {
-        case AE_MOVIE_COMPOSITION_PLAY:
-            EX_LOG( " SUB_COMPOSITION_PLAY\n" );
-            break;
-        case AE_MOVIE_COMPOSITION_STOP:
-            EX_LOG( " SUB_COMPOSITION_STOP\n" );
-            break;
-        case AE_MOVIE_COMPOSITION_PAUSE:
-            EX_LOG( " SUB_COMPOSITION_PAUSE\n" );
-            break;
-        case AE_MOVIE_COMPOSITION_RESUME:
-            EX_LOG( " SUB_COMPOSITION_RESUME\n" );
-            break;
-        case AE_MOVIE_COMPOSITION_INTERRUPT:
-            EX_LOG( " SUB_COMPOSITION_INTERRUPT\n" );
-            break;
-        case AE_MOVIE_COMPOSITION_END:
-            EX_LOG( " SUB_COMPOSITION_END\n" );
-            break;
-        case AE_MOVIE_COMPOSITION_LOOP_END:
-            EX_LOG( " SUB_COMPOSITION_LOOP_END\n" );
-            break;
-        }
-
-        return;
-    }
-
-    //
     // Work with master composition here.
     //
 
