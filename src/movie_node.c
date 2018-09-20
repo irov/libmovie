@@ -1060,6 +1060,10 @@ AE_INTERNAL ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _compo
 
                     subcomposition->subcomposition_data = subcomposition_data;
                 }
+                else
+                {
+                    subcomposition->subcomposition_data = AE_NULL;
+                }
 
                 if( __setup_movie_subcomposition2( _composition, _node_iterator, _subcompositions, _subcomposition_iterator, layer->sub_composition_data, subcomposition ) == AE_FALSE )
                 {
