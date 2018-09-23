@@ -146,6 +146,8 @@ struct aeMovieSubComposition
     const aeMovieCompositionData * composition_data;
 
     struct aeMovieCompositionAnimation * animation;
+
+    ae_voidptr_t subcomposition_data;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieNode
@@ -176,7 +178,7 @@ struct aeMovieNode
     ae_uint32_t animate;
 
     ae_uint32_t update_revision;
-    ae_matrix4_t matrix;
+    ae_matrix34_t matrix;
 
     ae_color_t composition_color;
     ae_float_t composition_opacity;
@@ -188,8 +190,8 @@ struct aeMovieNode
 
     ae_blend_mode_t blend_mode;
 
-    ae_voidptr_t camera_data;
     ae_voidptr_t element_data;
+    ae_voidptr_t camera_data;    
     ae_voidptr_t shader_data;
     ae_voidptr_t track_matte_data;
 };
@@ -283,7 +285,7 @@ struct aeMovieCompositionData
     ae_vector2_t loop_segment;
     ae_vector3_t anchor_point;
     ae_vector3_t offset_point;
-    ae_vector4_t bounds;
+    ae_viewport_t bounds;
 
     const aeMovieCompositionCamera * camera;
 

@@ -413,8 +413,6 @@ typedef struct aeMovieCompositionStateCallbackData
     /// @brief New composition state.
     aeMovieCompositionStateEnum state;
 
-    /// @brief Sub-composition ???.
-    const aeMovieSubComposition * subcomposition;
 } aeMovieCompositionStateCallbackData;
 
 typedef struct aeMovieCompositionSceneEffectProviderCallbackData
@@ -455,6 +453,29 @@ typedef struct aeMovieCompositionSceneEffectUpdateCallbackData
 
 } aeMovieCompositionSceneEffectUpdateCallbackData;
 
+typedef struct aeMovieSubCompositionProviderCallbackData
+{
+    const aeMovieLayerData * layer;
+    const aeMovieCompositionData * composition_data;
+    const struct aeMovieCompositionAnimation * animation;
+
+} aeMovieSubCompositionProviderCallbackData;
+
+typedef struct aeMovieSubCompositionDeleterCallbackData
+{
+    ae_voidptr_t subcomposition_data;
+
+} aeMovieSubCompositionDeleterCallbackData;
+
+typedef struct aeMovieSubCompositionStateCallbackData
+{
+    /// @brief New composition state.
+    aeMovieCompositionStateEnum state;
+
+    ae_voidptr_t subcomposition_data;
+
+} aeMovieSubCompositionStateCallbackData;
+
 typedef ae_bool_t( *ae_movie_composition_callback_node_provider_t )(const aeMovieNodeProviderCallbackData * _callbackData, ae_voidptrptr_t _nd, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_composition_callback_node_deleter_t )(const aeMovieNodeDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_composition_callback_node_update_t )(const aeMovieNodeUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
@@ -477,6 +498,10 @@ typedef ae_void_t( *ae_movie_composition_callback_composition_state_t )(const ae
 typedef ae_bool_t( *ae_movie_composition_callback_scene_effect_provider_t )(const aeMovieCompositionSceneEffectProviderCallbackData * _callbackData, ae_voidptrptr_t _sed, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_composition_callback_scene_effect_deleter_t )(const aeMovieCompositionSceneEffectDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
 typedef ae_void_t( *ae_movie_composition_callback_scene_effect_update_t )(const aeMovieCompositionSceneEffectUpdateCallbackData * _callbackData, ae_voidptr_t _ud);
+
+typedef ae_bool_t( *ae_movie_composition_callback_subcomposition_provider_t )(const aeMovieSubCompositionProviderCallbackData * _callbackData, ae_voidptrptr_t _scd, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_subcomposition_deleter_t )(const aeMovieSubCompositionDeleterCallbackData * _callbackData, ae_voidptr_t _ud);
+typedef ae_void_t( *ae_movie_composition_callback_subcomposition_state_t )(const aeMovieSubCompositionStateCallbackData * _callbackData, ae_voidptr_t _ud);
 
 typedef struct aeMovieCompositionProviders
 {
@@ -502,6 +527,10 @@ typedef struct aeMovieCompositionProviders
     ae_movie_composition_callback_scene_effect_provider_t scene_effect_provider;
     ae_movie_composition_callback_scene_effect_deleter_t scene_effect_deleter;
     ae_movie_composition_callback_scene_effect_update_t scene_effect_update;
+
+    ae_movie_composition_callback_subcomposition_provider_t subcomposition_provider;
+    ae_movie_composition_callback_subcomposition_deleter_t subcomposition_deleter;
+    ae_movie_composition_callback_subcomposition_state_t subcomposition_state;
 
 } aeMovieCompositionProviders;
 

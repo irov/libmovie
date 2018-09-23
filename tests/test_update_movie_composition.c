@@ -6,6 +6,7 @@
 
 static const ae_char_t * test_example_license_hash = "52ad6f051099762d0a0787b4eb2d07c8a0ee4491";
 static const ae_char_t * test_example_file_path = "examples/resources/Knight/Knight.aem";
+static const ae_char_t * test_example_composition_name = "Knight";
 
 AE_CALLBACK ae_voidptr_t stdlib_movie_alloc( ae_voidptr_t _data, ae_size_t _size ) {
     AE_UNUSED( _data );
@@ -84,11 +85,47 @@ int main( int argc, char *argv[] )
         return EXIT_FAILURE;
     }
 
-    aeMovieStream * movie_stream = ae_create_movie_stream( movieInstance, &__read_file, &__memory_copy, f );
+    aeMovieStream * movieStream = ae_create_movie_stream( movieInstance, &__read_file, &__memory_copy, f );
 
-    ae_delete_movie_stream( movie_stream );
 
+    ae_uint32_t load_major_version;
+    ae_uint32_t load_minor_version;
+    ae_result_t load_movie_data_result = ae_load_movie_data( movieData, movieStream, &load_major_version, &load_minor_version );
+
+    ae_delete_movie_stream( movieStream );
+
+    if( load_movie_data_result != AE_RESULT_SUCCESSFUL )
+    {
+        return EXIT_FAILURE;
+    }
+         
     fclose( f );
+
+    const aeMovieCompositionData * movieCompositionData = ae_get_movie_composition_data( movieData, test_example_composition_name );
+
+    if( movieCompositionData == AE_NULL )
+    {
+        return EXIT_FAILURE;
+    }
+
+    aeMovieCompositionProviders movieCompositionProviders;
+    ae_clear_movie_composition_providers( &movieCompositionProviders );
+
+    const aeMovieComposition * movieComposition = ae_create_movie_composition( movieData, movieCompositionData, AE_TRUE, &movieCompositionProviders, AE_NULL );
+
+    if( movieComposition == AE_NULL )
+    {
+        return EXIT_FAILURE;
+    }
+
+    ae_play_movie_composition( movieComposition, 0.f );
+
+    while( ae_is_play_movie_composition( movieComposition ) == AE_TRUE )
+    {
+        ae_update_movie_composition( movieComposition, 0.01f );
+    }
+
+    ae_delete_movie_composition( movieComposition );
 
     ae_delete_movie_data( movieData );
 
