@@ -1,5 +1,6 @@
 #include "Composition.h"
 #include "ResourcesManager.h"
+#include "Sound.h"
 
 #include "Logger.h"
 
@@ -112,7 +113,7 @@ out vec2 v2fUV0;                                       \n\
 out vec2 v2fUV1;                                       \n\
 out vec4 v2fColor;                                     \n\
 void main() {                                          \n\
-    vec3 p = inPos * uScale + vec3(uOffset, 0.0);      \n\
+    vec3 p = vec3(inPos.xy + uOffset, 0.0) * uScale;   \n\
     gl_Position = uWVP * vec4(p, 1.0);                 \n\
     v2fUV0 = inUV0;                                    \n\
     v2fUV1 = inUV1;                                    \n\
@@ -147,7 +148,7 @@ uniform float uScale;                                  \n\
 uniform vec2 uOffset;                                  \n\
 out vec4 v2fColor;                                     \n\
 void main() {                                          \n\
-    vec3 p = inPos * uScale + vec3(uOffset, 0.0);      \n\
+    vec3 p = vec3(inPos.xy + uOffset, 0.0) * uScale;   \n\
     gl_Position = uWVP * vec4(p, 1.0);                 \n\
     v2fColor = inColor;                                \n\
 }                                                      \n";
@@ -1131,8 +1132,6 @@ void Composition::DrawMesh( const aeMovieRenderMesh* mesh, const ResourceImage* 
 
     mNumVertices += mesh->vertexCount;
     mNumIndices += mesh->indexCount;
-
-    this->FlushDraw();
 }
 //////////////////////////////////////////////////////////////////////////
 void Composition::FlushDraw()
@@ -1235,6 +1234,12 @@ bool Composition::OnProvideNode( const aeMovieNodeProviderCallbackData* _callbac
         case AE_MOVIE_LAYER_TYPE_SOUND:
             {
                 ViewerLogger << " sound" << std::endl;
+
+                ae_voidptr_t rd = ae_get_movie_layer_data_resource_data( _callbackData->layer );
+
+                ResourceSound * resourceSound = reinterpret_cast<ResourceSound*>( rd );
+
+                *_nd = reinterpret_cast<ae_voidptr_t>( resourceSound );
             }break;
         case AE_MOVIE_LAYER_TYPE_IMAGE:
             {
@@ -1242,9 +1247,9 @@ bool Composition::OnProvideNode( const aeMovieNodeProviderCallbackData* _callbac
 
                 ae_voidptr_t rd = ae_get_movie_layer_data_resource_data( _callbackData->layer );
 
-                ResourceImage* resourceImage = reinterpret_cast<ResourceImage*>(rd);
+                ResourceImage* resourceImage = reinterpret_cast<ResourceImage*>( rd );
 
-                *_nd = reinterpret_cast<ae_voidptr_t>(resourceImage);
+                *_nd = reinterpret_cast<ae_voidptr_t>( resourceImage );
             }break;
         default:
             {
@@ -1293,6 +1298,42 @@ void Composition::OnDeleteNode( const aeMovieNodeDeleterCallbackData* _callbackD
 void Composition::OnUpdateNode( const aeMovieNodeUpdateCallbackData* _callbackData )
 {
     AE_UNUSED( _callbackData );
+
+    aeMovieLayerTypeEnum layerType = ae_get_movie_layer_data_type( _callbackData->layer );
+
+    if( AE_MOVIE_LAYER_TYPE_SOUND == layerType )
+    {
+        ae_voidptr_t rd = ae_get_movie_layer_data_resource_data( _callbackData->layer );
+
+        ResourceSound * resourceSound = reinterpret_cast<ResourceSound*>( rd );
+
+        if( resourceSound && resourceSound->sound )
+        {
+            switch( _callbackData->state )
+            {
+            case AE_MOVIE_STATE_UPDATE_BEGIN:
+            case AE_MOVIE_STATE_UPDATE_RESUME:
+                {
+                    resourceSound->sound->Play();
+                }break;
+
+            case AE_MOVIE_STATE_UPDATE_PAUSE:
+                {
+                    resourceSound->sound->Pause();
+                }break;
+
+            case AE_MOVIE_STATE_UPDATE_END:
+                {
+                    resourceSound->sound->Stop();
+                }break;
+
+            case AE_MOVIE_STATE_UPDATE_PROCESS:
+            case AE_MOVIE_STATE_UPDATE_SKIP:
+                //#NOTE_SK: should I do something here ???
+                break;
+            }
+        }
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 bool Composition::OnProvideCamera( const aeMovieCameraProviderCallbackData* _callbackData, void** _cd )
@@ -1305,10 +1346,27 @@ bool Composition::OnProvideCamera( const aeMovieCameraProviderCallbackData* _cal
     return true;
 }
 //////////////////////////////////////////////////////////////////////////
+static void __copy_m4_m34( float * _m4, const float * _m34 )
+{
+    for( uint32_t index = 0; index != 4; ++index )
+    {
+        _m4[index * 4 + 0] = _m34[index * 3 + 0];
+        _m4[index * 4 + 1] = _m34[index * 3 + 1];
+        _m4[index * 4 + 2] = _m34[index * 3 + 2];
+    }
+
+    _m4[3] = 0.f;
+    _m4[7] = 0.f;
+    _m4[11] = 0.f;
+    _m4[15] = 1.f;
+}
+//////////////////////////////////////////////////////////////////////////
 bool Composition::OnProvideTrackMatte( const aeMovieTrackMatteProviderCallbackData * _callbackData, void** _tmd )
 {
     TrackMatteDesc* desc = new TrackMatteDesc();
-    memcpy( desc->matrix, _callbackData->matrix, sizeof( desc->matrix ) );
+
+    __copy_m4_m34( desc->matrix, _callbackData->matrix );
+
     desc->mesh = _callbackData->mesh[0];
     desc->mode = _callbackData->track_matte_mode;
 
@@ -1327,7 +1385,7 @@ void Composition::OnUpdateTrackMatte( const aeMovieTrackMatteUpdateCallbackData*
 
             if( desc != nullptr )
             {
-                memcpy( desc->matrix, _callbackData->matrix, sizeof( desc->matrix ) );
+                __copy_m4_m34( desc->matrix, _callbackData->matrix );                
                 desc->mesh = _callbackData->mesh[0];
             }
         }break;
@@ -1337,7 +1395,7 @@ void Composition::OnUpdateTrackMatte( const aeMovieTrackMatteUpdateCallbackData*
 
             if( desc != nullptr )
             {
-                memcpy( desc->matrix, _callbackData->matrix, sizeof( desc->matrix ) );
+                __copy_m4_m34( desc->matrix, _callbackData->matrix );
                 desc->mesh = _callbackData->mesh[0];
             }
         }break;

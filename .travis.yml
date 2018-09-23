@@ -45,14 +45,16 @@ addons:
     apt:
         packages:
             - lcov
-
+    sonarcloud:
+        organization: "irov-github"
+        
 script:
     # libmovie
     - mkdir build_cmake
     - pushd build_cmake
     - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=TRUE -DLIBMOVIE_TEST:BOOL=TRUE -DLIBMOVIE_COVERAGE:BOOL=$BUILD_COVERAGE
     - cmake --build .
-    - ctest --output-on-failure
+    - ctest --output-on-failure    
     - popd
     
     # moview
@@ -63,12 +65,18 @@ script:
     - cmake --build .
     - ctest --output-on-failure
     - popd
-    - popd    
+    - popd
+    
+cache:
+    directories:
+    - '$HOME/.sonar/cache'
     
 after_success:
     - pushd ${TRAVIS_BUILD_DIR}
-    - lcov --directory . --capture --output-file coverage.info # capture coverage info
-    - lcov --list coverage.info #debug info  
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then build-wrapper-linux-x86-64 --out-dir bw-output make all; fi
+    - lcov --directory src --capture --output-file coverage.info
+    - lcov --list coverage.info
     - bash <(curl -s https://codecov.io/bash)
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sonar-scanner -X; fi
     - popd
   

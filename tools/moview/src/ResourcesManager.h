@@ -67,6 +67,18 @@ struct ResourceImage
     bool premultAlpha;
 };
 //////////////////////////////////////////////////////////////////////////
+struct ResourceSound
+    : public Resource
+{
+    ResourceSound()
+        : Resource( Resource::Sound )
+        , sound( nullptr )
+    {
+    }
+
+    class Sound * sound;
+};
+//////////////////////////////////////////////////////////////////////////
 class ResourcesManager
     : public Singleton<ResourcesManager>
 {
@@ -81,11 +93,15 @@ public:
 public:
     GLuint GetWhiteTexture() const;
 
-    ResourceTexture * GetTextureRes(const std::string& fileName);
-    ResourceImage * GetImageRes(const std::string& imageName);
+    ResourceTexture * GetTextureRes( const std::string& fileName );
+    ResourceImage * GetImageRes( const std::string& imageName );
+    ResourceSound * GetSoundRes( const std::string& fileName );
+
+    void PurgeAllResources();
 
 protected:
-    ResourceTexture * LoadTextureRes(const std::string& fileName);
+    ResourceTexture * LoadTextureRes( const std::string& fileName );
+    ResourceSound * LoadSoundRes( const std::string& fileName );
 
 protected:
     GLuint mWhiteTexture;
