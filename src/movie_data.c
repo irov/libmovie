@@ -1193,7 +1193,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
         ae_uint32_t option_value;
         AE_READ( _stream, option_value );
 
-        if( option_value == 'loop' )
+        if( option_value == AE_OPTION( 'l', 'o', 'o', 'p' ) )
         {
             _layer->incessantly = AE_TRUE;
         }

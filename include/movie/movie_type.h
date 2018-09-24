@@ -71,6 +71,7 @@ static const ae_voidptr_t AE_NULL = 0;
 static const ae_function_t AE_FUNCTION_NULL = 0;
 
 #define AE_BITWISE(X) (1 << X)
+#define AE_OPTION(A, B, C, D) ((A << 24) | (B << 16) | (C << 8) | A)
 
 typedef ae_float_t ae_color_channel_t;
 
