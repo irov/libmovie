@@ -407,4 +407,19 @@ const ae_char_t * ae_get_movie_composition_data_event_name( const aeMovieComposi
 // data
 /// @}
 
+/**
+@brief Has composition bounds.
+@param [in] _composition Composition.
+@return TRUE if has
+*/
+ae_bool_t ae_has_movie_composition_data_bounds( const aeMovieCompositionData * _compositionData );
+
+/**
+@brief Get composition bounds.
+@param [in] _composition Composition.
+@param [out] _bounds viewport.
+@return TRUE if successful
+*/
+ae_bool_t ae_get_movie_composition_data_bounds( const aeMovieCompositionData * _compositionData, ae_viewport_t * _bounds );
+
 #endif
