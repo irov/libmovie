@@ -1968,32 +1968,6 @@ ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _com
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_has_movie_composition_bounds( const aeMovieComposition * _composition )
-{
-    const aeMovieCompositionData * composition_data = _composition->composition_data;
-
-    if( (composition_data->flags & AE_MOVIE_COMPOSITION_BOUNDS) == 0 )
-    {
-        return AE_FALSE;
-    }
-
-    return AE_TRUE;
-}
-//////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_get_movie_composition_bounds( const aeMovieComposition * _composition, ae_viewport_t * _bounds )
-{
-    const aeMovieCompositionData * composition_data = _composition->composition_data;
-
-    if( composition_data->flags & AE_MOVIE_COMPOSITION_BOUNDS )
-    {
-        *_bounds = composition_data->bounds;
-
-        return AE_TRUE;
-    }
-
-    return AE_FALSE;
-}
-//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_uint32_t __mesh_max_vertex_count( const aeMovieLayerExtensionMesh * _mesh, ae_uint32_t _count )
 {
     if( _mesh->immutable == AE_TRUE )

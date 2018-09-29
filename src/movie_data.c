@@ -2621,3 +2621,25 @@ const ae_char_t * ae_get_movie_composition_data_event_name( const aeMovieComposi
     return name;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_has_movie_composition_data_bounds( const aeMovieCompositionData * _compositionData )
+{
+    if( (_compositionData->flags & AE_MOVIE_COMPOSITION_BOUNDS) == 0 )
+    {
+        return AE_FALSE;
+    }
+
+    return AE_TRUE;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_get_movie_composition_data_bounds( const aeMovieCompositionData * _compositionData, ae_viewport_t * _bounds )
+{
+    if( _compositionData->flags & AE_MOVIE_COMPOSITION_BOUNDS )
+    {
+        *_bounds = _compositionData->bounds;
+
+        return AE_TRUE;
+    }
+
+    return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////

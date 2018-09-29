@@ -567,21 +567,6 @@ const aeMovieCompositionData * ae_get_movie_composition_composition_data( const 
 */
 ae_bool_t ae_get_movie_composition_anchor_point( const aeMovieComposition * _composition, ae_vector3_t _point );
 
-/**
-@brief Has composition bounds.
-@param [in] _composition Composition.
-@return TRUE if has
-*/
-ae_bool_t ae_has_movie_composition_bounds( const aeMovieComposition * _composition );
-
-/**
-@brief Get composition bounds.
-@param [in] _composition Composition.
-@param [out] _bounds viewport.
-@return TRUE if successful
-*/
-ae_bool_t ae_get_movie_composition_bounds( const aeMovieComposition * _composition, ae_viewport_t * _bounds );
-
 typedef struct aeMovieCompositionRenderInfo
 {
     ae_uint32_t max_render_node;
