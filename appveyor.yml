@@ -30,4 +30,4 @@ build_script:
 - ctest --output-on-failure
 
 test_script:
-- ctest --build-config %env_cmake_configuration%
+- ctest --build-config %configuration%
