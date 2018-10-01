@@ -1,21 +1,31 @@
 version: '{build}'
 
-environment:
-  matrix:
-  # Comilers matrix
-  - env_cmake_generator: "Visual Studio 15 2017"
-    env_cmake_configuration: Debug
-  - env_cmake_generator: "Visual Studio 15 2017"
-    env_cmake_configuration: Release
-  - env_cmake_generator: "Visual Studio 15 2017 Win64"
-    env_cmake_configuration: Debug
-  - env_cmake_generator: "Visual Studio 15 2017 Win64"
-    env_cmake_configuration: Release
+branches:
+  only:
+  - master
 
+image:
+- Visual Studio 2017
+
+platform:
+- x32
+- x64
+
+configuration: 
+- Debug
+- Release
+
+init:
+- if %platform%=="x32" ( set cmake_generator_arch= )
+- if %platform%=="x64" ( set cmake_generator_arch= Win64 )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%cmake_generator_arch%" )
+- if "%platform%"=="x32" ( set project=Win32 )
+- if "%platform%"=="x64" ( set project=Win64 )
+    
 build_script:
 - mkdir build_cmake
 - cd build_cmake
-- cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU -DLIBMOVIE_EXAMPLES_BUILD:BOOL=FALSE
+- cmake .. -G %generator% -DCMAKE_BUILD_TYPE=%configuration% -DTARGET_CPU=%platform% -DLIBMOVIE_EXAMPLES_BUILD:BOOL=FALSE
 - cmake --build .
 - ctest --output-on-failure
 
