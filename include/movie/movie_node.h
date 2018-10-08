@@ -227,7 +227,7 @@ typedef struct aeMovieNodeProviderCallbackData
     ae_bool_t incessantly;
 
     /// @brief Additional transform, e.g. for slots/sockets.
-    ae_matrix4_ptr_t matrix;
+    ae_matrix34_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -264,7 +264,7 @@ typedef struct aeMovieNodeUpdateCallbackData
     ae_time_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
-    ae_matrix4_ptr_t matrix;
+    ae_matrix34_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -287,7 +287,7 @@ typedef struct aeMovieTrackMatteProviderCallbackData
     ae_time_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
-    ae_matrix4_ptr_t matrix;
+    ae_matrix34_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -312,7 +312,7 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     ae_time_t offset;
 
     /// @brief Additional transform, e.g. for slots/sockets.
-    ae_matrix4_ptr_t matrix;
+    ae_matrix34_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -386,7 +386,7 @@ typedef struct aeMovieCompositionEventCallbackData
     const ae_char_t * name;
 
     /// @brief Additional transform, e.g. for slots/sockets.
-    ae_matrix4_ptr_t matrix;
+    ae_matrix34_ptr_t matrix;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;

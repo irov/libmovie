@@ -128,9 +128,7 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
             ae_float_t x = __bezier_warp_x( _bezierWarp, &bu, &bv );
             ae_float_t y = __bezier_warp_y( _bezierWarp, &bu, &bv );
 
-            ae_vector2_t position;
-            position[0] = x;
-            position[1] = y;
+            ae_vector2_t position = { x, y };
 
             ae_mul_v3_v2_m34( *positions++, position, _matrix );
 
@@ -164,7 +162,7 @@ AE_INTERNAL ae_void_t __setup_bezier_beziers( aeMovieBezierWarp * _bezier, const
     ae_linerp_f2( _bezier->beziers[7], _current[7], _next[7], _t );
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix34_t _matrix, aeMovieRenderMesh * _render )
+ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, const aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix34_t _matrix, const ae_vector2_t * _uvs, aeMovieRenderMesh * _render )
 {
     ae_uint32_t bezier_warp_quality = _layerBezierWarp->quality;
 
@@ -203,9 +201,33 @@ ae_void_t make_layer_bezier_warp_vertices( const aeMovieInstance * _instance, co
 
     const ae_vector2_t * bezier_warp_uvs = _instance->bezier_warp_uvs[bezier_warp_quality];
 
-    ae_uint32_t i = 0;
-    for( ; i != vertex_count; ++i )
+    if( _uvs == AE_NULL )
     {
-        ae_copy_v2( _render->uv[i], bezier_warp_uvs[i] );
+        ae_uint32_t vertex_index = 0;
+        for( ; vertex_index != vertex_count; ++vertex_index )
+        {
+            ae_copy_v2( _render->uv[vertex_index], bezier_warp_uvs[vertex_index] );
+        }
+    }
+    else
+    {
+        ae_float_t bx = _uvs[0][0];
+        ae_float_t by = _uvs[0][1];
+
+        ae_float_t ux = _uvs[1][0] - _uvs[0][0];
+        ae_float_t uy = _uvs[1][1] - _uvs[0][1];
+
+        ae_float_t vx = _uvs[2][0] - _uvs[1][0];
+        ae_float_t vy = _uvs[2][1] - _uvs[1][1];
+
+        ae_uint32_t vertex_index = 0;
+        for( ; vertex_index != vertex_count; ++vertex_index )
+        {
+            ae_float_t u = bezier_warp_uvs[vertex_index][0];
+            ae_float_t v = bezier_warp_uvs[vertex_index][1];
+
+            _render->uv[vertex_index][0] = bx + ux * u + vx * v;
+            _render->uv[vertex_index][1] = by + uy * u + vy * v;
+        }
     }
 }

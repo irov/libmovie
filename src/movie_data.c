@@ -2546,6 +2546,16 @@ ae_bool_t ae_has_movie_layer_data_option( const aeMovieLayerData * _layer, ae_ui
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_uint32_t ae_get_movie_layer_data_option_count( const aeMovieLayerData * _layer )
+{
+    return _layer->options_count;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_uint32_t ae_get_movie_layer_data_option( const aeMovieLayerData * _layer, ae_uint32_t _index )
+{
+    return _layer->options[_index];
+}
+//////////////////////////////////////////////////////////////////////////
 const aeMovieResource * ae_get_movie_layer_data_resource( const aeMovieLayerData * _layer )
 {
     return _layer->resource;
