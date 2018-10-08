@@ -252,7 +252,7 @@ AE_INTERNAL ae_void_t __compute_movie_render_mesh( const aeMovieComposition * _c
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
+                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, AE_NULL, _render );
             }
             else
             {
@@ -316,7 +316,7 @@ AE_INTERNAL ae_void_t __compute_movie_render_mesh( const aeMovieComposition * _c
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
+                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, resource_image->uvs, _render );
 
                 if( resource_image->cache != AE_NULL )
                 {
@@ -373,7 +373,7 @@ AE_INTERNAL ae_void_t __compute_movie_render_mesh( const aeMovieComposition * _c
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
+                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, AE_NULL, _render );
 
                 if( resource_video->cache != AE_NULL )
                 {
@@ -418,7 +418,7 @@ AE_INTERNAL ae_void_t __compute_movie_render_mesh( const aeMovieComposition * _c
             }
             else if( layer->extensions->bezier_warp != AE_NULL )
             {
-                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, _render );
+                make_layer_bezier_warp_vertices( instance, layer->extensions->bezier_warp, frame, _interpolate, t_frame, _node->matrix, resource_image->uvs, _render );
 
                 if( resource_image->cache != AE_NULL )
                 {
@@ -3357,25 +3357,31 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
 
                 __inc_composition_update_revision( _composition );
 
-                if( _composition->providers.composition_state != AE_NULL )
+                if( _composition->providers.composition_state != AE_NULL || _composition->providers.subcomposition_state != AE_NULL )
                 {
                     uint32_t loop_iterator = 0U;
                     for( ; loop_iterator != loop_count; ++loop_iterator )
                     {
                         if( _subcomposition == AE_NULL )
                         {
-                            aeMovieCompositionStateCallbackData callbackData;
-                            callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
+                            if( _composition->providers.composition_state != AE_NULL )
+                            {
+                                aeMovieCompositionStateCallbackData callbackData;
+                                callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
 
-                            (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                                (*_composition->providers.composition_state)(&callbackData, _composition->provider_data);
+                            }
                         }
                         else
                         {
-                            aeMovieSubCompositionStateCallbackData callbackData;
-                            callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
-                            callbackData.subcomposition_data = _subcomposition->subcomposition_data;
+                            if( _composition->providers.subcomposition_state != AE_NULL )
+                            {
+                                aeMovieSubCompositionStateCallbackData callbackData;
+                                callbackData.state = AE_MOVIE_COMPOSITION_LOOP_END;
+                                callbackData.subcomposition_data = _subcomposition->subcomposition_data;
 
-                            (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
+                                (*_composition->providers.subcomposition_state)(&callbackData, _composition->provider_data);
+                            }
                         }
                     }
                 }

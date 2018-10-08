@@ -66,6 +66,6 @@ AE_INTERNAL ae_uint32_t get_bezier_warp_index_count( ae_uint32_t _quality )
     return index_count;
 }
 
-ae_void_t make_layer_bezier_warp_vertices( const struct aeMovieInstance * _instance, const struct aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix34_t _matrix, aeMovieRenderMesh * _render );
+ae_void_t make_layer_bezier_warp_vertices( const struct aeMovieInstance * _instance, const struct aeMovieLayerExtensionBezierWarp * _layerBezierWarp, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t, const ae_matrix34_t _matrix, const ae_vector2_t * _uvs, aeMovieRenderMesh * _render );
 
 #endif

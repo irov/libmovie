@@ -281,6 +281,9 @@ ae_bool_t ae_is_movie_layer_data_incessantly( const aeMovieLayerData * _layer );
 */
 ae_bool_t ae_has_movie_layer_data_option( const aeMovieLayerData * _layer, ae_uint32_t _option );
 
+ae_uint32_t ae_get_movie_layer_data_option_count( const aeMovieLayerData * _layer );
+ae_uint32_t ae_get_movie_layer_data_option( const aeMovieLayerData * _layer, ae_uint32_t _index );
+
 /**
 @param [in] _layer Layer.
 @return resource linked to the layer.

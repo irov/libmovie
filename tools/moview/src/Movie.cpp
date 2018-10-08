@@ -58,26 +58,13 @@ struct MemoryIO
     ae_size_t cursor;
 };
 //////////////////////////////////////////////////////////////////////////
-AE_CALLBACK ae_size_t my_io_read( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t, ae_size_t _size ) 
+AE_CALLBACK ae_size_t my_io_read( ae_voidptr_t _data, ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size ) 
 {
     MemoryIO* io = reinterpret_cast<MemoryIO*>(_data);
 
-    if( io == nullptr )
-    {
-        return 0;
-    }
+    memcpy( _buff, io->data + _carriage, _size );
 
-    if( io->cursor >= io->dataLength )
-    {
-        return 0;
-    }
-     
-    const ae_size_t dataAvailable = io->dataLength - io->cursor;
-    const ae_size_t toRead = (_size > dataAvailable) ? dataAvailable : _size;
-    memcpy( _buff, io->data + io->cursor, toRead );
-    io->cursor += toRead;
-
-    return toRead;
+    return _size;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_void_t my_memory_copy( ae_voidptr_t, ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size ) 
@@ -171,8 +158,6 @@ bool Movie::LoadFromMemory( const void* data, size_t dataLength, const std::stri
 
     MemoryIO io;
     io.data = reinterpret_cast<const uint8_t*>(data);
-    io.dataLength = dataLength;
-    io.cursor = 0;
 
     aeMovieStream* stream = ae_create_movie_stream( movie, &my_io_read, &my_memory_copy, &io );
 

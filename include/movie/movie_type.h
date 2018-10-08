@@ -62,7 +62,7 @@ typedef ae_float_t ae_skew_t[3];
 typedef ae_float_t ae_matrix34_t[12];
 
 typedef const ae_float_t * ae_vector3_ptr_t;
-typedef const ae_float_t * ae_matrix4_ptr_t;
+typedef const ae_float_t * ae_matrix34_ptr_t;
 typedef void( *ae_function_t )(void);
 
 static const ae_bool_t AE_TRUE = 1;
@@ -71,7 +71,7 @@ static const ae_voidptr_t AE_NULL = 0;
 static const ae_function_t AE_FUNCTION_NULL = 0;
 
 #define AE_BITWISE(X) (1 << X)
-#define AE_OPTION(A, B, C, D) ((A << 24) | (B << 16) | (C << 8) | A)
+#define AE_OPTION(A, B, C, D) ((A << 24) | (B << 16) | (C << 8) | D)
 
 typedef ae_float_t ae_color_channel_t;
 
