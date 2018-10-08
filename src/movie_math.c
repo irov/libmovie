@@ -44,6 +44,13 @@ AE_INTERNAL ae_void_t __mul_v3_m34_rr( ae_vector3_t _out, const ae_vector3_t _a,
     _out[2] = _a[0] * _b[0 * 3 + 2] + _a[1] * _b[1 * 3 + 2] + _a[2] * _b[2 * 3 + 2] + _b[3 * 3 + 2];
 }
 //////////////////////////////////////////////////////////////////////////
+ae_void_t ae_mul_v3_xy_m34( ae_vector3_t _out, ae_float_t _x, ae_float_t _y, const ae_matrix34_t _b )
+{
+    _out[0] = _x * _b[0 * 3 + 0] + _y * _b[1 * 3 + 0] + _b[3 * 3 + 0];
+    _out[1] = _x * _b[0 * 3 + 1] + _y * _b[1 * 3 + 1] + _b[3 * 3 + 1];
+    _out[2] = _x * _b[0 * 3 + 2] + _y * _b[1 * 3 + 2] + _b[3 * 3 + 2];
+}
+//////////////////////////////////////////////////////////////////////////
 ae_void_t ae_mul_v3_v2_m34( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix34_t _b )
 {
     _out[0] = _a[0] * _b[0 * 3 + 0] + _a[1] * _b[1 * 3 + 0] + _b[3 * 3 + 0];
