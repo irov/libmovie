@@ -67,6 +67,7 @@ AE_INTERNAL ae_void_t ae_copy_v2( ae_vector2_t _out, const ae_vector2_t _in )
     _out[1] = _in[1];
 }
 //////////////////////////////////////////////////////////////////////////
+ae_void_t ae_mul_v3_xy_m34( ae_vector3_t _out, ae_float_t _x, ae_float_t _y, const ae_matrix34_t _b );
 ae_void_t ae_mul_v3_v2_m34( ae_vector3_t _out, const ae_vector2_t _a, const ae_matrix34_t _b );
 ae_void_t ae_mul_m34_m34_r( ae_matrix34_t _out, const ae_matrix34_t _a, const ae_matrix34_t _b );
 ae_void_t ae_mul_m34_m34( ae_matrix34_t _out, const ae_matrix34_t _a, const ae_matrix34_t _b );

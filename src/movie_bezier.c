@@ -128,9 +128,7 @@ AE_INTERNAL ae_void_t __make_bezier_warp_vertices( const aeMovieInstance * _inst
             ae_float_t x = __bezier_warp_x( _bezierWarp, &bu, &bv );
             ae_float_t y = __bezier_warp_y( _bezierWarp, &bu, &bv );
 
-            ae_vector2_t position = { x, y };
-
-            ae_mul_v3_v2_m34( *positions++, position, _matrix );
+            ae_mul_v3_xy_m34( *positions++, x, y, _matrix );
 
             du += grid_invf;
         }
