@@ -1310,7 +1310,7 @@ AE_INTERNAL ae_void_t __setup_movie_node_incessantly( aeMovieComposition * _comp
             continue;
         }
 
-        if( ae_has_movie_layer_data_option( layer, AE_MOVIE_LAYER_PARAM_LOOP ) == AE_TRUE )
+        if( ae_has_movie_layer_data_option( layer, AE_OPTION( 'l', 'o', 'o', 'p' ) ) == AE_TRUE )
         {
             node->incessantly = AE_TRUE;
 
@@ -3110,7 +3110,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         node->current_time = stretch_time;
         node->current_frame = frameId;
 
-        ae_bool_t node_loop = ((animation_loop == AE_TRUE && animation_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || node_layer->incessantly);
+        ae_bool_t node_loop = ((animation_loop == AE_TRUE && animation_interrupt == AE_FALSE && loopBegin >= node->in_time && node->out_time >= loopEnd) || node_layer->incessantly == AE_TRUE);
 
         if( beginFrame < indexIn && endFrame >= indexIn && endFrame < indexOut )
         {

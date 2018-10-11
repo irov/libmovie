@@ -78,14 +78,6 @@ typedef enum aeMovieLayerTypeEnum
     AE_MOVIE_LAYER_TYPE_SUB_MOVIE = 21,
 } aeMovieLayerTypeEnum;
 
-typedef enum aeMovieLayerParamEnum
-{
-    AE_MOVIE_LAYER_PARAM_HORIZONTAL_CENTER = 0x00000002,
-    AE_MOVIE_LAYER_PARAM_VERTICAL_CENTER = 0x00000004,
-    AE_MOVIE_LAYER_PARAM_LOOP = 0x00000008,
-    AE_MOVIE_LAYER_PARAM_SWITCH = 0x00000010,
-} aeMovieLayerParamEnum;
-
 typedef enum aeMovieCompositionFlag
 {
     AE_MOVIE_COMPOSITION_LOOP_SEGMENT = 0x00000001,
