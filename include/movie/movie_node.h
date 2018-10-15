@@ -226,6 +226,8 @@ typedef struct aeMovieNodeProviderCallbackData
     /// @brief if node incessantly timeline
     ae_bool_t incessantly;
 
+    ae_bool_t immutable_matrix;
+
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix34_ptr_t matrix;
 
@@ -263,8 +265,12 @@ typedef struct aeMovieNodeUpdateCallbackData
     aeMovieStateUpdateEnum state;
     ae_time_t offset;
 
+    ae_bool_t immutable_matrix;
+
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix34_ptr_t matrix;
+
+    ae_bool_t immutable_color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -286,8 +292,12 @@ typedef struct aeMovieTrackMatteProviderCallbackData
     ae_bool_t loop;
     ae_time_t offset;
 
+    ae_bool_t immutable_matrix;
+
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix34_ptr_t matrix;
+
+    ae_bool_t immutable_color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -311,8 +321,12 @@ typedef struct aeMovieTrackMatteUpdateCallbackData
     aeMovieStateUpdateEnum state;
     ae_time_t offset;
 
+    ae_bool_t immutable_matrix;
+
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix34_ptr_t matrix;
+
+    ae_bool_t immutable_color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
@@ -385,8 +399,12 @@ typedef struct aeMovieCompositionEventCallbackData
     /// @brief Name of the composition which sent the event.
     const ae_char_t * name;
 
+    ae_bool_t immutable_matrix;
+
     /// @brief Additional transform, e.g. for slots/sockets.
     ae_matrix34_ptr_t matrix;
+
+    ae_bool_t immutable_color;
 
     /// @brief Value from 0.0 to 1.0.
     ae_color_t color;
