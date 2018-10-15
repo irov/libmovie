@@ -1235,9 +1235,9 @@ AE_INTERNAL ae_result_t __load_camera_transformation_property( aeMovieStream * _
     ae_uint32_t immutable_property_mask = _transformation->immutable_property_mask;
     ae_uint32_t identity_property_mask = _transformation->identity_property_mask;
 
-    AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_TARGET_X, target_x, 0.f );
-    AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_TARGET_Y, target_y, 0.f );
-    AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_TARGET_Z, target_z, 1.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_ANCHOR_POINT_X, target_x, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_ANCHOR_POINT_Y, target_y, 0.f );
+    AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_ANCHOR_POINT_Z, target_z, 1.f );
 
     AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_POSITION_X, position_x, 0.f );
     AE_STREAM_PROPERTY( AE_MOVIE_PROPERTY_POSITION_Y, position_y, 0.f );
