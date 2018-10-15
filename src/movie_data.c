@@ -353,19 +353,6 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
                     AE_DELETE( instance, extensions->bezier_warp );
                 }
 
-                if( extensions->color_vertex != AE_NULL )
-                {
-                    const aeMovieLayerExtensionColorVertex * color_vertex = extensions->color_vertex;
-
-                    const struct aeMoviePropertyColor * property_color = color_vertex->property_color;
-
-                    __delete_property_color( instance, property_color );
-
-                    AE_DELETE( instance, property_color );
-
-                    AE_DELETE( instance, extensions->color_vertex );
-                }
-
                 if( extensions->polygon != AE_NULL )
                 {
                     const aeMovieLayerExtensionPolygon * polygon = extensions->polygon;
@@ -488,7 +475,7 @@ AE_INTERNAL ae_result_t __load_movie_data_composition_camera( aeMovieStream * _s
         ae_float_t width = _compositionData->width;
         ae_float_t height = _compositionData->height;
 
-        camera->immutable_property_mask = AE_MOVIE_IMMUTABLE_SUPER_ALL_CAMERA;
+        camera->immutable_property_mask = AE_MOVIE_PROPERTY_TRANSFORM_SUPER_ALL_CAMERA;
 
         camera->immutable.position_x = width * 0.5f;
         camera->immutable.position_y = height * 0.5f;
@@ -835,48 +822,6 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
                 AE_RESULT_PANIC_MEMORY( layer_extensions );
 
                 layer_extensions->bezier_warp = layer_bezier_warp;
-            }break;
-        case AE_LAYER_EXTENSION_COLORVERTEX:
-            {
-                aeMovieLayerExtensionColorVertex * layer_color_vertex = AE_NEW( instance, aeMovieLayerExtensionColorVertex );
-
-                AE_RESULT_PANIC_MEMORY( layer_color_vertex );
-
-                struct aeMoviePropertyColor * property_color = AE_NEW( instance, struct aeMoviePropertyColor );
-
-                AE_RESULT_PANIC_MEMORY( property_color );
-
-                AE_RESULT( __load_movie_property_color, (_stream, _layer, property_color) );
-
-                layer_color_vertex->property_color = property_color;
-
-                for( ;; )
-                {
-                    ae_uint8_t params;
-                    AE_READ( _stream, params );
-
-                    switch( params )
-                    {
-                    case 0:
-                        {
-                        }break;
-                    default:
-                        {
-                            AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_STREAM );
-                        }break;
-                    }
-
-                    if( params == 0 )
-                    {
-                        break;
-                    }
-                }
-
-                layer_extensions = __request_extensions( instance, layer_extensions );
-
-                AE_RESULT_PANIC_MEMORY( layer_extensions );
-
-                layer_extensions->color_vertex = layer_color_vertex;
             }break;
         case AE_LAYER_EXTENSION_POLYGON:
             {

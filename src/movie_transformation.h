@@ -35,44 +35,52 @@
 
 typedef enum aeMoviePropertyImmutableEnum
 {
-    AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X = 0x00000001,
-    AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y = 0x00000002,
-    AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z = 0x00000004,
-    AE_MOVIE_IMMUTABLE_POSITION_X = 0x00000010,
-    AE_MOVIE_IMMUTABLE_POSITION_Y = 0x00000020,
-    AE_MOVIE_IMMUTABLE_POSITION_Z = 0x00000040,
-    AE_MOVIE_IMMUTABLE_SCALE_X = 0x00000100,
-    AE_MOVIE_IMMUTABLE_SCALE_Y = 0x00000200,
-    AE_MOVIE_IMMUTABLE_SCALE_Z = 0x00000400,
-    AE_MOVIE_IMMUTABLE_QUATERNION_X = 0x00001000,
-    AE_MOVIE_IMMUTABLE_QUATERNION_Y = 0x00002000,
-    AE_MOVIE_IMMUTABLE_QUATERNION_Z = 0x00004000,
-    AE_MOVIE_IMMUTABLE_QUATERNION_W = 0x00008000,
-    AE_MOVIE_IMMUTABLE_SKEW = 0x00010000,
-    AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z = 0x00020000,
-    AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W = 0x00040000,
-    AE_MOVIE_IMMUTABLE_TARGET_X = 0x00100000,
-    AE_MOVIE_IMMUTABLE_TARGET_Y = 0x00200000,
-    AE_MOVIE_IMMUTABLE_TARGET_Z = 0x00400000,
-    AE_MOVIE_IMMUTABLE_OPACITY = 0x10000000,
+    AE_MOVIE_PROPERTY_NONE = 0x00000000,
+    AE_MOVIE_PROPERTY_ANCHOR_POINT_X = 0x00000001,
+    AE_MOVIE_PROPERTY_ANCHOR_POINT_Y = 0x00000002,
+    AE_MOVIE_PROPERTY_ANCHOR_POINT_Z = 0x00000004,
+    AE_MOVIE_PROPERTY_POSITION_X = 0x00000010,
+    AE_MOVIE_PROPERTY_POSITION_Y = 0x00000020,
+    AE_MOVIE_PROPERTY_POSITION_Z = 0x00000040,
+    AE_MOVIE_PROPERTY_SCALE_X = 0x00000100,
+    AE_MOVIE_PROPERTY_SCALE_Y = 0x00000200,
+    AE_MOVIE_PROPERTY_SCALE_Z = 0x00000400,
+    AE_MOVIE_PROPERTY_QUATERNION_X = 0x00001000,
+    AE_MOVIE_PROPERTY_QUATERNION_Y = 0x00002000,
+    AE_MOVIE_PROPERTY_QUATERNION_Z = 0x00004000,
+    AE_MOVIE_PROPERTY_QUATERNION_W = 0x00008000,
+    AE_MOVIE_PROPERTY_SKEW = 0x00010000,
+    AE_MOVIE_PROPERTY_SKEW_QUATERNION_Z = 0x00020000,
+    AE_MOVIE_PROPERTY_SKEW_QUATERNION_W = 0x00040000,
+    AE_MOVIE_PROPERTY_TARGET_X = 0x00100000,
+    AE_MOVIE_PROPERTY_TARGET_Y = 0x00200000,
+    AE_MOVIE_PROPERTY_TARGET_Z = 0x00400000,
+    AE_MOVIE_PROPERTY_COLOR_R = 0x10000000,
+    AE_MOVIE_PROPERTY_COLOR_G = 0x20000000,
+    AE_MOVIE_PROPERTY_COLOR_B = 0x40000000,
+    AE_MOVIE_PROPERTY_OPACITY = 0x80000000,
 
-    AE_MOVIE_IMMUTABLE_SUPER_ALL_SKEW = 0
-    | AE_MOVIE_IMMUTABLE_SKEW | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W,
+    AE_MOVIE_PROPERTY_TRANSFORM_SUPER_ALL_SKEW = AE_MOVIE_PROPERTY_NONE
+    | AE_MOVIE_PROPERTY_SKEW | AE_MOVIE_PROPERTY_SKEW_QUATERNION_Z | AE_MOVIE_PROPERTY_SKEW_QUATERNION_W,
 
-    AE_MOVIE_IMMUTABLE_SUPER_ALL_QUATERNION = 0
-    | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
+    AE_MOVIE_PROPERTY_TRANSFORM_SUPER_ALL_QUATERNION = AE_MOVIE_PROPERTY_NONE
+    | AE_MOVIE_PROPERTY_QUATERNION_X | AE_MOVIE_PROPERTY_QUATERNION_Y | AE_MOVIE_PROPERTY_QUATERNION_Z | AE_MOVIE_PROPERTY_QUATERNION_W,
 
-    AE_MOVIE_IMMUTABLE_SUPER_ALL_CAMERA = 0
-    | AE_MOVIE_IMMUTABLE_TARGET_X | AE_MOVIE_IMMUTABLE_TARGET_Y | AE_MOVIE_IMMUTABLE_TARGET_Z
-    | AE_MOVIE_IMMUTABLE_POSITION_X | AE_MOVIE_IMMUTABLE_POSITION_Y | AE_MOVIE_IMMUTABLE_POSITION_Z
-    | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W,
-    
-    AE_MOVIE_IMMUTABLE_SUPER_ALL = 0
-    | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_X | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Y | AE_MOVIE_IMMUTABLE_ANCHOR_POINT_Z
-    | AE_MOVIE_IMMUTABLE_POSITION_X | AE_MOVIE_IMMUTABLE_POSITION_Y | AE_MOVIE_IMMUTABLE_POSITION_Z
-    | AE_MOVIE_IMMUTABLE_SCALE_X | AE_MOVIE_IMMUTABLE_SCALE_Y | AE_MOVIE_IMMUTABLE_SCALE_Z
-    | AE_MOVIE_IMMUTABLE_QUATERNION_X | AE_MOVIE_IMMUTABLE_QUATERNION_Y | AE_MOVIE_IMMUTABLE_QUATERNION_Z | AE_MOVIE_IMMUTABLE_QUATERNION_W
-    | AE_MOVIE_IMMUTABLE_SKEW | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_Z | AE_MOVIE_IMMUTABLE_SKEW_QUATERNION_W,
+    AE_MOVIE_PROPERTY_TRANSFORM_SUPER_ALL_CAMERA = AE_MOVIE_PROPERTY_NONE
+    | AE_MOVIE_PROPERTY_TARGET_X | AE_MOVIE_PROPERTY_TARGET_Y | AE_MOVIE_PROPERTY_TARGET_Z
+    | AE_MOVIE_PROPERTY_POSITION_X | AE_MOVIE_PROPERTY_POSITION_Y | AE_MOVIE_PROPERTY_POSITION_Z
+    | AE_MOVIE_PROPERTY_QUATERNION_X | AE_MOVIE_PROPERTY_QUATERNION_Y | AE_MOVIE_PROPERTY_QUATERNION_Z | AE_MOVIE_PROPERTY_QUATERNION_W,
+
+    AE_MOVIE_PROPERTY_TRANSFORM_SUPER_ALL = AE_MOVIE_PROPERTY_NONE
+    | AE_MOVIE_PROPERTY_ANCHOR_POINT_X | AE_MOVIE_PROPERTY_ANCHOR_POINT_Y | AE_MOVIE_PROPERTY_ANCHOR_POINT_Z
+    | AE_MOVIE_PROPERTY_POSITION_X | AE_MOVIE_PROPERTY_POSITION_Y | AE_MOVIE_PROPERTY_POSITION_Z
+    | AE_MOVIE_PROPERTY_SCALE_X | AE_MOVIE_PROPERTY_SCALE_Y | AE_MOVIE_PROPERTY_SCALE_Z
+    | AE_MOVIE_PROPERTY_QUATERNION_X | AE_MOVIE_PROPERTY_QUATERNION_Y | AE_MOVIE_PROPERTY_QUATERNION_Z | AE_MOVIE_PROPERTY_QUATERNION_W
+    | AE_MOVIE_PROPERTY_SKEW | AE_MOVIE_PROPERTY_SKEW_QUATERNION_Z | AE_MOVIE_PROPERTY_SKEW_QUATERNION_W,
+
+    AE_MOVIE_PROPERTY_COLOR_SUPER_ALL = AE_MOVIE_PROPERTY_NONE
+    | AE_MOVIE_PROPERTY_COLOR_R | AE_MOVIE_PROPERTY_COLOR_G | AE_MOVIE_PROPERTY_COLOR_B
+    | AE_MOVIE_PROPERTY_OPACITY,
 
 } aeMoviePropertyImmutableEnum;
 
@@ -150,6 +158,22 @@ typedef struct aeMovieLayerTransformation3DTimeline
 
 }aeMovieLayerTransformation3DTimeline;
 
+typedef struct aeMovieLayerColorImuttable
+{
+    ae_color_channel_t color_r;
+    ae_color_channel_t color_g;
+    ae_color_channel_t color_b;
+
+}aeMovieLayerColorImuttable;
+
+typedef struct aeMovieLayerColorTimeline
+{
+    ae_constvoidptr_t color_r;
+    ae_constvoidptr_t color_g;
+    ae_constvoidptr_t color_b;
+
+}aeMovieLayerColorTimeline;
+
 struct aeMovieLayerTransformation;
 
 typedef ae_void_t( *ae_movie_make_layer_transformation_intepolate_t )(ae_matrix34_t _out, const struct aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_float_t _t);
@@ -158,11 +182,13 @@ typedef ae_void_t( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix34_t _
 #define AE_MOVIE_LAYER_TRANSFORMATION_BASE()\
     ae_uint32_t immutable_property_mask;\
     ae_uint32_t identity_property_mask;\
+    aeMovieLayerColorImuttable immutable_color;\
+    aeMovieLayerColorTimeline timeline_color;\
     ae_color_channel_t immutable_opacity;\
     ae_constvoidptr_t timeline_opacity;\
     ae_movie_make_layer_transformation_intepolate_t transforamtion_interpolate_matrix;\
     ae_movie_make_layer_transformation_fixed_t transforamtion_fixed_matrix;\
-    ae_matrix34_t * immutable_matrix
+    const ae_matrix34_t * immutable_matrix
 
 typedef struct aeMovieLayerTransformation
 {
@@ -191,6 +217,9 @@ typedef struct aeMovieLayerTransformation3D
 ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
 ae_result_t ae_movie_load_camera_transformation( aeMovieStream * _stream, aeMovieCompositionCamera * _camera );
 ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instance, const aeMovieLayerTransformation * _transformation, ae_bool_t _threeD );
+ae_color_channel_t ae_movie_make_layer_color_r( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
+ae_color_channel_t ae_movie_make_layer_color_g( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
+ae_color_channel_t ae_movie_make_layer_color_b( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 ae_color_channel_t ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 ae_void_t ae_movie_make_layer_matrix( ae_matrix34_t _out, const aeMovieLayerTransformation * _transformation, ae_bool_t _interpolate, ae_uint32_t _index, ae_float_t _t );
 ae_void_t ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );

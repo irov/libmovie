@@ -68,7 +68,6 @@ typedef struct aeMovieLayerExtensions
     const aeMovieLayerExtensionTimeremap * timeremap;
     const aeMovieLayerExtensionMesh * mesh;
     const aeMovieLayerExtensionBezierWarp * bezier_warp;
-    const aeMovieLayerExtensionColorVertex * color_vertex;
     const aeMovieLayerExtensionPolygon * polygon;
     const aeMovieLayerExtensionShader * shader;
     const aeMovieLayerExtensionViewport * viewport;
@@ -81,7 +80,6 @@ AE_INTERNAL ae_void_t __clear_layer_extensions( aeMovieLayerExtensions * _extens
     _extensions->timeremap = AE_NULL;
     _extensions->mesh = AE_NULL;
     _extensions->bezier_warp = AE_NULL;
-    _extensions->color_vertex = AE_NULL;
     _extensions->polygon = AE_NULL;
     _extensions->shader = AE_NULL;
     _extensions->viewport = AE_NULL;
@@ -174,6 +172,8 @@ struct aeMovieNode
     ae_bool_t ignore;
     ae_bool_t enable;
     ae_bool_t incessantly;
+    ae_bool_t immutable_matrix;
+    ae_bool_t immutable_color;
 
     ae_uint32_t animate;
 
@@ -412,12 +412,6 @@ struct aeMoviePropertyColor
     const struct aeMoviePropertyColorChannel * color_channel_r;
     const struct aeMoviePropertyColorChannel * color_channel_g;
     const struct aeMoviePropertyColorChannel * color_channel_b;
-};
-//////////////////////////////////////////////////////////////////////////
-struct aeMovieLayerExtensionColorVertex
-{
-    const struct aeMoviePropertyColor * property_color;
-
 };
 //////////////////////////////////////////////////////////////////////////
 #	define AE_MOVIE_SHADER_PARAMETER_BASE()\
