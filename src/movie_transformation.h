@@ -185,7 +185,7 @@ typedef ae_void_t( *ae_movie_make_layer_transformation_fixed_t )(ae_matrix34_t _
     ae_constvoidptr_t timeline_opacity;\
     ae_movie_make_layer_transformation_intepolate_t transforamtion_interpolate_matrix;\
     ae_movie_make_layer_transformation_fixed_t transforamtion_fixed_matrix;\
-    const ae_matrix34_t * immutable_matrix
+    ae_matrix34_t * immutable_matrix
 
 typedef struct aeMovieLayerTransformation
 {
