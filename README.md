@@ -3,6 +3,7 @@ Framework for render After Effects composition
 
 |         | Linux  | Mac OS | Windows |
 | ------- | ------ | ------ | ------- |
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/23c7dab2df584d4b82ed35a44838c0a2)](https://app.codacy.com/app/irov13/libmovie?utm_source=github.com&utm_medium=referral&utm_content=irov/libmovie&utm_campaign=Badge_Grade_Dashboard)
 | master  | [![Travis-CI](https://travis-ci.org/irov/libmovie.svg?branch=master)](https://travis-ci.org/irov/libmovie) | [![Travis-CI](https://travis-ci.org/irov/libmovie.svg?branch=master)](https://travis-ci.org/irov/libmovie) | [![AppVeyor](https://ci.appveyor.com/api/projects/status/s0yio92rsujopyug?svg=true)](https://ci.appveyor.com/project/irov/libmovie) |
 
 Code coverage done right!
