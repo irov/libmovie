@@ -11,8 +11,6 @@ libMovie is a multiplatform 'C' library for render After Effects composition. It
 Individuals/hobbyists: support continued maintenance and development via PayPal:
 [![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EUH3RMA8FWN8G)
 
-[![Beerpay](https://beerpay.io/irov/libmovie/badge.svg?style=flat)](https://beerpay.io/irov/libmovie)
-
 Businesses: support continued maintenance and development via support contracts or sponsoring: 
   E-mail: irov13 at mail dot ru
 
