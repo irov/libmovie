@@ -1127,7 +1127,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
             if( fixed_transformation > 5 )
             {
-                return AE_RESULT_INTERNAL_ERROR;
+                AE_RETURN_ERROR_RESULT( AE_RESULT_INTERNAL_ERROR );
             }
 
             _transformation->transforamtion_interpolate_matrix = transforamtion_interpolate_matrix[fixed_transformation];
@@ -1199,7 +1199,7 @@ ae_result_t ae_movie_load_layer_transformation( aeMovieStream * _stream, aeMovie
 
             if( fixed_transformation > 5 )
             {
-                return AE_RESULT_INTERNAL_ERROR;
+                AE_RETURN_ERROR_RESULT( AE_RESULT_INTERNAL_ERROR );
             }
 
             _transformation->transforamtion_interpolate_matrix = transforamtion_interpolate_matrix[fixed_transformation];

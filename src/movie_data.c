@@ -1379,7 +1379,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
         {
             if( _layer->options_count == AE_MOVIE_LAYER_MAX_OPTIONS )
             {
-                return AE_RESULT_INVALID_DATA;
+                AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
             }
 
             _layer->options[_layer->options_count] = option_value;
@@ -1847,6 +1847,10 @@ const ae_char_t * ae_get_movie_result_string_info( ae_result_t _result )
     case AE_RESULT_INTERNAL_ERROR:
         {
             return "internal error";
+        }break;
+    case AE_RESULT_NOT_FOUND_RESOURCE:
+        {
+            return "not found resource";
         }break;
     }
 
@@ -2369,7 +2373,7 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
     ae_userdata_t resource_userdata = AE_USERDATA_NULL;
     if( (*_movieData->providers.resource_provider)(new_resource, &resource_userdata, _movieData->provider_userdata) == AE_FALSE )
     {
-        return AE_RESULT_INTERNAL_ERROR;
+        AE_RETURN_ERROR_RESULT( AE_RESULT_NOT_FOUND_RESOURCE );
     }
 
     new_resource->userdata = resource_userdata;
