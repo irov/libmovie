@@ -144,7 +144,7 @@ int main( int argc, char * argv[] )
     aeMovieCompositionProviders providers;
     ae_initialize_movie_composition_providers( &providers );
 
-    const aeMovieComposition * composition = ae_create_movie_composition( movie_data, compositionData, AE_TRUE, &providers, AE_NULLPTR );
+    const aeMovieComposition * composition = ae_create_movie_composition( compositionData, AE_TRUE, &providers, AE_NULLPTR );
 
     ae_play_movie_composition( composition, 0.f );
 

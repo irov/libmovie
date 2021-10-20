@@ -1177,11 +1177,16 @@ AE_INTERNAL ae_result_t __load_movie_data_layer_extensions( aeMovieLayerData * _
             break;
         }
 
-        AE_MOVIE_ASSERTION_RESULT( extension < sizeof( extensions ) / sizeof( extensions[0] ), AE_RESULT_INVALID_STREAM );
+        AE_MOVIE_ASSERTION_RESULT( _instance, extension < sizeof( extensions ) / sizeof( extensions[0] ), AE_RESULT_INVALID_STREAM, "extension [%u] overflow [%u]"
+            , extension 
+            , sizeof( extensions ) / sizeof( extensions[0] )
+        );
 
         func_load_movie_data_layer_extension_load_t extension_load = extensions[extension];
 
-        AE_MOVIE_ASSERTION_RESULT( extension_load, AE_RESULT_INVALID_STREAM );
+        AE_MOVIE_ASSERTION_RESULT( _instance, extension_load, AE_RESULT_INVALID_STREAM, "not found extension load for [%u]"
+            , extension 
+        );
 
         AE_RESULT( __request_extensions, (_instance, &layer_extensions) );
 
@@ -1338,6 +1343,15 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
 
         _layer->resource = AE_NULLPTR;
     }
+
+    AE_MOVIE_ASSERTION_RESULT( instance, !(_layer->resource == AE_NULLPTR
+        && (_layer->type == AE_MOVIE_LAYER_TYPE_SEQUENCE || _layer->type == AE_MOVIE_LAYER_TYPE_IMAGE)), AE_RESULT_INTERNAL_ERROR, "movie '%s' composition '%s' layer '%s' [%u] type [%u] resource nullptr"
+        , _layer->composition_data->movie_data->name
+        , _layer->composition_data->name
+        , _layer->name
+        , _layer->index
+        , _layer->type
+    );
 
     ae_uint32_t parent_index = AE_READZ( _stream );
 
@@ -1574,6 +1588,8 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
 {
     const aeMovieInstance * instance = _movieData->instance;
 
+    _compositionData->movie_data = _movieData;
+
     AE_READ_STRING( _stream, _compositionData->name );
 
     _compositionData->master = AE_READB( _stream );
@@ -1689,9 +1705,8 @@ const aeMovieInstance * ae_get_movie_data_instance( const aeMovieData * _movieDa
 //////////////////////////////////////////////////////////////////////////
 aeMovieStream * ae_create_movie_stream( const aeMovieInstance * _instance, ae_movie_stream_memory_read_t _read, ae_movie_stream_memory_copy_t _copy, ae_userdata_t _userdata )
 {
-    AE_MOVIE_ASSERTION_RESULT( _instance, AE_NULLPTR );
-    AE_MOVIE_ASSERTION_RESULT( _read, AE_NULLPTR );
-    AE_MOVIE_ASSERTION_RESULT( _copy, AE_NULLPTR );
+    AE_MOVIE_ASSERTION_RESULT( _instance, _read, AE_NULLPTR, "read function nullptr" );
+    AE_MOVIE_ASSERTION_RESULT( _instance, _copy, AE_NULLPTR, "copy function nullptr" );
 
     aeMovieStream * stream = AE_NEW( _instance, aeMovieStream );
 
@@ -1720,8 +1735,7 @@ AE_INTERNAL ae_size_t __movie_read_buffer( ae_voidptr_t _buff, ae_size_t _carria
 //////////////////////////////////////////////////////////////////////////
 aeMovieStream * ae_create_movie_stream_memory( const aeMovieInstance * _instance, ae_constvoidptr_t _buffer, ae_movie_stream_memory_copy_t _copy, ae_userdata_t _userdata )
 {
-    AE_MOVIE_ASSERTION_RESULT( _instance, AE_NULLPTR );
-    AE_MOVIE_ASSERTION_RESULT( _copy, AE_NULLPTR );
+    AE_MOVIE_ASSERTION_RESULT( _instance, _copy, AE_NULLPTR, "copy function nullptr" );
 
     aeMovieStream * stream = AE_NEW( _instance, aeMovieStream );
 
@@ -2358,12 +2372,17 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
         &__load_movie_resource_slot, //AE_MOVIE_RESOURCE_SLOT 
     };
 
-    AE_MOVIE_ASSERTION_RESULT( type < sizeof( resource_loaders ) / sizeof( resource_loaders[0] ), AE_RESULT_INVALID_STREAM );
+    AE_MOVIE_ASSERTION_RESULT( instance, type < sizeof( resource_loaders ) / sizeof( resource_loaders[0] ), AE_RESULT_INVALID_STREAM, "type [%u] overflow [%u]"
+        , type
+        , sizeof( resource_loaders ) / sizeof( resource_loaders[0] )
+    );
 
     aeMovieResource * new_resource = AE_NULLPTR;
     ae_load_movie_resource_t resource_loader = resource_loaders[type];
 
-    AE_MOVIE_ASSERTION_RESULT( resource_loader, AE_RESULT_INVALID_STREAM );
+    AE_MOVIE_ASSERTION_RESULT( instance, resource_loader, AE_RESULT_INVALID_STREAM, "type [%u] loader function nullptr"
+        , type 
+    );
 
     AE_RESULT( *resource_loader, (instance, _stream, _atlases, _resources, &new_resource) );
 
@@ -2890,8 +2909,18 @@ const ae_viewport_t * ae_get_movie_layer_data_viewport( const aeMovieLayerData *
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_layer_data_socket_polygon( const aeMovieLayerData * _layerData, ae_uint32_t _frame, const ae_polygon_t ** _polygon )
 {
-    AE_MOVIE_ASSERTION_RESULT( _layerData->type == AE_MOVIE_LAYER_TYPE_SOCKET, AE_FALSE );
-    AE_MOVIE_ASSERTION_RESULT( _frame < _layerData->frame_count, AE_FALSE );
+    AE_MOVIE_ASSERTION_RESULT( _layerData->composition_data->movie_data->instance, _layerData->type == AE_MOVIE_LAYER_TYPE_SOCKET, AE_FALSE, "layer data [%s] [%u] type [%u] not equal AE_MOVIE_LAYER_TYPE_SOCKET"
+        , _layerData->name
+        , _layerData->index
+        , _layerData->type
+    );
+
+    AE_MOVIE_ASSERTION_RESULT( _layerData->composition_data->movie_data->instance, _frame < _layerData->frame_count, AE_FALSE, "layer data [%s] [%u] frame [%u] overflow [%u]"
+        , _layerData->name
+        , _layerData->index
+        , _frame
+        , _layerData->frame_count
+    );
 
     const aeMovieLayerExtensionPolygon * polygon = _layerData->extensions->polygon;
 

@@ -110,7 +110,7 @@ int main( int argc, char *argv[] )
     aeMovieCompositionProviders movieCompositionProviders;
     ae_initialize_movie_composition_providers( &movieCompositionProviders );
 
-    const aeMovieComposition * movieComposition = ae_create_movie_composition( movieData, movieCompositionData, AE_TRUE, &movieCompositionProviders, AE_NULLPTR );
+    const aeMovieComposition * movieComposition = ae_create_movie_composition( movieCompositionData, AE_TRUE, &movieCompositionProviders, AE_NULLPTR );
 
     if( movieComposition == AE_NULLPTR )
     {

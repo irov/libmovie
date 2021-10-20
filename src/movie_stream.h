@@ -72,7 +72,7 @@ AE_INTERNAL ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
     ae_uint8_t value;
     AE_READ( _stream, value );
 
-    AE_MOVIE_ASSERTION_RESULT( value == 0 || value == 1, AE_FALSE );
+    AE_MOVIE_ASSERTION_RESULT( _stream->instance, value == 0 || value == 1, AE_FALSE, "read bool" );
 
     return value;
 }

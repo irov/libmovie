@@ -244,7 +244,7 @@ int main( int argc, char *argv[] )
             aeMovieCompositionProviders providers;
             ae_initialize_movie_composition_providers( &providers );
 
-            const aeMovieComposition * composition = ae_create_movie_composition( movieData, composition_data, AE_TRUE, &providers, AE_USERDATA_NULL );
+            const aeMovieComposition * composition = ae_create_movie_composition( composition_data, AE_TRUE, &providers, AE_USERDATA_NULL );
 
             if( composition == AE_NULLPTR )
             {

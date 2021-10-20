@@ -46,11 +46,11 @@ AE_INTERNAL ae_void_t __movie_break_point( ae_void_t )
 #endif
 
 #ifdef AE_MOVIE_DEBUG
-#   define AE_MOVIE_ASSERTION_VOID(Condition) {if(!(Condition)) {__movie_break_point(); return;}}
-#   define AE_MOVIE_ASSERTION_RESULT(Condition, Result) {if(!(Condition)) {__movie_break_point(); return Result;}}
+#   define AE_MOVIE_ASSERTION_VOID(Instance, Condition, ...) {if(!(Condition)) {(Instance)->logger((Instance)->instance_userdata, AE_ERROR_CRITICAL, __VA_ARGS__); __movie_break_point(); return;}}
+#   define AE_MOVIE_ASSERTION_RESULT(Instance, Condition, Result, ...) {if(!(Condition)) {(Instance)->logger((Instance)->instance_userdata, AE_ERROR_CRITICAL, __VA_ARGS__); __movie_break_point(); return Result;}}
 #else
-#   define AE_MOVIE_ASSERTION_VOID(Condition)
-#   define AE_MOVIE_ASSERTION_RESULT(Condition, Result)
+#   define AE_MOVIE_ASSERTION_VOID(Instance, Condition, ...) AE_UNUSED(Instance)
+#   define AE_MOVIE_ASSERTION_RESULT(Instance, Condition, Result, ...) AE_UNUSED(Instance)
 #endif
 
 #ifdef AE_MOVIE_DEBUG

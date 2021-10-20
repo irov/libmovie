@@ -210,7 +210,6 @@ struct aeMovieNode
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieComposition
 {
-    const aeMovieData * movie_data;
     const aeMovieCompositionData * composition_data;
 
     aeMovieCompositionAnimation * animation;
@@ -277,6 +276,8 @@ struct aeMovieCompositionCamera
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieCompositionData
 {
+    const aeMovieData * movie_data;
+
     ae_string_t name;
 
     ae_bool_t master;

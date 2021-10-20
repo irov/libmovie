@@ -663,7 +663,7 @@ ae_void_t ex_set_composition( ae_void_t )
 
     EX_LOG( "Creating composition.\n" );
 
-    const aeMovieComposition * composition = ae_create_movie_composition( ex.data, comp_data, AE_TRUE, &ex.comp_providers, AE_NULLPTR );
+    const aeMovieComposition * composition = ae_create_movie_composition( comp_data, AE_TRUE, &ex.comp_providers, AE_NULLPTR );
 
     if( composition == AE_NULLPTR )
     {

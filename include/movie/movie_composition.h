@@ -51,7 +51,7 @@
 @param [in] _userdata Link to the object that will hold the data providers give.
 @return A composition or AE_NULL if failed.
 */
-const aeMovieComposition * ae_create_movie_composition( const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * _providers, ae_userdata_t _userdata );
+const aeMovieComposition * ae_create_movie_composition( const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * _providers, ae_userdata_t _userdata );
 
 /**
 @brief Release a composition from memory.
