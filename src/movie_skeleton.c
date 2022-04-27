@@ -79,7 +79,7 @@ aeMovieSkeleton * ae_movie_create_skeleton( aeMovieComposition * _base )
         return AE_NULLPTR;
     }
 
-    const aeMovieInstance * instance = _base->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _base->instance;
 
     aeMovieSkeleton * skeleton = AE_NEW( instance, aeMovieSkeleton );
 
@@ -103,7 +103,7 @@ AE_INTERNAL ae_bool_t __test_movie_skeleton_animation( aeMovieComposition * _bas
         return AE_FALSE;
     }
 
-    const aeMovieInstance * instance = _base->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _base->instance;
 
     const aeMovieNode * it_base = _base->nodes;
     const aeMovieNode * it_base_end = _base->nodes + _base->node_count;
@@ -175,5 +175,5 @@ ae_bool_t ae_movie_skeleton_add_animation( aeMovieSkeleton * _skeleton, aeMovieC
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_movie_destroy_skeleton( const aeMovieSkeleton * _skeleton )
 {
-    AE_DELETE( _skeleton->base->composition_data->movie_data->instance, _skeleton );
+    AE_DELETE( _skeleton->base->instance, _skeleton );
 }

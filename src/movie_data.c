@@ -1431,6 +1431,20 @@ AE_INTERNAL ae_result_t __load_movie_data_layer( const aeMovieData * _movieData,
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __load_movie_data_set_instance( const aeMovieCompositionData * _compositionData, aeMovieLayerData * _layers, const aeMovieInstance * _instance )
+{
+    aeMovieLayerData * it_layer = _layers;
+    aeMovieLayerData * it_layer_end = _layers + _compositionData->layer_count;
+    for( ; it_layer != it_layer_end; ++it_layer )
+    {
+        aeMovieLayerData * layer = it_layer;
+
+        layer->instance = _instance;
+    }
+
+    return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_result_t __load_movie_data_composition_layers( const aeMovieData * _movieData, const aeMovieCompositionData * _compositions, aeMovieLayerData * _layers, aeMovieStream * _stream, aeMovieCompositionData * _compositionData )
 {
     aeMovieLayerData * it_layer = _layers;
@@ -1682,6 +1696,8 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
 
     AE_RESULT_PANIC_MEMORY( layers );
 
+    AE_RESULT( __load_movie_data_set_instance, ( _compositionData, layers, instance ) );
+
     AE_RESULT( __load_movie_data_composition_layers, (_movieData, _compositions, layers, _stream, _compositionData) );
 
     AE_RESULT( __setup_movie_data_composition_layers, (_compositionData, layers) );
@@ -1794,12 +1810,14 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
     ae_uint32_t hash_crc;
     AE_READ( _stream, hash_crc );
 
+    const aeMovieInstance * instance = _stream->instance;
+
     ae_uint32_t ae_movie_hashmask_crc =
-        _stream->instance->hashmask[0] ^
-        _stream->instance->hashmask[1] ^
-        _stream->instance->hashmask[2] ^
-        _stream->instance->hashmask[3] ^
-        _stream->instance->hashmask[4];
+        instance->hashmask[0] ^
+        instance->hashmask[1] ^
+        instance->hashmask[2] ^
+        instance->hashmask[3] ^
+        instance->hashmask[4];
 
     if( hash_crc != ae_movie_hashmask_crc )
     {
@@ -2567,6 +2585,8 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     {
         aeMovieCompositionData * composition = it_composition;
 
+        composition->instance = instance;
+
         AE_RESULT( __load_movie_data_composition, (_movieData, compositions, _stream, composition, cache_uv_available) );
     }
 
@@ -2909,13 +2929,13 @@ const ae_viewport_t * ae_get_movie_layer_data_viewport( const aeMovieLayerData *
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_layer_data_socket_polygon( const aeMovieLayerData * _layerData, ae_uint32_t _frame, const ae_polygon_t ** _polygon )
 {
-    AE_MOVIE_ASSERTION_RESULT( _layerData->composition_data->movie_data->instance, _layerData->type == AE_MOVIE_LAYER_TYPE_SOCKET, AE_FALSE, "layer data [%s] [%u] type [%u] not equal AE_MOVIE_LAYER_TYPE_SOCKET"
+    AE_MOVIE_ASSERTION_RESULT( _layerData->instance, _layerData->type == AE_MOVIE_LAYER_TYPE_SOCKET, AE_FALSE, "layer data [%s] [%u] type [%u] not equal AE_MOVIE_LAYER_TYPE_SOCKET"
         , _layerData->name
         , _layerData->index
         , _layerData->type
     );
 
-    AE_MOVIE_ASSERTION_RESULT( _layerData->composition_data->movie_data->instance, _frame < _layerData->frame_count, AE_FALSE, "layer data [%s] [%u] frame [%u] overflow [%u]"
+    AE_MOVIE_ASSERTION_RESULT( _layerData->instance, _frame < _layerData->frame_count, AE_FALSE, "layer data [%s] [%u] frame [%u] overflow [%u]"
         , _layerData->name
         , _layerData->index
         , _frame

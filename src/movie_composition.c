@@ -554,7 +554,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
     const aeMovieLayerData * node_layer = _node->layer_data;
 
 #ifdef AE_MOVIE_DEBUG
-    if( __test_error_composition_layer_frame( _composition->composition_data->movie_data->instance
+    if( __test_error_composition_layer_frame( _composition->instance
         , _compositionData
         , node_layer
         , _frameId
@@ -664,7 +664,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_shader( aeMovieNode * _nod
     const aeMovieLayerData * node_layer = _node->layer_data;
 
 #ifdef AE_MOVIE_DEBUG
-    if( __test_error_composition_layer_frame( _composition->composition_data->movie_data->instance
+    if( __test_error_composition_layer_frame( _composition->instance
         , _compositionData
         , node_layer
         , _frameId
@@ -1027,7 +1027,7 @@ AE_INTERNAL ae_uint32_t __get_movie_subcomposition_count( const aeMovieCompositi
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _composition, ae_uint32_t * _node_iterator, aeMovieSubComposition * _subcompositions, ae_uint32_t * _subcomposition_iterator, const aeMovieCompositionData * _compositionData, const aeMovieSubComposition * _subcomposition )
 {
-    const aeMovieInstance * instance =_composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance =_composition->instance;
 
     const aeMovieLayerData * it_layer = _compositionData->layers;
     const aeMovieLayerData * it_layer_end = _compositionData->layers + _compositionData->layer_count;
@@ -1112,7 +1112,7 @@ AE_INTERNAL ae_bool_t __setup_movie_subcomposition2( aeMovieComposition * _compo
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_bool_t __setup_movie_subcomposition( aeMovieComposition * _composition )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     ae_uint32_t subcomposition_count = __get_movie_subcomposition_count( _composition );
 
@@ -1888,9 +1888,14 @@ AE_INTERNAL ae_void_t __setup_movie_composition_active( aeMovieComposition * _co
 //////////////////////////////////////////////////////////////////////////
 const aeMovieComposition * ae_create_movie_composition( const aeMovieCompositionData * _compositionData, ae_bool_t _interpolate, const aeMovieCompositionProviders * _providers, ae_userdata_t _userdata )
 {
-    const aeMovieInstance * instance = _compositionData->movie_data->instance;
+    const aeMovieInstance * instance = _compositionData->instance;
 
     aeMovieComposition * composition = AE_NEW( instance, aeMovieComposition );
+
+    composition->instance = instance;
+
+    composition->keep_alive = AE_NEW( instance, ae_uint32_t );
+    *composition->keep_alive = 1;
 
     AE_MOVIE_PANIC_MEMORY( composition, AE_NULLPTR );
 
@@ -2078,11 +2083,18 @@ AE_INTERNAL ae_void_t __delete_scene_effect( const aeMovieComposition * _composi
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    if( *_composition->keep_alive > 1 )
+    {
+        *_composition->keep_alive -= 1;
+
+        return;
+    }
+
+    const aeMovieInstance * instance = _composition->instance;
 
     __delete_nodes( _composition );
     __delete_camera( _composition );
-    __delete_scene_effect( _composition );    
+    __delete_scene_effect( _composition );
 
     const aeMovieSubComposition * it_subcomposition = _composition->subcompositions;
     const aeMovieSubComposition * it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
@@ -2104,6 +2116,8 @@ ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
     AE_DELETEN( instance, _composition->update_nodes );
 
     AE_DELETE( instance, _composition->animation );
+
+    AE_DELETE( instance, _composition->keep_alive );
 
     AE_DELETE( instance, _composition );
 }
@@ -2243,7 +2257,7 @@ AE_INTERNAL ae_uint32_t __resource_sequence_images_max_index_count( const aeMovi
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_calculate_movie_composition_render_info( const aeMovieComposition * _composition, aeMovieCompositionRenderInfo * _info )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     _info->max_render_node = 0U;
     _info->max_vertex_count = 0U;
@@ -2973,7 +2987,7 @@ AE_INTERNAL ae_void_t __update_node( const aeMovieComposition * _composition, co
     const aeMovieLayerData * node_layer = _node->layer_data;
 
 #ifdef AE_MOVIE_DEBUG
-    if( __test_error_composition_layer_frame( _composition->composition_data->movie_data->instance
+    if( __test_error_composition_layer_frame( _composition->instance
         , _compositionData
         , node_layer
         , _frameId
@@ -3568,6 +3582,8 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing )
 {
+    *(_composition->keep_alive) += 1;
+
     ae_time_t timescale_timing = AE_TIME_INSCALE( _timing );
 
     aeMovieCompositionAnimation * animation = _composition->animation;
@@ -3623,6 +3639,13 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
         callbackData.state = AE_MOVIE_COMPOSITION_END;
 
         (*_composition->providers.composition_state)(&callbackData, _composition->provider_userdata);
+    }
+
+    *(_composition->keep_alive) -= 1;
+
+    if( *(_composition->keep_alive) == 0 )
+    {
+        ae_delete_movie_composition( _composition );
     }
 
     return composition_end;
@@ -3868,7 +3891,7 @@ ae_void_t ae_get_movie_composition_in_out_loop( const aeMovieComposition * _comp
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_slot_userdata( const aeMovieComposition * _composition, const ae_char_t * _name, ae_userdata_t _userdata )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -3898,7 +3921,7 @@ ae_bool_t ae_set_movie_composition_slot_userdata( const aeMovieComposition * _co
 //////////////////////////////////////////////////////////////////////////
 ae_userdata_t ae_get_movie_composition_slot_userdata( const aeMovieComposition * _composition, const ae_char_t * _name )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -3926,7 +3949,7 @@ ae_userdata_t ae_get_movie_composition_slot_userdata( const aeMovieComposition *
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_has_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _name )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -3954,7 +3977,7 @@ ae_bool_t ae_has_movie_composition_slot( const aeMovieComposition * _composition
 //////////////////////////////////////////////////////////////////////////
 ae_userdata_t ae_remove_movie_composition_slot( const aeMovieComposition * _composition, const ae_char_t * _name )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -3991,7 +4014,7 @@ ae_userdata_t ae_get_movie_composition_camera_userdata( const aeMovieComposition
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_socket( const aeMovieComposition * _composition, const ae_char_t * _slotName, const ae_polygon_t ** _polygon )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4121,7 +4144,7 @@ ae_uint32_t ae_get_movie_render_mesh_count( const aeMovieComposition * _composit
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4149,7 +4172,7 @@ ae_bool_t ae_has_movie_composition_node( const aeMovieComposition * _composition
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_time_t * _in, ae_time_t * _out )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4180,7 +4203,7 @@ ae_bool_t ae_get_movie_composition_node_in_out_time( const aeMovieComposition * 
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_has_movie_composition_node_option( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_option_t _option, ae_bool_t * _result )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4212,7 +4235,7 @@ ae_bool_t ae_has_movie_composition_node_option( const aeMovieComposition * _comp
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_set_movie_composition_nodes_extra_opacity( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_float_t _opacity )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4238,7 +4261,7 @@ ae_void_t ae_set_movie_composition_nodes_extra_opacity( const aeMovieComposition
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_set_movie_composition_nodes_extra_opacity_any( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_float_t _opacity )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4259,7 +4282,7 @@ ae_void_t ae_set_movie_composition_nodes_extra_opacity_any( const aeMovieComposi
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_node_extra_opacity( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_float_t _opacity )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4289,7 +4312,7 @@ ae_bool_t ae_set_movie_composition_node_extra_opacity( const aeMovieComposition 
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_extra_opacity( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_float_t * _opactity )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4319,7 +4342,7 @@ ae_bool_t ae_get_movie_composition_node_extra_opacity( const aeMovieComposition 
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4345,7 +4368,7 @@ ae_void_t ae_set_movie_composition_nodes_enable( const aeMovieComposition * _com
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_set_movie_composition_nodes_enable_any( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_bool_t _enable )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4366,7 +4389,7 @@ ae_void_t ae_set_movie_composition_nodes_enable_any( const aeMovieComposition * 
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t _enable )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4396,7 +4419,7 @@ ae_bool_t ae_set_movie_composition_node_enable( const aeMovieComposition * _comp
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _composition, const ae_char_t * _layerName, aeMovieLayerTypeEnum _type, ae_bool_t * _enable )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4426,7 +4449,7 @@ ae_bool_t ae_get_movie_composition_node_enable( const aeMovieComposition * _comp
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_has_movie_composition_node_any( const aeMovieComposition * _composition, const ae_char_t * _layerName )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4449,7 +4472,7 @@ ae_bool_t ae_has_movie_composition_node_any( const aeMovieComposition * _composi
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_in_out_time_any( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_time_t * _in, ae_time_t * _out )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4475,7 +4498,7 @@ ae_bool_t ae_get_movie_composition_node_in_out_time_any( const aeMovieCompositio
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_set_movie_composition_node_enable_any( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_bool_t _enable )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4500,7 +4523,7 @@ ae_bool_t ae_set_movie_composition_node_enable_any( const aeMovieComposition * _
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_get_movie_composition_node_enable_any( const aeMovieComposition * _composition, const ae_char_t * _layerName, ae_bool_t * _enable )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieNode * it_node = _composition->nodes;
     const aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
@@ -4525,7 +4548,7 @@ ae_bool_t ae_get_movie_composition_node_enable_any( const aeMovieComposition * _
 //////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_has_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieSubComposition * it_subcomposition = _composition->subcompositions;
     const aeMovieSubComposition * it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;
@@ -4548,7 +4571,7 @@ ae_bool_t ae_has_movie_sub_composition( const aeMovieComposition * _composition,
 //////////////////////////////////////////////////////////////////////////
 const aeMovieSubComposition * ae_get_movie_sub_composition( const aeMovieComposition * _composition, const ae_char_t * _name )
 {
-    const aeMovieInstance * instance = _composition->composition_data->movie_data->instance;
+    const aeMovieInstance * instance = _composition->instance;
 
     const aeMovieSubComposition * it_subcomposition = _composition->subcompositions;
     const aeMovieSubComposition * it_subcomposition_end = _composition->subcompositions + _composition->subcomposition_count;

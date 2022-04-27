@@ -210,6 +210,10 @@ struct aeMovieNode
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieComposition
 {
+    const aeMovieInstance * instance;
+
+    ae_uint32_t * keep_alive;
+
     const aeMovieCompositionData * composition_data;
 
     aeMovieCompositionAnimation * animation;
@@ -276,6 +280,8 @@ struct aeMovieCompositionCamera
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieCompositionData
 {
+    const aeMovieInstance * instance;
+
     const aeMovieData * movie_data;
 
     ae_string_t name;
@@ -327,6 +333,8 @@ struct aeMovieData
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieLayerData
 {
+    const aeMovieInstance * instance;
+
     ae_string_t name;
 
     ae_uint32_t index;
