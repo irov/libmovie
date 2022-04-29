@@ -1894,9 +1894,6 @@ const aeMovieComposition * ae_create_movie_composition( const aeMovieComposition
 
     composition->instance = instance;
 
-    composition->keep_alive = AE_NEW( instance, ae_uint32_t );
-    *composition->keep_alive = 1;
-
     AE_MOVIE_PANIC_MEMORY( composition, AE_NULLPTR );
 
     composition->composition_data = _compositionData;
@@ -2083,13 +2080,6 @@ AE_INTERNAL ae_void_t __delete_scene_effect( const aeMovieComposition * _composi
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
 {
-    if( *_composition->keep_alive > 1 )
-    {
-        *_composition->keep_alive -= 1;
-
-        return;
-    }
-
     const aeMovieInstance * instance = _composition->instance;
 
     __delete_nodes( _composition );
@@ -2116,8 +2106,6 @@ ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
     AE_DELETEN( instance, _composition->update_nodes );
 
     AE_DELETE( instance, _composition->animation );
-
-    AE_DELETE( instance, _composition->keep_alive );
 
     AE_DELETE( instance, _composition );
 }
@@ -2289,7 +2277,7 @@ ae_void_t ae_calculate_movie_composition_render_info( const aeMovieComposition *
             {
                 AE_MOVIE_ASSERTION_VOID( instance, layer_extensions != AE_NULLPTR, "shape '%s' [%u] extensions nullptr"
                     , layer->name
-                    , layer->index 
+                    , layer->index
                 );
 
                 _info->max_vertex_count += __mesh_max_vertex_count( layer_extensions->mesh, layer->frame_count );
@@ -3580,10 +3568,8 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing )
+ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing, ae_bool_t * _alive )
 {
-    *(_composition->keep_alive) += 1;
-
     ae_time_t timescale_timing = AE_TIME_INSCALE( _timing );
 
     aeMovieCompositionAnimation * animation = _composition->animation;
@@ -3604,6 +3590,14 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
     for( ; it_subcomposition != it_subcomposition_end; ++it_subcomposition )
     {
         const aeMovieSubComposition * subcomposition = it_subcomposition;
+
+        if( _alive != AE_NULLPTR )
+        {
+            if( *_alive == AE_FALSE )
+            {
+                return AE_TRUE;
+            }
+        }
 
         aeMovieCompositionAnimation * subcomposition_animation = subcomposition->animation;
 
@@ -3639,13 +3633,6 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
         callbackData.state = AE_MOVIE_COMPOSITION_END;
 
         (*_composition->providers.composition_state)(&callbackData, _composition->provider_userdata);
-    }
-
-    *(_composition->keep_alive) -= 1;
-
-    if( *(_composition->keep_alive) == 0 )
-    {
-        ae_delete_movie_composition( _composition );
     }
 
     return composition_end;

@@ -689,7 +689,7 @@ ae_void_t ex_update( ae_float_t dt )
     EX_LOG( "\n====== Beginning of frame update =================\n\n" );
     EX_LOG( "dt: %f", dt );
 
-    ae_update_movie_composition( ex.composition, dt );
+    ae_update_movie_composition( ex.composition, dt, AE_NULLPTR );
 
     EX_LOG( "\n====== End of frame update =======================\n\n" );
 }

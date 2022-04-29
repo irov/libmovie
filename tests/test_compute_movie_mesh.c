@@ -121,7 +121,7 @@ int main( int argc, char *argv[] )
 
     while( ae_is_play_movie_composition( movieComposition ) == AE_TRUE )
     {
-        ae_update_movie_composition( movieComposition, 0.01f );
+        ae_update_movie_composition( movieComposition, 0.01f, AE_NULLPTR );
 
         ae_uint32_t iterator = 0;
         aeMovieRenderMesh movieRenderMesh;

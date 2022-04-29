@@ -150,7 +150,7 @@ int main( int argc, char * argv[] )
 
     for( ;; )
     {
-        if( ae_update_movie_composition( composition, 0.01f ) == AE_TRUE )
+        if( ae_update_movie_composition( composition, 0.01f, AE_NULLPTR ) == AE_TRUE )
         {
             break;
         }
