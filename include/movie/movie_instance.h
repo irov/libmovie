@@ -63,7 +63,7 @@ typedef enum
     AE_ERROR_CRITICAL,
 } aeMovieErrorCode;
 
-typedef ae_void_t( *ae_movie_logger_t )(ae_userdata_t _userdata, aeMovieErrorCode _code, const ae_char_t * _message, ...);
+typedef ae_void_t( *ae_movie_logger_t )(ae_userdata_t _userdata, aeMovieErrorCode _code, const ae_char_t * _format, ...);
 
 /**
 @brief Create a new instance.

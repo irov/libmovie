@@ -1840,7 +1840,7 @@ AE_INTERNAL ae_bool_t __setup_movie_composition_element( aeMovieComposition * _c
     {
         aeMovieNode * node = it_node;
 
-        const aeMovieLayerData * track_matte_layer = node->track_matte_node == AE_NULLPTR ? AE_NULLPTR : node->track_matte_node->layer_data;
+        const aeMovieLayerData * track_matte_layer_data = node->track_matte_node == AE_NULLPTR ? AE_NULLPTR : node->track_matte_node->layer_data;
 
         aeMovieNodeProviderCallbackData callbackData;
         callbackData.index = enumerator;
@@ -1852,7 +1852,7 @@ AE_INTERNAL ae_bool_t __setup_movie_composition_element( aeMovieComposition * _c
         callbackData.color = node->color;
         callbackData.opacity = node->opacity * node->extra_opacity;
         callbackData.volume = node->volume;
-        callbackData.track_matte_layer = track_matte_layer;
+        callbackData.track_matte_layer_data = track_matte_layer_data;
 
         ae_userdata_t element_userdata = AE_USERDATA_NULL;
         if( (*_composition->providers.node_provider)(&callbackData, &element_userdata, _composition->provider_userdata) == AE_FALSE )
@@ -2033,13 +2033,13 @@ AE_INTERNAL ae_void_t __delete_nodes( const aeMovieComposition * _composition )
             (*_composition->providers.track_matte_deleter)(&callbackData, _composition->provider_userdata);
         }
 
-        const aeMovieLayerData * track_matte_layer = node->track_matte_node == AE_NULLPTR ? AE_NULLPTR : node->track_matte_node->layer_data;
+        const aeMovieLayerData * track_matte_layer_data = node->track_matte_node == AE_NULLPTR ? AE_NULLPTR : node->track_matte_node->layer_data;
 
         aeMovieNodeDeleterCallbackData callbackData;
         callbackData.index = enumerator;
         callbackData.element_userdata = node->element_userdata;
         callbackData.layer_data = layer;
-        callbackData.track_matte_layer = track_matte_layer;
+        callbackData.track_matte_layer_data = track_matte_layer_data;
 
         (*_composition->providers.node_deleter)(&callbackData, _composition->provider_userdata);
     }

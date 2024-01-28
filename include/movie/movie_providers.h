@@ -132,7 +132,7 @@ typedef struct aeMovieNodeProviderCallbackData
     ae_float_t volume;
 
     /// @brief Pointer to track matte layer, should be used to create user track matte structure inside provider.
-    const aeMovieLayerData * track_matte_layer;
+    const aeMovieLayerData * track_matte_layer_data;
 } aeMovieNodeProviderCallbackData;
 
 typedef struct aeMovieNodeDeleterCallbackData
@@ -142,7 +142,7 @@ typedef struct aeMovieNodeDeleterCallbackData
     ae_userdata_t element_userdata;
     const aeMovieLayerData * layer_data;
 
-    const aeMovieLayerData * track_matte_layer;
+    const aeMovieLayerData * track_matte_layer_data;
 } aeMovieNodeDeleterCallbackData;
 
 typedef struct aeMovieNodeUpdateCallbackData

@@ -264,6 +264,12 @@ const ae_char_t * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer 
 
 /**
 @param [in] _layer Layer.
+@return Layer index.
+*/
+ae_uint32_t ae_get_movie_layer_data_index( const aeMovieLayerData * _layer );
+
+/**
+@param [in] _layer Layer.
 @return Layer type.
 */
 aeMovieLayerTypeEnum ae_get_movie_layer_data_type( const aeMovieLayerData * _layer );

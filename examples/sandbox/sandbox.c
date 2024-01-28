@@ -92,7 +92,7 @@ int main( int argc, char * argv[] )
         , &stdlib_movie_alloc_n
         , &stdlib_movie_free
         , &stdlib_movie_free_n
-        , (ae_movie_strncmp_t)AE_FUNCTION_NULL
+        , (ae_movie_strncmp_t)AE_NULLPTR
         , &stdlib_movie_logerror
         , AE_NULLPTR );
 

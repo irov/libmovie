@@ -1476,11 +1476,11 @@ AE_INTERNAL ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompo
             AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
         }
 
-        _layer->track_matte_layer = _compositionData->layers + layer_position + 1U;
+        _layer->track_matte_layer_data = _compositionData->layers + layer_position + 1U;
     }
     else
     {
-        _layer->track_matte_layer = AE_NULLPTR;
+        _layer->track_matte_layer_data = AE_NULLPTR;
     }
 
     return AE_RESULT_SUCCESSFUL;
@@ -2737,6 +2737,11 @@ ae_bool_t ae_visit_nodes_layer_data( const aeMovieComposition * _composition, ae
 const ae_char_t * ae_get_movie_layer_data_name( const aeMovieLayerData * _layer )
 {
     return _layer->name;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_uint32_t ae_get_movie_layer_data_index( const aeMovieLayerData * _layer )
+{
+    return _layer->index;
 }
 //////////////////////////////////////////////////////////////////////////
 aeMovieLayerTypeEnum ae_get_movie_layer_data_type( const aeMovieLayerData * _layer )

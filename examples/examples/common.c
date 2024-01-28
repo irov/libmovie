@@ -243,7 +243,7 @@ ae_bool_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _ca
 
     EX_LOG( " Layer: '%s'", ae_get_movie_layer_data_name( _callbackData->layer_data ) );
 
-    if( _callbackData->track_matte_layer == AE_NULLPTR )
+    if( _callbackData->track_matte_layer_data == AE_NULLPTR )
     {
         EX_LOG( " Has track matte: no\n" );
 
@@ -950,7 +950,7 @@ ae_void_t ex_init( const ae_char_t * license, const ae_char_t * path, const ae_c
         , &stdlib_movie_alloc_n
         , &stdlib_movie_free
         , &stdlib_movie_free_n
-        , (ae_movie_strncmp_t)AE_FUNCTION_NULL
+        , (ae_movie_strncmp_t)AE_NULLPTR
         , &stdlib_movie_logerror
         , AE_NULLPTR );
 }
