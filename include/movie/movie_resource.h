@@ -119,7 +119,7 @@ typedef struct aeMovieResourceSequence
 {
     AE_MOVIE_RESOURCE_BASE();
 
-    ae_time_t frameDurationInv; //No TIMESCALE
+    ae_time_t frame_duration_inv; //No TIMESCALE
 
     ae_uint32_t image_count;
     const aeMovieResourceImage * const * images;

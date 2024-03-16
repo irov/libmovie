@@ -247,14 +247,30 @@ ae_bool_t ae_has_movie_composition_data( const aeMovieData * _movieData, const a
 const aeMovieCompositionData * ae_get_movie_composition_data( const aeMovieData * _movieData, const ae_char_t * _name );
 
 typedef ae_bool_t( *ae_movie_composition_data_visitor_t )(const aeMovieData * _movieData, const aeMovieCompositionData * _compositionData, ae_userdata_t _ud);
-
 ae_bool_t ae_visit_movie_composition_data( const aeMovieData * _movieData, ae_movie_composition_data_visitor_t _visitor, ae_userdata_t _ud );
 
 typedef ae_bool_t( *ae_movie_layer_data_visitor_t )(const aeMovieCompositionData * _compositionData, const aeMovieLayerData * _layer, ae_userdata_t _ud);
-
 ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visitor_t _visitor, ae_userdata_t _ud );
+
 ae_bool_t ae_visit_composition_layer_data( const aeMovieCompositionData * _compositionData, ae_movie_layer_data_visitor_t _visitor, ae_userdata_t _ud );
 ae_bool_t ae_visit_nodes_layer_data( const aeMovieComposition * _composition, ae_movie_layer_data_visitor_t _visitor, ae_userdata_t _ud );
+
+typedef struct aeMovieLayerDataMatrixCallbackData
+{
+    ae_color_channel_t r;
+    ae_color_channel_t g;
+    ae_color_channel_t b;
+    ae_color_channel_t opacity;
+    ae_float_t volume;
+    ae_vector2_t anchor_point;
+    ae_vector2_t position;
+    ae_vector2_t scale;
+    ae_quaternionzw_t quaternion;
+    ae_skew_t skew;
+} aeMovieLayerDataMatrixCallbackData;
+
+typedef ae_void_t( *ae_movie_layer_data_matrix_visitor_t )(ae_uint32_t _index, const aeMovieLayerDataMatrixCallbackData * _callbackData, ae_userdata_t _ud);
+ae_void_t ae_visit_movie_layer_data_matrix( const aeMovieLayerData * _layerData, ae_movie_layer_data_matrix_visitor_t _visitor, ae_userdata_t _ud );
 
 /**
 @param [in] _layer Layer.
@@ -356,6 +372,12 @@ ae_track_matte_mode_t ae_get_movie_layer_data_track_matte_mode( const aeMovieLay
 */
 ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _layer );
 
+/**
+@brief Get layer in time
+@param [in] _layer Layer.
+@return time.
+*/
+ae_float_t ae_get_movie_layer_data_in_time( const aeMovieLayerData * _layer );
 
 /**
 @brief Get stretch layer
@@ -370,7 +392,6 @@ ae_float_t ae_get_movie_layer_data_stretch( const aeMovieLayerData * _layer );
 @return viewport.
 */
 const ae_viewport_t * ae_get_movie_layer_data_viewport( const aeMovieLayerData * _layer );
-
 
 /**
 @brief Get polygon for a socket layer

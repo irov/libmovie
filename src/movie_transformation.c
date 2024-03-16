@@ -1394,7 +1394,7 @@ ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instanc
     }
 }
 //////////////////////////////////////////////////////////////////////////
-ae_void_t ae_movie_make_layer_matrix( ae_matrix34_t _out, const aeMovieLayerTransformation * _transformation, ae_bool_t _interpolate, ae_uint32_t _index, ae_float_t _t )
+ae_void_t ae_movie_make_layer_matrix( ae_matrix34_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t )
 {
     if( _interpolate == AE_TRUE )
     {

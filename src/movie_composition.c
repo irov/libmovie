@@ -30,8 +30,9 @@
 #include "movie/movie_composition.h"
 #include "movie/movie_resource.h"
 
-#include "movie_bezier.h"
+#include "movie_property.h"
 #include "movie_transformation.h"
+#include "movie_bezier.h"
 #include "movie_utils.h"
 #include "movie_memory.h"
 #include "movie_math.h"
@@ -125,28 +126,6 @@ AE_INTERNAL ae_void_t __make_layer_mesh_vertices( const aeMovieLayerExtensionMes
     const ae_mesh_t * mesh = (_extensionMesh->immutable == AE_TRUE) ? &_extensionMesh->immutable_mesh : (_extensionMesh->meshes + _frame);
 
     __make_mesh_vertices( mesh, _matrix, _uvs, _render );
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __compute_movie_property_value( const struct aeMoviePropertyValue * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t )
-{
-    if( _property->immutable == AE_TRUE )
-    {
-        return _property->immutable_value;
-    }
-
-    if( _interpolate == AE_FALSE )
-    {
-        ae_float_t value = _property->values[_frame];
-
-        return value;
-    }
-
-    ae_float_t value0 = _property->values[_frame + 0];
-    ae_float_t value1 = _property->values[_frame + 1];
-
-    ae_float_t valuef = ae_linerp_f1( value0, value1, _t );
-
-    return valuef;
 }
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_color_channel_t __compute_movie_property_color_channel( const struct aeMoviePropertyColorChannel * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t t )
@@ -257,17 +236,17 @@ AE_INTERNAL ae_void_t __compute_movie_render_mesh( const aeMovieComposition * _c
             {
                 ae_float_t time = layer->extensions->timeremap->times[frame];
 
-                frame_sequence = (ae_uint32_t)(time * resource_sequence->frameDurationInv);
+                frame_sequence = (ae_uint32_t)(time * resource_sequence->frame_duration_inv);
             }
             else
             {
                 if( layer->reverse_time == AE_TRUE )
                 {
-                    frame_sequence = (ae_uint32_t)((_node->out_time - _node->in_time - (layer->start_time + _node->current_time)) * resource_sequence->frameDurationInv);
+                    frame_sequence = (ae_uint32_t)((_node->out_time - _node->in_time - (layer->start_time + _node->current_time)) * resource_sequence->frame_duration_inv);
                 }
                 else
                 {
-                    frame_sequence = (ae_uint32_t)((layer->start_time + _node->current_time) * resource_sequence->frameDurationInv);
+                    frame_sequence = (ae_uint32_t)((layer->start_time + _node->current_time) * resource_sequence->frame_duration_inv);
                 }
             }
 
@@ -510,11 +489,11 @@ AE_INTERNAL ae_uint32_t __get_movie_frame_time( const aeMovieCompositionAnimatio
 
     const aeMovieLayerData * layer = _node->layer_data;
 
-    ae_float_t frameDurationInv = layer->composition_data->frameDurationInv;
+    ae_float_t frame_duration_inv = layer->composition_data->frame_duration_inv;
 
     ae_float_t current_time = animation_time - _node->in_time + _node->start_time;
 
-    ae_float_t frame_time = current_time * _node->stretchInv * frameDurationInv;
+    ae_float_t frame_time = current_time * _node->stretchInv * frame_duration_inv;
 
     if( frame_time < 0.f )
     {
@@ -584,7 +563,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
     {
         const struct aeMoviePropertyValue * property_volume = node_layer->extensions->volume->property_volume;
 
-        ae_float_t volume = __compute_movie_property_value( property_volume, _frameId, _interpolate, _t );
+        ae_float_t volume = ae_compute_movie_property_value( property_volume, _frameId, _interpolate, _t );
 
         _node->volume = volume;
     }
@@ -593,7 +572,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
 
     if( node_relative == AE_NULLPTR )
     {
-        ae_movie_make_layer_matrix( _node->matrix, layer_transformation, _interpolate, _frameId, _t );
+        ae_movie_make_layer_matrix( _node->matrix, layer_transformation, _frameId, _interpolate, _t );
 
         if( node_layer->subcomposition_data != AE_NULLPTR )
         {
@@ -628,7 +607,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
     else
     {
         ae_matrix34_t local_matrix;
-        ae_movie_make_layer_matrix( local_matrix, layer_transformation, _interpolate, _frameId, _t );
+        ae_movie_make_layer_matrix( local_matrix, layer_transformation, _frameId, _interpolate, _t );
 
         ae_mul_m34_m34_r( _node->matrix, local_matrix, node_relative->matrix );
     }
@@ -703,7 +682,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_shader( aeMovieNode * _nod
             {
                 const struct aeMovieLayerShaderParameterSlider * parameter_slider = (const struct aeMovieLayerShaderParameterSlider *)parameter;
 
-                ae_float_t value = __compute_movie_property_value( parameter_slider->property_value, _frameId, _interpolate, _t );
+                ae_float_t value = ae_compute_movie_property_value( parameter_slider->property_value, _frameId, _interpolate, _t );
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.index = index;
@@ -723,7 +702,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_shader( aeMovieNode * _nod
             {
                 const struct aeMovieLayerShaderParameterAngle * parameter_angle = (const struct aeMovieLayerShaderParameterAngle *)parameter;
 
-                ae_float_t value = __compute_movie_property_value( parameter_angle->property_value, _frameId, _interpolate, _t );
+                ae_float_t value = ae_compute_movie_property_value( parameter_angle->property_value, _frameId, _interpolate, _t );
 
                 aeMovieShaderPropertyUpdateCallbackData callbackData;
                 callbackData.index = index;
@@ -1751,7 +1730,7 @@ AE_INTERNAL ae_bool_t __setup_movie_node_shader( aeMovieComposition * _compositi
                 {
                     const struct aeMovieLayerShaderParameterSlider * parameter_slider = (const struct aeMovieLayerShaderParameterSlider *)parameter;
 
-                    ae_float_t value = __compute_movie_property_value( parameter_slider->property_value, 0, AE_FALSE, 0.f );
+                    ae_float_t value = ae_compute_movie_property_value( parameter_slider->property_value, 0, AE_FALSE, 0.f );
 
                     callbackData.parameter_values[paremeter_index] = value;
 
@@ -1767,7 +1746,7 @@ AE_INTERNAL ae_bool_t __setup_movie_node_shader( aeMovieComposition * _compositi
                 {
                     const struct aeMovieLayerShaderParameterAngle * parameter_angle = (const struct aeMovieLayerShaderParameterAngle *)parameter;
 
-                    ae_float_t value = __compute_movie_property_value( parameter_angle->property_value, 0, AE_FALSE, 0.f );
+                    ae_float_t value = ae_compute_movie_property_value( parameter_angle->property_value, 0, AE_FALSE, 0.f );
 
                     callbackData.parameter_values[paremeter_index] = value;
 
@@ -3018,10 +2997,10 @@ AE_INTERNAL ae_void_t __update_movie_scene_effect( const aeMovieComposition * _c
 
     const aeMovieLayerTransformation2D * transformation2d = (const aeMovieLayerTransformation2D *)layer->transformation;
 
-    ae_float_t frameDurationInv = layer->composition_data->frameDurationInv;
+    ae_float_t frame_duration_inv = layer->composition_data->frame_duration_inv;
 
     ae_float_t current_time = _animation->time - scene_effect_node->in_time + scene_effect_node->start_time;
-    ae_float_t frame_time = current_time * scene_effect_node->stretchInv * frameDurationInv;
+    ae_float_t frame_time = current_time * scene_effect_node->stretchInv * frame_duration_inv;
 
     ae_uint32_t frameId = (ae_uint32_t)frame_time;
 
@@ -3080,9 +3059,9 @@ AE_INTERNAL ae_void_t __refresh_movie_composition_matrix( const aeMovieCompositi
             continue;
         }
 
-        ae_float_t frameDurationInv = node_layer->composition_data->frameDurationInv;
+        ae_float_t frame_duration_inv = node_layer->composition_data->frame_duration_inv;
 
-        ae_float_t frame_time = node->current_time * node->stretchInv * frameDurationInv;
+        ae_float_t frame_time = node->current_time * node->stretchInv * frame_duration_inv;
 
         ae_uint32_t frameId = (ae_uint32_t)frame_time;
 
@@ -3131,7 +3110,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
 
         aeMovieLayerTypeEnum node_layer_type = node_layer->type;
 
-        ae_float_t frameDurationInv = node_layer->composition_data->frameDurationInv;
+        ae_float_t frame_duration_inv = node_layer->composition_data->frame_duration_inv;
 
         ae_bool_t test_time = (_beginTime >= loop_begin_time
             && animation_time < loop_end_time
@@ -3147,8 +3126,8 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
 
         AE_UNUSED( node_in_time );
 
-        ae_uint32_t beginFrame = (ae_uint32_t)(_beginTime * frameDurationInv + AE_MOVIE_FRAME_EPSILON);
-        ae_uint32_t endFrame = (ae_uint32_t)(animation_time * frameDurationInv + AE_MOVIE_FRAME_EPSILON);
+        ae_uint32_t beginFrame = (ae_uint32_t)(_beginTime * frame_duration_inv + AE_MOVIE_FRAME_EPSILON);
+        ae_uint32_t endFrame = (ae_uint32_t)(animation_time * frame_duration_inv + AE_MOVIE_FRAME_EPSILON);
         ae_uint32_t nodeInFrame = node_in_frame;
         ae_uint32_t nodeOutFrame = node_out_frame;
 
@@ -3160,7 +3139,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         }
 
         ae_float_t node_stretch_time = node_current_time * node->stretchInv;
-        ae_float_t node_frame_time = node_stretch_time * frameDurationInv;
+        ae_float_t node_frame_time = node_stretch_time * frame_duration_inv;
 
         ae_uint32_t nodeFrameId2 = (ae_uint32_t)node_frame_time;
         ae_uint32_t nodeFrameId = (ae_uint32_t)(node_frame_time + AE_MOVIE_FRAME_EPSILON);
@@ -3326,9 +3305,9 @@ AE_INTERNAL ae_void_t __update_movie_camera( const aeMovieComposition * _composi
     callbackData.camera_userdata = _composition->camera_userdata;
     callbackData.name = camera->name;
 
-    ae_float_t frameDurationInv = composition_data->frameDurationInv;
+    ae_float_t frame_duration_inv = composition_data->frame_duration_inv;
 
-    ae_float_t frame_time = _animation->time * frameDurationInv;
+    ae_float_t frame_time = _animation->time * frame_duration_inv;
 
     ae_uint32_t frame_id = (ae_uint32_t)frame_time;
 
@@ -3368,7 +3347,7 @@ AE_INTERNAL ae_void_t __skip_movie_composition_node( const aeMovieComposition * 
 
         const aeMovieLayerData * layer = node->layer_data;
 
-        ae_float_t frameDurationInv = layer->composition_data->frameDurationInv;
+        ae_float_t frame_duration_inv = layer->composition_data->frame_duration_inv;
 
         ae_float_t in_time = node->in_time;
         ae_float_t out_time = node->out_time;
@@ -3378,10 +3357,10 @@ AE_INTERNAL ae_void_t __skip_movie_composition_node( const aeMovieComposition * 
         ae_float_t indexInF = in_time;
         ae_float_t indexOutF = out_time;
 
-        ae_uint32_t beginFrame = (ae_uint32_t)(beginFrameF * frameDurationInv + AE_MOVIE_FRAME_EPSILON);
-        ae_uint32_t endFrame = (ae_uint32_t)(endFrameF * frameDurationInv + AE_MOVIE_FRAME_EPSILON);
-        ae_uint32_t indexIn = (ae_uint32_t)(indexInF * frameDurationInv + AE_MOVIE_FRAME_EPSILON);
-        ae_uint32_t indexOut = (ae_uint32_t)(indexOutF * frameDurationInv + AE_MOVIE_FRAME_EPSILON);
+        ae_uint32_t beginFrame = (ae_uint32_t)(beginFrameF * frame_duration_inv + AE_MOVIE_FRAME_EPSILON);
+        ae_uint32_t endFrame = (ae_uint32_t)(endFrameF * frame_duration_inv + AE_MOVIE_FRAME_EPSILON);
+        ae_uint32_t indexIn = (ae_uint32_t)(indexInF * frame_duration_inv + AE_MOVIE_FRAME_EPSILON);
+        ae_uint32_t indexOut = (ae_uint32_t)(indexOutF * frame_duration_inv + AE_MOVIE_FRAME_EPSILON);
 
         if( indexInF > endFrameF || indexOutF < beginFrameF )
         {
@@ -3398,7 +3377,7 @@ AE_INTERNAL ae_void_t __skip_movie_composition_node( const aeMovieComposition * 
         }
 
         ae_float_t current_time = (endFrame >= indexOut) ? out_time - node->in_time + node->start_time : _animation->time - node->in_time + node->start_time;
-        ae_float_t frame_time = current_time * node->stretchInv * frameDurationInv;
+        ae_float_t frame_time = current_time * node->stretchInv * frame_duration_inv;
 
         ae_uint32_t frameId = (ae_uint32_t)frame_time;
 
@@ -3447,11 +3426,11 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
         ae_float_t current_time = _animation->time;
         ae_float_t duration = _animation->work_area_time_end - _animation->work_area_time_begin;
 
-        ae_float_t frameDuration = _composition->composition_data->frameDuration;
+        ae_float_t frame_duration = _composition->composition_data->frame_duration;
 
         if( _animation->loop == AE_FALSE || _animation->interrupt == AE_TRUE )
         {
-            ae_float_t last_time = duration - frameDuration;
+            ae_float_t last_time = duration - frame_duration;
 
             if( current_time + _timing >= last_time )
             {
@@ -3488,7 +3467,7 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
             ae_float_t loop_begin_time = ae_max_f_f( _animation->loop_segment_time_begin, _animation->work_area_time_begin );
             ae_float_t loop_end_time = ae_min_f_f( _animation->loop_segment_time_end, _animation->work_area_time_end );
 
-            ae_float_t last_time = loop_end_time - frameDuration;
+            ae_float_t last_time = loop_end_time - frame_duration;
 
             if( current_time + _timing >= last_time )
             {
@@ -3647,7 +3626,7 @@ AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _
         _time = 0.f;
     }
 
-    ae_float_t lastFrame = duration - _compositionData->frameDuration;
+    ae_float_t lastFrame = duration - _compositionData->frame_duration;
 
     ae_bool_t animation_end = AE_FALSE;
 

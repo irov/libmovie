@@ -27,30 +27,30 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_DETAIL_H_
-#define MOVIE_DETAIL_H_
+#include "movie_property.h"
 
-#include "movie_struct.h"
+#include "movie_math.h"
 
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __correct_timeline_frame_time( ae_float_t _time, const aeMovieCompositionData * _compositionData, ae_frame_t * _frame )
+ae_float_t ae_compute_movie_property_value( const struct aeMoviePropertyValue * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t )
 {
-    if( _time < 0.f )
+    if( _property->immutable == AE_TRUE )
     {
-        _frame = 0;
-
-        return 0.f;
+        return _property->immutable_value;
     }
 
-    ae_float_t frame_count_f = _time * _compositionData->frame_duration_inv;
+    if( _interpolate == AE_FALSE )
+    {
+        ae_float_t value = _property->values[_frame];
 
-    ae_frame_t frame_count = (ae_frame_t)(frame_count_f + 0.5f);
+        return value;
+    }
 
-    ae_float_t correct_frame_time = (ae_float_t)frame_count * _compositionData->frame_duration;
+    ae_float_t value0 = _property->values[_frame + 0];
+    ae_float_t value1 = _property->values[_frame + 1];
 
-    *_frame = frame_count;
+    ae_float_t valuef = ae_linerp_f1( value0, value1, _t );
 
-    return correct_frame_time;
+    return valuef;
 }
-
-#endif
+//////////////////////////////////////////////////////////////////////////

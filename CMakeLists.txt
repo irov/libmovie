@@ -83,6 +83,8 @@ source
     ${SOURCE_DIR}/movie_struct.h
     ${SOURCE_DIR}/movie_transformation.c
     ${SOURCE_DIR}/movie_transformation.h
+    ${SOURCE_DIR}/movie_property.c
+    ${SOURCE_DIR}/movie_property.h
 )
 
 INCLUDE_DIRECTORIES( ${PROJECT_NAME} ${INCLUDE_DIR} )

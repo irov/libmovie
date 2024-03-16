@@ -294,8 +294,8 @@ struct aeMovieCompositionData
     ae_time_t duration_time;
     ae_frame_t duration_frame;
 
-    ae_time_t frameDuration;
-    ae_time_t frameDurationInv;
+    ae_time_t frame_duration;
+    ae_time_t frame_duration_inv;
 
     ae_uint32_t flags;
 

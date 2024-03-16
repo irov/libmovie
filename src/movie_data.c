@@ -31,6 +31,7 @@
 #include "movie/movie_resource.h"
 #include "movie/movie_version.h"
 
+#include "movie_property.h"
 #include "movie_transformation.h"
 #include "movie_bezier.h"
 #include "movie_utils.h"
@@ -1612,10 +1613,10 @@ AE_INTERNAL ae_result_t __load_movie_data_composition( const aeMovieData * _movi
     AE_READF( _stream, _compositionData->height );
 
     AE_READF( _stream, _compositionData->duration_time );
-    AE_READF( _stream, _compositionData->frameDuration );
-    AE_READF( _stream, _compositionData->frameDurationInv );
+    AE_READF( _stream, _compositionData->frame_duration );
+    AE_READF( _stream, _compositionData->frame_duration_inv );
 
-    _compositionData->duration_frame = (ae_uint32_t)(_compositionData->duration_time * _compositionData->frameDurationInv + 0.5f);
+    _compositionData->duration_frame = (ae_uint32_t)(_compositionData->duration_time * _compositionData->frame_duration_inv + 0.5f);
 
     _compositionData->flags = 0;
 
@@ -2218,7 +2219,7 @@ AE_INTERNAL ae_result_t __load_movie_resource_sequence( const aeMovieInstance * 
 
     AE_RESULT_PANIC_MEMORY( resource );
 
-    AE_READF( _stream, resource->frameDurationInv );
+    AE_READF( _stream, resource->frame_duration_inv );
 
     ae_uint32_t image_count = AE_READZ( _stream );
 
@@ -2693,6 +2694,41 @@ static ae_bool_t __ae_visit_composition_layer_data( const aeMovieCompositionData
     return AE_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_void_t ae_visit_movie_layer_data_matrix( const aeMovieLayerData * _layerData, ae_movie_layer_data_matrix_visitor_t _visitor, ae_userdata_t _ud )
+{
+    const struct aeMovieLayerTransformation * layer_transformation = _layerData->transformation;
+
+    ae_uint32_t frame_count = _layerData->frame_count;
+
+    for( ae_uint32_t frameId = 0; frameId != frame_count; ++frameId )
+    {
+        aeMovieLayerDataMatrixCallbackData callbackData;
+
+        callbackData.r = ae_movie_make_layer_color_r( layer_transformation, frameId, AE_FALSE, 0.f );
+        callbackData.g = ae_movie_make_layer_color_g( layer_transformation, frameId, AE_FALSE, 0.f );
+        callbackData.b = ae_movie_make_layer_color_b( layer_transformation, frameId, AE_FALSE, 0.f );
+
+        callbackData.opacity = ae_movie_make_layer_opacity( layer_transformation, frameId, AE_FALSE, 0.f );
+
+        callbackData.volume = 1.f;
+
+        if( _layerData->extensions->volume != AE_NULLPTR )
+        {
+            const struct aeMoviePropertyValue * property_volume = _layerData->extensions->volume->property_volume;
+
+            ae_float_t volume = ae_compute_movie_property_value( property_volume, frameId, AE_FALSE, 0.f );
+
+            callbackData.volume = volume;
+        }
+
+        const aeMovieLayerTransformation2D * layer_transformation2d = (const aeMovieLayerTransformation2D *)layer_transformation;
+        
+        ae_movie_make_layer_transformation2d_fixed( callbackData.anchor_point, callbackData.position, callbackData.scale, callbackData.quaternion, callbackData.skew, layer_transformation2d, frameId );
+        
+        (*_visitor)(frameId, &callbackData, _ud);
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_visit_movie_layer_data( const aeMovieData * _movieData, ae_movie_layer_data_visitor_t _visitor, ae_userdata_t _ud )
 {
     const aeMovieCompositionData * it_composition = _movieData->compositions;
@@ -2803,7 +2839,7 @@ ae_uint32_t ae_get_movie_layer_data_options_count( const aeMovieLayerData * _lay
     return options_count;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_option_t ae_get_movie_layer_data_option( const aeMovieLayerData * _layer, ae_option_t _index )
+ae_option_t ae_get_movie_layer_data_option( const aeMovieLayerData * _layer, ae_uint32_t _index )
 {
     ae_option_t option = _layer->options[_index];
 
@@ -2908,6 +2944,11 @@ ae_blend_mode_t ae_get_movie_layer_data_blend_mode( const aeMovieLayerData * _la
     return _layer->blend_mode;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_float_t ae_get_movie_layer_data_in_time( const aeMovieLayerData * _layer )
+{
+    return AE_TIME_OUTSCALE( _layer->in_time );
+}
+//////////////////////////////////////////////////////////////////////////
 ae_float_t ae_get_movie_layer_data_stretch( const aeMovieLayerData * _layer )
 {
     return _layer->stretch;
@@ -2983,7 +3024,7 @@ ae_time_t ae_get_movie_composition_data_duration( const aeMovieCompositionData *
 //////////////////////////////////////////////////////////////////////////
 ae_time_t ae_get_movie_composition_data_frame_duration( const aeMovieCompositionData * _compositionData )
 {
-    return AE_TIME_OUTSCALE( _compositionData->frameDuration );
+    return AE_TIME_OUTSCALE( _compositionData->frame_duration );
 }
 //////////////////////////////////////////////////////////////////////////
 ae_uint32_t ae_get_movie_composition_data_frame_count( const aeMovieCompositionData * _compositionData )

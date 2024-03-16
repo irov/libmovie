@@ -27,30 +27,21 @@
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#ifndef MOVIE_DETAIL_H_
-#define MOVIE_DETAIL_H_
+#ifndef MOVIE_PROPERTY_H_
+#define MOVIE_PROPERTY_H_
+
+#include "movie/movie_type.h"
 
 #include "movie_struct.h"
 
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_float_t __correct_timeline_frame_time( ae_float_t _time, const aeMovieCompositionData * _compositionData, ae_frame_t * _frame )
-{
-    if( _time < 0.f )
-    {
-        _frame = 0;
-
-        return 0.f;
-    }
-
-    ae_float_t frame_count_f = _time * _compositionData->frame_duration_inv;
-
-    ae_frame_t frame_count = (ae_frame_t)(frame_count_f + 0.5f);
-
-    ae_float_t correct_frame_time = (ae_float_t)frame_count * _compositionData->frame_duration;
-
-    *_frame = frame_count;
-
-    return correct_frame_time;
-}
+/**
+* @brief Compute movie property value
+* @param [in] _property
+* @param [in] _frame
+* @param [in] _interpolate
+* @param [in] _t
+* @return
+*/
+ae_float_t ae_compute_movie_property_value( const struct aeMoviePropertyValue * _property, ae_uint32_t _frame, ae_bool_t _interpolate, ae_float_t _t );
 
 #endif
