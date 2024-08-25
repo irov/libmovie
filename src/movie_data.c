@@ -360,122 +360,134 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 
                 const aeMovieLayerExtensions * extensions = layer->extensions;
 
-                if( extensions->timeremap != AE_NULLPTR )
-                {
-                    const aeMovieLayerExtensionTimeremap * timeremap = extensions->timeremap;
-
-                    AE_DELETEN( instance, timeremap->times );
-
-                    AE_DELETE( instance, extensions->timeremap );
-                }
-
-                if( extensions->mesh != AE_NULLPTR )
-                {
-                    const aeMovieLayerExtensionMesh * mesh = extensions->mesh;
-
-                    __delete_layer_mesh_t( instance, mesh, layer->frame_count );
-
-                    AE_DELETE( instance, extensions->mesh );
-                }
-
-                if( extensions->bezier_warp != AE_NULLPTR )
-                {
-                    const aeMovieLayerExtensionBezierWarp * bezier_warp = extensions->bezier_warp;
-
-                    AE_DELETEN( instance, bezier_warp->bezier_warps );
-
-                    AE_DELETE( instance, extensions->bezier_warp );
-                }
-
-                if( extensions->polygon != AE_NULLPTR )
-                {
-                    const aeMovieLayerExtensionPolygon * polygon = extensions->polygon;
-
-                    AE_DELETEN( instance, polygon->polygons );
-
-                    AE_DELETE( instance, extensions->polygon );
-                }
-
-                if( extensions->shader != AE_NULLPTR )
-                {
-                    const aeMovieLayerExtensionShader * shader = extensions->shader;
-
-                    AE_DELETE_STRING( instance, shader->name );
-                    AE_DELETE_STRING( instance, shader->description );
-
-                    const struct aeMovieLayerShaderParameter ** it_parameter = shader->parameters;
-                    const struct aeMovieLayerShaderParameter ** it_parameter_end = shader->parameters + shader->parameter_count;
-
-                    for( ;
-                        it_parameter != it_parameter_end;
-                        ++it_parameter )
-                    {
-                        const struct aeMovieLayerShaderParameter * parameter = *it_parameter;
-
-                        AE_DELETE_STRING( instance, parameter->name );
-                        AE_DELETE_STRING( instance, parameter->uniform );
-
-                        aeMovieShaderParameterTypeEnum parameter_type = parameter->type;
-
-                        switch( parameter_type )
-                        {
-                        case AE_MOVIE_EXTENSION_SHADER_PARAMETER_SLIDER:
-                            {
-                                const struct aeMovieLayerShaderParameterSlider * parameter_slider = (const struct aeMovieLayerShaderParameterSlider *)parameter;
-
-                                __delete_property_value( instance, parameter_slider->property_value );
-
-                                AE_DELETE( instance, parameter_slider->property_value );
-                            }break;
-                        case AE_MOVIE_EXTENSION_SHADER_PARAMETER_ANGLE:
-                            {
-                                const struct aeMovieLayerShaderParameterAngle * parameter_angle = (const struct aeMovieLayerShaderParameterAngle *)parameter;
-
-                                __delete_property_value( instance, parameter_angle->property_value );
-
-                                AE_DELETE( instance, parameter_angle->property_value );
-                            }break;
-                        case AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR:
-                            {
-                                const struct aeMovieLayerShaderParameterColor * parameter_color = (const struct aeMovieLayerShaderParameterColor *)parameter;
-
-                                __delete_property_color( instance, parameter_color->property_color );
-
-                                AE_DELETE( instance, parameter_color->property_color );
-                            }break;
-                        case AE_MOVIE_EXTENSION_SHADER_PARAMETER_TIME:
-                            {
-                            }break;
-                        }
-
-                        AE_DELETE( instance, parameter );
-                    }
-
-                    AE_DELETEN( instance, shader->parameters );
-
-                    AE_DELETE( instance, extensions->shader );
-                }
-
-                if( extensions->viewport != AE_NULLPTR )
-                {
-                    const aeMovieLayerExtensionViewport * viewport = extensions->viewport;
-
-                    AE_UNUSED( viewport );
-
-                    AE_DELETE( instance, extensions->viewport );
-                }
-
-                if( extensions->volume != AE_NULLPTR )
-                {
-                    const aeMovieLayerExtensionVolume * volume = extensions->volume;
-
-                    AE_DELETE( instance, volume->property_volume );
-
-                    AE_DELETE( instance, extensions->volume );
-                }
-
                 if( extensions != &instance->layer_extensions_default )
                 {
+                    if( extensions->timeremap != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionTimeremap * extension_timeremap = extensions->timeremap;
+
+                        AE_DELETEN( instance, extension_timeremap->times );
+
+                        AE_DELETE( instance, extensions->timeremap );
+                    }
+
+                    if( extensions->mesh != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionMesh * extension_mesh = extensions->mesh;
+
+                        __delete_layer_mesh_t( instance, extension_mesh, layer->frame_count );
+
+                        AE_DELETE( instance, extensions->mesh );
+                    }
+
+                    if( extensions->bezier_warp != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionBezierWarp * extension_bezier_warp = extensions->bezier_warp;
+
+                        AE_DELETEN( instance, extension_bezier_warp->bezier_warps );
+
+                        AE_DELETE( instance, extensions->bezier_warp );
+                    }
+
+                    if( extensions->polygon != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionPolygon * extension_polygon = extensions->polygon;
+
+                        if( extension_polygon->immutable == AE_TRUE )
+                        {
+                            AE_DELETEN( instance, extension_polygon->immutable_polygon.points );
+                        }
+
+                        for( ae_uint32_t index = 0; index != extension_polygon->polygon_count; ++index )
+                        {
+                            const ae_polygon_t * polygon = extension_polygon->polygons + index;
+
+                            AE_DELETEN( instance, polygon->points );
+                        }
+
+                        AE_DELETEN( instance, extension_polygon->polygons );
+
+                        AE_DELETE( instance, extensions->polygon );
+                    }
+
+                    if( extensions->shader != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionShader * extension_shader = extensions->shader;
+
+                        AE_DELETE_STRING( instance, extension_shader->name );
+                        AE_DELETE_STRING( instance, extension_shader->description );
+
+                        const struct aeMovieLayerShaderParameter ** it_parameter = extension_shader->parameters;
+                        const struct aeMovieLayerShaderParameter ** it_parameter_end = extension_shader->parameters + extension_shader->parameter_count;
+
+                        for( ;
+                            it_parameter != it_parameter_end;
+                            ++it_parameter )
+                        {
+                            const struct aeMovieLayerShaderParameter * parameter = *it_parameter;
+
+                            AE_DELETE_STRING( instance, parameter->name );
+                            AE_DELETE_STRING( instance, parameter->uniform );
+
+                            aeMovieShaderParameterTypeEnum parameter_type = parameter->type;
+
+                            switch( parameter_type )
+                            {
+                            case AE_MOVIE_EXTENSION_SHADER_PARAMETER_SLIDER:
+                                {
+                                    const struct aeMovieLayerShaderParameterSlider * parameter_slider = (const struct aeMovieLayerShaderParameterSlider *)parameter;
+
+                                    __delete_property_value( instance, parameter_slider->property_value );
+
+                                    AE_DELETE( instance, parameter_slider->property_value );
+                                }break;
+                            case AE_MOVIE_EXTENSION_SHADER_PARAMETER_ANGLE:
+                                {
+                                    const struct aeMovieLayerShaderParameterAngle * parameter_angle = (const struct aeMovieLayerShaderParameterAngle *)parameter;
+
+                                    __delete_property_value( instance, parameter_angle->property_value );
+
+                                    AE_DELETE( instance, parameter_angle->property_value );
+                                }break;
+                            case AE_MOVIE_EXTENSION_SHADER_PARAMETER_COLOR:
+                                {
+                                    const struct aeMovieLayerShaderParameterColor * parameter_color = (const struct aeMovieLayerShaderParameterColor *)parameter;
+
+                                    __delete_property_color( instance, parameter_color->property_color );
+
+                                    AE_DELETE( instance, parameter_color->property_color );
+                                }break;
+                            case AE_MOVIE_EXTENSION_SHADER_PARAMETER_TIME:
+                                {
+                                }break;
+                            }
+
+                            AE_DELETE( instance, parameter );
+                        }
+
+                        AE_DELETEN( instance, extension_shader->parameters );
+
+                        AE_DELETE( instance, extensions->shader );
+                    }
+
+                    if( extensions->viewport != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionViewport * extension_viewport = extensions->viewport;
+
+                        AE_UNUSED( extension_viewport );
+
+                        AE_DELETE( instance, extensions->viewport );
+                    }
+
+                    if( extensions->volume != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionVolume * extension_volume = extensions->volume;
+
+                        AE_DELETE( instance, extension_volume->property_volume );
+
+                        AE_DELETE( instance, extensions->volume );
+                    }
+
                     AE_DELETE( instance, layer->extensions );
                 }
 
@@ -852,6 +864,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer_extension_polygon( aeMovieLayerD
     {
         AE_READ_POLYGON( _stream, &layer_polygon->immutable_polygon );
 
+        layer_polygon->polygon_count = 0;
         layer_polygon->polygons = AE_NULLPTR;
     }
     else
@@ -869,6 +882,7 @@ AE_INTERNAL ae_result_t __load_movie_data_layer_extension_polygon( aeMovieLayerD
             AE_READ_POLYGON( _stream, it_polygon );
         }
 
+        layer_polygon->polygon_count = polygon_count;
         layer_polygon->polygons = polygons;
     }
 

@@ -499,6 +499,7 @@ struct aeMovieLayerExtensionPolygon
     ae_bool_t immutable;
     ae_polygon_t immutable_polygon;
 
+    ae_uint32_t polygon_count;
     const ae_polygon_t * polygons;
 };
 //////////////////////////////////////////////////////////////////////////
