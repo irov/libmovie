@@ -488,6 +488,15 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
                         AE_DELETE( instance, extensions->volume );
                     }
 
+                    if( extensions->dimension != AE_NULLPTR )
+                    {
+                        const aeMovieLayerExtensionDimension * extension_dimension = extensions->dimension;
+
+                        AE_UNUSED( extension_dimension );
+
+                        AE_DELETE( instance, extensions->dimension );
+                    }
+
                     AE_DELETE( instance, layer->extensions );
                 }
 
