@@ -254,14 +254,31 @@ ae_userdata_t ae_remove_movie_composition_slot( const aeMovieComposition * _comp
 /// @}
 
 /**
+@brief set extra transformation for node.
+@param [in] _composition Composition.
+@param [in] _name Node name.
+@param [in] _transformation Transformation.
+@param [in] _userdata User data.
+@return TRUE if successful.
+*/
+
+ae_bool_t ae_set_movie_composition_node_extra_transformation( const aeMovieComposition * _composition, const ae_char_t * _name, ae_movie_transformation_t _transformation, ae_userdata_t _userdata );
+
+/**
+@brief remove extra transformation for node.
+@param [in] _composition Composition.
+@param [in] _name Node name.
+@return Pointer to the data that was assigned to this node prior to removal.
+*/
+
+ae_userdata_t ae_remove_movie_composition_node_extra_transformation( const aeMovieComposition * _composition, const ae_char_t * _name );
+
+/**
 @brief get camera user data from composition.
 @param [in] _composition Composition.
 @return Pointer to the data referenced by the camera linked to the composition.
 */
 ae_userdata_t ae_get_movie_composition_camera_userdata( const aeMovieComposition * _composition );
-
-// slots
-/// @}
 
 
 /**

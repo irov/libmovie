@@ -206,6 +206,9 @@ struct aeMovieNode
     ae_userdata_t camera_userdata;
     ae_userdata_t shader_userdata;
     ae_userdata_t track_matte_userdata;
+
+    ae_movie_transformation_t extra_transformation;
+    ae_userdata_t extra_transformation_userdata;
 };
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieComposition

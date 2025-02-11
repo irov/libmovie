@@ -210,7 +210,7 @@ ae_color_channel_t ae_movie_make_layer_color_r( const aeMovieLayerTransformation
 ae_color_channel_t ae_movie_make_layer_color_g( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 ae_color_channel_t ae_movie_make_layer_color_b( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 ae_color_channel_t ae_movie_make_layer_opacity( const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
-ae_void_t ae_movie_make_layer_matrix( ae_matrix34_t _out, const aeMovieLayerTransformation * _transformation, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
+ae_void_t ae_movie_make_layer_matrix( ae_matrix34_t _out, const aeMovieLayerTransformation * _transformation, ae_movie_transformation_t _extra_transformation, ae_userdata_t _extra_transformation_userdata, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 ae_void_t ae_movie_make_camera_transformation( ae_vector3_t _target, ae_vector3_t _position, ae_quaternion_t _quaternion, const aeMovieCompositionCamera * _camera, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t );
 
 ae_void_t ae_movie_make_layer_transformation2d_interpolate( ae_vector2_t _anchor_point, ae_vector2_t _position, ae_vector2_t _scale, ae_quaternionzw_t _quaternion, ae_skew_t _skew, const aeMovieLayerTransformation2D * _transformation2d, ae_uint32_t _index, ae_float_t _t );

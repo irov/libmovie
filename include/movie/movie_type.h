@@ -67,7 +67,6 @@ typedef ae_float_t ae_matrix34_t[12];
 
 typedef const ae_float_t * ae_vector3_ptr_t;
 typedef const ae_float_t * ae_matrix34_ptr_t;
-typedef void(*ae_function_t)(void);
 
 static const ae_bool_t AE_TRUE = 1;
 static const ae_bool_t AE_FALSE = 0;
@@ -223,6 +222,10 @@ typedef enum
     AE_RESULT_INTERNAL_ERROR = -8,
     AE_RESULT_NOT_FOUND_RESOURCE = -9,
 } ae_result_t;
+
+typedef ae_void_t( *ae_movie_transformation_t )(ae_matrix34_t _out, ae_uint32_t _index, ae_float_t _t, ae_userdata_t _userdata);
+
+static const ae_movie_transformation_t AE_MOVIE_TRANSFORMATION_NULL = 0;
 
 typedef ae_size_t( *ae_movie_stream_memory_read_t )(ae_voidptr_t _buff, ae_size_t _carriage, ae_size_t _size, ae_userdata_t _data);
 typedef ae_void_t( *ae_movie_stream_memory_copy_t )(ae_constvoidptr_t _src, ae_voidptr_t _dst, ae_size_t _size, ae_userdata_t _data);

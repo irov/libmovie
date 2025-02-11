@@ -572,7 +572,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
 
     if( node_relative == AE_NULLPTR )
     {
-        ae_movie_make_layer_matrix( _node->matrix, layer_transformation, _frameId, _interpolate, _t );
+        ae_movie_make_layer_matrix( _node->matrix, layer_transformation, _node->extra_transformation, _node->extra_transformation_userdata, _frameId, _interpolate, _t );
 
         if( node_layer->subcomposition_data != AE_NULLPTR )
         {
@@ -607,7 +607,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _nod
     else
     {
         ae_matrix34_t local_matrix;
-        ae_movie_make_layer_matrix( local_matrix, layer_transformation, _frameId, _interpolate, _t );
+        ae_movie_make_layer_matrix( local_matrix, layer_transformation, _node->extra_transformation, _node->extra_transformation_userdata, _frameId, _interpolate, _t );
 
         ae_mul_m34_m34_r( _node->matrix, local_matrix, node_relative->matrix );
     }
@@ -1132,6 +1132,8 @@ AE_INTERNAL ae_void_t __setup_movie_node_initialize( aeMovieNode * _nodes, ae_ui
         node->subcomposition = AE_NULLPTR;
         node->volume = 1.f;
         node->extra_opacity = 1.f;
+        node->extra_transformation = AE_MOVIE_TRANSFORMATION_NULL;
+        node->extra_transformation_userdata = AE_USERDATA_NULL;
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -3968,6 +3970,60 @@ ae_userdata_t ae_remove_movie_composition_slot( const aeMovieComposition * _comp
         node->element_userdata = AE_NULLPTR;
 
         return prev_element_userdata;
+    }
+
+    return AE_USERDATA_NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_set_movie_composition_node_extra_transformation( const aeMovieComposition * _composition, const ae_char_t * _name, ae_movie_transformation_t _transformation, ae_userdata_t _userdata )
+{
+    const aeMovieInstance * instance = _composition->instance;
+
+    aeMovieNode * it_node = _composition->nodes;
+    aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
+    for( ; it_node != it_node_end; ++it_node )
+    {
+        aeMovieNode * node = it_node;
+
+        const aeMovieLayerData * layer = node->layer_data;
+
+        if( AE_STRNCMP( instance, layer->name, _name, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+        {
+            continue;
+        }
+
+        node->extra_transformation = _transformation;
+        node->extra_transformation_userdata = _userdata;
+
+        return AE_TRUE;
+    }
+
+    return AE_FALSE;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_userdata_t ae_remove_movie_composition_node_extra_transformation( const aeMovieComposition * _composition, const ae_char_t * _name )
+{
+    const aeMovieInstance * instance = _composition->instance;
+
+    aeMovieNode * it_node = _composition->nodes;
+    aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
+    for( ; it_node != it_node_end; ++it_node )
+    {
+        aeMovieNode * node = it_node;
+
+        const aeMovieLayerData * layer = node->layer_data;
+
+        if( AE_STRNCMP( instance, layer->name, _name, AE_MOVIE_MAX_LAYER_NAME ) != 0 )
+        {
+            continue;
+        }
+
+        ae_userdata_t userdata =  node->extra_transformation_userdata;
+
+        node->extra_transformation = AE_MOVIE_TRANSFORMATION_NULL;
+        node->extra_transformation_userdata = AE_USERDATA_NULL;
+
+        return userdata;
     }
 
     return AE_USERDATA_NULL;
