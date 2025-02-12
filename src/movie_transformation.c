@@ -1396,20 +1396,18 @@ ae_void_t ae_movie_delete_layer_transformation( const aeMovieInstance * _instanc
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_movie_make_layer_matrix( ae_matrix34_t _out, const aeMovieLayerTransformation * _transformation, ae_movie_transformation_t _extra_transformation, ae_userdata_t _extra_transformation_userdata, ae_uint32_t _index, ae_bool_t _interpolate, ae_float_t _t )
 {
-    if( _extra_transformation != AE_NULLPTR )
+    if( _interpolate == AE_TRUE )
     {
-        (*_extra_transformation)(_out, _index, _t, _extra_transformation_userdata);
+        (*_transformation->transforamtion_interpolate_matrix)(_out, _transformation, _index, _t);
     }
     else
     {
-        if( _interpolate == AE_TRUE )
-        {
-            (*_transformation->transforamtion_interpolate_matrix)(_out, _transformation, _index, _t);
-        }
-        else
-        {
-            (*_transformation->transforamtion_fixed_matrix)(_out, _transformation, _index);
-        }
+        (*_transformation->transforamtion_fixed_matrix)(_out, _transformation, _index);
+    }
+
+    if( _extra_transformation != AE_MOVIE_TRANSFORMATION_NULL )
+    {
+        (*_extra_transformation)(_out, _index, _t, _extra_transformation_userdata);
     }
 }
 //////////////////////////////////////////////////////////////////////////
