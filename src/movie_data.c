@@ -1261,7 +1261,7 @@ AE_INTERNAL ae_result_t __setup_movie_data_layer_renderable( aeMovieLayerData * 
             {
                 _layer->renderable = AE_TRUE;
             }break;
-        case AE_MOVIE_LAYER_TYPE_SHAPE:
+        case AE_MOVIE_LAYER_TYPE_SHAPE_POLYGON:
             {
                 _layer->renderable = AE_TRUE;
             }break;

@@ -194,7 +194,7 @@ AE_INTERNAL ae_void_t __compute_movie_render_mesh( const aeMovieComposition * _c
 
     switch( layer_type )
     {
-    case AE_MOVIE_LAYER_TYPE_SHAPE:
+    case AE_MOVIE_LAYER_TYPE_SHAPE_POLYGON:
         {
             __make_layer_mesh_vertices( layer->extensions->mesh, frame, _node->matrix, AE_NULLPTR, _render );
 
@@ -1687,9 +1687,11 @@ AE_INTERNAL ae_void_t __setup_movie_node_matrix( const aeMovieComposition * _com
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_bool_t __setup_movie_node_shader( aeMovieComposition * _composition )
 {
+    ae_uint32_t enumerator = 0U;
+
     aeMovieNode * it_node = _composition->nodes;
     aeMovieNode * it_node_end = _composition->nodes + _composition->node_count;
-    for( ; it_node != it_node_end; ++it_node )
+    for( ; it_node != it_node_end; ++it_node, ++enumerator )
     {
         aeMovieNode * node = it_node;
 
@@ -1705,6 +1707,11 @@ AE_INTERNAL ae_bool_t __setup_movie_node_shader( aeMovieComposition * _compositi
         const aeMovieLayerExtensionShader * shader = layer->extensions->shader;
 
         aeMovieShaderProviderCallbackData callbackData;
+        callbackData.index = enumerator;
+
+        callbackData.element_userdata = node->element_userdata;
+        callbackData.layer_data = layer;
+
         callbackData.name = shader->name;
         callbackData.description = shader->description;
         callbackData.version = shader->version;
@@ -2254,7 +2261,7 @@ ae_void_t ae_calculate_movie_composition_render_info( const aeMovieComposition *
 
         switch( layer_type )
         {
-        case AE_MOVIE_LAYER_TYPE_SHAPE:
+        case AE_MOVIE_LAYER_TYPE_SHAPE_POLYGON:
             {
                 AE_MOVIE_ASSERTION_VOID( instance, layer_extensions != AE_NULLPTR, "shape '%s' [%u] extensions nullptr"
                     , layer->name

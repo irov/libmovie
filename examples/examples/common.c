@@ -283,7 +283,7 @@ ae_bool_t ex_callback_node_provider( const aeMovieNodeProviderCallbackData * _ca
 
         switch( layerType )
         {
-        case AE_MOVIE_LAYER_TYPE_SHAPE:
+        case AE_MOVIE_LAYER_TYPE_SHAPE_POLYGON:
             EX_LOG( " shape\n" );
             break;
         case AE_MOVIE_LAYER_TYPE_IMAGE:
@@ -735,7 +735,7 @@ ae_void_t ex_render( ae_void_t )
                 {
                     EX_LOG( "movie\n" );
                 }break;
-            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SHAPE_POLYGON:
                 {
                     EX_LOG( "shape\n" );
                 }break;
@@ -849,7 +849,7 @@ ae_void_t ex_render( ae_void_t )
             case AE_MOVIE_LAYER_TYPE_TEXT:
             case AE_MOVIE_LAYER_TYPE_EVENT:
             case AE_MOVIE_LAYER_TYPE_SOCKET:
-            case AE_MOVIE_LAYER_TYPE_SHAPE:
+            case AE_MOVIE_LAYER_TYPE_SHAPE_POLYGON:
             case AE_MOVIE_LAYER_TYPE_SCENE_EFFECT:
             case AE_MOVIE_LAYER_TYPE_SLOT:
             case AE_MOVIE_LAYER_TYPE_NULL:

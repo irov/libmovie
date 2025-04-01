@@ -244,6 +244,11 @@ typedef struct aeMovieTrackMatteDeleterCallbackData
 
 typedef struct aeMovieShaderProviderCallbackData
 {
+    ae_uint32_t index;
+
+    ae_userdata_t element_userdata;
+    const aeMovieLayerData * layer_data;
+
     ae_string_t name;
     ae_string_t description;
     ae_uint32_t version;
