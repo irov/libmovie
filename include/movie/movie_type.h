@@ -151,6 +151,12 @@ typedef enum
     AE_MOVIE_EXTENSION_SHADER_PARAMETER_TIME = 6,
 } aeMovieShaderParameterTypeEnum;
 
+typedef enum
+{
+    AE_MOVIE_EXTENSION_SHADER_FLAG_NONE = 0,
+    AE_MOVIE_EXTENSION_SHADER_FLAG_UVSL = 1 << 0,
+} aeMovieShaderParameterFlagEnum;
+
 #define AE_MOVIE_RESOURCE_BASE()\
     aeMovieResourceTypeEnum type;\
     ae_string_t name;\
