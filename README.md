@@ -17,7 +17,9 @@ Businesses: support continued maintenance and development via support contracts 
 Projects
 -------
 [Alisa Vegas Slots](https://www.facebook.com/AlisaVegasSlots)
+
 [The Dungeon Chronicles](https://www.wonderland-games.com/projects/the-dungeon-chronicles)
+
 [Camelot 2: The Holy Grail](https://www.wonderland-games.com/projects/camelot-2-the-holy-grail)
 
 Code Guards
