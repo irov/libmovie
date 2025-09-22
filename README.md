@@ -12,7 +12,13 @@ Individuals/hobbyists: support continued maintenance and development via PayPal:
 [![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EUH3RMA8FWN8G)
 
 Businesses: support continued maintenance and development via support contracts or sponsoring: 
-  E-mail: irov13 at mail dot ru
+  E-mail: levchenko dot yuriy dot vladimirovich at gmail dot com
+
+Projects
+-------
+[Alisa Vegas Slots](https://www.facebook.com/AlisaVegasSlots)
+[The Dungeon Chronicles](https://www.wonderland-games.com/projects/the-dungeon-chronicles)
+[Camelot 2: The Holy Grail](https://www.wonderland-games.com/projects/camelot-2-the-holy-grail)
 
 Code Guards
 -------
