@@ -31,6 +31,7 @@
 
 #include "movie_struct.h"
 #include "movie_memory.h"
+#include "movie_debug.h"
 
 //////////////////////////////////////////////////////////////////////////
 AE_CALLBACK ae_int32_t __movie_strncmp( ae_userdata_t _data, const ae_char_t * _src, const ae_char_t * _dst, ae_size_t _count )
@@ -135,6 +136,8 @@ const aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae
     aeMovieInstance * instance = (*_alloc)(_userdata, sizeof( aeMovieInstance ));
 #endif
 
+    AE_MOVIE_ASSERTION_RESULT( instance, instance != AE_NULLPTR, AE_NULLPTR, "create instance" );
+
     instance->use_hash = AE_FALSE;
     instance->hashmask[0] = 0;
     instance->hashmask[1] = 0;
@@ -151,6 +154,8 @@ const aeMovieInstance * ae_create_movie_instance( const ae_char_t * _hashkey, ae
         {
             if( _hashkey[i] == '\0' )
             {
+                (*_free)(_userdata, instance);
+
                 return AE_NULLPTR;
             }
 

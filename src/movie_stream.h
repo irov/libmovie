@@ -54,37 +54,14 @@
 //////////////////////////////////////////////////////////////////////////
 #define AE_READ_COLOR(stream, ptr) ae_magic_read_color(stream, (ptr))
 #define AE_READ_COLOR_CHANNEL(stream, ptr) AE_READ(stream, (ptr))
-#define AE_READ_VIEWPORT(stream, ptr) ae_magic_read_viewport, (stream, (ptr))
 //////////////////////////////////////////////////////////////////////////
 #define AE_READ_STRING(stream, ptr) AE_RESULT(ae_magic_read_string, (stream, &(ptr)))
 #define AE_READ_POLYGON(stream, ptr) AE_RESULT(ae_magic_read_polygon, (stream, (ptr)))
 #define AE_READ_MESH(stream, ptr) AE_RESULT(ae_magic_read_mesh, (stream, (ptr)))
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
-{
-    ae_size_t bytesRead = _stream->memory_read( _ptr, _stream->carriage, _size, _stream->read_userdata );
-
-    _stream->carriage += bytesRead;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
-{
-    ae_uint8_t value;
-    AE_READ( _stream, value );
-
-    AE_MOVIE_ASSERTION_RESULT( _stream->instance, value == 0 || value == 1, AE_FALSE, "read bool" );
-
-    return value;
-}
-//////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_uint32_t ae_magic_read_8( aeMovieStream * _stream )
-{
-    ae_uint8_t value;
-    AE_READ( _stream, value );
-
-    return (ae_uint32_t)value;
-}
-//////////////////////////////////////////////////////////////////////////
+ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size );
+ae_bool_t ae_magic_read_bool( aeMovieStream * _stream );
+ae_uint32_t ae_magic_read_8( aeMovieStream * _stream );
 ae_uint32_t ae_magic_read_size( aeMovieStream * _stream );
 ae_result_t ae_magic_read_string( aeMovieStream * _stream, ae_string_t * _str );
 ae_result_t ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _polygon );

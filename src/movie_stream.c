@@ -71,6 +71,33 @@ ae_result_t ae_magic_read_polygon( aeMovieStream * _stream, ae_polygon_t * _poly
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+ae_void_t ae_magic_read_value( aeMovieStream * _stream, ae_voidptr_t _ptr, ae_size_t _size )
+{
+    ae_size_t bytesRead = _stream->memory_read( _ptr, _stream->carriage, _size, _stream->read_userdata );
+
+    AE_MOVIE_ASSERTION_VOID( _stream->instance, bytesRead == _size, "read value" );
+
+    _stream->carriage += bytesRead;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_bool_t ae_magic_read_bool( aeMovieStream * _stream )
+{
+    ae_uint8_t value;
+    AE_READ( _stream, value );
+
+    AE_MOVIE_ASSERTION_RESULT( _stream->instance, value == 0 || value == 1, AE_FALSE, "read bool" );
+
+    return value;
+}
+//////////////////////////////////////////////////////////////////////////
+ae_uint32_t ae_magic_read_8( aeMovieStream * _stream )
+{
+    ae_uint8_t value;
+    AE_READ( _stream, value );
+
+    return (ae_uint32_t)value;
+}
+//////////////////////////////////////////////////////////////////////////
 ae_uint32_t ae_magic_read_size( aeMovieStream * _stream )
 {
     ae_uint8_t size255;
