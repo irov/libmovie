@@ -1,0 +1,13 @@
+@echo off
+
+set "CONFIGURATION=%1"
+
+set "BUILD_SOLUTION_DIR=%~dp0..\..\solutions\solution_mingw\%CONFIGURATION%"
+
+@mkdir "%BUILD_SOLUTION_DIR%"
+@pushd "%BUILD_SOLUTION_DIR%"
+
+@call CMake -G "MinGW Makefiles" -S "%~dp0..\.." -DCMAKE_CONFIGURATION_TYPES:STRING=%CONFIGURATION% -DCMAKE_BUILD_TYPE:STRING=%CONFIGURATION% -DLIBMOVIE_EXAMPLES_BUILD:BOOL=TRUE
+@call CMake --build . --config %CONFIGURATION%
+
+@popd
