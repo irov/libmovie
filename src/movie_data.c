@@ -483,6 +483,8 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
                     {
                         const aeMovieLayerExtensionVolume * extension_volume = extensions->volume;
 
+                        __delete_property_value( instance, extension_volume->property_volume );
+
                         AE_DELETE( instance, extension_volume->property_volume );
 
                         AE_DELETE( instance, extensions->volume );
