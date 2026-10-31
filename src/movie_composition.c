@@ -1,7 +1,7 @@
 /******************************************************************************
 * libMOVIE Software License v1.0
 *
-* Copyright (c) 2016-2023, Yuriy Levchenko <irov13@mail.ru>
+* Copyright (c) 2016-2026, Yuriy Levchenko <irov13@mail.ru>
 * All rights reserved.
 *
 * You are granted a perpetual, non-exclusive, non-sublicensable, and
@@ -40,6 +40,7 @@
 #include "movie_debug.h"
 
 #include "movie_struct.h"
+#include "movie_motion.h"
 
 #ifndef AE_MOVIE_FRAME_EPSILON
 #define AE_MOVIE_FRAME_EPSILON 0.001f
@@ -527,6 +528,13 @@ AE_INTERNAL ae_uint32_t __get_movie_frame_time( const aeMovieCompositionAnimatio
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __update_movie_composition_node_matrix( aeMovieNode * _node, const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, ae_uint32_t _frameId, ae_bool_t _interpolate, ae_float_t _t )
 {
+    if( _composition->composition_data->movie_data->motion != AE_NULLPTR )
+    {
+        ae_movie_motion_update_node( _node, _composition, _frameId, _t );
+
+        return;
+    }
+
     AE_UNUSED( _composition );
     AE_UNUSED( _compositionData );
 
@@ -1885,6 +1893,7 @@ const aeMovieComposition * ae_create_movie_composition( const aeMovieComposition
     AE_MOVIE_PANIC_MEMORY( composition, AE_NULLPTR );
 
     composition->composition_data = _compositionData;
+    composition->motion = AE_NULLPTR;
 
     aeMovieCompositionAnimation * animation = AE_NEW( instance, aeMovieCompositionAnimation );
 
@@ -1932,6 +1941,16 @@ const aeMovieComposition * ae_create_movie_composition( const aeMovieComposition
 
     __setup_movie_node_transform_immutable( composition );
     __setup_movie_node_color_immutable( composition );
+
+    if( ae_movie_motion_create_state( composition ) == AE_FALSE )
+    {
+        AE_DELETEN( instance, composition->update_nodes );
+        AE_DELETEN( instance, composition->nodes );
+        AE_DELETE( instance, composition->animation );
+        AE_DELETE( instance, composition );
+
+        return AE_NULLPTR;
+    }
 
     if( __setup_movie_subcomposition( composition ) == AE_FALSE )
     {
@@ -2068,6 +2087,7 @@ AE_INTERNAL ae_void_t __delete_scene_effect( const aeMovieComposition * _composi
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_composition( const aeMovieComposition * _composition )
 {
+    ae_movie_motion_delete_state( _composition );
     const aeMovieInstance * instance = _composition->instance;
 
     __delete_nodes( _composition );
@@ -3086,6 +3106,11 @@ AE_INTERNAL ae_void_t __refresh_movie_composition_matrix( const aeMovieCompositi
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition * _composition, const aeMovieCompositionData * _compositionData, const aeMovieCompositionAnimation * _animation, const aeMovieSubComposition * _subcomposition, ae_float_t _beginTime, ae_bool_t _interpolate, ae_bool_t _end )
 {
+    if( _compositionData->movie_data->motion != AE_NULLPTR )
+    {
+        _interpolate = AE_TRUE;
+    }
+
     ae_bool_t composition_interpolate = _composition->interpolate && _interpolate;
 
     ae_float_t animation_time = _animation->time;
@@ -3139,6 +3164,10 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         ae_uint32_t endFrame = (ae_uint32_t)(animation_time * frame_duration_inv + AE_MOVIE_FRAME_EPSILON);
         ae_uint32_t nodeInFrame = node_in_frame;
         ae_uint32_t nodeOutFrame = node_out_frame;
+        if( _compositionData->movie_data->motion != AE_NULLPTR && _end == AE_TRUE && nodeOutFrame > nodeInFrame && animation_time <= node_out_time && endFrame >= nodeOutFrame )
+        {
+            endFrame = nodeOutFrame - 1;
+        }
 
         ae_float_t node_current_time = (animation_time >= node_out_time) ? node_out_time - node->in_time + node->start_time : animation_time - node->in_time + node->start_time;
 
@@ -3256,7 +3285,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         {
             node->active = AE_TRUE;
 
-            ae_bool_t node_interpolate = composition_interpolate ? ((endFrame + 1) < nodeOutFrame) : AE_FALSE;
+            ae_bool_t node_interpolate = (_compositionData->movie_data->motion != AE_NULLPTR || (composition_interpolate == AE_TRUE && (endFrame + 1) < nodeOutFrame)) ? AE_TRUE : AE_FALSE;
 
             if( node_interpolate == AE_TRUE )
             {
@@ -3284,7 +3313,7 @@ AE_INTERNAL ae_void_t __update_movie_composition_node( const aeMovieComposition 
         {
             node->active = AE_TRUE;
 
-            ae_bool_t node_interpolate = (composition_interpolate == AE_TRUE) ? (endFrame + 1) < nodeOutFrame : AE_FALSE;
+            ae_bool_t node_interpolate = (_compositionData->movie_data->motion != AE_NULLPTR || (composition_interpolate == AE_TRUE && (endFrame + 1) < nodeOutFrame)) ? AE_TRUE : AE_FALSE;
 
             if( node_interpolate == AE_TRUE )
             {
@@ -3435,7 +3464,7 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
         ae_float_t current_time = _animation->time;
         ae_float_t duration = _animation->work_area_time_end - _animation->work_area_time_begin;
 
-        ae_float_t frame_duration = _composition->composition_data->frame_duration;
+        ae_float_t frame_duration = _compositionData->movie_data->motion != AE_NULLPTR ? 0.f : _composition->composition_data->frame_duration;
 
         if( _animation->loop == AE_FALSE || _animation->interrupt == AE_TRUE )
         {
@@ -3556,8 +3585,34 @@ AE_INTERNAL ae_bool_t __update_movie_subcomposition( const aeMovieComposition * 
     return AE_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
+static ae_void_t __refresh_movie_motion_pose( const aeMovieComposition * _composition )
+{
+    const aeMovieMotionState * motion = _composition->motion;
+
+    if( motion == AE_NULLPTR )
+    {
+        return;
+    }
+
+    if( motion->pose_revision == motion->parameter_revision )
+    {
+        return;
+    }
+
+    __refresh_movie_composition_matrix( _composition, _composition->composition_data, AE_NULLPTR );
+
+    for( const aeMovieSubComposition * subcomposition = _composition->subcompositions; subcomposition != _composition->subcompositions + _composition->subcomposition_count; ++subcomposition )
+    {
+        __refresh_movie_composition_matrix( _composition, subcomposition->composition_data, subcomposition );
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, ae_time_t _timing, ae_bool_t * _alive )
 {
+    ae_movie_motion_dispatch( _composition, _timing );
+
+    uint64_t motion_revision = _composition->motion != AE_NULLPTR ? _composition->motion->parameter_revision : 0;
+
     ae_time_t timescale_timing = AE_TIME_INSCALE( _timing );
 
     aeMovieCompositionAnimation * animation = _composition->animation;
@@ -3571,6 +3626,10 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
         composition_end = __update_movie_subcomposition( _composition, composition_data, timescale_timing, AE_TRUE, animation, AE_NULLPTR );
         __update_movie_scene_effect( _composition, animation );
         __update_movie_camera( _composition, animation );
+    }
+    else
+    {
+        __refresh_movie_motion_pose( _composition );
     }
 
     const aeMovieSubComposition * it_subcomposition = _composition->subcompositions;
@@ -3615,6 +3674,11 @@ ae_bool_t ae_update_movie_composition( const aeMovieComposition * _composition, 
         }
     }
 
+    if( _composition->motion != AE_NULLPTR )
+    {
+        _composition->motion->pose_revision = motion_revision;
+    }
+
     if( composition_end == AE_TRUE )
     {
         aeMovieCompositionStateCallbackData callbackData;
@@ -3635,7 +3699,7 @@ AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _
         _time = 0.f;
     }
 
-    ae_float_t lastFrame = duration - _compositionData->frame_duration;
+    ae_float_t lastFrame = _compositionData->movie_data->motion != AE_NULLPTR ? duration : duration - _compositionData->frame_duration;
 
     ae_bool_t animation_end = AE_FALSE;
 
@@ -3648,9 +3712,12 @@ AE_INTERNAL ae_void_t __set_movie_composition_time( const aeMovieComposition * _
 
     ae_float_t current_animation_time = _animation->time;
 
-    if( ae_equal_f_f( current_animation_time, _time ) == AE_TRUE )
+    if( _compositionData->movie_data->motion == AE_NULLPTR )
     {
-        return;
+        if( ae_equal_f_f( current_animation_time, _time ) == AE_TRUE )
+        {
+            return;
+        }
     }
 
     if( current_animation_time > _time )
@@ -3708,6 +3775,8 @@ ae_void_t ae_remove_movie_composition_work_area( const  aeMovieComposition * _co
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_play_movie_composition( const aeMovieComposition * _composition, ae_time_t _time )
 {
+    ae_movie_motion_restart( _composition );
+
     ae_time_t timescale_time = AE_TIME_INSCALE( _time );
 
     aeMovieCompositionAnimation * animation = _composition->animation;
@@ -3807,6 +3876,7 @@ ae_void_t ae_interrupt_movie_composition( const aeMovieComposition * _compositio
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_set_movie_composition_time( const aeMovieComposition * _composition, ae_time_t _time )
 {
+    uint64_t motion_revision = _composition->motion != AE_NULLPTR ? _composition->motion->parameter_revision : 0;
     ae_time_t timescale_time = AE_TIME_INSCALE( _time );
 
     const aeMovieCompositionData * composition_data = _composition->composition_data;
@@ -3823,6 +3893,10 @@ ae_void_t ae_set_movie_composition_time( const aeMovieComposition * _composition
         const aeMovieCompositionData * subcomposition_composition_data = subcomposition->composition_data;
 
         __refresh_movie_composition_matrix( _composition, subcomposition_composition_data, subcomposition );
+    }
+    if( _composition->motion != AE_NULLPTR )
+    {
+        _composition->motion->pose_revision = motion_revision;
     }
 }
 //////////////////////////////////////////////////////////////////////////

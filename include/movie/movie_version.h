@@ -1,7 +1,7 @@
 /******************************************************************************
 * libMOVIE Software License v1.0
 *
-* Copyright (c) 2016-2023, Yuriy Levchenko <irov13@mail.ru>
+* Copyright (c) 2016-2026, Yuriy Levchenko <irov13@mail.ru>
 * All rights reserved.
 *
 * You are granted a perpetual, non-exclusive, non-sublicensable, and
@@ -30,7 +30,7 @@
 #ifndef MOVIE_VERSION_H_
 #define MOVIE_VERSION_H_
 //////////////////////////////////////////////////////////////////////////
-#define AE_MOVIE_SDK_MAJOR_VERSION 17
-#define AE_MOVIE_SDK_MINOR_VERSION 5
+#define AE_MOVIE_SDK_MAJOR_VERSION 18
+#define AE_MOVIE_SDK_MINOR_VERSION 0
 //////////////////////////////////////////////////////////////////////////
 #endif

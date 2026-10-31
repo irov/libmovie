@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "name": "Kinematics",
+  "parameters": {
+    "amplitude": 12,
+    "gain": 2
+  },
+  "resources": {
+    "box": {
+      "type": "solid",
+      "size": [
+        16,
+        16
+      ],
+      "color": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "compositions": [
+    {
+      "id": "Demo",
+      "size": [
+        1920,
+        1080
+      ],
+      "duration": 4,
+      "fps": 30,
+      "markers": [
+        {
+          "id": "start",
+          "time": 0
+        },
+        {
+          "id": "apply",
+          "time": 2
+        },
+        {
+          "id": "finish",
+          "time": 4
+        }
+      ],
+      "layers": [
+        {
+          "id": "controller",
+          "channels": {
+            "position": {
+              "value": [
+                100,
+                200
+              ],
+              "expression": "value + [0, params.amplitude * sin(time * tau)]"
+            },
+            "rotation": {
+              "keys": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "interpolation": "ease_in_out"
+                },
+                {
+                  "time": 4,
+                  "value": 720
+                }
+              ]
+            },
+            "custom.follow": {
+              "expression": "ref('Demo.controller.rotation') / 2"
+            },
+            "custom.overshoot": {
+              "keys": [
+                {
+                  "time": 0,
+                  "value": 1,
+                  "interpolation": "bezier",
+                  "out": {
+                    "time": 1,
+                    "value": 3
+                  }
+                },
+                {
+                  "time": 4,
+                  "value": 1,
+                  "in": {
+                    "time": 3,
+                    "value": 3
+                  }
+                }
+              ]
+            },
+            "custom.gain": {
+              "expression": "params.gain * params.intensity"
+            },
+            "custom.registerDependent": {
+              "expression": "ref('Demo.controller.custom.gain') * 2"
+            }
+          },
+          "resource": "box"
+        }
+      ]
+    },
+    {
+      "id": "Fractional",
+      "size": [
+        100,
+        100
+      ],
+      "duration": 1.037,
+      "fps": 30,
+      "markers": [
+        {
+          "id": "finish",
+          "time": 1.037
+        }
+      ],
+      "layers": [
+        {
+          "id": "box",
+          "resource": "box",
+          "channels": {
+            "x": {
+              "keys": [
+                {
+                  "time": 0,
+                  "value": 0
+                },
+                {
+                  "time": 1.037,
+                  "value": 5
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

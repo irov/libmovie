@@ -1,0 +1,722 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 127
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": -1e+20,
+        "maximum": 1e+20
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/resource"
+      }
+    },
+    "compositions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/composition"
+      },
+      "minItems": 1,
+      "maxItems": 1024
+    },
+    "registers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "version",
+    "name",
+    "compositions"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://libmovie.local/schema/movie.schema",
+  "title": "libmovie authoring",
+  "$defs": {
+    "point": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": -1e+20,
+        "maximum": 1e+20
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "value": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": -1e+20,
+          "maximum": 1e+20
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -1e+20,
+            "maximum": 1e+20
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -1e+20,
+            "maximum": 1e+20
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "handle": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "number",
+          "minimum": -1e+20,
+          "maximum": 1e+20
+        },
+        "value": {
+          "$ref": "#/$defs/value"
+        }
+      },
+      "required": [
+        "time",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "key": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "number",
+          "minimum": 0
+        },
+        "value": {
+          "$ref": "#/$defs/value"
+        },
+        "interpolation": {
+          "enum": [
+            "hold",
+            "linear",
+            "bezier",
+            "ease_in",
+            "ease_out",
+            "ease_in_out"
+          ]
+        },
+        "in": {
+          "$ref": "#/$defs/handle"
+        },
+        "out": {
+          "$ref": "#/$defs/handle"
+        }
+      },
+      "required": [
+        "time",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "channel": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/value"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "$ref": "#/$defs/value"
+            },
+            "expression": {
+              "type": "string",
+              "maxLength": 65536
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/key"
+              }
+            },
+            "samples": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/value"
+              },
+              "minItems": 1
+            },
+            "sampleRate": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 240
+            },
+            "sampleStart": {
+              "type": "number",
+              "minimum": 0
+            },
+            "extrapolation": {
+              "enum": [
+                "hold",
+                "cycle",
+                "pingpong"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "mesh": {
+      "type": "object",
+      "properties": {
+        "vertices": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1e+20,
+              "maximum": 1e+20
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 3
+        },
+        "uvs": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1e+20,
+              "maximum": 1e+20
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 3
+        },
+        "indices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "minItems": 3
+        },
+        "bakeFps": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 240
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "number",
+                "minimum": 0
+              },
+              "interpolation": {
+                "enum": [
+                  "hold",
+                  "linear",
+                  "bezier",
+                  "ease_in",
+                  "ease_out",
+                  "ease_in_out"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -1e+20,
+                  "maximum": 1e+20
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "out": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -1e+20,
+                  "maximum": 1e+20
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "vertices": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": -1e+20,
+                    "maximum": 1e+20
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "minItems": 3
+              }
+            },
+            "required": [
+              "time",
+              "vertices"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "vertices",
+        "uvs",
+        "indices"
+      ],
+      "additionalProperties": false
+    },
+    "warp": {
+      "type": "object",
+      "properties": {
+        "corners": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1e+20,
+              "maximum": 1e+20
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "beziers": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1e+20,
+              "maximum": 1e+20
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 8,
+          "maxItems": 8
+        },
+        "quality": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "bakeFps": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 240
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "number",
+                "minimum": 0
+              },
+              "interpolation": {
+                "enum": [
+                  "hold",
+                  "linear",
+                  "bezier",
+                  "ease_in",
+                  "ease_out",
+                  "ease_in_out"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -1e+20,
+                  "maximum": 1e+20
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "out": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -1e+20,
+                  "maximum": 1e+20
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "corners": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": -1e+20,
+                    "maximum": 1e+20
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "beziers": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": -1e+20,
+                    "maximum": 1e+20
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "minItems": 8,
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "time",
+              "corners",
+              "beziers"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "corners",
+        "beziers"
+      ],
+      "additionalProperties": false
+    },
+    "resource": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "image",
+            "sound",
+            "particle",
+            "video",
+            "sequence",
+            "solid"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -1e+20,
+            "maximum": 1e+20
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "textureSize": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -1e+20,
+            "maximum": 1e+20
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "uv": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1e+20,
+              "maximum": 1e+20
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "trim": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -1e+20,
+            "maximum": 1e+20
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "color": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -1e+20,
+            "maximum": 1e+20
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "duration": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fps": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 240
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 127
+          }
+        },
+        "alpha": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "layer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 127
+        },
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 127
+        },
+        "composition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 127
+        },
+        "type": {
+          "enum": [
+            "null",
+            "slot"
+          ]
+        },
+        "parent": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 127
+        },
+        "in": {
+          "type": "number",
+          "minimum": 0
+        },
+        "out": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "loop": {
+          "type": "boolean"
+        },
+        "blend": {
+          "enum": [
+            "normal",
+            "add",
+            "screen",
+            "multiply"
+          ]
+        },
+        "isMatte": {
+          "type": "boolean"
+        },
+        "matte": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 127
+        },
+        "matteMode": {
+          "enum": [
+            "alpha",
+            "alpha_inverted",
+            "luma",
+            "luma_inverted"
+          ]
+        },
+        "channels": {
+          "type": "object",
+          "patternProperties": {
+            "^(position|anchor|scale|color|x|y|position\\.[xy]|anchor\\.[xy]|scale\\.[xy]|rotation|skew|opacity|volume|pathProgress|custom\\.[A-Za-z_][A-Za-z0-9_.]*)$": {
+              "$ref": "#/$defs/channel"
+            }
+          },
+          "additionalProperties": false
+        },
+        "path": {
+          "type": "object",
+          "properties": {
+            "points": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -1e+20,
+                  "maximum": 1e+20
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 4
+            }
+          },
+          "required": [
+            "points"
+          ],
+          "additionalProperties": false
+        },
+        "mesh": {
+          "$ref": "#/$defs/mesh"
+        },
+        "warp": {
+          "$ref": "#/$defs/warp"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "composition": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 127
+        },
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -1e+20,
+            "maximum": 1e+20
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "duration": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 3600
+        },
+        "fps": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 240
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/layer"
+          },
+          "maxItems": 4096
+        },
+        "markers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 127
+              },
+              "time": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "time"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "size",
+        "duration",
+        "layers"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -69,6 +69,8 @@ source
     ${SOURCE_DIR}/movie_bezier.c
     ${SOURCE_DIR}/movie_bezier.h
     ${SOURCE_DIR}/movie_data.c
+    ${SOURCE_DIR}/movie_data_validate.c
+    ${SOURCE_DIR}/movie_data_validate.h
     ${SOURCE_DIR}/movie_debug.h
     ${SOURCE_DIR}/movie_instance.c
     ${SOURCE_DIR}/movie_math.c
@@ -83,6 +85,10 @@ source
     ${SOURCE_DIR}/movie_struct.h
     ${SOURCE_DIR}/movie_transformation.c
     ${SOURCE_DIR}/movie_transformation.h
+    ${SOURCE_DIR}/movie_motion.c
+    ${SOURCE_DIR}/movie_motion.h
+    ${SOURCE_DIR}/movie_motion_format.h
+    ${INCLUDE_DIR}/movie/movie_motion.h
     ${SOURCE_DIR}/movie_property.c
     ${SOURCE_DIR}/movie_property.h
 )
@@ -115,3 +121,57 @@ if(LIBMOVIE_TEST)
 
     add_subdirectory(tests)
 endif()
+OPTION(LIBMOVIE_TOOLS_BUILD "LIBMOVIE_TOOLS_BUILD" OFF)
+
+IF(LIBMOVIE_TOOLS_BUILD)
+    FIND_PATH(JANSSON_INCLUDE_DIR jansson.h REQUIRED)
+    FIND_LIBRARY(JANSSON_LIBRARY NAMES jansson REQUIRED)
+    FIND_PATH(LZ4_INCLUDE_DIR lz4.h REQUIRED)
+    FIND_LIBRARY(LZ4_LIBRARY NAMES lz4 REQUIRED)
+
+    ADD_LIBRARY(moviec_core STATIC
+        tools/moviec/moviec.h
+        tools/moviec/moviec_internal.h
+        tools/moviec/moviec_cli.c
+        tools/moviec/moviec_collect.c
+        tools/moviec/moviec_compile.c
+        tools/moviec/moviec_context.c
+        tools/moviec/moviec_expression.c
+        tools/moviec/moviec_geometry.c
+        tools/moviec/moviec_package.c
+        tools/moviec/moviec_scaffold.c
+    )
+
+    TARGET_COMPILE_FEATURES(moviec_core PUBLIC c_std_11)
+    TARGET_INCLUDE_DIRECTORIES(moviec_core
+        PUBLIC tools/moviec ${JANSSON_INCLUDE_DIR}
+        PRIVATE ${LZ4_INCLUDE_DIR} ${SOURCE_DIR}
+    )
+    TARGET_LINK_LIBRARIES(moviec_core PUBLIC movie ${JANSSON_LIBRARY} ${LZ4_LIBRARY})
+
+    ADD_EXECUTABLE(moviec tools/moviec/moviec.c)
+    TARGET_LINK_LIBRARIES(moviec PRIVATE moviec_core)
+
+    IF(MSVC)
+        TARGET_COMPILE_OPTIONS(moviec_core PRIVATE /W4 /WX)
+    ELSE()
+        TARGET_COMPILE_OPTIONS(moviec_core PRIVATE -Wall -Wextra -Werror)
+    ENDIF()
+ENDIF()
+
+IF(LIBMOVIE_TOOLS_BUILD AND LIBMOVIE_TEST)
+    ADD_EXECUTABLE(test_motion tests/test_motion.c)
+    TARGET_LINK_LIBRARIES(test_motion PRIVATE movie)
+
+    ADD_TEST(NAME motion_compile COMMAND moviec build ${CMAKE_CURRENT_SOURCE_DIR}/examples/authoring/kinematics.movie -o ${CMAKE_CURRENT_BINARY_DIR}/kinematics.aem)
+    SET_TESTS_PROPERTIES(motion_compile PROPERTIES FIXTURES_SETUP motion_document)
+
+    ADD_TEST(NAME motion_runtime COMMAND test_motion ${CMAKE_CURRENT_BINARY_DIR}/kinematics.aem)
+    SET_TESTS_PROPERTIES(motion_runtime PROPERTIES FIXTURES_REQUIRED motion_document)
+
+    ADD_EXECUTABLE(test_moviec tests/test_moviec.c)
+    TARGET_LINK_LIBRARIES(test_moviec PRIVATE moviec_core)
+
+    FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/moviec_tests)
+    ADD_TEST(NAME motion_authoring COMMAND test_moviec ${CMAKE_CURRENT_BINARY_DIR}/moviec_tests)
+ENDIF()

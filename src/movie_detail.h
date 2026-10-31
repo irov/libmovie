@@ -1,7 +1,7 @@
 /******************************************************************************
 * libMOVIE Software License v1.0
 *
-* Copyright (c) 2016-2023, Yuriy Levchenko <irov13@mail.ru>
+* Copyright (c) 2016-2026, Yuriy Levchenko <irov13@mail.ru>
 * All rights reserved.
 *
 * You are granted a perpetual, non-exclusive, non-sublicensable, and
@@ -31,6 +31,7 @@
 #define MOVIE_DETAIL_H_
 
 #include "movie_struct.h"
+#include <math.h>
 
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_float_t __correct_timeline_frame_time( ae_float_t _time, const aeMovieCompositionData * _compositionData, ae_frame_t * _frame )
@@ -44,13 +45,15 @@ AE_INTERNAL ae_float_t __correct_timeline_frame_time( ae_float_t _time, const ae
 
     ae_float_t frame_count_f = _time * _compositionData->frame_duration_inv;
 
-    ae_frame_t frame_count = (ae_frame_t)(frame_count_f + 0.5f);
+    ae_frame_t frame_count = _compositionData->movie_data->motion != AE_NULLPTR
+                                 ? (ae_frame_t)ceilf( frame_count_f - .001f )
+                                 : (ae_frame_t)( frame_count_f + 0.5f );
 
     ae_float_t correct_frame_time = (ae_float_t)frame_count * _compositionData->frame_duration;
 
     *_frame = frame_count;
 
-    return correct_frame_time;
+    return _compositionData->movie_data->motion != AE_NULLPTR ? _time : correct_frame_time;
 }
 
 #endif

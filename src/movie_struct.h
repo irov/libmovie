@@ -1,7 +1,7 @@
 /******************************************************************************
 * libMOVIE Software License v1.0
 *
-* Copyright (c) 2016-2023, Yuriy Levchenko <irov13@mail.ru>
+* Copyright (c) 2016-2026, Yuriy Levchenko <irov13@mail.ru>
 * All rights reserved.
 *
 * You are granted a perpetual, non-exclusive, non-sublicensable, and
@@ -211,8 +211,12 @@ struct aeMovieNode
     ae_userdata_t extra_transformation_userdata;
 };
 //////////////////////////////////////////////////////////////////////////
+struct aeMovieMotionData;
+struct aeMovieMotionState;
+
 struct aeMovieComposition
 {
+    struct aeMovieMotionState * motion;
     const aeMovieInstance * instance;
 
     ae_uint32_t * keep_alive;
@@ -315,6 +319,7 @@ struct aeMovieCompositionData
 //////////////////////////////////////////////////////////////////////////
 struct aeMovieData
 {
+    struct aeMovieMotionData * motion;
     const aeMovieInstance * instance;
 
     ae_string_t name;

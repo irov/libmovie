@@ -1,7 +1,7 @@
 /******************************************************************************
 * libMOVIE Software License v1.0
 *
-* Copyright (c) 2016-2023, Yuriy Levchenko <irov13@mail.ru>
+* Copyright (c) 2016-2026, Yuriy Levchenko <irov13@mail.ru>
 * All rights reserved.
 *
 * You are granted a perpetual, non-exclusive, non-sublicensable, and
@@ -37,6 +37,8 @@
 #include "movie_utils.h"
 #include "movie_memory.h"
 #include "movie_stream.h"
+#include "movie_motion.h"
+#include "movie_data_validate.h"
 
 //////////////////////////////////////////////////////////////////////////
 AE_INTERNAL ae_uint32_t __len_str_option( const ae_char_t * _option4 )
@@ -84,6 +86,7 @@ aeMovieData * ae_create_movie_data( const aeMovieInstance * _instance, const aeM
     movie->instance = _instance;
 
     movie->name = AE_NULLPTR;
+    movie->motion = AE_NULLPTR;
 
     movie->providers = *_providers;
     movie->provider_userdata = _userdata;
@@ -263,6 +266,7 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
             const aeMovieResourceParticle * resource_particle = (const aeMovieResourceParticle *)_resource;
 
             AE_DELETE_STRING( instance, resource_particle->path );
+            AE_DELETEN( instance, resource_particle->images );
 
         }break;
     case AE_MOVIE_RESOURCE_SLOT:
@@ -281,6 +285,7 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
 //////////////////////////////////////////////////////////////////////////
 ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
 {
+    ae_movie_motion_delete( _movieData );
     const aeMovieInstance * instance = _movieData->instance;
 
     if( _movieData->atlases != AE_NULLPTR )
@@ -1502,7 +1507,7 @@ AE_INTERNAL ae_result_t __setup_movie_data_layer_track_matte( const aeMovieCompo
             AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_DATA );
         }
 
-        _layer->track_matte_layer_data = _compositionData->layers + layer_position + 1U;
+        _layer->track_matte_layer_data = _layers + layer_position + 1U;
     }
     else
     {
@@ -1818,17 +1823,15 @@ AE_INTERNAL ae_result_t __check_movie_data( aeMovieStream * _stream, ae_uint32_t
 
     *_major = major_version;
 
-    if( major_version != AE_MOVIE_SDK_MAJOR_VERSION )
-    {
-        AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_VERSION );
-    }
-
     ae_uint32_t minor_version;
     AE_READ( _stream, minor_version );
 
     *_minor = minor_version;
 
-    if( minor_version != AE_MOVIE_SDK_MINOR_VERSION )
+    ae_bool_t current_version = major_version == AE_MOVIE_SDK_MAJOR_VERSION && minor_version == AE_MOVIE_SDK_MINOR_VERSION;
+    ae_bool_t legacy_version = major_version == 17 && minor_version == 5;
+
+    if( current_version == AE_FALSE && legacy_version == AE_FALSE )
     {
         AE_RETURN_ERROR_RESULT( AE_RESULT_INVALID_VERSION );
     }
@@ -2524,20 +2527,9 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
     return AE_RESULT_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
+AE_INTERNAL ae_result_t __load_movie_data_content( aeMovieData * _movieData, aeMovieStream * _stream )
 {
     const aeMovieInstance * instance = _movieData->instance;
-
-#ifdef AE_MOVIE_DEBUG_STREAM
-    instance->logger( instance->instance_userdata, AE_ERROR_STREAM, "begin" );
-#endif
-
-    ae_result_t check_result = __check_movie_data( _stream, _major, _minor );
-
-    if( check_result != AE_RESULT_SUCCESSFUL )
-    {
-        return check_result;
-    }
 
     AE_READ_STRING( _stream, _movieData->name );
 
@@ -2619,6 +2611,79 @@ ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _strea
     _movieData->compositions = compositions;
 
     return AE_RESULT_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+AE_INTERNAL ae_result_t __load_movie_data_extensions( aeMovieData * _movieData, aeMovieStream * _stream )
+{
+    for( ;; )
+    {
+        ae_uint8_t extension;
+        if( _stream->memory_read( &extension, _stream->carriage, sizeof( extension ), _stream->read_userdata ) != sizeof( extension ) )
+        {
+            return AE_RESULT_INVALID_STREAM;
+        }
+
+        _stream->carriage += sizeof( extension );
+
+        switch( extension )
+        {
+        case 0:
+            {
+                return AE_RESULT_SUCCESSFUL;
+            }break;
+        case AE_MOVIE_DATA_EXTENSION_MOTION:
+            {
+                if( _movieData->motion != AE_NULLPTR )
+                {
+                    return AE_RESULT_INVALID_DATA;
+                }
+
+                ae_result_t result = ae_movie_motion_load( _movieData, _stream );
+
+                if( result != AE_RESULT_SUCCESSFUL )
+                {
+                    return result;
+                }
+            }break;
+        default:
+            {
+                return AE_RESULT_INVALID_DATA;
+            }break;
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+ae_result_t ae_load_movie_data( aeMovieData * _movieData, aeMovieStream * _stream, ae_uint32_t * _major, ae_uint32_t * _minor )
+{
+#ifdef AE_MOVIE_DEBUG_STREAM
+    const aeMovieInstance * instance = _movieData->instance;
+    instance->logger( instance->instance_userdata, AE_ERROR_STREAM, "begin" );
+#endif
+
+    ae_result_t check_result = __check_movie_data( _stream, _major, _minor );
+
+    if( check_result != AE_RESULT_SUCCESSFUL )
+    {
+        return check_result;
+    }
+
+    if( *_major == 17 && *_minor == 5 )
+    {
+        ae_result_t result = __load_movie_data_content( _movieData, _stream );
+
+        return result;
+    }
+
+    ae_result_t content_result = ae_movie_load_data_content( _movieData, _stream, &__load_movie_data_content );
+
+    if( content_result != AE_RESULT_SUCCESSFUL )
+    {
+        return content_result;
+    }
+
+    ae_result_t result = __load_movie_data_extensions( _movieData, _stream );
+
+    return result;
 }
 //////////////////////////////////////////////////////////////////////////
 const ae_char_t * ae_get_movie_name( const aeMovieData * _movieData )
