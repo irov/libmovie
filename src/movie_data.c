@@ -161,7 +161,7 @@ AE_INTERNAL ae_void_t __callback_cache_uv_deleter( const aeMovieData * _movieDat
     (*_movieData->providers.cache_uv_deleter)(&callbackData, _movieData->provider_userdata);
 }
 //////////////////////////////////////////////////////////////////////////
-AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, const aeMovieResource * _resource )
+AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, const aeMovieResource * _resource, ae_bool_t _releaseUserdata )
 {
     const aeMovieInstance * instance = _movieData->instance;
 
@@ -278,7 +278,10 @@ AE_INTERNAL ae_void_t __delete_movie_resource( const aeMovieData * _movieData, c
         }break;
     }
 
-    (*_movieData->providers.resource_deleter)(type, _resource->userdata, _movieData->provider_userdata);
+    if( _releaseUserdata == AE_TRUE )
+    {
+        (*_movieData->providers.resource_deleter)(type, _resource->userdata, _movieData->provider_userdata);
+    }
 
     AE_DELETE_STRING( instance, _resource->name );
 }
@@ -296,7 +299,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
         {
             const aeMovieResource * atlas = *it_atlas;
 
-            __delete_movie_resource( _movieData, atlas );
+            __delete_movie_resource( _movieData, atlas, AE_TRUE );
 
             AE_DELETE( instance, atlas );
         }
@@ -312,7 +315,7 @@ ae_void_t ae_delete_movie_data( const aeMovieData * _movieData )
         {
             const aeMovieResource * resource = *it_resource;
 
-            __delete_movie_resource( _movieData, resource );
+            __delete_movie_resource( _movieData, resource, AE_TRUE );
 
             AE_DELETE( instance, resource );
         }
@@ -2439,6 +2442,9 @@ AE_INTERNAL ae_result_t __load_movie_resource( aeMovieData * _movieData, aeMovie
     ae_userdata_t resource_userdata = AE_USERDATA_NULL;
     if( (*_movieData->providers.resource_provider)(new_resource, &resource_userdata, _movieData->provider_userdata) == AE_FALSE )
     {
+        __delete_movie_resource( _movieData, new_resource, AE_FALSE );
+        AE_DELETE( instance, new_resource );
+
         AE_RETURN_ERROR_RESULT( AE_RESULT_NOT_FOUND_RESOURCE );
     }
 
@@ -2463,6 +2469,19 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
 
             struct aeMovieResourceImageCache * cache = AE_NEW( instance, struct aeMovieResourceImageCache );
 
+            AE_RESULT_PANIC_MEMORY( cache );
+
+            cache->uv_cache_userdata = AE_USERDATA_NULL;
+            cache->mesh_uv_cache_userdata = AE_USERDATA_NULL;
+
+            ae_uint32_t quality = 0;
+            for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            {
+                cache->bezier_warp_uv_cache_userdata[quality] = AE_USERDATA_NULL;
+            }
+
+            resource_image->cache = cache;
+
             ae_userdata_t uv_cache_userdata = AE_USERDATA_NULL;
             AE_RESULT( __callback_cache_uv_provider, (_movieData, &uv_cache_userdata, _resource, 4, resource_image->uvs) );
 
@@ -2475,13 +2494,8 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
 
                 cache->mesh_uv_cache_userdata = mesh_uv_cache_userdata;
             }
-            else
-            {
-                cache->mesh_uv_cache_userdata = AE_NULLPTR;
-            }
 
-            ae_uint32_t quality = 0;
-            for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            for( quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
             {
                 ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
                 const ae_vector2_t * uvs = instance->bezier_warp_uvs[quality];
@@ -2491,8 +2505,6 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
 
                 cache->bezier_warp_uv_cache_userdata[quality] = bezier_warp_uv_cache_userdata;
             }
-
-            resource_image->cache = cache;
         }break;
     case AE_MOVIE_RESOURCE_VIDEO:
         {
@@ -2500,13 +2512,24 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
 
             struct aeMovieResourceVideoCache * cache = AE_NEW( instance, struct aeMovieResourceVideoCache );
 
+            AE_RESULT_PANIC_MEMORY( cache );
+
+            cache->uv_cache_userdata = AE_USERDATA_NULL;
+
+            ae_uint32_t quality = 0;
+            for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            {
+                cache->bezier_warp_uv_cache_userdata[quality] = AE_USERDATA_NULL;
+            }
+
+            resource_video->cache = cache;
+
             ae_userdata_t uv_cache_userdata = AE_USERDATA_NULL;
             AE_RESULT( __callback_cache_uv_provider, (_movieData, &uv_cache_userdata, _resource, 4, instance->sprite_uv) );
 
             cache->uv_cache_userdata = uv_cache_userdata;
 
-            ae_uint32_t quality = 0;
-            for( ; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
+            for( quality = 0; quality != AE_MOVIE_BEZIER_MAX_QUALITY; ++quality )
             {
                 ae_uint32_t vertex_count = get_bezier_warp_vertex_count( quality );
                 const ae_vector2_t * uvs = instance->bezier_warp_uvs[quality];
@@ -2516,8 +2539,6 @@ AE_INTERNAL ae_result_t __cache_movie_resource_data( aeMovieData * _movieData, a
 
                 cache->bezier_warp_uv_cache_userdata[quality] = bezier_warp_uv_cache_userdata;
             }
-
-            resource_video->cache = cache;
         }break;
     default:
         {
@@ -2537,7 +2558,7 @@ AE_INTERNAL ae_result_t __load_movie_data_content( aeMovieData * _movieData, aeM
 
     ae_uint32_t atlas_count = AE_READZ( _stream );
 
-    _movieData->atlas_count = atlas_count;
+    _movieData->atlas_count = 0;
 
     const aeMovieResource ** atlases = AE_NULLPTR;
 
@@ -2547,6 +2568,8 @@ AE_INTERNAL ae_result_t __load_movie_data_content( aeMovieData * _movieData, aeM
 
         AE_RESULT_PANIC_MEMORY( atlases );
 
+        _movieData->atlases = atlases;
+
         const aeMovieResource ** it_atlas = atlases;
         const aeMovieResource ** it_atlas_end = atlases + atlas_count;
         for( ; it_atlas != it_atlas_end; ++it_atlas )
@@ -2555,9 +2578,9 @@ AE_INTERNAL ae_result_t __load_movie_data_content( aeMovieData * _movieData, aeM
             AE_RESULT( __load_movie_resource, (_movieData, _stream, AE_NULLPTR, atlases, &new_atlas) );
 
             *it_atlas = new_atlas;
-        }
 
-        _movieData->atlases = atlases;
+            ++_movieData->atlas_count;
+        }
     }
 
     ae_uint32_t resource_count = AE_READZ( _stream );
@@ -2567,10 +2590,12 @@ AE_INTERNAL ae_result_t __load_movie_data_content( aeMovieData * _movieData, aeM
 
     ae_bool_t cache_uv_available = (*_movieData->providers.cache_uv_available)(&callbackData, _movieData->provider_userdata);
 
-    _movieData->resource_count = resource_count;
+    _movieData->resource_count = 0;
     const aeMovieResource ** resources = AE_NEWN( instance, const aeMovieResource *, resource_count );
 
     AE_RESULT_PANIC_MEMORY( resources );
+
+    _movieData->resources = resources;
 
     const aeMovieResource ** it_resource = resources;
     const aeMovieResource ** it_resource_end = resources + resource_count;
@@ -2579,15 +2604,15 @@ AE_INTERNAL ae_result_t __load_movie_data_content( aeMovieData * _movieData, aeM
         aeMovieResource * new_resource;
         AE_RESULT( __load_movie_resource, (_movieData, _stream, atlases, resources, &new_resource) );
 
+        *it_resource = new_resource;
+
+        ++_movieData->resource_count;
+
         if( cache_uv_available == AE_TRUE )
         {
             AE_RESULT( __cache_movie_resource_data, (_movieData, new_resource) );
         }
-
-        *it_resource = new_resource;
     }
-
-    _movieData->resources = resources;
 
     ae_uint32_t composition_count = AE_READZ( _stream );
 
